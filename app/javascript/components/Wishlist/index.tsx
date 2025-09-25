@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createCast } from "ts-safe-cast";
 
-import { fetchPaginatedWishlistItems } from "$app/data/wishlists";
+import { fetchPaginatedWishlistItems, deleteWishlistItem } from "$app/data/wishlists";
 import { CardProduct } from "$app/parsers/product";
 import { classNames } from "$app/utils/classNames";
 import { RecurrenceId, recurrenceNames } from "$app/utils/recurringPricing";
@@ -79,6 +79,84 @@ const addToCartUrl = (item: WishlistItem) => {
   if (item.rent) url.searchParams.set("rent", "true");
   if (item.quantity > 1) url.searchParams.set("quantity", item.quantity.toString());
   return url.toString();
+};
+
+const WishlistItemCard = ({
+  wishlistId,
+  item,
+  onDelete,
+}: {
+  wishlistId: string;
+  item: WishlistItem;
+  onDelete: () => void;
+}) => {
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
+  const destroy = async () => {
+    setIsDeleting(true);
+
+    try {
+      await deleteWishlistItem({ wishlistId, wishlistProductId: item.id });
+      showAlert("Removed from wishlist", "success");
+      onDelete();
+    } catch (e) {
+      assertResponseError(e);
+      showAlert("Sorry, something went wrong. Please try again.", "error");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <Card
+      key={item.id}
+      product={{ ...item.product, name: formatName(item) }}
+      footerAction={
+        <>
+          <WithTooltip position="top" tip="Gift this product">
+            <button className="link" disabled={isDeleting} onClick={() => void destroy()}>
+              <Icon name="trash2" />
+            </button>
+          </WithTooltip>
+          {item.purchasable && item.giftable ? (
+            <div style={{ padding: 0, display: "grid" }}>
+              <WithTooltip position="top" tip="Gift this product">
+                <a
+                  aria-label="Gift this product"
+                  href={Routes.checkout_index_url({ params: { gift_wishlist_product: item.id } })}
+                  style={{ padding: "var(--spacer-4)", display: "grid" }}
+                >
+                  <Icon name="gift-fill" />
+                </a>
+              </WithTooltip>
+            </div>
+          ) : null}
+        </>
+      }
+      badge={
+        item.purchasable ? (
+          <div style={{ position: "absolute", top: "var(--spacer-4)", right: "var(--spacer-4)" }}>
+            <WithTooltip position="top" tip="Add to cart">
+              <NavigationButton
+                href={addToCartUrl(item)}
+                color="primary"
+                aria-label="Add to cart"
+                onClick={() =>
+                  trackCtaClick({
+                    sellerId: item.product.seller?.id,
+                    permalink: item.product.permalink,
+                    name: item.product.name,
+                  })
+                }
+              >
+                <Icon name="cart3-fill" />
+              </NavigationButton>
+            </WithTooltip>
+          </div>
+        ) : null
+      }
+    />
+  );
 };
 
 export const Wishlist = ({
@@ -166,46 +244,11 @@ export const Wishlist = ({
       <section className={classNames("p-4 md:p-8", isDiscover && "lg:px-16")}>
         <div className="product-card-grid">
           {items.map((item) => (
-            <Card
+            <WishlistItemCard
               key={item.id}
-              product={{ ...item.product, name: formatName(item) }}
-              footerAction={
-                item.purchasable && item.giftable ? (
-                  <div style={{ padding: 0, display: "grid" }}>
-                    <WithTooltip position="top" tip="Gift this product">
-                      <a
-                        aria-label="Gift this product"
-                        href={Routes.checkout_index_url({ params: { gift_wishlist_product: item.id } })}
-                        style={{ padding: "var(--spacer-4)", display: "grid" }}
-                      >
-                        <Icon name="gift-fill" />
-                      </a>
-                    </WithTooltip>
-                  </div>
-                ) : null
-              }
-              badge={
-                item.purchasable ? (
-                  <div style={{ position: "absolute", top: "var(--spacer-4)", right: "var(--spacer-4)" }}>
-                    <WithTooltip position="top" tip="Add to cart">
-                      <NavigationButton
-                        href={addToCartUrl(item)}
-                        color="primary"
-                        aria-label="Add to cart"
-                        onClick={() =>
-                          trackCtaClick({
-                            sellerId: item.product.seller?.id,
-                            permalink: item.product.permalink,
-                            name: item.product.name,
-                          })
-                        }
-                      >
-                        <Icon name="cart3-fill" />
-                      </NavigationButton>
-                    </WithTooltip>
-                  </div>
-                ) : null
-              }
+              wishlistId={id}
+              item={item}
+              onDelete={() => setItems((prev) => prev.filter((i) => i.id !== item.id))}
             />
           ))}
         </div>
@@ -223,8 +266,6 @@ export const Wishlist = ({
             setName={setName}
             description={description}
             setDescription={setDescription}
-            items={items}
-            setItems={setItems}
             isDiscoverable={!discover_opted_out}
             onClose={() => setIsEditing(false)}
           />
