@@ -13,17 +13,6 @@ class Admin::Compliance::GuidsController < Admin::BaseController
     render json: guids_to_users
   end
 
-  def show
-    guid = params[:id]
-    @title = guid
-    user_ids = Event.by_browser_guid(guid).distinct.pluck(:user_id)
-    @users = User.find(user_ids)
-    respond_to do |format|
-      format.html
-      format.json { render json: @users }
-    end
-  end
-
   private
 
     def user_param

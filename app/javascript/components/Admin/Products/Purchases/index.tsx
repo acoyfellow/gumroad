@@ -8,13 +8,13 @@ import AdminProductPurchasesContent from "./Content";
 
 type AdminProductPurchasesProps = {
   product_id: number;
-  is_affiliate_user: boolean;
+  is_affiliate_user?: boolean;
   user_id: number | null;
 }
 
 const AdminProductPurchases = ({
   product_id,
-  is_affiliate_user,
+  is_affiliate_user = false,
   user_id,
 }: AdminProductPurchasesProps) => {
   const [open, setOpen] = React.useState(false);

@@ -73,14 +73,16 @@ namespace :admin do
     end
   end
 
-  get "/users/:user_id/guids", to: "compliance/guids#index", as: :compliance_guids
-
   resource :block_email_domains, only: [:show, :update]
   resource :unblock_email_domains, only: [:show, :update]
   resource :suspend_users, only: [:show, :update]
   resource :refund_queue, only: [:show]
 
-  resources :affiliates, only: [:index, :show], defaults: { format: "html" }
+  resources :affiliates, only: [:index, :show], defaults: { format: "html" } do
+    scope module: :affiliates do
+      resources :products, only: [:index]
+    end
+  end
 
   resources :links, only: [], defaults: { format: "html" } do
     member do
@@ -151,8 +153,14 @@ namespace :admin do
   post "/paydays/pay_user/:id", to: "paydays#pay_user", as: :pay_user
 
   # Compliance
+  get "/users/:user_id/guids", to: "compliance/guids#index", as: :compliance_guids
+
   scope module: "compliance" do
-    resources :guids, only: [:show]
+    resources :guids, only: [:show] do
+      scope module: "guids" do
+        resources :users, only: [:index]
+      end
+    end
     resources :cards, only: [:index] do
       collection do
         post :refund

@@ -1,0 +1,49 @@
+# frozen_string_literal: true
+
+module Admin::Users::ListPaginatedProducts
+  include Pagy::Backend
+
+  PRODUCTS_ORDER = "ISNULL(COALESCE(purchase_disabled_at, banned_at, links.deleted_at)) DESC, created_at DESC"
+  PRODUCTS_PER_PAGE = 10
+
+  def index
+    @title = page_title
+
+    pagination, products = pagy_countless(
+      user.links.order(Arel.sql(PRODUCTS_ORDER)),
+      page: params[:page],
+      limit: params[:per_page] || PRODUCTS_PER_PAGE,
+      countless_minimal: true
+    )
+
+    render inertia: inertia_template, props: inertia_props(
+      user:     user.as_json(admin: true, impersonatable: policy([:admin, :impersonators, user]).create?),
+      products: InertiaRails.merge {
+                  products.includes(:alive_product_files, :active_integrations).map do |product|
+                    product.as_json(
+                      admin: true,
+                      admins_can_mark_as_staff_picked: ->(product) { policy([:admin, :products, :staff_picked, product]).create? },
+                      admins_can_unmark_as_staff_picked: ->(product) { policy([:admin, :products, :staff_picked, product]).destroy? }
+                    )
+                  end
+                },
+      pagination:
+    )
+  end
+
+  private
+
+    def page_title
+      "#{user.display_name} on Gumroad"
+    end
+
+    def user
+      raise NotImplementedError, 'missing @user instance variable in subclass' unless instance_variable_defined?(:@user)
+
+      @user
+    end
+
+    def inertia_template
+      raise NotImplementedError, 'must be overriden in subclass'
+    end
+end

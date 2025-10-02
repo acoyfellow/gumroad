@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "@inertiajs/react";
 
 type GuidProps = {
   guid: string;
@@ -8,7 +9,7 @@ type GuidProps = {
 const Guid = ({ guid, user_ids }: GuidProps) => (
   <div>
     <h5>
-      <a href={Routes.admin_guid_path(guid)}>{guid}</a>
+      <Link href={Routes.admin_guid_users_path(guid)}>{guid}</Link>
     </h5>
     <span>{user_ids.length} users</span>
   </div>

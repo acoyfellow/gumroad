@@ -5,7 +5,7 @@ module User::Searchable
 
   included do
     scope(:admin_search, lambda do |query|
-      query = query.strip
+      query = query.to_s.strip
 
       if EmailFormatValidator.valid?(query)
         where(email: query)

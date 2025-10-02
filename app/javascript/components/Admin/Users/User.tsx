@@ -65,10 +65,10 @@ export type User = {
 
 export type Props = {
   user: User;
-  is_affiliate_user: boolean;
+  is_affiliate_user?: boolean;
 };
 
-const User = ({ user, is_affiliate_user }: Props) => {
+const User = ({ user, is_affiliate_user = false }: Props) => {
   const { url } = usePage() as unknown as { url: string };
 
   return (

@@ -11,11 +11,11 @@ import AdminUserStats from "$app/components/Admin/Users/Stats";
 
 type HeaderProps = {
   user: User;
-  is_affiliate_user: boolean;
+  is_affiliate_user?: boolean;
   url: string;
 };
 
-const Header = ({ user, is_affiliate_user, url }: HeaderProps) => {
+const Header = ({ user, is_affiliate_user = false, url }: HeaderProps) => {
   const displayName = user.name || `User ${user.username}`;
   const adminUserUrl = is_affiliate_user ? Routes.admin_affiliate_url(user.id) : Routes.admin_user_url(user.id);
 

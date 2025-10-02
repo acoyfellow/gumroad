@@ -8,13 +8,13 @@ import Loading from "$app/components/Admin/Loading";
 
 type AdminUsersProductsContentProps = {
   products: ProductType[];
-  is_affiliate_user: boolean;
+  is_affiliate_user?: boolean;
   pagination: Pagination;
 }
 
 const AdminUsersProductsContent = ({
   products,
-  is_affiliate_user,
+  is_affiliate_user = false,
   pagination
 }: AdminUsersProductsContentProps) => {
   if (pagination.page === 1 && products.length === 0) {
@@ -34,19 +34,21 @@ const AdminUsersProductsContent = ({
   );
 }
 
+type Props = {
+  is_affiliate_user?: boolean;
+}
+
 type AdminUsersProductsProps = {
   user: UserType;
   products: ProductType[];
-  is_affiliate_user: boolean;
   pagination: Pagination;
 }
 
-const AdminUsersProducts = () => {
+const AdminUsersProducts = ({ is_affiliate_user = false }: Props) => {
   const {
     user,
     products,
     pagination,
-    is_affiliate_user
   } = usePage().props as unknown as AdminUsersProductsProps;
 
   const productsLengthFromCurrentPage = products.length / pagination.page;

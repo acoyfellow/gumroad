@@ -51,10 +51,10 @@ export type Product = {
 
 type AdminUsersProductsProductProps = {
   product: Product;
-  is_affiliate_user: boolean;
+  is_affiliate_user?: boolean;
 }
 
-const AdminUsersProductsProduct = ({ product, is_affiliate_user }: AdminUsersProductsProductProps) => {
+const AdminUsersProductsProduct = ({ product, is_affiliate_user = false }: AdminUsersProductsProductProps) => {
   const { url, props } = usePage();
   const { user, compliance } = props as unknown as { user: User; compliance: Compliance };
   const isCurrentUrl = url === Routes.admin_product_url(product.id);

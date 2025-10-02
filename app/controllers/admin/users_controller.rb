@@ -8,14 +8,11 @@ class Admin::UsersController < Admin::BaseController
 
   before_action :fetch_user, except: %i[block_ip_address]
 
-  before_action(only: :show) { @title = "#{@user.display_name} on Gumroad" }
-
-  PRODUCTS_ORDER = "ISNULL(COALESCE(purchase_disabled_at, banned_at, links.deleted_at)) DESC, created_at DESC"
-  PRODUCTS_PER_PAGE = 10
-
   layout "admin_inertia", only: :show
 
   def show
+    @title = "#{@user.display_name} on Gumroad"
+
     if request.format.json?
       render json: @user
     else

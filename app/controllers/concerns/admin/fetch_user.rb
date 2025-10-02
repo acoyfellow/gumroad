@@ -7,9 +7,10 @@ module Admin::FetchUser
       @user = if user_param.include?("@")
         User.find_by(email: user_param)
       else
-        User.find_by(username: user_param) ||
-          User.find_by(id: user_param) ||
-          User.find_by(external_id: user_param)
+        User.where(username: user_param)
+            .or(User.where(id: user_param))
+            .or(User.where(external_id: user_param))
+            .first
       end
 
       e404 unless @user
