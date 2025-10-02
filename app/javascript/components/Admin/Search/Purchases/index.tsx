@@ -1,7 +1,8 @@
 
 import React from "react";
 import AdminPurchasesFilterForm from "$app/components/Admin/Search/Purchases/FilterForm";
-import AdminPurchasesPurchase, { type Purchase } from "$app/components/Admin/Search/Purchases/Purchase";
+import AdminPurchasesPurchase from "$app/components/Admin/Search/Purchases/Purchase";
+import { type Purchase } from "$app/components/Admin/Purchases/Purchase";
 
 type Props = {
   purchases: Purchase[];

@@ -11,6 +11,7 @@ const AdminUserComments = ({ user }: AdminUserCommentsProps) => {
   return (
     <AdminCommentableComments
       endpoint={Routes.admin_user_comments_path(user.id, { format: "json" })}
+      commentableType="user"
     />
   )
 };

@@ -24,7 +24,8 @@ class Admin::RefundQueuesController < Admin::BaseController
     render  inertia: "Admin/RefundQueues/Show",
             props: inertia_props(
               users: InertiaRails.merge { users.map do |user|
-                user.as_json_for_admin(
+                user.as_json(
+                  admin: true,
                   impersonatable: policy([:admin, :impersonators, user]).create?
                 )
               end },

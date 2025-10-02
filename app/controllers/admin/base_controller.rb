@@ -17,7 +17,11 @@ class Admin::BaseController < ApplicationController
   head_title "Admin"
 
   inertia_share card_types: -> { card_types_for_react },
-                title: -> { head_title }
+                title: -> { head_title },
+                compliance: -> { {
+                  reasons: Compliance::TOS_VIOLATION_REASONS,
+                  default_reason: Compliance::DEFAULT_TOS_VIOLATION_REASON
+                } }
 
   before_action :require_admin!
   before_action :hide_layouts

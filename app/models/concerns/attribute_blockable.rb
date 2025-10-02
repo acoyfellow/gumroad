@@ -70,9 +70,27 @@ module AttributeBlockable
   class_methods do
     def attr_blockable(blockable_method, attribute: nil)
       attribute ||= blockable_method
-      define_method("#{blockable_method}_blocked_at?") { blocked_at_by_method(attribute, blockable_method:).present? }
-      define_method("#{blockable_method}_blocked?") { blocked_at_by_method(attribute, blockable_method:).present? }
-      define_method("#{blockable_method}_blocked_at") { blocked_at_by_method(attribute, blockable_method:) }
+      define_method("blocked_by_#{blockable_method}_at?") { blocked_at_by_method(attribute, blockable_method:).present? }
+      define_method("blocked_by_#{blockable_method}?") { blocked_at_by_method(attribute, blockable_method:).present? }
+      define_method("blocked_by_#{blockable_method}_at") { blocked_at_by_method(attribute, blockable_method:) }
+
+      define_method("blocked_#{blockable_method.to_s.pluralize}_objects") do
+        blocked_objects_for_values(attribute, Array.wrap(send(blockable_method)))
+      end
+
+      define_method("blocked_#{blockable_method.to_s.pluralize}") do
+        send("blocked_#{blockable_method.to_s.pluralize}_objects").map(&:object_value)
+      end
+
+      define_method("block_by_#{blockable_method}!") do |by_user_id: nil, expires_in: nil|
+        return if (value = send(blockable_method)).blank?
+        block_by_method(attribute, value, by_user_id:, expires_in:)
+      end
+
+      define_method("unblock_by_#{blockable_method}!") do
+        return if (value = send(blockable_method)).blank?
+        unblock_by_method(attribute, value)
+      end
     end
 
     def with_blocked_attributes_for(*method_names)
@@ -89,15 +107,35 @@ module AttributeBlockable
     value = send(blockable_method)
     return if value.blank?
 
-    blocked_at = lookup_blocked_object_for_value(method_name, value)
+    blocked_at = blocked_object_for_value(method_name, value)&.blocked_at
     blocked_by_attributes[method_key] = blocked_at
     blocked_at
   end
 
+  def block_by_method(method_name, *values, by_user_id: nil, expires_in: nil)
+    values.compact_blank.each do |value|
+      blocked_object = BlockedObject.block!(method_name, value, by_user_id, expires_in:)
+      blocked_by_attributes[method_name.to_s] = blocked_object&.blocked_at
+    end
+  end
+
+  def unblock_by_method(method_name, *values, by_user_id: nil, expires_in: nil)
+    scope = BLOCKED_OBJECT_TYPES.fetch(method_name.to_sym, :all)
+    BlockedObject.send(scope).find_active_objects(values).each do |blocked_object|
+      blocked_object.unblock!
+      blocked_by_attributes.delete(method_name.to_s) if blocked_object.blocked_at.nil?
+    end
+  end
+
+  def blocked_objects_for_values(method_name, values)
+    scope = BLOCKED_OBJECT_TYPES.fetch(method_name.to_sym, :all)
+    BlockedObject.send(scope).find_active_objects(values)
+  end
+
   private
 
-  def lookup_blocked_object_for_value(method_name, value)
+  def blocked_object_for_value(method_name, value)
     scope = BLOCKED_OBJECT_TYPES.fetch(method_name.to_sym, :all)
-    BlockedObject.send(scope).find_active_object(value)&.blocked_at
+    BlockedObject.send(scope).find_active_object(value)
   end
 end

@@ -12,7 +12,7 @@ class User < ApplicationRecord
           AsyncDeviseNotification, Posts, AffiliatedProducts, Followers, LowBalanceFraudCheck, MailerLevel,
           DirectAffiliates, AsJson, Tier, Recommendations, Team, AustralianBacktaxes, WithCdnUrl, CustomFee,
           TwoFactorAuthentication, Versionable, Comments, VipCreator, SignedUrlHelper, Purchases, SecureExternalId,
-          Searchable
+          Searchable, Commentable
 
   stripped_fields :name, :facebook_meta_tag, :google_analytics_id, :username, :email, :support_email
 
@@ -67,7 +67,6 @@ class User < ApplicationRecord
   has_many :bank_accounts
   has_one :active_bank_account, -> { alive }, class_name: "BankAccount"
   has_many :installments, foreign_key: :seller_id
-  has_many :comments, as: :commentable
   has_many :imported_customers, foreign_key: :importing_user_id
   has_many :invites, foreign_key: :sender_id
   has_many :offer_codes

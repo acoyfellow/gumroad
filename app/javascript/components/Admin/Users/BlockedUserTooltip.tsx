@@ -11,20 +11,20 @@ export type Props = {
 
 const BlockedUserTooltip = ({ user, position = "bottom" }: Props) => {
   const {
-    form_email_blocked_at,
+    blocked_by_form_email_at,
     form_email_domain,
-    form_email_domain_blocked_at
+    blocked_by_form_email_domain_at
   } = user;
 
-  if (!form_email_blocked_at && !form_email_domain_blocked_at) {
+  if (!blocked_by_form_email_at && !blocked_by_form_email_domain_at) {
     return null;
   }
 
   const content = () => {
     return (
       <div className="paragraphs">
-        {form_email_blocked_at && <span>{`Email blocked ${formatDate(new Date(form_email_blocked_at))}`}</span>}
-        {form_email_domain_blocked_at && <span>{`${form_email_domain} blocked ${formatDate(new Date(form_email_domain_blocked_at))}`}</span>}
+        {blocked_by_form_email_at && <span>{`Email blocked ${formatDate(new Date(blocked_by_form_email_at))}`}</span>}
+        {blocked_by_form_email_domain_at && <span>{`${form_email_domain} blocked ${formatDate(new Date(blocked_by_form_email_domain_at))}`}</span>}
       </div>
     );
   }

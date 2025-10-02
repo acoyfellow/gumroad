@@ -11,6 +11,7 @@ const AdminProductComments = ({ product }: AdminProductCommentsProps) => {
   return (
     <AdminCommentableComments
       endpoint={Routes.admin_product_comments_path(product.id, { format: "json" })}
+      commentableType="product"
     />
   )
 };

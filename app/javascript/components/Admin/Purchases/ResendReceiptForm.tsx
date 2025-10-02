@@ -1,14 +1,18 @@
 import * as React from "react";
-import { createCast } from "ts-safe-cast";
-
-import { register } from "$app/utils/serverComponentUtil";
 
 import { Form } from "$app/components/Admin/Form";
 import { showAlert } from "$app/components/server-components/Alert";
 
-export const AdminResendReceiptForm = ({ purchase_id, email }: { purchase_id: number; email: string }) => (
+import { type Purchase } from "$app/components/Admin/Purchases/Purchase";
+
+export const AdminResendReceiptForm = ({
+  purchase: {
+    id,
+    email,
+  }
+}: { purchase: Purchase }) => (
   <Form
-    url={Routes.resend_receipt_admin_purchase_path(purchase_id)}
+    url={Routes.resend_receipt_admin_purchase_path(id)}
     method="POST"
     confirmMessage="Are you sure you want to resend the receipt?"
     onSuccess={() => showAlert("Receipt sent successfully.", "success")}
@@ -27,4 +31,4 @@ export const AdminResendReceiptForm = ({ purchase_id, email }: { purchase_id: nu
   </Form>
 );
 
-export default register({ component: AdminResendReceiptForm, propParser: createCast() });
+export default AdminResendReceiptForm;

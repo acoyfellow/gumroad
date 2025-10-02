@@ -1,5 +1,5 @@
 import React from "react";
-import { type Purchase } from "$app/components/Admin/Search/Purchases/Purchase";
+import { type Purchase } from "$app/components/Admin/Purchases/Purchase";
 import { Link } from "@inertiajs/react";
 import { useLazyFetch } from "$app/hooks/useLazyFetch";
 import { cast } from "ts-safe-cast";

@@ -7,7 +7,7 @@ class Installment < ApplicationRecord
 
   include Rails.application.routes.url_helpers
   include ExternalId, ActionView::Helpers::SanitizeHelper, ActionView::Helpers::TextHelper, CurrencyHelper, S3Retrievable, WithProductFiles, Deletable, JsonData,
-          WithFiltering, Post::Caching, Installment::Searchable, FlagShihTzu
+          WithFiltering, Post::Caching, Installment::Searchable, FlagShihTzu, Commentable
   extend FriendlyId
 
   PRODUCT_LIST_PLACEHOLDER_TAG_NAME = "product-list-placeholder"
@@ -68,7 +68,6 @@ class Installment < ApplicationRecord
   has_many :installment_events
   has_many :email_infos
   has_many :purchases, through: :email_infos
-  has_many :comments, as: :commentable
   has_many :sent_post_emails, foreign_key: "post_id"
   has_many :blasts, class_name: "PostEmailBlast", foreign_key: "post_id"
   has_many :sent_abandoned_cart_emails

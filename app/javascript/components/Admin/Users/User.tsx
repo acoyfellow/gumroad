@@ -38,9 +38,9 @@ export type User = {
   username: string;
   profile_url: string;
   form_email: string;
-  form_email_blocked_at: string;
+  blocked_by_form_email_at: string;
   form_email_domain: string;
-  form_email_domain_blocked_at: string;
+  blocked_by_form_email_domain_at: string;
   subdomain_with_protocol: string;
   custom_fee_percent: number | null;
   has_payments: boolean;

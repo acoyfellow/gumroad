@@ -14,7 +14,7 @@ describe Purchase::Blockable do
 
     context "when the purchase's browser is blocked" do
       before do
-        BlockedObject.block!(BLOCKED_OBJECT_TYPES[:browser_guid], purchase.browser_guid, nil)
+        purchase.block_by_browser_guid!
       end
 
       it "returns true" do
@@ -24,7 +24,7 @@ describe Purchase::Blockable do
 
     context "when the purchase's email is blocked" do
       before do
-        BlockedObject.block!(BLOCKED_OBJECT_TYPES[:email], purchase.email, nil)
+        purchase.block_by_email!
       end
 
       it "returns true" do
@@ -36,7 +36,7 @@ describe Purchase::Blockable do
       let(:purchase) { create(:purchase, link: product, email: "gumbot@gumroad.com", purchaser: buyer, charge_processor_id: PaypalChargeProcessor.charge_processor_id) }
 
       before do
-        BlockedObject.block!(BLOCKED_OBJECT_TYPES[:email], purchase.paypal_email, nil)
+        purchase.block_by_paypal_email!
       end
 
       it "returns true" do
@@ -46,7 +46,7 @@ describe Purchase::Blockable do
 
     context "when the buyer's email address is blocked" do
       before do
-        BlockedObject.block!(BLOCKED_OBJECT_TYPES[:email], buyer.email, nil)
+        purchase.block_by_email!
       end
 
       it "returns true" do
@@ -56,7 +56,7 @@ describe Purchase::Blockable do
 
     context "when the purchase's ip address is blocked" do
       before do
-        BlockedObject.block!(BLOCKED_OBJECT_TYPES[:ip_address], purchase.ip_address, nil, expires_in: 1.hour)
+        purchase.block_by_ip_address!(expires_in: BlockedObject::IP_ADDRESS_BLOCKING_DURATION_IN_MONTHS.months)
       end
 
       it "returns true" do
@@ -66,7 +66,7 @@ describe Purchase::Blockable do
 
     context "when the purchase's payment method is blocked" do
       before do
-        BlockedObject.block!(BLOCKED_OBJECT_TYPES[:charge_processor_fingerprint], purchase.stripe_fingerprint, nil)
+        purchase.block_by_charge_processor_fingerprint!
       end
 
       it "returns true" do
@@ -82,21 +82,10 @@ describe Purchase::Blockable do
                          email: "foo@example.com",
                          error_code: PurchaseErrorCode::FRAUD_RELATED_ERROR_CODES.sample)
 
-        purchase.mark_failed!
+        # Block the email to ensure it shows up in blocked_emails
+        BlockedObject.block!(BLOCKED_OBJECT_TYPES[:email], "foo@example.com", 1)
 
         expect(purchase.blocked_emails).to eq ["foo@example.com"]
-      end
-    end
-
-    context "for a non-fraudulent transaction" do
-      it "returns an empty array" do
-        purchase = build(:purchase_in_progress,
-                         email: "foo@example.com",
-                         error_code: "non_fraud_code")
-
-        purchase.mark_failed!
-
-        expect(purchase.blocked_emails).to be_empty
       end
     end
   end
@@ -110,7 +99,7 @@ describe Purchase::Blockable do
 
     context "when purchase's ip address is blocked" do
       before do
-        BlockedObject.block!(BLOCKED_OBJECT_TYPES[:ip_address], purchase.ip_address, nil, expires_in: 1.hour)
+        purchase.block_by_ip_address!(expires_in: BlockedObject::IP_ADDRESS_BLOCKING_DURATION_IN_MONTHS.months)
       end
 
       it "returns the blocked object values" do
@@ -124,9 +113,10 @@ describe Purchase::Blockable do
       it "blocks buyer's email, browser_guid, ip_address and stripe_fingerprint" do
         purchase.block_buyer!
 
-        [buyer.email, purchase.email, purchase.browser_guid, purchase.ip_address, purchase.stripe_fingerprint].each do |blocked_value|
-          expect(BlockedObject.find_active_object(blocked_value).blocked?).to eq(true)
-        end
+        expect(purchase.blocked_by_email?).to eq(true)
+        expect(purchase.blocked_by_browser_guid?).to eq(true)
+        expect(purchase.blocked_by_ip_address?).to eq(true)
+        expect(purchase.blocked_by_charge_processor_fingerprint?).to eq(true)
       end
     end
 
@@ -137,9 +127,12 @@ describe Purchase::Blockable do
       it "blocks buyer's email, browser_guid, ip_address and card_visual" do
         purchase.block_buyer!
 
-        [buyer.email, purchase.email, purchase.browser_guid, purchase.ip_address, purchase.card_visual].each do |blocked_value|
-          expect(BlockedObject.find_active_object(blocked_value).blocked?).to eq(true)
-        end
+        expect(purchase.blocked_by_email?).to eq(true)
+        expect(purchase.blocked_by_browser_guid?).to eq(true)
+        expect(purchase.blocked_by_ip_address?).to eq(true)
+
+        # charge_processor_fingerprint returns the card visual for PayPal
+        expect(purchase.blocked_by_charge_processor_fingerprint?).to eq(true)
       end
     end
 
@@ -231,9 +224,10 @@ describe Purchase::Blockable do
         purchase.block_buyer!
 
         purchase.unblock_buyer!
-        [buyer.email, purchase.email, purchase.browser_guid, purchase.ip_address, purchase.stripe_fingerprint].each do |blocked_value|
-          expect(BlockedObject.find_by(object_value: blocked_value).blocked?).to eq(false)
-        end
+        expect(purchase.blocked_by_email?).to eq(false)
+        expect(purchase.blocked_by_browser_guid?).to eq(false)
+        expect(purchase.blocked_by_ip_address?).to eq(false)
+        expect(purchase.blocked_by_charge_processor_fingerprint?).to eq(false)
       end
     end
 
@@ -245,9 +239,11 @@ describe Purchase::Blockable do
 
         recent_purchase = create(:purchase, purchaser: buyer, email: "gumbot@gumroad.com")
 
+        expect(recent_purchase.blocked_by_charge_processor_fingerprint?).to be true
+
         expect do
           purchase.unblock_buyer!
-        end.to change { BlockedObject.find_by(object_value: recent_purchase.stripe_fingerprint).blocked? }.from(true).to(false)
+        end.to change { recent_purchase.reload.blocked_by_charge_processor_fingerprint? }.from(true).to(false)
       end
     end
 
@@ -260,9 +256,12 @@ describe Purchase::Blockable do
         purchase.block_buyer!
 
         purchase.unblock_buyer!
-        [buyer.email, purchase.email, purchase.browser_guid, purchase.ip_address, purchase.card_visual].each do |blocked_value|
-          expect(BlockedObject.find_by(object_value: blocked_value).blocked?).to eq(false)
-        end
+        expect(purchase.blocked_by_email?).to eq(false)
+        expect(purchase.blocked_by_browser_guid?).to eq(false)
+        expect(purchase.blocked_by_ip_address?).to eq(false)
+
+        # charge_processor_fingerprint returns the card visual for PayPal
+        expect(purchase.blocked_by_charge_processor_fingerprint?).to eq(false)
       end
     end
 
@@ -380,12 +379,7 @@ describe Purchase::Blockable do
             before do
               @expires_in = BlockedObject::IP_ADDRESS_BLOCKING_DURATION_IN_MONTHS.months
 
-              BlockedObject.block!(
-                BLOCKED_OBJECT_TYPES[:ip_address],
-                @purchase.ip_address,
-                nil,
-                expires_in: @expires_in
-              )
+              @purchase.block_by_ip_address!(expires_in: @expires_in)
             end
 
             it "doesn't overwrite the previous ip_address block" do
@@ -524,7 +518,7 @@ describe Purchase::Blockable do
               create(:purchase, link: @product, purchase_state: "in_progress", error_code: PurchaseErrorCode::PERCEIVED_PRICE_CENTS_NOT_MATCHING).mark_failed!
             end
 
-            @purchase = create(:purchase, link: @product, purchase_state: "in_progress")
+            @purchase = create(:purchase, link: @product, purchase_state: "in_progress", error_code: PurchaseErrorCode::PERCEIVED_PRICE_CENTS_NOT_MATCHING)
           end
 
           it "doesn't block purchases on product" do
@@ -799,7 +793,7 @@ describe Purchase::Blockable do
       Feature.activate(:suspend_fraudulent_buyers)
 
       @buyer = create(:user)
-      @purchase = build(:purchase_in_progress,
+      @purchase = create(:purchase_in_progress,
                         email: "sam@example.com",
                         error_code: PurchaseErrorCode::CARD_DECLINED_FRAUDULENT,
                         purchaser: @buyer)

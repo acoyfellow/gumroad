@@ -5,6 +5,7 @@ module User::AsJson
 
   def as_json(options = {})
     return super(options) if options.delete(:original)
+    return as_json_for_admin(impersonatable: options.delete(:impersonatable)) if options.delete(:admin)
 
     result =
       if options[:internal_use] || valid_api_scope?(options)
@@ -31,38 +32,38 @@ module User::AsJson
   def as_json_for_admin(impersonatable: false)
     as_json(
       internal_use: true,
-      methods: %i[
-        id
-        display_name
-        form_email
-        form_email_blocked_at
-        form_email_domain
-        form_email_domain_blocked_at
-        avatar_url
-        username
-        subdomain_with_protocol
-        support_email
-        custom_fee_percent
-        has_payments
-        updated_at
-        verified
-        deleted
-        deleted_at
-        all_adult_products
-        unpaid_balance_cents
-        compliant
-        suspended
-        flagged_for_fraud
-        flagged_for_tos_violation
-        on_probation
-        disable_paypal_sales
+      methods: [
+        :id,
+        :display_name,
+        :form_email,
+        :blocked_by_form_email_at,
+        :form_email_domain,
+        :blocked_by_form_email_domain_at,
+        :avatar_url,
+        :username,
+        :subdomain_with_protocol,
+        :support_email,
+        :custom_fee_percent,
+        :has_payments,
+        :updated_at,
+        :verified,
+        :deleted,
+        :deleted_at,
+        :all_adult_products,
+        :unpaid_balance_cents,
+        :compliant,
+        :suspended,
+        :flagged_for_fraud,
+        :flagged_for_tos_violation,
+        :on_probation,
+        :disable_paypal_sales
       ],
       include: {
         admin_manageable_user_memberships: {
           include: {
             seller: {
-              only: %i[id],
-              methods: %i[avatar_url display_name_or_email]
+              only: [:id],
+              methods: [:avatar_url, :display_name_or_email]
             }
           }
         }

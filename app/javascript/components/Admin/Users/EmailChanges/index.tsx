@@ -3,7 +3,6 @@ import React from "react";
 import type { User } from "$app/components/Admin/Users/User";
 
 import { useLazyFetch } from "$app/hooks/useLazyFetch";
-import { cast } from "ts-safe-cast";
 
 import EmailChanges, { type EmailChangesProps, type FieldsProps } from "$app/components/Admin/Users/EmailChanges/EmailChanges";
 
@@ -16,7 +15,9 @@ const AdminUserEmailChanges = ({ user }: AdminUserEmailChangesProps) => {
     { email_changes: [] as EmailChangesProps, fields: ['email', 'payment_address'] as FieldsProps },
     {
       url: Routes.admin_user_email_changes_path(user.id, { format: "json" }),
-      responseParser: (data) => cast<{ email_changes: EmailChangesProps; fields: FieldsProps }>(data),
+      responseParser: (data) => {
+        return data as { email_changes: EmailChangesProps; fields: FieldsProps };
+      },
     }
   );
 

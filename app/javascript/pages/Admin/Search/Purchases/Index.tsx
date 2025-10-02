@@ -1,7 +1,7 @@
 import React from "react";
 import { usePage, router } from "@inertiajs/react";
 import AdminPurchases from "$app/components/Admin/Search/Purchases";
-import { type Purchase } from "$app/components/Admin/Search/Purchases/Purchase";
+import { type Purchase } from "$app/components/Admin/Purchases/Purchase";
 import { type Pagination as PaginationProps } from "$app/hooks/useLazyFetch";
 import AdminEmptyState from "$app/components/Admin/EmptyState";
 import { Pagination } from "$app/components/Pagination";

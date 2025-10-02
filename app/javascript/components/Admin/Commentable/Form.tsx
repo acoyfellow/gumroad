@@ -8,11 +8,13 @@ import type { CommentProps } from "$app/components/Admin/Commentable/Comment";
 type AdminCommentableFormProps = {
   endpoint: string;
   onCommentAdded: (comment: CommentProps) => void;
+  commentableType: string;
 };
 
 const AdminCommentableForm = ({
   endpoint,
   onCommentAdded,
+  commentableType,
 }: AdminCommentableFormProps) => {
 
   const {
@@ -20,7 +22,7 @@ const AdminCommentableForm = ({
     setData,
     processing,
     reset,
-  } = useForm("AdminAddUserComment", { comment: { content: "" } });
+  } = useForm("AdminAddComment", { comment: { content: "" } });
 
   const onContentChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setData("comment.content", event.target.value);
@@ -53,7 +55,7 @@ const AdminCommentableForm = ({
     <form onSubmit={onSubmit}>
       <fieldset>
         <div className="input-with-button">
-          <textarea name="comment[content]" rows={1} placeholder={`Comment on this user`} required value={content} onChange={onContentChange} />
+          <textarea name="comment[content]" rows={1} placeholder={`Comment on this ${commentableType}`} required value={content} onChange={onContentChange} />
           <button type="submit" className="button" disabled={processing}>
             {processing ? "Saving..." : "Add comment"}
           </button>

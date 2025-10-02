@@ -15,7 +15,7 @@ class Admin::ProductsController < Admin::BaseController
         admins_can_mark_as_staff_picked: ->(product) { policy([:admin, :products, :staff_picked, product]).create? },
         admins_can_unmark_as_staff_picked: ->(product) { policy([:admin, :products, :staff_picked, product]).destroy? }
       ),
-      user: @product.user.as_json_for_admin(impersonatable: policy([:admin, :impersonators, @product.user]).create?)
+      user: @product.user.as_json(admin: true, impersonatable: policy([:admin, :impersonators, @product.user]).create?)
     )
   end
 

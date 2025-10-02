@@ -50,7 +50,7 @@ class Link < ApplicationRecord
           Product::ReviewStat, Product::Utils, ActionView::Helpers::SanitizeHelper,
           ActionView::Helpers::NumberHelper, Mongoable, TimestampScopes, ExternalId,
           WithFileProperties, JsonData, Deletable, WithProductFiles, WithCdnUrl, MaxPurchaseCount,
-          Integrations, Product::StaffPicked, RichContents, Product::Sorting, Product::CreationLimit
+          Integrations, Product::StaffPicked, RichContents, Product::Sorting, Product::CreationLimit, Commentable
 
   has_cdn_url :description
 
@@ -119,7 +119,6 @@ class Link < ApplicationRecord
   has_one :preorder_link
   belongs_to :affiliate_application, class_name: "OauthApplication", optional: true
   has_many :affiliate_credits
-  has_many :comments, as: :commentable
   has_many :workflows
   has_many :dropbox_files
   has_many :shipping_destinations

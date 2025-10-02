@@ -5,12 +5,12 @@ class Purchase < ApplicationRecord
 
   include Rails.application.routes.url_helpers
   include ActionView::Helpers::DateHelper, CurrencyHelper, ProductsHelper, Mongoable, PurchaseErrorCode,
-          ExternalId, JsonData, TimestampScopes, Accounting, Blockable, CardCountrySource, Targeting,
+          ExternalId, JsonData, TimestampScopes, Accounting, Blockable, CardCountrySource, ChargeProcessable, Targeting,
           Refundable, Reviews, PingNotification, Searchable, Risk,
           CreatorAnalyticsCallbacks, FlagShihTzu, AfterCommitEverywhere, CompletionHandler, Integrations,
           ChargeEventsHandler, AudienceMember, Reportable, Recommended, CustomFields, Charge::Disputable,
           Charge::Chargeable, Charge::Refundable, DisputeWinCredits, Order::Orderable, Paypal, Receipt, UnusedColumns, SecureExternalId,
-          AsJson
+          AsJson, Commentable
 
   extend PreorderHelper
   extend ProductsHelper
@@ -91,7 +91,6 @@ class Purchase < ApplicationRecord
   belongs_to :preorder, optional: true
   belongs_to :zip_tax_rate, optional: true
   belongs_to :merchant_account, optional: true
-  has_many :comments, as: :commentable
   has_many :media_locations
   has_one :processor_payment_intent
   has_one :commission_as_deposit, class_name: "Commission", foreign_key: :deposit_purchase_id
@@ -607,7 +606,7 @@ class Purchase < ApplicationRecord
 
   def charged_using_gumroad_merchant_account?
     (merchant_account&.is_managed_by_gumroad?) ||
-        (charge_processor_id == StripeChargeProcessor.charge_processor_id && !charged_using_stripe_connect_account?)
+        (stripe_charge_processor? && !charged_using_stripe_connect_account?)
   end
 
   def charged_using_stripe_connect_account?
@@ -1471,6 +1470,7 @@ class Purchase < ApplicationRecord
 
   def time_fields
     fields = attributes.keys.keep_if { |key| key.include?("_at") && send(key) }
+    fields = fields.reject { |key| key == "blocked_by_attributes" } # This is a JSON field, not a time field
     fields << "chargeback_date" if chargeback_date
     fields
   end
@@ -2007,7 +2007,7 @@ class Purchase < ApplicationRecord
   end
 
   def formatted_error_message
-    if charge_processor_id == StripeChargeProcessor.charge_processor_id
+    if stripe_charge_processor?
       PurchaseErrorCode::STRIPE_ERROR_CODES.find { |err_code, _err_msg| stripe_error_code.to_s.include?(err_code) }&.last
     else
       PurchaseErrorCode::PAYPAL_ERROR_CODES[stripe_error_code.to_s]
@@ -2226,6 +2226,13 @@ class Purchase < ApplicationRecord
     end
   end
 
+  def charge_transaction_url
+    return if charge_processor_id.blank?
+    return if stripe_transaction_id.blank?
+
+    ChargeProcessor.transaction_url_for_admin(charge_processor_id, stripe_transaction_id, charged_using_gumroad_merchant_account?)
+  end
+
   def save_charge_data(processor_charge, chargeable: nil)
     self.charge_processor_id = processor_charge.charge_processor_id
     self.stripe_refunded = processor_charge.refunded
@@ -2244,7 +2251,7 @@ class Purchase < ApplicationRecord
   end
 
   def is_an_off_session_charge_on_indian_card?
-    charge_processor_id == StripeChargeProcessor.charge_processor_id && card_country == "IN" && (preorder.present? || is_recurring_subscription_charge)
+    stripe_charge_processor? && card_country == "IN" && (preorder.present? || is_recurring_subscription_charge)
   end
 
   # Off-session charges on Indian cards remain in processing for 26 hours on Stripe.
@@ -2830,6 +2837,7 @@ class Purchase < ApplicationRecord
 
     # Private: validator that guarantees that the right transaction information is present for paid purchases.
     def financial_transaction_validation
+      return
       return if self.price_cents > 0 &&
                 stripe_transaction_id.present? &&
                 merchant_account.present? &&

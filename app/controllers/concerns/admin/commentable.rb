@@ -5,7 +5,7 @@ module Admin::Commentable
 
   def index
     pagination, comments = pagy(
-      commentable.comments.order(created_at: :desc).includes(:author),
+      commentable.comments.includes(:author).references(:author).order(created_at: :desc),
       limit: params[:per_page],
       page: params[:page]
     )

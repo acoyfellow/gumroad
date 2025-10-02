@@ -13,7 +13,6 @@ import AdminPausePayoutsForm from "$app/components/server-components/Admin/Pause
 import AdminProductAttributesAndInfo from "$app/components/server-components/Admin/ProductAttributesAndInfo";
 import AdminProductPurchases from "$app/components/server-components/Admin/ProductPurchases";
 import AdminProductStats from "$app/components/server-components/Admin/ProductStats";
-import AdminResendReceiptForm from "$app/components/server-components/Admin/ResendReceiptForm";
 import AdminSetCustomFeeForm from "$app/components/server-components/Admin/SetCustomFeeForm";
 import AdminSuspendForFraudForm from "$app/components/server-components/Admin/SuspendForFraudForm";
 import AdminSuspendForTosForm from "$app/components/server-components/Admin/SuspendForTosForm";
@@ -31,7 +30,6 @@ ReactOnRails.register({
   AdminProductAttributesAndInfo,
   AdminProductPurchases,
   AdminProductStats,
-  AdminResendReceiptForm,
   AdminSetCustomFeeForm,
   AdminSuspendForFraudForm,
   AdminSuspendForTosForm,

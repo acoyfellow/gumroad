@@ -4,7 +4,7 @@
       <%= link_to(purchase.formatted_display_price, admin_purchase_path(purchase)) %>
       <%= " + #{purchase.formatted_gumroad_tax_amount} VAT" if purchase.gumroad_responsible_for_tax? %>
       <%= " for " %>
-      <%= link_to_unless_current(h(purchase.link.name), admin_link_url(purchase.link), title: purchase.link.id) %>
+      <%= link_to_unless_current(h(purchase.link.name), admin_product_url(purchase.link), title: purchase.link.id) %>
       <%= purchase.variants_list %>
       <%= link_to purchase.link.long_url, class: "show" do %>
         <span class="icon icon-arrow-up-right-square"></span>
@@ -122,7 +122,7 @@
             <%= purchase.card_type.upcase %>
             *#<%= purchase.card_visual.delete("*").delete(" ") %> <%= "(#{purchase.card_country})" if purchase.card_country.present? %>
           <% end %>
-          <% if purchase.charge_processor_id == StripeChargeProcessor.charge_processor_id %>
+          <% if purchase.stripe_charge_processor? %>
             |
             <%= link_to_stripe_fingerprint_search(purchase.stripe_fingerprint, target: "_blank") %>
           <% end %>

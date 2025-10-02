@@ -19,7 +19,7 @@ class Admin::Search::UsersController < Admin::Search::BaseController
       render  inertia: 'Admin/Search/Users/Index',
               props: inertia_props(
                 users: InertiaRails.merge { users.map do |user|
-                  user.as_json_for_admin(impersonatable: policy([:admin, :impersonators, user]).create?)
+                  user.as_json(admin: true, impersonatable: policy([:admin, :impersonators, user]).create?)
                 end },
                 pagination:
               )

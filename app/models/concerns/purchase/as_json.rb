@@ -17,8 +17,8 @@ module Purchase::AsJson
   def as_json(options = {})
     version = options[:version] || 1
     return super(options) if options.delete(:original)
-    return as_json_for_admin if options[:admin]
-    return as_json_for_admin_review if options[:admin_review]
+    return as_json_for_admin(options) if options.delete(:admin)
+    return as_json_for_admin_review if options.delete(:admin_review)
 
     pundit_user = options[:pundit_user]
     json = {
@@ -216,8 +216,8 @@ module Purchase::AsJson
     json
   end
 
-  def as_json_for_admin
-    as_json(
+  def as_json_for_admin(options = {})
+    as_json({
       original: true,
       only: [
         :id,
@@ -226,8 +226,16 @@ module Purchase::AsJson
         :error_code,
         :stripe_refunded,
         :stripe_partially_refunded,
-        :created_at
-      ],
+        :tax_cents,
+        :gumroad_tax_cents,
+        :shipping_cents,
+        :charge_processor_id,
+        :stripe_transaction_id,
+        :quantity,
+        :created_at,
+        :updated_at,
+        :deleted_at
+      ] | options.fetch(:only, []),
       include: {
         link: {
           original: true,
@@ -236,25 +244,29 @@ module Purchase::AsJson
           include: {
             product_refund_policy: {
               original: true,
-              only: [:id, :title, :max_refund_period_in_days]
+              only: [:id, :title, :max_refund_period_in_days, :fine_print]
             }
           }
         },
-        seller: { original: true, only: [:id, :email] },
+        seller: { original: true, only: [:id, :email, :support_email] },
         purchase_refund_policy: { original: true, only: [:id, :title, :max_refund_period_in_days] }
-      },
+      }.deep_merge(options.fetch(:include, {})),
       methods: [
         :formatted_display_price,
+        :formatted_seller_tax_amount,
         :formatted_gumroad_tax_amount,
         :variants_list,
         :formatted_error_code,
-        :purchase_state
-      ]
-    ).merge(
-      failed: failed?,
-      chargedback_not_reversed: chargedback_not_reversed?,
-      chargeback_reversed: chargeback_reversed?,
-    ).stringify_keys
+        :purchase_state,
+      ] | options.fetch(:methods, []),
+    }).merge(
+      {
+        failed: failed?,
+        chargedback_not_reversed: chargedback_not_reversed?,
+        chargeback_reversed: chargeback_reversed?,
+        formatted_fee_cents: Money.new(fee_cents).format(symbol: true)
+      }.stringify_keys
+    )
   end
 
   def as_json_for_admin_review

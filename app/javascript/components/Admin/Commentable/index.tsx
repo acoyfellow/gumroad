@@ -9,10 +9,12 @@ import type { CommentProps } from "$app/components/Admin/Commentable/Comment";
 
 type AdminCommentableProps = {
   endpoint: string;
+  commentableType: string;
 };
 
 const AdminCommentableComments = ({
-  endpoint
+  endpoint,
+  commentableType,
 }: AdminCommentableProps) => {
   const [open, setOpen] = React.useState(false);
 
@@ -77,6 +79,7 @@ const AdminCommentableComments = ({
         <AdminCommentableForm
           endpoint={endpoint}
           onCommentAdded={appendComment}
+          commentableType={commentableType}
         />
         <AdminCommentableContent
           count={count}

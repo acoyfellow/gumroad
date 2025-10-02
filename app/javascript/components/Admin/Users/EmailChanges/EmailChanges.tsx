@@ -6,13 +6,12 @@ import Loading from "$app/components/Admin/Loading";
 export type EmailChangesProps = {
   created_at: string;
   changes: {
-    email?: string[];
-    payment_address?: string[];
+    email?: (string | null)[];
+    payment_address?: (string | null)[];
   };
 }[];
 
 export type FieldsProps = ['email', 'payment_address'];
-
 
 type EmailChangesComponentProps = {
   fields: FieldsProps;
@@ -39,7 +38,7 @@ const EmailChanges = ({ fields, emailChanges, isLoading }: EmailChangesComponent
         {fields.map((field) => (
           <React.Fragment key={field}>
             {Object.values(emailChanges).map(({ created_at, changes }) => {
-              const fieldChanges = changes[field] as string[] | undefined;
+              const fieldChanges = changes[field] as (string | null)[] | undefined;
               if (!fieldChanges) return null;
 
               const [oldValue, newValue] = fieldChanges;
@@ -47,8 +46,8 @@ const EmailChanges = ({ fields, emailChanges, isLoading }: EmailChangesComponent
               return (
                 <tr key={created_at}>
                   <td data-label="Field">{field}</td>
-                  <td data-label="Old">{oldValue}</td>
-                  <td data-label="New">{newValue}</td>
+                  <td data-label="Old">{oldValue || '(Not set)'}</td>
+                  <td data-label="New">{newValue || '(Not set)'}</td>
                   <td data-label="Changed">
                     <DateTimeWithRelativeTooltip date={created_at} />
                   </td>

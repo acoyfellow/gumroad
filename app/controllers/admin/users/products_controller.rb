@@ -20,11 +20,7 @@ class Admin::Users::ProductsController < Admin::Users::BaseController
     )
 
     render inertia: "Admin/Users/Products/Index", props: inertia_props(
-      user:     @user.as_json_for_admin,
-      compliance: {
-        reasons: Compliance::TOS_VIOLATION_REASONS,
-        default_reason: Compliance::DEFAULT_TOS_VIOLATION_REASON
-      },
+      user:     @user.as_json(admin: true, impersonatable: policy([:admin, :impersonators, @user]).create?),
       products: InertiaRails.merge {
                   products.includes(:alive_product_files, :active_integrations).map do |product|
                     product.as_json(

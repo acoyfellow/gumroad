@@ -90,7 +90,7 @@ module ChargeProcessor
   # Returns a ChargeIntent object.
   def self.get_charge_intent(merchant_account, payment_intent_id)
     return if payment_intent_id.blank?
-    return unless StripeChargeProcessor.charge_processor_id == merchant_account.charge_processor_id
+    return unless merchant_account.stripe_charge_processor?
 
     get_charge_processor(merchant_account.charge_processor_id).get_charge_intent(payment_intent_id, merchant_account:)
   end
@@ -100,7 +100,7 @@ module ChargeProcessor
   # Returns a SetupIntent object.
   def self.get_setup_intent(merchant_account, setup_intent_id)
     return if setup_intent_id.blank?
-    return unless StripeChargeProcessor.charge_processor_id == merchant_account.charge_processor_id
+    return unless merchant_account.stripe_charge_processor?
 
     get_charge_processor(merchant_account.charge_processor_id).get_setup_intent(setup_intent_id, merchant_account:)
   end
@@ -113,7 +113,7 @@ module ChargeProcessor
   #
   # Returns a SetupIntent object.
   def self.setup_future_charges!(merchant_account, chargeable, mandate_options: nil)
-    return unless StripeChargeProcessor.charge_processor_id == merchant_account.charge_processor_id
+    return unless merchant_account.stripe_charge_processor?
 
     charge_processor = get_charge_processor(merchant_account.charge_processor_id)
     chargeable_for_charge_processor = chargeable.get_chargeable_for(merchant_account.charge_processor_id)
@@ -153,21 +153,21 @@ module ChargeProcessor
   end
 
   def self.confirm_payment_intent!(merchant_account, charge_intent_id)
-    return unless StripeChargeProcessor.charge_processor_id == merchant_account.charge_processor_id
+    return unless merchant_account.stripe_charge_processor?
 
     charge_processor = get_charge_processor(merchant_account.charge_processor_id)
     charge_processor.confirm_payment_intent!(merchant_account, charge_intent_id)
   end
 
   def self.cancel_payment_intent!(merchant_account, charge_intent_id)
-    return unless StripeChargeProcessor.charge_processor_id == merchant_account.charge_processor_id
+    return unless merchant_account.stripe_charge_processor?
 
     charge_processor = get_charge_processor(merchant_account.charge_processor_id)
     charge_processor.cancel_payment_intent!(merchant_account, charge_intent_id)
   end
 
   def self.cancel_setup_intent!(merchant_account, setup_intent_id)
-    return unless StripeChargeProcessor.charge_processor_id == merchant_account.charge_processor_id
+    return unless merchant_account.stripe_charge_processor?
 
     charge_processor = get_charge_processor(merchant_account.charge_processor_id)
     charge_processor.cancel_setup_intent!(merchant_account, setup_intent_id)

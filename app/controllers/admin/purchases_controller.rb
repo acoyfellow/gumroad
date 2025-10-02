@@ -1,8 +1,94 @@
 # frozen_string_literal: true
 
 class Admin::PurchasesController < Admin::BaseController
-  before_action :fetch_purchase, only: %i[cancel_subscription refund refund_for_fraud refund_taxes_only resend_receipt
-                                          show sync_status_with_charge_processor block_buyer unblock_buyer undelete]
+  include Admin::FetchPurchase
+
+  layout "admin_inertia", only: :show
+
+  before_action :fetch_purchase,
+                only: %i[
+                  show
+                  cancel_subscription
+                  refund
+                  refund_for_fraud
+                  refund_taxes_only
+                  resend_receipt
+                  sync_status_with_charge_processor
+                  block_buyer
+                  unblock_buyer
+                  undelete
+                ]
+
+  def show
+    e404 if @purchase.nil?
+
+    @title = "Purchase #{@purchase.id}"
+
+    render inertia: "Admin/Purchases/Show", props: inertia_props(
+      purchase: @purchase.as_json(
+        admin: true,
+        methods: [
+          :formatted_shipping_amount,
+          :formatted_affiliate_credit_amount,
+          :formatted_total_transaction_amount,
+          :external_id,
+          :external_id_numeric,
+          :card_type,
+          :card_visual,
+          :card_country,
+          :ip_address,
+          :ip_country,
+          :is_preorder_authorization,
+          :is_bundle_purchase,
+          :is_stripe_charge_processor,
+          :stripe_fingerprint,
+          :full_name,
+          :street_address,
+          :city,
+          :state,
+          :zip_code,
+          :country,
+          :can_contact,
+          :is_gift_sender_purchase,
+          :is_gift_receiver_purchase,
+          :is_free_trial_purchase,
+          :is_deleted_by_buyer,
+          :charge_transaction_url
+        ],
+        include: {
+          affiliate: { original: true, only: [:id], include: { affiliate_user: { original: true, only: [:id, :form_email] } } },
+          merchant_account: { original: true, only: [:id, :charge_processor_id], methods: [:holder_of_funds] },
+          tip: { original: true, only: [:id], methods: [:formatted_value_usd_cents] },
+          refunds: { original: true, only: [:id, :user_id, :status, :created_at] },
+          email_infos: { original: true, only: [:id, :email_name, :state, :delivered_at, :opened_at, :created_at] },
+          product_purchases: { original: true, only: [:id, :url_redirect_id, :url_redirect_external_id, :uses], include: { url_redirect: { original: true, only: [:id, :uses], methods: [:download_page_url] } } },
+          url_redirect: { original: true, only: [:id, :download_page_url, :uses] },
+          subscription: { original: true, only: [:id, :external_id], methods: [:cancelled_at, :cancelled_by_buyer, :cancelled_by_seller, :ended_at, :failed_at] },
+          purchase_custom_fields: { original: true, only: [:id, :name, :value, :type] },
+          license: { original: true, only: [:serial] }
+        }
+      ).merge(
+        offer_code: {
+          code: @purchase.offer_code.code,
+          displayed_amount_off: @purchase.offer_code.displayed_amount_off(@purchase.link.price_currency_type, with_symbol: true)
+        },
+        can_force_update: @purchase.can_force_update?,
+        successful: @purchase.successful?,
+        preorder_authorization_successful: @purchase.preorder_authorization_successful?,
+        buyer_blocked: @purchase.buyer_blocked?
+      ),
+      product: @purchase.link.as_json(
+        admin: true,
+        admins_can_mark_as_staff_picked: ->(product) { policy([:admin, :products, :staff_picked, product]).create? },
+        admins_can_unmark_as_staff_picked: ->(product) { policy([:admin, :products, :staff_picked, product]).destroy? }
+      ),
+      user: @purchase.link.user.as_json(
+        admin: true,
+        impersonatable: policy([:admin, :impersonators, @purchase.link.user]).create?
+      ),
+      gift: @purchase.gift.as_json(original: true, only: [:id, :giftee_purchase_id, :gifter_purchase_id, :giftee_email, :gifter_email, :gift_note])
+    )
+  end
 
   def cancel_subscription
     if @purchase.subscription
@@ -56,12 +142,6 @@ class Admin::PurchasesController < Admin::BaseController
     end
   end
 
-  def show
-    e404 if @purchase.nil?
-    @product = @purchase.link
-    @title = "Purchase #{@purchase.id}"
-  end
-
   def sync_status_with_charge_processor
     @purchase.sync_status_with_charge_processor(mark_as_failed: true)
   end
@@ -89,7 +169,7 @@ class Admin::PurchasesController < Admin::BaseController
     end
 
     render json: { success: true }
-  rescue => e
+  rescue StandardError => e
     render json: { success: false, message: e.message }
   end
 
@@ -112,14 +192,14 @@ class Admin::PurchasesController < Admin::BaseController
       end
 
       render json: { success: true }
-    rescue => e
+    rescue StandardError => e
       render json: { success: false, message: e.message }
     end
   end
 
   def update_giftee_email
     new_giftee_email = params[:update_giftee_email][:giftee_email]
-    gift = Gift.find_by(gifter_purchase_id: params[:id])
+    gift = Gift.find_by(gifter_purchase_id: purchase_param)
 
     if gift.present? && new_giftee_email != gift.giftee_email
       giftee_purchase = Purchase.find_by(id: gift.giftee_purchase_id)
@@ -128,7 +208,7 @@ class Admin::PurchasesController < Admin::BaseController
         giftee_purchase.update!(email: new_giftee_email)
 
         giftee_purchase.resend_receipt
-        redirect_to [:admin, Purchase.find_by(id: params[:id])]
+        redirect_to [:admin, Purchase.find_by(id: purchase_param)]
       else
         render json: {
           success: false,
@@ -139,10 +219,27 @@ class Admin::PurchasesController < Admin::BaseController
   end
 
   private
-    def fetch_purchase
-      @purchase = Purchase.find_by(id: params[:id]) if params[:id].to_i.to_s == params[:id]
-      @purchase ||= Purchase.find_by_external_id(params[:id])
-      @purchase ||= Purchase.find_by_external_id_numeric(params[:id].to_i)
-      @purchase ||= Purchase.find_by_stripe_transaction_id(params[:id])
+    def purchase_param
+      params[:id]
+    end
+
+    def purchases_scope
+      return super unless action_name == "show"
+
+      Purchase.includes(
+        :merchant_account,
+        :tip,
+        :refunds,
+        :email_infos,
+        :product_purchases,
+        :url_redirect,
+        :subscription,
+        :offer_code,
+        :purchase_custom_fields,
+        :license,
+        :gift_given,
+        :gift_received,
+        affiliate: { affiliate_user: :form_email }
+      )
     end
 end
