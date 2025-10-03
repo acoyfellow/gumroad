@@ -10,13 +10,17 @@ module Admin::FetchProduct
       @product = Link.find_by(id: product_param)
       return redirect_to admin_product_path(@product.unique_permalink) if @product
 
-      @product_matches = Link.by_general_permalink(product_param)
+      product_matches = Link.by_general_permalink(product_param)
 
-      if @product_matches.many?
+      if product_matches.many?
         @title = "Multiple products matched"
-        render "multiple_matches" && return
+        render inertia: "Admin/Products/MultipleMatches",
+                 props: inertia_props(
+                   product_matches: product_matches.as_json(admin_multiple_matches: true)
+                 )
+        return
       else
-        @product = @product_matches.first || e404
+        @product = product_matches.first || e404
       end
 
       if @product && @product.unique_permalink != product_param

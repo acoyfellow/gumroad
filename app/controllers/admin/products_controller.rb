@@ -5,7 +5,7 @@ class Admin::ProductsController < Admin::BaseController
 
   layout "admin_inertia"
 
-  before_action :fetch_product
+  before_action :fetch_product_by_general_permalink
 
   def show
     render inertia: "Admin/Products/Show", props: inertia_props(
