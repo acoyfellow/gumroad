@@ -5,18 +5,20 @@ type Props = {
   query: string;
   product_title_query: string;
   purchase_status: string;
+  endpoint: (params?: Record<string, string>) => string;
 };
 
 const AdminPurchasesFilterForm = ({
   query,
   product_title_query,
   purchase_status,
+  endpoint,
 }: Props) => {
-
   const { data, setData } = useForm({
-    query,
-    product_title_query,
-    purchase_status,
+    ...Object.fromEntries(new URLSearchParams(window.location.search)),
+    query: query || "",
+    product_title_query: product_title_query || "",
+    purchase_status: purchase_status || "",
   });
 
   const onProductTitleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,7 +30,7 @@ const AdminPurchasesFilterForm = ({
   };
 
   return (
-    <form action={Routes.admin_search_purchases_path()} method="get" className="input-with-button mb-4">
+    <form action={endpoint()} method="get" className="input-with-button mb-4">
       <input type="hidden" name="query" value={data.query} />
 
       <div className="input">
@@ -41,11 +43,15 @@ const AdminPurchasesFilterForm = ({
         />
       </div>
 
-      <select name="purchase_status" onChange={onPurchaseStatusChange}>
-        <option value="" selected={data.purchase_status === ""}>Any status</option>
-        <option value="chargeback" selected={data.purchase_status === "chargeback"}>Chargeback</option>
-        <option value="refunded" selected={data.purchase_status === "refunded"}>Refunded</option>
-        <option value="failed" selected={data.purchase_status === "failed"}>Failed</option>
+      <select
+        name="purchase_status"
+        onChange={onPurchaseStatusChange}
+        defaultValue={data.purchase_status}
+      >
+        <option value="">Any status</option>
+        <option value="chargeback">Chargeback</option>
+        <option value="refunded">Refunded</option>
+        <option value="failed">Failed</option>
       </select>
 
       <button type="submit" className="button primary">

@@ -39,8 +39,7 @@ describe Admin::Compliance::CardsController do
     end
 
     it "assigns purchases and service_charges to instance variable" do
-      expect_any_instance_of(AdminSearchService).to receive(:search_purchases).with(card_type:, transaction_date: "2022-02-22", limit:).and_return(Purchase.none)
-      expect_any_instance_of(AdminSearchService).to receive(:search_service_charges).with(card_type:, transaction_date: "2022-02-22", limit:).and_return(ServiceCharge.none)
+      expect_any_instance_of(Admin::Search::PurchasesService).to receive(:new).with(card_type:, transaction_date: "2022-02-22", limit:).and_return(Purchase.none)
       get :index, params: { card_type:, transaction_date: }
 
       expect(assigns(:purchases)).to eq([])
@@ -51,8 +50,7 @@ describe Admin::Compliance::CardsController do
       let(:transaction_date) { "02/22" }
 
       it "shows error flash message and no purchases" do
-        expect_any_instance_of(AdminSearchService).to_not receive(:search_purchases)
-        expect_any_instance_of(AdminSearchService).to_not receive(:search_service_charges)
+        expect_any_instance_of(Admin::Search::PurchasesService).to_not receive(:new)
         get :index, params: { card_type:, transaction_date: "12/31" }
 
         assert_response :success
@@ -64,8 +62,7 @@ describe Admin::Compliance::CardsController do
 
     context "when there is no results" do
       it "assigns empty arrays to instance variables" do
-        expect_any_instance_of(AdminSearchService).to receive(:search_purchases).with(card_type:, limit:).and_return(Purchase.none)
-        expect_any_instance_of(AdminSearchService).to receive(:search_service_charges).with(card_type:, limit:).and_return(ServiceCharge.none)
+        expect_any_instance_of(Admin::Search::PurchasesService).to receive(:new).with(card_type:, limit:).and_return(Purchase.none)
         get :index, params: { card_type: }
 
         assert_response :success
@@ -77,8 +74,7 @@ describe Admin::Compliance::CardsController do
     context "when a purchase is found" do
       it "assigns purchases to instance variable" do
         card_type = "visa"
-        expect_any_instance_of(AdminSearchService).to receive(:search_purchases).with(card_type:, limit:).and_return([@purchase_visa])
-        expect_any_instance_of(AdminSearchService).to receive(:search_service_charges).with(card_type:, limit:).and_return(ServiceCharge.none)
+        expect_any_instance_of(Admin::Search::PurchasesService).to receive(:new).with(card_type:, limit:).and_return([@purchase_visa])
         get :index, params: { card_type: }
 
         expect(assigns(:purchases)).to eq([@purchase_visa])
@@ -89,8 +85,7 @@ describe Admin::Compliance::CardsController do
     context "when a charge is found" do
       it "assigns service_charges to instance variables" do
         card_type = "mastercard"
-        expect_any_instance_of(AdminSearchService).to receive(:search_purchases).with(card_type:, limit:).and_return(Purchase.none)
-        expect_any_instance_of(AdminSearchService).to receive(:search_service_charges).with(card_type:, limit:).and_return([@charge_mastercard])
+        expect_any_instance_of(Admin::Search::PurchasesService).to receive(:new).with(card_type:, limit:).and_return(Purchase.none)
         get :index, params: { card_type: }
 
         expect(assigns(:purchases)).to eq([])
