@@ -1,7 +1,7 @@
 import React from "react";
 import AdminPayout, { type Payout } from "$app/components/Admin/Payouts/Payout";
 
-type Props {
+type Props = {
   payouts: Payout[];
 }
 

@@ -48,7 +48,7 @@ export type User = {
   verified: boolean;
   deleted: boolean;
   all_adult_products: boolean;
-  admin_manageable_user_memberships: UserMembership[];\
+  admin_manageable_user_memberships: UserMembership[];
   compliant: boolean;
   suspended: boolean;
   unpaid_balance_cents: number;
