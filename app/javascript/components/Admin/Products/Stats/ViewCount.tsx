@@ -2,20 +2,16 @@ import React from "react";
 import Loading from '$app/components/Admin/Loading';
 
 type AdminProductStatsViewCountProps = {
-  isLoading: boolean;
   viewsCount: number;
+  isLoading: boolean;
 }
 
 const AdminProductStatsViewCount = ({
-  isLoading,
-  viewsCount
+  viewsCount,
+  isLoading
 }: AdminProductStatsViewCountProps) => {
-  if (isLoading) {
-    return <Loading />;
-  }
-
   return (
-    <li>{viewsCount} views</li>
+    <li>{isLoading ? <Loading /> : `${viewsCount} views`}</li>
   );
 }
 

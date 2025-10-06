@@ -4,7 +4,6 @@ import { request, assertResponseError } from "$app/utils/request";
 
 import { showAlert } from "$app/components/server-components/Alert";
 import { useRunOnce } from "$app/components/useRunOnce";
-
 import Loading from "$app/components/Admin/Loading";
 
 type UserStatsProps = {
@@ -37,15 +36,13 @@ const AdminUserStats = ({ user_id }: { user_id: number }) => {
     fetchUserStats();
   });
 
-  return userStats ? (
+  return (
     <ul className="inline">
-      <li>{userStats.total} total</li>
-      <li>{userStats.balance} balance</li>
-      <li>{userStats.chargeback_volume} vol CB</li>
-      <li>{userStats.chargeback_count} count CB</li>
+      <li>{userStats ? `${userStats.total} total` : <Loading />}</li>
+      <li>{userStats ? `${userStats.balance} balance` : <Loading />}</li>
+      <li>{userStats ? `${userStats.chargeback_volume} vol CB` : <Loading />}</li>
+      <li>{userStats ? `${userStats.chargeback_count} count CB` : <Loading />}</li>
     </ul>
-  ) : (
-    <Loading />
   );
 };
 

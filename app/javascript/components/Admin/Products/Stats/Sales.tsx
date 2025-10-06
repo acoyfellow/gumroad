@@ -1,6 +1,6 @@
 import React from 'react';
-import Loading from '$app/components/Admin/Loading';
 import { WithTooltip } from '$app/components/WithTooltip';
+import Loading from '$app/components/Admin/Loading';
 
 export type AdminProductStatsSalesProps = {
   preorder_state: boolean;
@@ -23,7 +23,14 @@ const AdminProductStatsSales = ({
   },
   isLoading,
 }: Props) => {
-  if (isLoading) return <Loading />;
+  if (isLoading) {
+    return (
+      <>
+        <li><Loading /></li>
+        <li><Loading /></li>
+      </>
+    );
+  }
 
   const label = preorder_state ? 'pre-orders' : 'sales';
   const totalLabel = preorder_state ? 'total (pre-order auths)' : 'total';

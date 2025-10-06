@@ -54,12 +54,12 @@ const AdminProductStats = ({ product_id }: { product_id: number }) => {
   return (
     <>
       <AdminProductStatsViewCount
-        isLoading={isViewsCountLoading}
         viewsCount={viewsCount}
+        isLoading={isViewsCountLoading}
       />
       <AdminProductStatsSales
-        isLoading={isSalesStatsLoading}
         salesStats={salesStats}
+        isLoading={isSalesStatsLoading}
       />
     </>
   );
