@@ -24,9 +24,9 @@ class Admin::AffiliatesController < Admin::BaseController
       render json: @user
     else
       render inertia: "Admin/Affiliates/Show",
-             props: inertia_props(
+             props: {
                user: @user.as_json(admin: true, impersonatable: policy([:admin, :impersonators, @user]).create?),
-             )
+             }
     end
   end
 

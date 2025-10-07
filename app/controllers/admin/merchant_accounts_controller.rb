@@ -8,17 +8,18 @@ class Admin::MerchantAccountsController < Admin::BaseController
   before_action(only: :show) { @title = "Merchant Account #{@merchant_account.id}" }
 
   def show
-    render inertia: "Admin/MerchantAccounts/Show", props: inertia_props(
-      merchant_account: @merchant_account.as_json(
-        methods: [
-          :external_id,
-          :holder_of_funds,
-          :country_name,
-          :stripe_account_url
-        ]
-      ),
-      live_attributes:
-    )
+    render inertia: "Admin/MerchantAccounts/Show",
+           props: {
+             merchant_account: @merchant_account.as_json(
+               methods: [
+                 :external_id,
+                 :holder_of_funds,
+                 :country_name,
+                 :stripe_account_url
+               ]
+             ),
+             live_attributes:
+           }
   end
 
   private

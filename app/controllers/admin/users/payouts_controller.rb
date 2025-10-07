@@ -22,20 +22,18 @@ class Admin::Users::PayoutsController < Admin::Users::BaseController
     )
 
     render inertia: "Admin/Users/Payouts/Index",
-           props: inertia_props(
-             user: @user.as_json(original: true, only: [:id]),
+           props: {
+             user: @user.as_json(original: true, only: %i[id]),
              payouts: payouts.as_json(admin: true),
              pagination:
-           )
+           }
   end
 
   def show
     @title = "Payout"
 
     render inertia: "Admin/Users/Payouts/Show",
-           props: inertia_props(
-             payout: @payment.as_json(admin: true),
-           )
+           props: { payout: @payment.as_json(admin: true) }
   end
 
   def retry

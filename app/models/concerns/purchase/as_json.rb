@@ -18,6 +18,7 @@ module Purchase::AsJson
     version = options[:version] || 1
     return super(options) if options.delete(:original)
     return as_json_for_admin(options) if options.delete(:admin)
+    return as_json_for_admin_show if options.delete(:admin_show)
     return as_json_for_admin_review if options.delete(:admin_review)
 
     pundit_user = options[:pundit_user]
@@ -266,6 +267,65 @@ module Purchase::AsJson
         chargeback_reversed: chargeback_reversed?,
         formatted_fee_cents: Money.new(fee_cents).format(symbol: true)
       }.stringify_keys
+    )
+  end
+
+  def as_json_for_admin_show(options = {})
+    as_json(
+      admin: true,
+      methods: %i[
+        formatted_shipping_amount
+        formatted_affiliate_credit_amount
+        formatted_total_transaction_amount
+        external_id
+        external_id_numeric
+        card_type
+        card_visual
+        card_country
+        ip_address
+        ip_country
+        is_preorder_authorization
+        is_bundle_purchase
+        is_stripe_charge_processor
+        stripe_fingerprint
+        full_name
+        street_address
+        city
+        state
+        zip_code
+        country
+        can_contact
+        is_gift_sender_purchase
+        is_gift_receiver_purchase
+        is_free_trial_purchase
+        is_deleted_by_buyer
+        charge_transaction_url
+      ],
+      include: {
+        affiliate: { original: true, only: [:id], include: { affiliate_user: { original: true, only: [:id, :form_email] } } },
+        merchant_account: { original: true, only: [:id, :charge_processor_id], methods: [:holder_of_funds] },
+        tip: { original: true, only: [:id], methods: [:formatted_value_usd_cents] },
+        refunds: { original: true, only: [:id, :user_id, :status, :created_at] },
+        email_infos: { original: true, only: [:id, :email_name, :state, :delivered_at, :opened_at, :created_at] },
+        product_purchases: { original: true, only: [:id, :url_redirect_id, :url_redirect_external_id, :uses], include: { url_redirect: { original: true, only: [:id, :uses], methods: [:download_page_url] } } },
+        url_redirect: { original: true, only: [:id, :download_page_url, :uses] },
+        subscription: { original: true, only: [:id, :external_id], methods: [:cancelled_at, :cancelled_by_buyer, :cancelled_by_seller, :ended_at, :failed_at] },
+        purchase_custom_fields: { original: true, only: [:id, :name, :value, :type] },
+        license: { original: true, only: [:serial] }
+      }
+    ).merge(
+      offer_code: {
+        code: offer_code.code,
+        displayed_amount_off: offer_code.displayed_amount_off(link.price_currency_type, with_symbol: true)
+      },
+      can_force_update: can_force_update?,
+      successful: successful?,
+      preorder_authorization_successful: preorder_authorization_successful?,
+      buyer_blocked: buyer_blocked?,
+      gift: gift.as_json(
+        original: true,
+        only: %i[id giftee_purchase_id gifter_purchase_id giftee_email gifter_email gift_note]
+      )
     )
   end
 

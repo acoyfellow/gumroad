@@ -16,9 +16,7 @@ class Admin::ActionCallDashboardController < Admin::BaseController
       page: params[:page]
     )
 
-    render inertia: "Admin/ActionCallDashboard/Show", props: inertia_props(
-      admin_action_call_infos:,
-      pagination:
-    )
+    render inertia: "Admin/ActionCallDashboard/Show",
+           props: { admin_action_call_infos:, pagination: }
   end
 end

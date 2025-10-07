@@ -30,7 +30,6 @@ describe Admin::SalesReportsController do
       expect(assigns(:react_component_props)[:title]).to eq("Sales reports")
       expect(assigns(:react_component_props)[:countries]).to be_present
       expect(assigns(:react_component_props)[:job_history]).to be_present
-      expect(assigns(:react_component_props)[:form_action]).to eq(admin_sales_reports_path)
       expect(assigns(:react_component_props)[:authenticity_token]).to be_present
     end
 

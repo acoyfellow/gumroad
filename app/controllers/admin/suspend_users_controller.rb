@@ -9,14 +9,14 @@ class Admin::SuspendUsersController < Admin::BaseController
   def show
     @title = "Mass-suspend users"
     render inertia: "Admin/SuspendUsers/Show",
-           props: inertia_props(
-              suspend_reasons: [
-                "Violating our terms of service",
-                "Creating products that violate our ToS",
-                "Using Gumroad to commit fraud",
-                "Using Gumroad for posting spam or SEO manipulation",
-              ]
-           )
+           props: {
+            suspend_reasons: [
+              "Violating our terms of service",
+              "Creating products that violate our ToS",
+              "Using Gumroad to commit fraud",
+              "Using Gumroad for posting spam or SEO manipulation",
+            ]
+          }
   end
 
   def update

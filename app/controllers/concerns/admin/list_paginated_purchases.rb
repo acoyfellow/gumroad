@@ -32,7 +32,7 @@ module Admin::ListPaginatedPurchases
     yield [pagination, purchases] if block_given?
 
     render inertia: 'Admin/Search/Purchases/Index',
-            props: inertia_props(
+            props: {
               purchases: purchases.includes(
                 :price,
                 :purchase_refund_policy,
@@ -45,7 +45,7 @@ module Admin::ListPaginatedPurchases
               query: params[:query],
               product_title_query: params[:product_title_query],
               purchase_status: params[:purchase_status]
-            )
+           }
   end
 
   private

@@ -16,7 +16,7 @@ module Admin::Users::ListPaginatedProducts
       countless_minimal: true
     )
 
-    render inertia: inertia_template, props: inertia_props(
+    render inertia: inertia_template, props: {
       user:     user.as_json(admin: true, impersonatable: policy([:admin, :impersonators, user]).create?),
       products: InertiaRails.merge {
                   products.includes(:alive_product_files, :active_integrations).map do |product|
@@ -28,7 +28,7 @@ module Admin::Users::ListPaginatedProducts
                   end
                 },
       pagination:
-    )
+    }
   end
 
   private

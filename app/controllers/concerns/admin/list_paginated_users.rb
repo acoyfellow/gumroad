@@ -27,14 +27,14 @@ module Admin::ListPaginatedUsers
       render json: { pagination:, users: }
     else
       render inertia: inertia_template,
-             props: inertia_props(
+             props: {
                users: InertiaRails.merge {
                  users.map do |user|
                    user.as_json(admin: true, impersonatable: policy([:admin, :impersonators, user]).create?)
                 end
                },
                pagination:
-             )
+             }
     end
   end
 

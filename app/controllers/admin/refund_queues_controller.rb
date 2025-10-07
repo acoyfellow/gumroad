@@ -22,7 +22,7 @@ class Admin::RefundQueuesController < Admin::BaseController
     )
 
     render  inertia: "Admin/RefundQueues/Show",
-            props: inertia_props(
+            props: {
               users: InertiaRails.merge { users.map do |user|
                 user.as_json(
                   admin: true,
@@ -30,6 +30,6 @@ class Admin::RefundQueuesController < Admin::BaseController
                 )
               end },
               pagination:
-            )
+            }
   end
 end

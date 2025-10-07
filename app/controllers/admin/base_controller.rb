@@ -6,12 +6,16 @@ class Admin::BaseController < ApplicationController
   # layout "admin"
   layout 'admin_inertia', only: :index
 
-  inertia_share card_types: -> { card_types_for_react },
-                title: -> { @title },
-                compliance: -> { {
-                  reasons: Compliance::TOS_VIOLATION_REASONS,
-                  default_reason: Compliance::DEFAULT_TOS_VIOLATION_REASON
-                } }
+  inertia_share do
+    RenderingExtension.custom_context(view_context).merge(
+      card_types: card_types_for_react,
+      title: @title,
+      compliance: {
+        reasons: Compliance::TOS_VIOLATION_REASONS,
+        default_reason: Compliance::DEFAULT_TOS_VIOLATION_REASON
+      }
+    )
+  end
 
   before_action :require_admin!
   before_action :hide_layouts
@@ -22,7 +26,7 @@ class Admin::BaseController < ApplicationController
 
   def index
     @title = "Admin"
-    render inertia: "Admin/Base/Index", props: inertia_props
+    render inertia: "Admin/Base/Index"
   end
 
   def impersonate

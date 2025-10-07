@@ -6,11 +6,10 @@ class Admin::SalesReportsController < Admin::BaseController
   def index
     @title = "Sales reports"
 
-    render inertia: "Admin/SalesReports/Index", props: inertia_props(
+    render inertia: "Admin/SalesReports/Index", props: {
       countries: Compliance::Countries.for_select.map { |alpha2, name| [name, alpha2] },
-      job_history: fetch_job_history,
-      form_action: admin_sales_reports_path
-    )
+      job_history: fetch_job_history
+    }
   end
 
   def create

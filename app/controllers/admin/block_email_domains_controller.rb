@@ -7,7 +7,7 @@ class Admin::BlockEmailDomainsController < Admin::BaseController
 
   def show
     @title = "Mass-block email domains"
-    render inertia: "Admin/BlockEmailDomains/Show", props: inertia_props
+    render inertia: "Admin/BlockEmailDomains/Show"
   end
 
   def update
