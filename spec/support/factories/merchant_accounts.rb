@@ -74,4 +74,11 @@ FactoryBot.define do
     charge_processor_alive_at { Time.current }
     json_data { { "meta" => { "stripe_connect" => "true" } } }
   end
+
+  factory :gumroad_merchant_account, class: MerchantAccount do
+    user { nil }
+    charge_processor_id { StripeChargeProcessor.charge_processor_id }
+    charge_processor_merchant_id { generate(:merchant_account_id) }
+    charge_processor_alive_at { Time.current }
+  end
 end

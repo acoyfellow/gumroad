@@ -9,6 +9,7 @@ describe Admin::PaydaysController do
   let(:next_scheduled_payout_end_date) { User::PayoutSchedule.next_scheduled_payout_end_date }
 
   before do
+    create(:gumroad_merchant_account)
     user = create(:admin_user)
     sign_in(user)
   end
