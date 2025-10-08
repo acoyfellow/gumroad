@@ -152,7 +152,7 @@ module Product::AsJson
     end
 
     def as_json_for_mobile_api
-      super_as_json(only: %w[name description unique_permalink]).merge!(
+      as_json(original: true, only: %w[name description unique_permalink]).merge!(
         created_at:,
         updated_at:,
         content_updated_at: content_updated_at || created_at,
