@@ -10,6 +10,8 @@ class Admin::LinksController < Admin::BaseController
                   is_adult
                   publish
                   unpublish
+                  destroy
+                  restore
                 ]
 
   before_action :fetch_product,
