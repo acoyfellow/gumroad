@@ -8,6 +8,8 @@ module WithProductFiles
     has_many :alive_product_files, -> { alive.in_order }, class_name: "ProductFile"
     has_many :product_files_archives
     has_many :product_folders, -> { alive }, foreign_key: :product_id
+
+    attr_accessor :cached_rich_content_files_and_folders
   end
 
   def has_files?
