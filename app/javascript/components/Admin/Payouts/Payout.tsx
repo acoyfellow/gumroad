@@ -44,7 +44,7 @@ type Props = {
 };
 
 const Payout = ({ payout }: Props) => (
-  <div className="card">
+  <div className="override grid gap-4 rounded border border-border bg-background p-4">
     <div>
       <h3>
         <span>{payout.displayed_amount} to&nbsp;</span>

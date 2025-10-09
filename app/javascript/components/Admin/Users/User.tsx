@@ -74,7 +74,7 @@ const User = ({ user, is_affiliate_user = false }: Props) => {
   const { url } = page;
 
   return (
-    <div className="card js-admin-user" data-user-id={user.id}>
+    <div className="override grid gap-4 rounded border border-border bg-background p-4 js-admin-user" data-user-id={user.id}>
       <Header user={user} is_affiliate_user={is_affiliate_user} url={url} />
 
       <hr />

@@ -35,7 +35,7 @@ const AdminMerchantAccount = ({ merchant_account, live_attributes }: Props) => {
   const liveAttributes = Object.entries(live_attributes);
 
   return (
-    <div className="card">
+    <div className="override grid gap-4 rounded border border-border bg-background p-4">
       <div>
         <h2>Merchant Account {merchant_account.id}</h2>
         <DateTimeWithRelativeTooltip date={merchant_account.created_at} utc />

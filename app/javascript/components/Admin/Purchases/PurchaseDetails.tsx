@@ -206,7 +206,7 @@ type Props = {
 };
 
 const AdminPurchasesPurchase = ({ purchase }: Props) => (
-  <div className="card">
+  <div className="override grid gap-4 rounded border border-border bg-background p-4">
     <div className="grid gap-2">
       <h2 className="purchase-title">
         <AdminPurchasesHeader purchase={purchase} />
