@@ -48,7 +48,6 @@ import {
   requiresReusablePaymentMethod,
   isSubmitDisabled,
   isTippingEnabled,
-  getTotalPriceFromProducts,
 } from "$app/components/Checkout/payment";
 import { Icon } from "$app/components/Icons";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
@@ -728,7 +727,7 @@ const CreditCard = () => {
 const TipSelector = () => {
   const [state, dispatch] = useState();
   const errors = getErrors(state);
-  const showPercentageOptions = getTotalPriceFromProducts(state) > 0;
+  const showPercentageOptions = state.surcharges.type === "loaded" ? state.surcharges.result.subtotal > 0 : true;
 
   React.useEffect(() => {
     if (!showPercentageOptions && state.tip.type === "percentage")
