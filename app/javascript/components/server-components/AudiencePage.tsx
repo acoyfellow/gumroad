@@ -16,7 +16,7 @@ import { Popover } from "$app/components/Popover";
 import { Progress } from "$app/components/Progress";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ExportSubscribersPopover } from "$app/components/server-components/FollowersPage/ExportSubscribersPopover";
-import { Stats } from "$app/components/Stats";
+import { Stats, StatsItem } from "$app/components/Stats";
 import { WithTooltip } from "$app/components/WithTooltip";
 
 import placeholder from "$assets/images/placeholders/audience.png";
@@ -74,28 +74,26 @@ const AudiencePage = ({ total_follower_count }: { total_follower_count: number }
     >
       {hasContent ? (
         <div className="space-y-8 p-4 md:p-8">
-          <Stats
-            values={[
-              {
-                title: (
-                  <>
-                    <Icon name="circle-fill" className="text-accent" />
-                    Lifetime followers
-                  </>
-                ),
-                value: total_follower_count,
-              },
-              {
-                title: (
-                  <>
-                    <Icon name="circle-fill" className="text-muted-foreground" />
-                    New followers
-                  </>
-                ),
-                value: data?.new_followers ?? "",
-              },
-            ]}
-          />
+          <Stats>
+            <StatsItem
+              title={
+                <>
+                  <Icon name="circle-fill" className="text-accent" />
+                  Lifetime followers
+                </>
+              }
+              value={total_follower_count}
+            />
+            <StatsItem
+              title={
+                <>
+                  <Icon name="circle-fill" className="text-muted-foreground" />
+                  New followers
+                </>
+              }
+              value={data?.new_followers ?? ""}
+            />
+          </Stats>
           {data ? (
             <AudienceChart data={data} />
           ) : (

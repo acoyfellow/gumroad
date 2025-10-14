@@ -18,7 +18,7 @@ import { MakeAccountIcon } from "$app/components/icons/getting-started/MakeAccou
 import { SmallBetsIcon } from "$app/components/icons/getting-started/SmallBetsIcon";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { DownloadTaxFormsPopover } from "$app/components/server-components/DashboardPage/DownloadTaxFormsPopover";
-import { Stats } from "$app/components/Stats";
+import { Stats, StatsItem } from "$app/components/Stats";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { useUserAgentInfo } from "$app/components/UserAgent";
 import { useRunOnce } from "$app/components/useRunOnce";
@@ -385,26 +385,44 @@ export const DashboardPage = ({
       <div className="grid gap-4 p-4 md:p-8">
         <h2>Activity</h2>
 
-        <Stats
-          values={[
-            { title: "Balance", description: "Your current balance available for payout", value: balances.balance },
-            {
-              title: "Last 7 days",
-              description: "Your total sales in the last 7 days",
-              value: balances.last_seven_days_sales_total,
-            },
-            {
-              title: "Last 28 days",
-              description: "Your total sales in the last 28 days",
-              value: balances.last_28_days_sales_total,
-            },
-            {
-              title: "Total earnings",
-              description: "Your all-time net earnings from all products, excluding refunds and chargebacks",
-              value: balances.total,
-            },
-          ]}
-        />
+        <Stats>
+          <StatsItem
+            title={
+              <>
+                <Icon name="circle-fill" className="text-foreground" />
+                Balance
+              </>
+            }
+            value={balances.balance}
+          />
+          <StatsItem
+            title={
+              <>
+                <Icon name="circle-fill" className="text-muted-foreground" />
+                Last 7 days
+              </>
+            }
+            value={balances.last_seven_days_sales_total}
+          />
+          <StatsItem
+            title={
+              <>
+                <Icon name="circle-fill" className="text-accent" />
+                Last 28 days
+              </>
+            }
+            value={balances.last_28_days_sales_total}
+          />
+          <StatsItem
+            title={
+              <>
+                <Icon name="circle-fill" className="text-accent" />
+                Total earnings
+              </>
+            }
+            value={balances.total}
+          />
+        </Stats>
 
         <ActivityFeed items={activity_items} />
       </div>

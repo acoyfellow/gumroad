@@ -7,9 +7,15 @@ import { Icon } from "$app/components/Icons";
 import { useUserAgentInfo } from "$app/components/UserAgent";
 import { WithTooltip } from "$app/components/WithTooltip";
 
-type Value = { title: React.ReactNode; description?: string; value?: string | number };
-
-const Item = ({ value: { title, description, value } }: { value: Value }) => {
+export const StatsItem = ({
+  title,
+  description,
+  value,
+  ...props
+}: { title: React.ReactNode; description?: string; value?: string | number } & Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "title"
+>) => {
   const { locale } = useUserAgentInfo();
   const [adjustedFontSize, setAdjustedFontSize] = React.useState<number | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
@@ -35,7 +41,13 @@ const Item = ({ value: { title, description, value } }: { value: Value }) => {
   }, [value]);
 
   return (
-    <section className="grid content-between gap-2 rounded border border-solid border-border bg-background p-5 text-lg">
+    <section
+      {...props}
+      className={classNames(
+        "grid content-between gap-2 rounded border border-solid border-border bg-background p-5 text-lg",
+        props.className,
+      )}
+    >
       <h2 className="flex gap-3 text-base leading-snug">
         {title}
         {description ? (
@@ -51,10 +63,8 @@ const Item = ({ value: { title, description, value } }: { value: Value }) => {
   );
 };
 
-export const Stats = ({ values, ...props }: { values: Value[] } & React.HTMLAttributes<HTMLDivElement>) => (
+export const Stats = ({ children, ...props }: { children: React.ReactNode } & React.HTMLAttributes<HTMLDivElement>) => (
   <div {...props} className={classNames("grid auto-cols-fr gap-4 sm:grid-cols-2 md:grid-flow-col", props.className)}>
-    {values.map((value, index) => (
-      <Item key={index} value={value} />
-    ))}
+    {children}
   </div>
 );

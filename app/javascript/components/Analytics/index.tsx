@@ -22,7 +22,7 @@ import { DateRangePicker } from "$app/components/DateRangePicker";
 import { Icon } from "$app/components/Icons";
 import { Progress } from "$app/components/Progress";
 import { showAlert } from "$app/components/server-components/Alert";
-import { Stats } from "$app/components/Stats";
+import { Stats, StatsItem } from "$app/components/Stats";
 
 import placeholder from "$assets/images/placeholders/sales.png";
 
@@ -169,41 +169,38 @@ const Analytics = ({ products: initialProducts, country_codes, state_names }: An
         <div className="space-y-8 p-4 md:p-8">
           {mainData ? (
             <>
-              <Stats
-                className="md:grid-flow-col"
-                values={[
-                  {
-                    title: (
-                      <>
-                        <Icon name="circle-fill" className="text-foreground" />
-                        Sales
-                      </>
-                    ),
-                    value: mainData.total.sales,
-                  },
-                  {
-                    title: (
-                      <>
-                        <Icon name="circle-fill" className="text-muted-foreground" />
-                        Views
-                      </>
-                    ),
-                    value: mainData.total.views,
-                  },
-                  {
-                    title: (
-                      <>
-                        <Icon name="circle-fill" className="text-accent" />
-                        Total
-                      </>
-                    ),
-                    value: formatPriceCentsWithCurrencySymbol("usd", mainData.total.totals, {
-                      symbolFormat: "short",
-                      noCentsIfWhole: true,
-                    }),
-                  },
-                ]}
-              />
+              <Stats>
+                <StatsItem
+                  title={
+                    <>
+                      <Icon name="circle-fill" className="text-foreground" />
+                      Sales
+                    </>
+                  }
+                  value={mainData.total.sales}
+                />
+                <StatsItem
+                  title={
+                    <>
+                      <Icon name="circle-fill" className="text-muted-foreground" />
+                      Views
+                    </>
+                  }
+                  value={mainData.total.views}
+                />
+                <StatsItem
+                  title={
+                    <>
+                      <Icon name="circle-fill" className="text-accent" />
+                      Total
+                    </>
+                  }
+                  value={formatPriceCentsWithCurrencySymbol("usd", mainData.total.totals, {
+                    symbolFormat: "short",
+                    noCentsIfWhole: true,
+                  })}
+                />
+              </Stats>
               <SalesChart
                 data={mainData.dailyTotal}
                 startDate={mainData.startDate}
