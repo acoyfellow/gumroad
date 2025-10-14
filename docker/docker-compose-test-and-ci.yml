@@ -42,7 +42,7 @@ services:
       - "11211"
 
   minio:
-    image: quay.io/gumroad/minio:latest
+    image: quay.io/gumroad/minio:RELEASE.2025-09-07T16-13-09Z
     ports:
       - "9000"
       - "9001"
@@ -60,7 +60,7 @@ services:
       start_period: 30s
 
   createbuckets:
-    image: quay.io/gumroad/minio-mc:latest
+    image: quay.io/gumroad/minio-mc:RELEASE.2025-08-13T08-35-41Z
     depends_on:
       minio:
         condition: service_healthy
