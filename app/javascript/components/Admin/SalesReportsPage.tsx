@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { Form } from "$app/components/Admin/Form";
 import { showAlert } from "$app/components/server-components/Alert";
+import Placeholder from "$app/components/ui/Placeholder";
 
 type JobHistoryItem = {
   job_id: string;
@@ -103,9 +104,9 @@ const AdminSalesReportsPage = ({ countries, job_history, authenticity_token }: P
             </tbody>
           </table>
         ) : (
-          <div className="placeholder">
+          <Placeholder>
             <h2>No sales reports generated yet.</h2>
-          </div>
+          </Placeholder>
         )}
       </section>
     </>
