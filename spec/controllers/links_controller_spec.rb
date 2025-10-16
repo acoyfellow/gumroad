@@ -1532,7 +1532,7 @@ describe LinksController, :vcr, inertia: true do
         end
 
         it "updates product's rich content when file embed IDs exist in product_rich_content" do
-          urls = %w[#{S3_BASE_URL}/attachment/pencil.png #{S3_BASE_URL}/attachment/manual.pdf]
+          urls = %w[#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachment/pencil.png #{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachment/manual.pdf]
           files_data = files_data_from_urls(urls)
           rich_content = create(:product_rich_content, entity: @product, description: [{ "type" => "paragraph", "content" => [{ "type" => "text", "text" => "Hello" }] }])
           old_rich_content = rich_content.description

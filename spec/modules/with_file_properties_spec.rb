@@ -154,7 +154,7 @@ describe WithFileProperties do
 
   describe "epubs" do
     before do
-      @epub_file = create(:product_file, url: "#{S3_BASE_URL}attachment/sample.epub")
+      @epub_file = create(:product_file, url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachment/sample.epub")
       file_path = file_fixture("sample.epub")
       @epub_file.assign_epub_document_attributes(file_path)
     end
@@ -187,7 +187,7 @@ describe WithFileProperties do
   describe "very large files" do
     before do
       @product_file = create(:product_file)
-      @product_file.url = "#{S3_BASE_URL}some-video-file.mov"
+      @product_file.url = "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/some-video-file.mov"
 
       s3_double = double
       allow(s3_double).to receive(:content_length).and_return(2_000_000_000)
@@ -207,7 +207,7 @@ describe WithFileProperties do
   describe "long file names" do
     before do
       @product_file = create(:product_file)
-      @product_file.url = "#{S3_BASE_URL}attachments/5635138219475/1dc6d2b8f68c4da9b944e8930602057c/original/SET GS สปาหน้าเด็ก หน้าใส ไร้สิว อ่อนเยาว์ สวย เด้ง.jpg"
+      @product_file.url = "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachments/5635138219475/1dc6d2b8f68c4da9b944e8930602057c/original/SET GS สปาหน้าเด็ก หน้าใส ไร้สิว อ่อนเยาว์ สวย เด้ง.jpg"
 
       s3_double = double
       allow(s3_double).to receive(:content_length).and_return(1000)
@@ -226,7 +226,7 @@ describe WithFileProperties do
   end
 
   it "raises a descriptive exception if the S3 object doesn't exist" do
-    file = create(:product_file, url: "#{S3_BASE_URL}attachments/missing.txt")
+    file = create(:product_file, url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachments/missing.txt")
 
     expect do
       file.analyze
@@ -242,7 +242,7 @@ describe WithFileProperties do
         content_type: "application/pdf"
       )
 
-      file = create(:product_file, url: "#{S3_BASE_URL}#{s3_directory}/incorrect-file-name.pdf")
+      file = create(:product_file, url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/#{s3_directory}/incorrect-file-name.pdf")
       file.analyze
       file.reload
 

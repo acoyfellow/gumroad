@@ -26,7 +26,7 @@ RSpec.describe VideoFile, type: :model do
   describe "#smil_xml" do
     it "returns properly formatted SMIL XML with signed cloudfront URL" do
       s3_key = "attachments/1234567890abcdef1234567890abcdef/original/myvideo.mp4"
-      s3_url = "#{S3_BASE_URL}attachments/1234567890abcdef1234567890abcdef/original/myvideo.mp4"
+      s3_url = "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachments/1234567890abcdef1234567890abcdef/original/myvideo.mp4"
       signed_url = "https://cdn.example.com/signed-url-for-video.mp4"
 
       video_file = create(:video_file, url: s3_url)
