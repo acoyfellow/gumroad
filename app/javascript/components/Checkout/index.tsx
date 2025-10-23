@@ -205,165 +205,163 @@ export const Checkout = ({
   const isDesktop = useIsAboveBreakpoint("lg");
 
   return (
-    <div className="mx-auto w-full max-w-product-page">
+    <div className="grid w-full gap-8 px-16 py-8">
       <PageHeader
-        className="border-none"
+        className="border-none p-0!"
         title="Checkout"
         actions={
           isDesktop ? <NavigationButton href={cart.returnUrl ?? discoverUrl}>Continue shopping</NavigationButton> : null
         }
       />
       {isOpenTuple(cart.items, 1) ? (
-        <div className="grid gap-8 p-4 md:p-8">
-          <div className="grid grid-cols-1 items-start gap-x-16 gap-y-8 lg:grid-cols-[2fr_minmax(26rem,1fr)]">
-            <div className="grid gap-6">
-              <div className="cart" role="list">
-                {cart.items.map((item) => (
-                  <CartItemComponent
-                    key={`${item.product.permalink}${item.option_id ? `_${item.option_id}` : ""}`}
-                    item={item}
-                    cart={cart}
-                    isGift={isGift}
-                    updateCart={updateCart}
-                  />
-                ))}
-                <div className="cart-summary">
-                  {state.surcharges.type === "loaded" ? (
-                    <>
-                      <div>
-                        <h4>Subtotal</h4>
-                        <div>{formatPrice(subtotal)}</div>
-                      </div>
-                      {tip ? (
-                        <div>
-                          <h4>Tip</h4>
-                          <div>{formatPrice(tip)}</div>
-                        </div>
-                      ) : null}
-                      {state.surcharges.result.tax_included_cents ? (
-                        <div>
-                          <h4>{nameOfSalesTaxForCountry(state.country)} (included)</h4>
-                          <div>{formatPrice(state.surcharges.result.tax_included_cents)}</div>
-                        </div>
-                      ) : null}
-                      {state.surcharges.result.tax_cents ? (
-                        <div>
-                          <h4>{nameOfSalesTaxForCountry(state.country)}</h4>
-                          <div>{formatPrice(state.surcharges.result.tax_cents)}</div>
-                        </div>
-                      ) : null}
-                      {state.surcharges.result.shipping_rate_cents ? (
-                        <div>
-                          <h4>Shipping rate</h4>
-                          <div>{formatPrice(state.surcharges.result.shipping_rate_cents)}</div>
-                        </div>
-                      ) : null}
-                    </>
-                  ) : null}
-                  {visibleDiscounts.length || discount > 0 ? (
-                    <div>
-                      <h4>
-                        Discounts
-                        {cart.items.some((item) => !!item.product.ppp_details && item.price !== 0) &&
-                        !cart.rejectPppDiscount ? (
-                          <WithTooltip
-                            tip="This discount is applied based on the cost of living in your country."
-                            position="top"
-                          >
-                            <button
-                              className="pill small dismissable"
-                              onClick={() => updateCart({ rejectPppDiscount: true })}
-                              aria-label="Purchasing power parity discount"
-                            >
-                              Purchasing power parity discount
-                            </button>
-                          </WithTooltip>
-                        ) : null}
-                        {visibleDiscounts.map((code) => (
-                          <div
-                            className="pill small dismissable"
-                            onClick={() =>
-                              updateCart({ discountCodes: cart.discountCodes.filter((item) => item !== code) })
-                            }
-                            key={code.code}
-                            aria-label="Discount code"
-                          >
-                            {code.code}
-                          </div>
-                        ))}
-                      </h4>
-                      {discount > 0 ? <div>{formatPrice(-discount)}</div> : null}
-                    </div>
-                  ) : null}
-                  {cart.items.some((item) => item.product.has_offer_codes) ? (
-                    <form
-                      className="input-with-button"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        void applyDiscount(newDiscountCode);
-                      }}
-                    >
-                      <input
-                        placeholder="Discount code"
-                        value={newDiscountCode}
-                        disabled={discountInputDisabled}
-                        onChange={(e) => setNewDiscountCode(e.target.value)}
-                      />
-                      <Button type="submit" disabled={discountInputDisabled}>
-                        Apply
-                      </Button>
-                    </form>
-                  ) : null}
-                </div>
-                {total != null ? (
+        <div className="grid grid-cols-1 items-start gap-x-16 gap-y-6 lg:grid-cols-[2fr_minmax(26rem,1fr)]">
+          <div className="grid gap-8">
+            <div className="divide-y divide-border rounded border border-border bg-background [&_li]:text-sm">
+              {cart.items.map((item) => (
+                <CartItemComponent
+                  key={`${item.product.permalink}${item.option_id ? `_${item.option_id}` : ""}`}
+                  item={item}
+                  cart={cart}
+                  isGift={isGift}
+                  updateCart={updateCart}
+                />
+              ))}
+            </div>
+            <div className="divide-y divide-border rounded border border-border bg-background">
+              <div className="grid gap-2 p-3 text-base sm:gap-4 sm:p-5 sm:text-lg">
+                {state.surcharges.type === "loaded" ? (
                   <>
-                    <footer>
-                      <h4>Total</h4>
-                      <div>{formatPrice(total)}</div>
-                    </footer>
-                    {commissionCompletionTotal > 0 || futureInstallmentsWithoutTipsTotal > 0 ? (
-                      <div className="cart-summary">
-                        <div>
-                          <h4>Payment today</h4>
-                          <div>
-                            {formatPrice(total - commissionCompletionTotal - futureInstallmentsWithoutTipsTotal)}
-                          </div>
-                        </div>
-                        {commissionCompletionTotal > 0 ? (
-                          <div>
-                            <h4>Payment after completion</h4>
-                            <div>{formatPrice(commissionCompletionTotal)}</div>
-                          </div>
-                        ) : null}
-                        {futureInstallmentsWithoutTipsTotal > 0 ? (
-                          <div>
-                            <h4>Future installments</h4>
-                            <div>{formatPrice(futureInstallmentsWithoutTipsTotal)}</div>
-                          </div>
-                        ) : null}
+                    <div className="flex items-center justify-between">
+                      <h4>Subtotal</h4>
+                      <div>{formatPrice(subtotal)}</div>
+                    </div>
+                    {tip ? (
+                      <div className="flex items-center justify-between">
+                        <h4>Tip</h4>
+                        <div>{formatPrice(tip)}</div>
+                      </div>
+                    ) : null}
+                    {state.surcharges.result.tax_included_cents ? (
+                      <div className="flex items-center justify-between">
+                        <h4>{nameOfSalesTaxForCountry(state.country)} (included)</h4>
+                        <div>{formatPrice(state.surcharges.result.tax_included_cents)}</div>
+                      </div>
+                    ) : null}
+                    {state.surcharges.result.tax_cents ? (
+                      <div className="flex items-center justify-between">
+                        <h4>{nameOfSalesTaxForCountry(state.country)}</h4>
+                        <div>{formatPrice(state.surcharges.result.tax_cents)}</div>
+                      </div>
+                    ) : null}
+                    {state.surcharges.result.shipping_rate_cents ? (
+                      <div className="flex items-center justify-between">
+                        <h4>Shipping rate</h4>
+                        <div>{formatPrice(state.surcharges.result.shipping_rate_cents)}</div>
                       </div>
                     ) : null}
                   </>
                 ) : null}
+                {visibleDiscounts.length || discount > 0 ? (
+                  <div className="flex items-center justify-between">
+                    <h4 className="inline-flex flex-wrap gap-2">
+                      Discounts
+                      {cart.items.some((item) => !!item.product.ppp_details && item.price !== 0) &&
+                      !cart.rejectPppDiscount ? (
+                        <WithTooltip
+                          tip="This discount is applied based on the cost of living in your country."
+                          position="top"
+                        >
+                          <button
+                            className="pill small dismissable"
+                            onClick={() => updateCart({ rejectPppDiscount: true })}
+                            aria-label="Purchasing power parity discount"
+                          >
+                            Purchasing power parity discount
+                          </button>
+                        </WithTooltip>
+                      ) : null}
+                      {visibleDiscounts.map((code) => (
+                        <div
+                          className="pill small dismissable"
+                          onClick={() =>
+                            updateCart({ discountCodes: cart.discountCodes.filter((item) => item !== code) })
+                          }
+                          key={code.code}
+                          aria-label="Discount code"
+                        >
+                          {code.code}
+                        </div>
+                      ))}
+                    </h4>
+                    {discount > 0 ? <div>{formatPrice(-discount)}</div> : null}
+                  </div>
+                ) : null}
+                {cart.items.some((item) => item.product.has_offer_codes) ? (
+                  <form
+                    className="input-with-button"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      void applyDiscount(newDiscountCode);
+                    }}
+                  >
+                    <input
+                      placeholder="Discount code"
+                      value={newDiscountCode}
+                      disabled={discountInputDisabled}
+                      onChange={(e) => setNewDiscountCode(e.target.value)}
+                    />
+                    <Button type="submit" disabled={discountInputDisabled}>
+                      Apply
+                    </Button>
+                  </form>
+                ) : null}
               </div>
-              {recommendedProducts && recommendedProducts.length > 0 ? (
-                <section className="paragraphs">
-                  <h2>Customers who bought {cart.items.length === 1 ? "this item" : "these items"} also bought</h2>
-                  <ProductCardGrid narrow>
-                    {recommendedProducts.map((product, idx) => (
-                      // All of this grid is off-screen. so we just eager load the first image
-                      <Card key={product.id} product={product} eager={idx === 0} />
-                    ))}
-                  </ProductCardGrid>
-                </section>
+              {total != null ? (
+                <>
+                  <footer className="flex items-center justify-between p-3 text-base font-bold sm:p-5 sm:text-lg">
+                    <h4>Total</h4>
+                    <div>{formatPrice(total)}</div>
+                  </footer>
+                  {commissionCompletionTotal > 0 || futureInstallmentsWithoutTipsTotal > 0 ? (
+                    <div className="grid gap-4 p-3 sm:p-5">
+                      <div className="flex items-center justify-between">
+                        <h4>Payment today</h4>
+                        <div>{formatPrice(total - commissionCompletionTotal - futureInstallmentsWithoutTipsTotal)}</div>
+                      </div>
+                      {commissionCompletionTotal > 0 ? (
+                        <div className="flex items-center justify-between">
+                          <h4>Payment after completion</h4>
+                          <div>{formatPrice(commissionCompletionTotal)}</div>
+                        </div>
+                      ) : null}
+                      {futureInstallmentsWithoutTipsTotal > 0 ? (
+                        <div className="flex items-center justify-between">
+                          <h4>Future installments</h4>
+                          <div>{formatPrice(futureInstallmentsWithoutTipsTotal)}</div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </div>
-            <PaymentForm />
-            {!isDesktop && <NavigationButton href={cart.returnUrl ?? discoverUrl}>Continue shopping</NavigationButton>}
+            {recommendedProducts && recommendedProducts.length > 0 ? (
+              <section className="paragraphs">
+                <h2>Customers who bought {cart.items.length === 1 ? "this item" : "these items"} also bought</h2>
+                <ProductCardGrid narrow>
+                  {recommendedProducts.map((product, idx) => (
+                    // All of this grid is off-screen. so we just eager load the first image
+                    <Card key={product.id} product={product} eager={idx === 0} />
+                  ))}
+                </ProductCardGrid>
+              </section>
+            ) : null}
           </div>
+          <PaymentForm />
+          {!isDesktop && <NavigationButton href={cart.returnUrl ?? discoverUrl}>Continue shopping</NavigationButton>}
         </div>
       ) : (
-        <div className="p-4 md:p-8">
+        <div>
           <Placeholder>
             <figure>
               <img src={placeholder} />
@@ -436,20 +434,22 @@ const CartItemComponent = ({
   const price = hasFreeTrial(item, isGift) ? 0 : item.price * item.quantity;
 
   return (
-    <div role="listitem">
-      <section>
-        <figure>
+    <div className="grid">
+      <section className="grid w-full grid-cols-[auto_1fr_auto] gap-4 p-4 sm:gap-5 sm:p-5">
+        <figure className="aspect-square w-14 overflow-hidden rounded border border-border sm:w-30">
           <a href={item.product.url}>
             <Thumbnail url={item.product.thumbnail_url} nativeType={item.product.native_type} />
           </a>
         </figure>
-        <section>
-          <a href={item.product.url}>
-            <h4>{item.product.name}</h4>
+        <section className="flex flex-col gap-1">
+          <a href={item.product.url} className="no-underline">
+            <h4 className="text-base font-bold sm:text-lg">{item.product.name}</h4>
           </a>
-          <a href={item.product.creator.profile_url}>{item.product.creator.name}</a>
-          <footer>
-            <ul>
+          <a className="text-sm" href={item.product.creator.profile_url}>
+            {item.product.creator.name}
+          </a>
+          <footer className="mt-1 mb-3">
+            <ul className="flex list-none flex-col gap-2 p-0">
               <li>
                 <strong>{item.product.is_multiseat_license ? "Seats:" : "Qty:"}</strong> {item.quantity}
               </li>
@@ -470,9 +470,65 @@ const CartItemComponent = ({
               ) : null}
             </ul>
           </footer>
+          <footer className="flex gap-4">
+            {(item.product.rental && !item.product.rental.rent_only) ||
+            item.product.is_quantity_enabled ||
+            item.product.recurrences ||
+            item.product.options.length > 0 ||
+            item.product.installment_plan ||
+            isPWYW ? (
+              <Popover
+                trigger={<button className="text-sm underline">Edit</button>}
+                open={editPopoverOpen}
+                onToggle={setEditPopoverOpen}
+              >
+                <div className="paragraphs" style={{ width: "24rem" }}>
+                  <ConfigurationSelector
+                    selection={selection}
+                    setSelection={(selection) => {
+                      setError(null);
+                      setSelection(selection);
+                    }}
+                    product={item.product}
+                    discount={discount.discount && discount.discount.type !== "ppp" ? discount.discount.value : null}
+                    showInstallmentPlan
+                  />
+                  {error ? (
+                    <div role="alert" className="danger">
+                      {error}
+                    </div>
+                  ) : null}
+                  <Button color="accent" onClick={saveChanges}>
+                    Save changes
+                  </Button>
+                </div>
+              </Popover>
+            ) : null}
+            <button
+              className="text-sm underline"
+              onClick={() => {
+                const newItems = cart.items.filter((i) => i !== item);
+
+                updateCart({
+                  discountCodes: cart.discountCodes.filter(({ products }) =>
+                    Object.keys(products).some((permalink) =>
+                      newItems.some((item) => item.product.permalink === permalink),
+                    ),
+                  ),
+                  items: newItems.map(({ accepted_offer, ...rest }) => ({
+                    ...rest,
+                    accepted_offer:
+                      accepted_offer?.original_product_id === item.product.id ? null : (accepted_offer ?? null),
+                  })),
+                });
+              }}
+            >
+              Remove
+            </button>
+          </footer>
         </section>
-        <section>
-          <span className="current-price" aria-label="Price">
+        <section className="flex flex-col items-end gap-1">
+          <span className="current-price text-base font-medium sm:text-lg" aria-label="Price">
             {formatPrice(convertToUSD(item, price))}
           </span>
           {hasFreeTrial(item, isGift) && item.product.free_trial ? (
@@ -498,86 +554,22 @@ const CartItemComponent = ({
               recurrenceNames[item.recurrence]
             )
           ) : null}
-          <footer>
-            <ul>
-              {(item.product.rental && !item.product.rental.rent_only) ||
-              item.product.is_quantity_enabled ||
-              item.product.recurrences ||
-              item.product.options.length > 0 ||
-              item.product.installment_plan ||
-              isPWYW ? (
-                <li>
-                  <Popover
-                    trigger={<span className="link">Configure</span>}
-                    open={editPopoverOpen}
-                    onToggle={setEditPopoverOpen}
-                  >
-                    <div className="paragraphs" style={{ width: "24rem" }}>
-                      <ConfigurationSelector
-                        selection={selection}
-                        setSelection={(selection) => {
-                          setError(null);
-                          setSelection(selection);
-                        }}
-                        product={item.product}
-                        discount={
-                          discount.discount && discount.discount.type !== "ppp" ? discount.discount.value : null
-                        }
-                        showInstallmentPlan
-                      />
-                      {error ? (
-                        <div role="alert" className="danger">
-                          {error}
-                        </div>
-                      ) : null}
-                      <Button color="accent" onClick={saveChanges}>
-                        Save changes
-                      </Button>
-                    </div>
-                  </Popover>
-                </li>
-              ) : null}
-              <li>
-                <button
-                  className="underline"
-                  onClick={() => {
-                    const newItems = cart.items.filter((i) => i !== item);
-
-                    updateCart({
-                      discountCodes: cart.discountCodes.filter(({ products }) =>
-                        Object.keys(products).some((permalink) =>
-                          newItems.some((item) => item.product.permalink === permalink),
-                        ),
-                      ),
-                      items: newItems.map(({ accepted_offer, ...rest }) => ({
-                        ...rest,
-                        accepted_offer:
-                          accepted_offer?.original_product_id === item.product.id ? null : (accepted_offer ?? null),
-                      })),
-                    });
-                  }}
-                >
-                  Remove
-                </button>
-              </li>
-            </ul>
-          </footer>
         </section>
       </section>
       {item.product.bundle_products.length > 0 ? (
-        <section className="footer">
-          <h4>This bundle contains...</h4>
-          <div role="list" className="cart">
+        <section className="grid gap-3 px-5 pb-5">
+          <h4>This bundle contains:</h4>
+          <div className="divide-y divide-border rounded border border-border bg-background">
             {item.product.bundle_products.map((bundleProduct) => (
-              <div role="listitem" key={bundleProduct.product_id}>
-                <section>
-                  <figure>
+              <div key={bundleProduct.product_id}>
+                <section className="grid grid-cols-[auto_1fr_auto] items-start gap-4 p-4">
+                  <figure className="w-14 overflow-hidden rounded border border-border sm:w-20">
                     <Thumbnail url={bundleProduct.thumbnail_url} nativeType={bundleProduct.native_type} />
                   </figure>
-                  <section>
-                    <h4>{bundleProduct.name}</h4>
-                    <footer>
-                      <ul>
+                  <section className="flex flex-col gap-1">
+                    <h4 className="text-base font-bold">{bundleProduct.name}</h4>
+                    <div>
+                      <ul className="flex list-none flex-col gap-2 p-0">
                         <li>
                           <strong>Qty:</strong> {bundleProduct.quantity}
                         </li>
@@ -587,7 +579,7 @@ const CartItemComponent = ({
                           </li>
                         ) : null}
                       </ul>
-                    </footer>
+                    </div>
                   </section>
                   <section></section>
                 </section>

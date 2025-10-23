@@ -32,15 +32,15 @@ export const BundleProductItem = ({
   });
 
   return (
-    <div role="listitem" key={bundleProduct.id}>
-      <section>
-        <figure>
+    <div key={bundleProduct.id}>
+      <section className="grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 p-4">
+        <figure className="w-14 overflow-hidden rounded border border-border sm:w-24">
           <Thumbnail url={bundleProduct.thumbnail_url} nativeType={bundleProduct.native_type} />
         </figure>
-        <section>
-          <h4>{bundleProduct.name}</h4>
+        <section className="flex h-full flex-col gap-2">
+          <h4 className="text-base font-bold">{bundleProduct.name}</h4>
           <footer>
-            <ul>
+            <ul className="flex list-none flex-row flex-wrap gap-4 p-0">
               <li>
                 <strong>Qty:</strong> {bundleProduct.quantity}
               </li>
@@ -51,76 +51,68 @@ export const BundleProductItem = ({
               ) : null}
             </ul>
           </footer>
-        </section>
-        <section>
-          <footer>
-            <ul>
-              {bundleProduct.is_quantity_enabled || bundleProduct.variants ? (
-                <li>
-                  <Popover
-                    trigger={<div className="link">Configure</div>}
-                    open={editPopoverOpen}
-                    onToggle={setEditPopoverOpen}
+          <footer className="mt-2 flex gap-6 sm:mt-auto sm:gap-4">
+            {bundleProduct.is_quantity_enabled || bundleProduct.variants ? (
+              <Popover
+                trigger={<button className="text-sm underline">Edit</button>}
+                open={editPopoverOpen}
+                onToggle={setEditPopoverOpen}
+              >
+                <div className="paragraphs" style={{ width: "24rem" }}>
+                  <ConfigurationSelector
+                    selection={selection}
+                    setSelection={setSelection}
+                    product={{
+                      permalink: bundleProduct.permalink,
+                      options:
+                        bundleProduct.variants?.list.map((variant) => ({
+                          id: variant.id,
+                          name: variant.name,
+                          quantity_left: null,
+                          description: variant.description,
+                          price_difference_cents: null,
+                          recurrence_price_values: null,
+                          is_pwyw: false,
+                          duration_in_minutes: null,
+                        })) ?? [],
+                      is_quantity_enabled: bundleProduct.is_quantity_enabled,
+                      rental: null,
+                      currency_code: "usd",
+                      price_cents: 0,
+                      is_tiered_membership: false,
+                      is_legacy_subscription: false,
+                      is_multiseat_license: false,
+                      quantity_remaining: null,
+                      recurrences: null,
+                      pwyw: null,
+                      installment_plan: null,
+                      ppp_details: null,
+                      native_type: bundleProduct.native_type,
+                    }}
+                    discount={null}
+                    hidePrices
+                  />
+                  <Button
+                    color="accent"
+                    onClick={() => {
+                      updateBundleProduct({
+                        variants: bundleProduct.variants && {
+                          ...bundleProduct.variants,
+                          selected_id: selection.optionId ?? bundleProduct.variants.selected_id,
+                        },
+                        quantity: selection.quantity,
+                      });
+                      setEditPopoverOpen(false);
+                    }}
                   >
-                    <div className="paragraphs" style={{ width: "24rem" }}>
-                      <ConfigurationSelector
-                        selection={selection}
-                        setSelection={setSelection}
-                        product={{
-                          permalink: bundleProduct.permalink,
-                          options:
-                            bundleProduct.variants?.list.map((variant) => ({
-                              id: variant.id,
-                              name: variant.name,
-                              quantity_left: null,
-                              description: variant.description,
-                              price_difference_cents: null,
-                              recurrence_price_values: null,
-                              is_pwyw: false,
-                              duration_in_minutes: null,
-                            })) ?? [],
-                          is_quantity_enabled: bundleProduct.is_quantity_enabled,
-                          rental: null,
-                          currency_code: "usd",
-                          price_cents: 0,
-                          is_tiered_membership: false,
-                          is_legacy_subscription: false,
-                          is_multiseat_license: false,
-                          quantity_remaining: null,
-                          recurrences: null,
-                          pwyw: null,
-                          installment_plan: null,
-                          ppp_details: null,
-                          native_type: bundleProduct.native_type,
-                        }}
-                        discount={null}
-                        hidePrices
-                      />
-                      <Button
-                        color="accent"
-                        onClick={() => {
-                          updateBundleProduct({
-                            variants: bundleProduct.variants && {
-                              ...bundleProduct.variants,
-                              selected_id: selection.optionId ?? bundleProduct.variants.selected_id,
-                            },
-                            quantity: selection.quantity,
-                          });
-                          setEditPopoverOpen(false);
-                        }}
-                      >
-                        Apply
-                      </Button>
-                    </div>
-                  </Popover>
-                </li>
-              ) : null}
-              <li>
-                <button className="underline" onClick={removeBundleProduct}>
-                  Remove
-                </button>
-              </li>
-            </ul>
+                    Apply
+                  </Button>
+                </div>
+              </Popover>
+            ) : null}
+            <button className="text-sm underline" onClick={removeBundleProduct}>
+              Remove
+            </button>
           </footer>
         </section>
       </section>
