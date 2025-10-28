@@ -6,12 +6,12 @@ module Admin::Commentable
   def index
     pagination, comments = pagy(
       commentable.comments.includes(:author).references(:author).order(created_at: :desc),
-      limit: params[:per_page],
-      page: params[:page]
+      limit: params[:per_page] || 20,
+      page: params[:page] || 1
     )
 
     render json: {
-      comments: json_payload(comments),
+      comments: comments.map { json_payload(_1) },
       pagination:
     }
   end
@@ -38,15 +38,14 @@ module Admin::Commentable
       params.require(:comment).permit(:content, :comment_type)
     end
 
-    def json_payload(serializable)
-      serializable.as_json(
-        only: %i[id author_name comment_type updated_at],
+    def json_payload(comment)
+      comment.as_json(
+        only: %i[id author_name comment_type content updated_at],
         include: {
           author: {
             only: %i[id name email],
           }
         },
-        methods: :content_formatted
-      )
+      ).reverse_merge(author: nil)
     end
 end

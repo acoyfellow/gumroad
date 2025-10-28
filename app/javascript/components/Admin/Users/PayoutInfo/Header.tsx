@@ -1,6 +1,6 @@
 import React from "react";
 
-import { NoIcon } from "$app/components/Icons";
+import { NoIcon } from "$app/components/Admin/Icons";
 
 import { type ActiveBankAccountProps } from "./PayoutInfo";
 

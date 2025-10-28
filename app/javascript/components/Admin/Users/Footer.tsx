@@ -1,8 +1,8 @@
 import React from "react";
 
 import DateTimeWithRelativeTooltip from "$app/components/Admin/DateTimeWithRelativeTooltip";
+import { NoIcon } from "$app/components/Admin/Icons";
 import type { User } from "$app/components/Admin/Users/User";
-import { NoIcon } from "$app/components/Icons";
 
 type FooterProps = {
   user: User;

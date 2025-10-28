@@ -63,12 +63,12 @@ import { DateInput } from "$app/components/DateInput";
 import { DateRangePicker } from "$app/components/DateRangePicker";
 import { FileKindIcon } from "$app/components/FileRowContent";
 import { Icon } from "$app/components/Icons";
+import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { Pagination, PaginationProps } from "$app/components/Pagination";
 import { Popover } from "$app/components/Popover";
 import { PriceInput } from "$app/components/PriceInput";
-import { Progress } from "$app/components/Progress";
 import { RatingStars } from "$app/components/RatingStars";
 import { ReviewResponseForm } from "$app/components/ReviewResponseForm";
 import { ReviewVideoPlayer } from "$app/components/ReviewVideoPlayer";
@@ -1052,7 +1052,7 @@ const CustomerDrawer = ({
           ) : (
             <section>
               <div className="text-center">
-                <Progress width="2em" />
+                <LoadingSpinner className="size-8" />
               </div>
             </section>
           )}
@@ -1238,7 +1238,7 @@ const CustomerDrawer = ({
           ) : (
             <section>
               <div className="text-center">
-                <Progress width="2em" />
+                <LoadingSpinner className="size-8" />
               </div>
             </section>
           )}
@@ -1303,7 +1303,7 @@ const CustomerDrawer = ({
           ) : (
             <section>
               <div className="text-center">
-                <Progress width="2em" />
+                <LoadingSpinner className="size-8" />
               </div>
             </section>
           )}
@@ -1467,7 +1467,7 @@ const AddressSection = ({
             <br />
             {currentAddress.country}
           </p>
-          <button className="link" onClick={() => setIsEditing(true)}>
+          <button className="underline" onClick={() => setIsEditing(true)}>
             Edit
           </button>
         </div>
@@ -1600,7 +1600,7 @@ const EmailSection = ({
         <section>
           <h5>{currentEmail}</h5>
           {onSave ? (
-            <button className="link" onClick={() => setIsEditing(true)}>
+            <button className="underline" onClick={() => setIsEditing(true)}>
               Edit
             </button>
           ) : (
@@ -1864,14 +1864,14 @@ const OptionSection = ({
           ) : (
             <>
               <h5>{option?.name ?? "None selected"}</h5>
-              <button className="link" onClick={() => setIsEditing(true)}>
+              <button className="underline" onClick={() => setIsEditing(true)}>
                 Edit
               </button>
             </>
           )
         ) : (
           <div className="text-center">
-            <Progress width="2em" />
+            <LoadingSpinner className="size-8" />
           </div>
         )}
       </section>
@@ -2011,7 +2011,7 @@ const SeatSection = ({ seats: currentSeats, onSave }: { seats: number; onSave: (
       ) : (
         <section>
           <h5>{seats}</h5>
-          <button className="link" onClick={() => setIsEditing(true)}>
+          <button className="underline" onClick={() => setIsEditing(true)}>
             Edit
           </button>
         </section>
@@ -2298,7 +2298,7 @@ const ChargeRow = ({
           {purchase.chargedback ? <span className="pill small">Chargedback</span> : null}
         </section>
         {!purchase.refunded && !purchase.chargedback && purchase.amount_refundable > 0 ? (
-          <button className="link" onClick={() => setIsRefunding((prev) => !prev)}>
+          <button className="underline" onClick={() => setIsRefunding((prev) => !prev)}>
             Refund Options
           </button>
         ) : null}
@@ -2356,7 +2356,7 @@ const ChargesSection = ({
       {loading ? (
         <section>
           <div className="text-center">
-            <Progress width="2em" />
+            <LoadingSpinner className="size-8" />
           </div>
         </section>
       ) : charges.length > 0 ? (

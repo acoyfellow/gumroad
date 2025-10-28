@@ -33,25 +33,21 @@ module User::AsJson
     as_json(
       internal_use: true,
       methods: [
-        :id,
         :display_name,
         :form_email,
-        :blocked_by_form_email_at,
+        :form_email_block,
         :form_email_domain,
-        :blocked_by_form_email_domain_at,
+        :form_email_domain_block,
         :avatar_url,
         :username,
         :subdomain_with_protocol,
         :support_email,
-        :custom_fee_percent,
-        :has_payments,
+        :custom_fee_per_thousand,
         :updated_at,
         :verified,
-        :deleted,
         :deleted_at,
         :all_adult_products,
         :unpaid_balance_cents,
-        :compliant,
         :suspended,
         :flagged_for_fraud,
         :flagged_for_tos_violation,
@@ -66,11 +62,17 @@ module User::AsJson
               methods: [:avatar_url, :display_name_or_email]
             }
           }
+        },
+        alive_user_compliance_info: {
+          only: %i[is_business first_name last_name street_address city state state_code zip_code country country_code business_name business_type business_street_address business_city business_state business_zip_code business_country created_at],
+          methods: %i[country_code business_country_code state_code business_state_code has_individual_tax_id has_business_tax_id]
         }
       }
     ).merge(
+      id:,
       impersonatable:,
-      user_risk_state: user_risk_state.humanize
+      user_risk_state: user_risk_state.humanize,
+      comments_count: comments.size
     )
   end
 

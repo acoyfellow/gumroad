@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Form } from "$app/components/Admin/Form";
+import { Form } from "$app/components/server-components/Admin/Form";
 import { showAlert } from "$app/components/server-components/Alert";
 import Placeholder from "$app/components/ui/Placeholder";
 

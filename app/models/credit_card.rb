@@ -16,8 +16,8 @@ class CreditCard < ApplicationRecord
   validates :stripe_fingerprint, presence: true
   validates :visual, :card_type, presence: true
   validates :stripe_customer_id, :expiry_month, :expiry_year, presence: true, if: -> { card_type != CardType::PAYPAL }
-  validates :braintree_customer_id, presence: true, if: :braintree_charge_processor?
-  validates :paypal_billing_agreement_id, presence: true, if: :paypal_charge_processor?
+  validates :braintree_customer_id, presence: { if: :braintree_charge_processor? }
+  validates :paypal_billing_agreement_id, presence: { if: :paypal_charge_processor? }
   validates :charge_processor_id, presence: true
 
   def as_json

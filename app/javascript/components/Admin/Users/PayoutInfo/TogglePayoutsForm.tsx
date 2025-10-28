@@ -13,12 +13,13 @@ const AdminTogglePayoutsForm = ({
   payouts_paused_by: "stripe" | "admin" | "system" | "user" | null;
   reason: string | null;
 }) => {
-  const [paused, setPaused] = React.useState(
-    payouts_paused_by && ["admin", "system", "stripe"].includes(payouts_paused_by),
-  );
+  const [pausedBy, setPausedBy] = React.useState(payouts_paused_by);
+  const [paused, setPaused] = React.useState(pausedBy && ["admin", "system", "stripe"].includes(pausedBy));
+
   const [reason, setReason] = React.useState(currentReason);
 
   const onPaused = (reason: string) => {
+    setPausedBy("admin");
     setReason(reason);
     setPaused(true);
     showAlert("Payouts paused", "success");
@@ -31,12 +32,7 @@ const AdminTogglePayoutsForm = ({
 
   if (paused) {
     return (
-      <AdminResumePayoutsForm
-        user_id={user_id}
-        payouts_paused_by={payouts_paused_by}
-        reason={reason}
-        onSuccess={onResumed}
-      />
+      <AdminResumePayoutsForm user_id={user_id} payouts_paused_by={pausedBy} reason={reason} onSuccess={onResumed} />
     );
   }
   return <AdminPausePayoutsForm user_id={user_id} onSuccess={onPaused} />;

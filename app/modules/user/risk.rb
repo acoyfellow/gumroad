@@ -156,6 +156,14 @@ module User::Risk
     flagged_for_tos_violation? || flagged_for_fraud?
   end
 
+  def form_email_block
+    BlockedObject.email.find_active_object(email)
+  end
+
+  def form_email_domain_block
+    BlockedObject.email_domain.find_active_object(form_email_domain)
+  end
+
   def add_user_comment(transition)
     params = transition.args.first
     raise ArgumentError, "first transition argument must include an author_id or author_name" if !params || (!params[:author_id] && !params[:author_name])
@@ -248,8 +256,7 @@ module User::Risk
         .distinct
         .group(:user_id)
         .having("SUM(amount_cents) > 0")
-        .order(updated_at: :desc)
-        .limit(MAX_REFUND_QUEUE_SIZE)
+        .order(updated_at: :desc, id: :desc)
     end
   end
 end

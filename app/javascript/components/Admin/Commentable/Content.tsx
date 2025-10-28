@@ -1,30 +1,26 @@
 import React from "react";
 
 import Comment, { type CommentProps } from "$app/components/Admin/Commentable/Comment";
-import Loading from "$app/components/Admin/Loading";
+import { LoadingSpinner } from "$app/components/LoadingSpinner";
+import { useIsIntersecting } from "$app/components/useIsIntersecting";
 
-type AdminCommentableCommentsProps = {
+type AdminCommentableContentProps = {
   count: number;
   comments: CommentProps[];
+  hasLoaded: boolean;
   isLoading: boolean;
   hasMore: boolean;
   onLoadMore: () => void;
 };
 
-const AdminCommentableComments = ({
+const AdminCommentableContent = ({
   count,
   comments,
+  hasLoaded,
   isLoading,
   hasMore,
   onLoadMore,
-}: AdminCommentableCommentsProps) => {
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (hasMore) {
-      onLoadMore();
-    }
-  };
-
+}: AdminCommentableContentProps) => {
   if (count === 0 && !isLoading)
     return (
       <div className="info" role="status">
@@ -32,27 +28,29 @@ const AdminCommentableComments = ({
       </div>
     );
 
+  const handleIntersection = React.useCallback(
+    (isIntersecting: boolean) => {
+      if (!isIntersecting || !hasMore || isLoading) return;
+      onLoadMore();
+    },
+    [hasMore, isLoading, onLoadMore],
+  );
+
+  const elementRef = useIsIntersecting<HTMLDivElement>(handleIntersection);
+
   return (
     <div>
-      <h4 className="mb-2 font-bold">
-        {comments.length} of {count === 1 ? "1 comment" : `${count} comments`}
-      </h4>
-
-      {hasMore ? (
-        <button className="button small mb-4" onClick={handleClick} disabled={isLoading}>
-          {isLoading ? "Loading..." : "Load more"}
-        </button>
-      ) : null}
-
-      {isLoading ? <Loading /> : null}
+      {isLoading && !hasLoaded ? <LoadingSpinner /> : null}
 
       <div className="rows" role="list">
         {comments.map((comment) => (
           <Comment key={comment.id} comment={comment} />
         ))}
       </div>
+
+      {hasMore ? <div ref={elementRef}>{isLoading ? <LoadingSpinner /> : null}</div> : null}
     </div>
   );
 };
 
-export default AdminCommentableComments;
+export default AdminCommentableContent;

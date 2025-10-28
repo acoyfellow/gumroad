@@ -5,7 +5,7 @@ import AdminUserActions from "$app/components/Admin/Users/Actions";
 import AdminUserAddCredit from "$app/components/Admin/Users/AddCredit";
 import AdminUserChangeEmail from "$app/components/Admin/Users/ChangeEmail";
 import AdminUserComments from "$app/components/Admin/Users/Comments";
-import AdminUserComplianceInfo from "$app/components/Admin/Users/ComplianceInfo";
+import AdminUserComplianceInfo, { ComplianceInfoProps } from "$app/components/Admin/Users/ComplianceInfo";
 import AdminUserCustomFee from "$app/components/Admin/Users/CustomFee";
 import AdminUserEmailChanges from "$app/components/Admin/Users/EmailChanges";
 import Footer from "$app/components/Admin/Users/Footer";
@@ -39,17 +39,16 @@ export type User = {
   username: string;
   profile_url: string;
   form_email: string;
-  blocked_by_form_email_at: string;
+  form_email_block: { blocked_at: string; created_at: string } | null;
   form_email_domain: string;
-  blocked_by_form_email_domain_at: string;
+  form_email_domain_block: { blocked_at: string; created_at: string } | null;
   subdomain_with_protocol: string;
-  custom_fee_percent: number | null;
-  has_payments: boolean;
+  custom_fee_per_thousand: number | null;
   impersonatable: boolean;
   verified: boolean;
-  deleted: boolean;
   all_adult_products: boolean;
   admin_manageable_user_memberships: UserMembership[];
+  alive_user_compliance_info: ComplianceInfoProps | null;
   compliant: boolean;
   suspended: boolean;
   unpaid_balance_cents: number;
@@ -58,6 +57,7 @@ export type User = {
   flagged_for_tos_violation: boolean;
   on_probation: boolean;
   user_risk_state: string;
+  comments_count: number;
   bio: string;
   created_at: string;
   updated_at: string;
@@ -69,15 +69,12 @@ export type Props = {
   is_affiliate_user?: boolean;
 };
 
-const User = ({ user, is_affiliate_user = false }: Props) => {
+const UserCard = ({ user, is_affiliate_user = false }: Props) => {
   const page = usePage();
   const { url } = page;
 
   return (
-    <div
-      className="override js-admin-user grid gap-4 rounded border border-border bg-background p-4"
-      data-user-id={user.id}
-    >
+    <div className="grid gap-4 rounded border border-border bg-background p-4" data-user-id={user.id}>
       <Header user={user} is_affiliate_user={is_affiliate_user} url={url} />
 
       <hr />
@@ -86,8 +83,11 @@ const User = ({ user, is_affiliate_user = false }: Props) => {
       <AdminUserMemberships user={user} />
       <AdminUserPermissionRisk user={user} />
       <AdminUserComplianceInfo user={user} />
-      <AdminUserPayoutInfo user={user} />
-      <AdminUserMerchantAccounts user={user} />
+      <hr />
+      <div className="grid grid-cols-2 gap-4">
+        <AdminUserPayoutInfo user={user} />
+        <AdminUserMerchantAccounts user={user} />
+      </div>
       <AdminUserEmailChanges user={user} />
       <AdminUserChangeEmail user={user} />
       <AdminUserCustomFee user={user} />
@@ -102,4 +102,4 @@ const User = ({ user, is_affiliate_user = false }: Props) => {
   );
 };
 
-export default User;
+export default UserCard;

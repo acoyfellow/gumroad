@@ -1,9 +1,12 @@
 import { WhenVisible } from "@inertiajs/react";
 import React from "react";
 
-import { type Pagination } from "$app/hooks/useLazyFetch";
+import { LoadingSpinner } from "$app/components/LoadingSpinner";
 
-import Loading from "$app/components/Admin/Loading";
+export type Pagination = {
+  page: number;
+  limit: number;
+};
 
 type PaginatedLoaderProps = {
   itemsLength: number;
@@ -12,23 +15,23 @@ type PaginatedLoaderProps = {
 };
 
 const PaginatedLoader = ({ itemsLength, pagination, only }: PaginatedLoaderProps) => {
-  const itemsLengthFromCurrentPage = itemsLength / pagination.page;
+  const expectedItemsUpToCurrentPage = pagination.page * pagination.limit;
+  const hasFullPage = itemsLength >= expectedItemsUpToCurrentPage;
 
-  if (itemsLengthFromCurrentPage >= pagination.limit) {
-    const params = {
-      data: { page: pagination.page + 1 },
-      only,
-      preserveScroll: true,
-    };
+  if (!hasFullPage) return null;
 
-    return (
-      <WhenVisible fallback={<Loading />} params={params}>
-        <div />
-      </WhenVisible>
-    );
-  }
+  const params = {
+    data: { page: pagination.page + 1 },
+    only,
+    preserveScroll: true,
+    preserveUrl: true,
+  };
 
-  return null;
+  return (
+    <WhenVisible key={`${pagination.page}-${pagination.limit}`} fallback={<LoadingSpinner />} params={params}>
+      <div />
+    </WhenVisible>
+  );
 };
 
 export default PaginatedLoader;

@@ -658,6 +658,10 @@ class User < ApplicationRecord
     Mail::Address.new(form_email).domain.presence
   end
 
+  def form_email_domain
+    Mail::Address.new(form_email).domain.presence
+  end
+
   def currency_symbol
     symbol_for(currency_type)
   end

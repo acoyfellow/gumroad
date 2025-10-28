@@ -1,48 +1,42 @@
 import React from "react";
 import { cast } from "ts-safe-cast";
 
-import { useLazyFetch } from "$app/hooks/useLazyFetch";
+import { request } from "$app/utils/request";
 
 import PayoutInfo, { type PayoutInfoProps } from "$app/components/Admin/Users/PayoutInfo/PayoutInfo";
 import type { User } from "$app/components/Admin/Users/User";
+import { useIsIntersecting } from "$app/components/useIsIntersecting";
 
 type AdminUserPayoutInfoProps = {
   user: User;
 };
 
 const AdminUserPayoutInfo = ({ user }: AdminUserPayoutInfoProps) => {
-  const [open, setOpen] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [data, setData] = React.useState<PayoutInfoProps | null>(null);
 
-  const {
-    data: payoutInfo,
-    isLoading,
-    fetchData: fetchPayoutInfo,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  } = useLazyFetch<PayoutInfoProps>({} as PayoutInfoProps, {
-    url: Routes.admin_user_payout_info_path(user.id, { format: "json" }),
-    responseParser: (data) => {
-      const parsed = cast<{ payout_info: PayoutInfoProps }>(data);
-      return parsed.payout_info;
-    },
+  const elementRef = useIsIntersecting<HTMLDivElement>((isIntersecting) => {
+    if (!isIntersecting || data) return;
+
+    const fetchPayoutInfo = async () => {
+      setIsLoading(true);
+      const response = await request({
+        method: "GET",
+        url: Routes.admin_user_payout_info_path(user.id),
+        accept: "json",
+      });
+      setData(cast<PayoutInfoProps>(await response.json()));
+      setIsLoading(false);
+    };
+
+    void fetchPayoutInfo();
   });
 
-  const onToggle = (e: React.MouseEvent<HTMLDetailsElement>) => {
-    setOpen(e.currentTarget.open);
-    if (e.currentTarget.open) {
-      void fetchPayoutInfo();
-    }
-  };
-
   return (
-    <>
-      <hr />
-      <details open={open} onToggle={onToggle}>
-        <summary>
-          <h3>Payout Info</h3>
-        </summary>
-        <PayoutInfo user_id={user.id} payoutInfo={payoutInfo} isLoading={isLoading} />
-      </details>
-    </>
+    <div ref={elementRef}>
+      <h3>Payout Info</h3>
+      <PayoutInfo user_id={user.id} payoutInfo={data} isLoading={isLoading} />
+    </div>
   );
 };
 

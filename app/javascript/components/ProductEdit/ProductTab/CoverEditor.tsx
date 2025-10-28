@@ -11,9 +11,9 @@ import { assertResponseError } from "$app/utils/request";
 
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
+import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { Popover } from "$app/components/Popover";
 import { Covers } from "$app/components/Product/Covers";
-import { Progress } from "$app/components/Progress";
 import { RemoveButton } from "$app/components/RemoveButton";
 import { showAlert } from "$app/components/server-components/Alert";
 import Tab from "$app/components/Tabs/Tab";
@@ -153,7 +153,7 @@ const CoverUploader = ({
 
   return isSelecting ? (
     isUploading ? (
-      <Progress />
+      <LoadingSpinner className="size-20" />
     ) : (
       <div className="w-full">
         <TabList>

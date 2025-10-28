@@ -2627,7 +2627,7 @@ class Purchase < ApplicationRecord
     end
 
     def charge_processor_unavailable_error
-      if charge_processor_id.blank? || charge_processor_id == StripeChargeProcessor.charge_processor_id
+      if charge_processor_id.blank? || stripe_charge_processor?
         PurchaseErrorCode::STRIPE_UNAVAILABLE
       else
         PurchaseErrorCode::PAYPAL_UNAVAILABLE

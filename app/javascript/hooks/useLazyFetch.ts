@@ -1,4 +1,5 @@
 import React from "react";
+import { cast } from "ts-safe-cast";
 
 import { assertResponseError, request } from "$app/utils/request";
 
@@ -7,7 +8,7 @@ import { showAlert } from "$app/components/server-components/Alert";
 interface UseLazyFetchOptions<T> {
   url: string;
   responseParser: (data: unknown) => T;
-  hasMore?: boolean;
+  fetchUnlessLoaded?: boolean;
 }
 
 interface UseLazyFetchResult<T> {
@@ -24,35 +25,18 @@ type QueryParams = Record<string, string | number>;
 
 export type Pagination = {
   count: number;
-  from: number;
-  in: number;
-  last: number;
-  limit: number;
   next: number | null;
-  offset: number;
-  outset: number;
-  overflow: number;
   page: number;
-  prev: number | null;
-  to: number;
 };
 
 type PaginatedResponse = {
   pagination: Pagination;
 };
 
-const isPaginatedResponse = (data: unknown): data is PaginatedResponse => {
-  if (typeof data !== "object" || data === null || !("pagination" in data)) {
-    return false;
-  }
-  return typeof data.pagination === "object" && data.pagination !== null;
-};
-
 // Internal hook that handles the core fetching logic
 const useLazyFetchCore = <T>(
   initialData: T,
   options: UseLazyFetchOptions<T>,
-  shouldFetchCondition: (hasLoaded: boolean) => boolean,
   onSuccess?: (responseData: unknown, parsedData: T) => void,
 ) => {
   const [data, setData] = React.useState<T>(initialData);
@@ -61,8 +45,6 @@ const useLazyFetchCore = <T>(
 
   const fetchData = React.useCallback(
     async (queryParams: QueryParams = {}) => {
-      if (!shouldFetchCondition(hasLoaded)) return;
-
       setIsLoading(true);
 
       try {
@@ -90,7 +72,7 @@ const useLazyFetchCore = <T>(
         setIsLoading(false);
       }
     },
-    [options.url, options.responseParser, hasLoaded, shouldFetchCondition],
+    [options.url, options.responseParser, onSuccess],
   );
 
   return {
@@ -104,13 +86,33 @@ const useLazyFetchCore = <T>(
   };
 };
 
-export const useLazyFetch = <T>(initialData: T, options: UseLazyFetchOptions<T>): UseLazyFetchResult<T> =>
-  useLazyFetchCore(initialData, options, (hasLoaded) => !hasLoaded);
+const useFetchOnMount = (
+  options: { fetchUnlessLoaded?: boolean },
+  hasLoaded: boolean,
+  fetchFn: () => Promise<void>,
+) => {
+  const fetchUnlessLoaded = options.fetchUnlessLoaded ?? true;
+
+  React.useEffect(() => {
+    if (fetchUnlessLoaded && !hasLoaded) {
+      void fetchFn();
+    }
+  }, [fetchUnlessLoaded, hasLoaded, fetchFn]);
+};
+
+export const useLazyFetch = <T>(initialData: T, options: UseLazyFetchOptions<T>): UseLazyFetchResult<T> => {
+  const core = useLazyFetchCore(initialData, options);
+
+  useFetchOnMount(options, core.hasLoaded, core.fetchData);
+
+  return core;
+};
 
 type UseLazyPaginatedFetchResult<T> = UseLazyFetchResult<T> & {
   hasMore: boolean;
   setHasMore: (hasMore: boolean) => void;
   pagination: Pagination;
+  fetchNextPage: () => Promise<void>;
 };
 
 interface UseLazyPaginatedFetchOptions<T> extends UseLazyFetchOptions<T> {
@@ -134,49 +136,42 @@ export const useLazyPaginatedFetch = <T>(
   const [hasMore, setHasMore] = React.useState(false);
   const [pagination, setPagination] = React.useState<Pagination>({
     count: 0,
-    from: 0,
-    in: 0,
-    last: 0,
-    limit: 0,
     next: null,
-    offset: 0,
-    outset: 0,
-    overflow: 0,
     page: 0,
-    prev: null,
-    to: 0,
   });
   const [currentData, setCurrentData] = React.useState<T>(initialData);
 
   const mode = options.mode || "replace";
-  const perPage = options.perPage || 20;
+  const perPage = options.perPage ?? 20;
 
-  const core = useLazyFetchCore(
-    initialData,
-    options,
-    (hasLoaded) => !hasLoaded || hasMore,
-    (responseData, parsedData) => {
-      if (!isPaginatedResponse(responseData)) {
-        return;
-      }
+  const core = useLazyFetchCore(initialData, options, (responseData, parsedData) => {
+    const { pagination: paginationData } = cast<PaginatedResponse>(responseData);
+    setPagination(paginationData);
 
-      const { pagination: paginationData } = responseData;
-      setPagination(paginationData);
+    const canFetchMore = paginationData.next !== null;
+    setHasMore(canFetchMore);
 
-      const canFetchMore = paginationData.next !== null;
-      setHasMore(canFetchMore);
+    if (mode === "replace") {
+      setCurrentData(parsedData);
+      return;
+    }
 
-      if (mode === "replace") {
-        setCurrentData(parsedData);
-        return;
-      }
+    setCurrentData((prev) => mergeArrayData(prev, parsedData, mode));
+  });
 
-      setCurrentData((prev) => mergeArrayData(prev, parsedData, mode));
-    },
+  const fetchData = React.useCallback(
+    (queryParams: QueryParams = {}): Promise<void> => core.fetchData({ ...queryParams, per_page: perPage }),
+    [core.fetchData, perPage],
   );
 
-  const fetchData = (queryParams: QueryParams = {}): Promise<void> =>
-    core.fetchData({ ...queryParams, per_page: perPage });
+  useFetchOnMount(options, core.hasLoaded, fetchData);
+
+  const fetchNextPage = React.useCallback((): Promise<void> => {
+    if (!hasMore || !pagination.next) {
+      return Promise.resolve();
+    }
+    return fetchData({ page: pagination.next });
+  }, [hasMore, pagination.next, fetchData]);
 
   return {
     ...core,
@@ -186,5 +181,6 @@ export const useLazyPaginatedFetch = <T>(
     setHasMore,
     pagination,
     fetchData,
+    fetchNextPage,
   };
 };
