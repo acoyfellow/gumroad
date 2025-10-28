@@ -4359,7 +4359,7 @@ describe("Product Page - Tax Scenarios", type: :system, js: true) do
       expect(purchase.was_purchase_taxable).to be(false)
     end
 
-    it "allows the purchase and favors the GeoIp2 country name of Taiwan versus the IsoCountyCodes name of Taiwan, Province of China", :vcr do
+    it "allows the purchase and favors the GeoIp2 country name of Taiwan versus the IsoCountyCodes name of Taiwan, Province of China", :vcr, billy: true do
 
       allow_any_instance_of(ActionDispatch::Request).to receive(:remote_ip).and_return("1.174.208.0") # Taiwan
 
