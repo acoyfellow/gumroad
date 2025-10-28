@@ -1,0 +1,72 @@
+---
+:scope:
+:url: https://connect.facebook.net/en_US/sdk.js
+:body: ''
+:status: 200
+:method: get
+:headers:
+  Vary: Accept-Encoding
+  Access-Control-Expose-Headers: X-FB-Content-MD5
+  x-fb-content-md5: 14828563d9f041376505075af0e2c974
+  ETag: '"6cac624650f539fd04fc07e8ad9f2ef1"'
+  Content-Type: application/x-javascript; charset=utf-8
+  timing-allow-origin: "*"
+  Access-Control-Allow-Origin: "*"
+  content-md5: FIKFY9nwQTdlBQda8OLJdA==
+  Expires: Tue, 28 Oct 2025 18:23:06 GMT
+  Cache-Control: public,max-age=1200,stale-while-revalidate=3600
+  reporting-endpoints: coop_report="https://www.facebook.com/browser_reporting/coop/?minimize=0",
+    coep_report="https://www.facebook.com/browser_reporting/coep/?minimize=0", permissions_policy="https://www.facebook.com/ajax/browser_error_reports/"
+  X-Frame-Options: DENY
+  document-policy:
+  - force-load-at-top
+  - include-js-call-stacks-in-crash-reports
+  permissions-policy: accelerometer=(), attribution-reporting=(), autoplay=(), bluetooth=(),
+    camera=(), ch-device-memory=(), ch-downlink=(), ch-dpr=(), ch-ect=(), ch-rtt=(),
+    ch-save-data=(), ch-ua-arch=(), ch-ua-bitness=(), ch-viewport-height=(), ch-viewport-width=(),
+    ch-width=(), clipboard-read=(), clipboard-write=(), compute-pressure=(), display-capture=(),
+    encrypted-media=(), fullscreen=(self), gamepad=(), geolocation=(), gyroscope=(),
+    hid=(), idle-detection=(), interest-cohort=(), keyboard-map=(), local-fonts=(),
+    magnetometer=(), microphone=(), midi=(), otp-credentials=(), payment=(), picture-in-picture=(),
+    private-state-token-issuance=(), publickey-credentials-get=(), screen-wake-lock=(),
+    serial=(), shared-storage=(), shared-storage-select-url=(), private-state-token-redemption=(),
+    usb=(), unload=(self), window-management=(), xr-spatial-tracking=();report-to="permissions_policy"
+  cross-origin-resource-policy: cross-origin
+  cross-origin-embedder-policy-report-only: require-corp;report-to="coep_report"
+  cross-origin-opener-policy: same-origin-allow-popups
+  X-Content-Type-Options: nosniff
+  report-to: '{"max_age":2592000,"endpoints":[{"url":"https:\/\/www.facebook.com\/browser_reporting\/coop\/?minimize=0"}],"group":"coop_report","include_subdomains":true},
+    {"max_age":86400,"endpoints":[{"url":"https:\/\/www.facebook.com\/browser_reporting\/coep\/?minimize=0"}],"group":"coep_report"},
+    {"max_age":21600,"endpoints":[{"url":"https:\/\/www.facebook.com\/ajax\/browser_error_reports\/"}],"group":"permissions_policy"}'
+  origin-agent-cluster: "?1"
+  Strict-Transport-Security: max-age=31536000; preload; includeSubDomains
+  X-FB-Debug: OKCa2769vgx5ek+QNvohCuK/ZVM6Wxh94ycRC81PZU95IZDdChbL1DtZZjSMWmVXivLA1Vk66aI9y4N/mSmpGg==
+  Date: Tue, 28 Oct 2025 18:10:52 GMT
+  X-FB-Connection-Quality: EXCELLENT; q=0.9, rtt=19, rtx=0, c=14, mss=1380, tbw=4546,
+    tp=-1, tpl=-1, uplat=0, ullat=-1
+  Alt-Svc: h3=":443"; ma=86400
+  Connection: close
+  Content-Length: '3091'
+:content: |-
+  /*1761674586,,JIT Construction: v1029037448,en_US*/
+
+  /**
+   * Copyright (c) 2017-present, Facebook, Inc. All rights reserved.
+   *
+   * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+   * copy, modify, and distribute this software in source code or binary form for use
+   * in connection with the web services and APIs provided by Facebook.
+   *
+   * As with any software that integrates with the Facebook platform, your use of
+   * this software is subject to the Facebook Platform Policy
+   * [http://developers.facebook.com/policy/]. This copyright notice shall be
+   * included in all copies or substantial portions of the software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+   * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+   * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+   * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+   */
+  (function _(a,b,c,d,e){var f=window.console;f&&Math.floor(new Date().getTime()/1e3)-b>7*24*60*60&&f.warn("The Facebook JSSDK is more than 7 days old.");if(window[c])return;if(!window.JSON)return;var g=window[c]={__buffer:{replay:function(){var a=this,b=function(){var b=window[c];a.calls[d][0].split(".").forEach(function(a){return b=b[a]});b.apply(null,a.calls[d][1])};for(var d=0;d<this.calls.length;d++)b();this.calls=[]},calls:[],opts:null},getUserID:function(){return""},getAuthResponse:function(){return null},getAccessToken:function(){return null},init:function(a){g.__buffer.opts=a}};for(b=0;b<d.length;b++){f=d[b];if(f in g)continue;var h=f.split("."),i=h.pop(),j=g;for(var k=0;k<h.length;k++)j=j[h[k]]||(j[h[k]]={});j[i]=function(a){if(a==="init")return;return function(){g.__buffer.calls.push([a,Array.prototype.slice.call(arguments)])}}(f)}k=document.createElement("script");k.src=a;k.async=!0;e&&(k.crossOrigin="anonymous");h=document.getElementsByTagName("script")[0];h.parentNode&&h.parentNode.insertBefore(k,h)})("https:\/\/connect.facebook.net\/en_US\/sdk.js?hash=d92996f25a6392e505576cff703e98bf", 1761674586, "FB", ["AppEvents.EventNames","AppEvents.ParameterNames","AppEvents.activateApp","AppEvents.clearAppVersion","AppEvents.clearUserID","AppEvents.getAppVersion","AppEvents.getUserID","AppEvents.logEvent","AppEvents.logPageView","AppEvents.logPurchase","AppEvents.setAppVersion","AppEvents.setUserID","AppEvents.updateUserProperties","Canvas.Plugin.showPluginElement","Canvas.Plugin.hidePluginElement","Canvas.Prefetcher.addStaticResource","Canvas.Prefetcher.setCollectionMode","Canvas.getPageInfo","Canvas.scrollTo","Canvas.setAutoGrow","Canvas.setDoneLoading","Canvas.setSize","Canvas.setUrlHandler","Canvas.startTimer","Canvas.stopTimer","Event.subscribe","Event.unsubscribe","XFBML.parse","addFriend","api","getAccessToken","getAuthResponse","getLoginStatus","getUserID","init","login","logout","publish","share","ui"], true);

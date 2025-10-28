@@ -1,0 +1,28 @@
+---
+:scope:
+:url: https://play.google.com/log?hasfast=true&authuser=0&format=json
+:body: '[[1,null,null,null,null,null,null,null,null,null,[null,null,null,null,null,null,null,null,[[["Google
+  Chrome","141"],["Not?A_Brand","8"],["Chromium","141"]],0,"macOS","15.6.1","arm","","141.0.7390.123"],[3,1]]],373,[["1761675039393",null,null,null,null,null,null,"[1,40400,243,null,\"824297427.0\",\"HwcBabvcEbvJ5OMPh_HimA8\",null,null,null,\"en\",\"USA\",0,7,377,null,0,0,null,\"og-f58ed614-3207-4e00-a9e6-4cb7353284d8\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,1,null,[2,5,\"gh\",113],null,null,null,null,1]",null,null,null,null,null,null,14400,[null,null,null,"[null,null,[3701384,102772546]]"],null,null,null,null,1]],"1761675040051",null,null,null,null,null,null,null,null,null,null,null,null,null,[[null,[null,null,null,null,null,null,null,null,null,null,null,null,122505695]],9]]'
+:status: 200
+:method: post
+:headers:
+  Access-Control-Allow-Origin: chrome-untrusted://new-tab-page
+  Cross-Origin-Resource-Policy: cross-origin
+  Access-Control-Allow-Credentials: 'true'
+  Access-Control-Allow-Headers: X-Playlog-Web
+  Set-Cookie: NID=526=phdKJDIjlDrlStb8sRoG7vRHRrj1kF-NlpyTBc5yulrsacR29j89HFzAkk4t68VcXKSFgsBP8LnfrLFSwa4w26BUcp6cNRblRkRZHHPPLEUUPsi8Q30NRkGNpFALEugN_BYDnsInJCe6K7Va_XKBhbcIPswIyhgAxFKjdsi6xlGlq1f7HtWZ65Uo698hcr7qjWFHCQ;
+    expires=Wed, 29-Apr-2026 18:10:40 GMT; path=/; domain=.google.com; HttpOnly
+  P3P: CP="This is not a P3P policy! See g.co/p3phelp for more info."
+  Content-Type: text/plain; charset=UTF-8
+  Date: Tue, 28 Oct 2025 18:10:40 GMT
+  Server: Playlog
+  X-XSS-Protection: '0'
+  X-Frame-Options: SAMEORIGIN
+  Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+  Accept-Ranges: none
+  Vary: Accept-Encoding
+  Expires: Tue, 28 Oct 2025 18:10:40 GMT
+  Cache-Control: private
+  Connection: close
+  Transfer-Encoding: chunked
+:content: '["-1",null,[[["ANDROID_BACKUP",0],["BATTERY_STATS",0],["SMART_SETUP",0],["TRON",0]],-3334737594024971225],[],{"175237375":[10000]}]'

@@ -1,0 +1,83 @@
+---
+:scope:
+:url: https://api.stripe.com/v1/payment_methods
+:body: type=card&billing_details[address][postal_code]=&billing_details[email]=test%40gumroad.com&billing_details[name]=Gumhead+Moneybags&card[number]=4000001580000008&card[cvc]=123&card[exp_month]=12&card[exp_year]=25&guid=NA&muid=NA&sid=NA&payment_user_agent=stripe.js%2Fa90afda2c5%3B+stripe-js-v3%2Fa90afda2c5%3B+card-element&referrer=http%3A%2F%2Fapp.test.gumroad.com%3A31337&time_on_page=1310&client_attribution_metadata[client_session_id]=6463dba0-1ce8-4cf7-8b19-125da3914d4a&client_attribution_metadata[merchant_integration_source]=elements&client_attribution_metadata[merchant_integration_subtype]=card-element&client_attribution_metadata[merchant_integration_version]=2017&key=pk_test_ehGPKw3JPRHYiqEEjgJ02ULC&_stripe_version=2023-10-16%3B+risk_in_requirements_beta%3Dv1
+:status: 200
+:method: post
+:headers:
+  Server: nginx
+  Date: Tue, 28 Oct 2025 18:15:12 GMT
+  Content-Type: application/json
+  Content-Length: '1018'
+  Connection: close
+  Access-Control-Allow-Credentials: 'true'
+  Access-Control-Allow-Methods: GET, HEAD, PUT, PATCH, POST, DELETE
+  Access-Control-Allow-Origin: https://js.stripe.com
+  Access-Control-Expose-Headers: Request-Id, Stripe-Manage-Version, Stripe-Should-Retry,
+    X-Stripe-External-Auth-Required, X-Stripe-Privileged-Session-Required
+  Access-Control-Max-Age: '300'
+  Cache-Control: no-cache, no-store
+  Content-Security-Policy: base-uri 'none'; default-src 'none'; form-action 'none';
+    frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src
+    'self'; worker-src 'none'; upgrade-insecure-requests; report-uri https://q.stripe.com/csp-violation?q=--_VUQG9TYn6uhgHvQXfaeiqCgNv9rVYkcKo1QGnis9ATo4basbdBm7tXb4AhlTbBdjY2U9y0NIhEO3k
+  Idempotency-Key: ae047235-2646-4028-ac76-ea6b7fb3a7e4
+  Original-Request: req_4T37aTefdmljwD
+  Request-Id: req_4T37aTefdmljwD
+  Stripe-Should-Retry: 'false'
+  Stripe-Version: 2023-10-16; risk_in_requirements_beta=v1
+  Timing-Allow-Origin: https://js.stripe.com
+  Vary: Origin
+  X-Stripe-Priority-Routing-Enabled: 'true'
+  X-Stripe-Routing-Context-Priority-Tier: api-testmode
+  X-Wc: ABGHIJ
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+:content: |-
+  {
+    "id": "pm_0SNHQJ9e1RjUNIyYPxtx0Kxn",
+    "object": "payment_method",
+    "allow_redisplay": "unspecified",
+    "billing_details": {
+      "address": {
+        "city": null,
+        "country": null,
+        "line1": null,
+        "line2": null,
+        "postal_code": "",
+        "state": null
+      },
+      "email": "test@gumroad.com",
+      "name": "Gumhead Moneybags",
+      "phone": null,
+      "tax_id": null
+    },
+    "card": {
+      "brand": "visa",
+      "checks": {
+        "address_line1_check": null,
+        "address_postal_code_check": null,
+        "cvc_check": null
+      },
+      "country": "TW",
+      "display_brand": "visa",
+      "exp_month": 12,
+      "exp_year": 2025,
+      "funding": "credit",
+      "generated_from": null,
+      "last4": "0008",
+      "networks": {
+        "available": [
+          "visa"
+        ],
+        "preferred": null
+      },
+      "regulated_status": "unregulated",
+      "three_d_secure_usage": {
+        "supported": true
+      },
+      "wallet": null
+    },
+    "created": 1761675312,
+    "customer": null,
+    "livemode": false,
+    "type": "card"
+  }

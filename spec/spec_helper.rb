@@ -57,6 +57,7 @@ def configure_vcr
     config.ignore_hosts "googlechromelabs.github.io"
     config.ignore_hosts "storage.googleapis.com"
     config.ignore_hosts "js.stripe.com"
+    config.ignore_hosts "r.stripe.com"
     config.ignore_request do |request|
       request.uri.match?(/test\.gumroad\.com/)
     end

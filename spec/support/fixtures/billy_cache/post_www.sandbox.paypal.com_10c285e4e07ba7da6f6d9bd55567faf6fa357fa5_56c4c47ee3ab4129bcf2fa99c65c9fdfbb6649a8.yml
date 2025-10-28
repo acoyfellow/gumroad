@@ -1,0 +1,37 @@
+---
+:scope:
+:url: https://www.sandbox.paypal.com/xoplatform/logger/api/logger?disableSetCookie=true
+:body: '{"events":[{"level":"info","event":"paypal_js_sdk_v5_init","payload":{"uidAttribute":"missing","loadTime":299,"cacheType":"sdk_client_cache_miss","jsSdkLibrary":"paypal-js","locale":"en_US","integrationSource":"none","localStorageEnabled":true,"timestamp":"1761678078917","uid":"uid_d610c92942_mtk6mde6mtg","env":"sandbox","clientId":"AaDvLIyF0TTeUBjPB03pAVGcDS5KBMzqdrKr5OUEsvMgA6s9s3S4wZcU4rmUP24Z73xI6xtecb625bl6","csnwCorrelationId":"prebuild","referrer":"app.test.gumroad.com:31337","version":"5.0.515","merchantId":[],"sessionId":"uid_d610c92942_mtk6mde6mtg","userAction":"commit","loadedInFrame":"non_paypal"}}],"meta":{},"tracking":[{"transition_name":"process_js_sdk_init_client","event_name":"process_js_sdk_init_client","sdk_load_time":299,"sdk_cache":"sdk_client_cache_miss","local_storage_enabled":true,"client_id":"AaDvLIyF0TTeUBjPB03pAVGcDS5KBMzqdrKr5OUEsvMgA6s9s3S4wZcU4rmUP24Z73xI6xtecb625bl6","context_correlation_id":"prebuild","serverside_data_source":"checkout","feed_name":"payments_sdk","integration_identifier":"AaDvLIyF0TTeUBjPB03pAVGcDS5KBMzqdrKr5OUEsvMgA6s9s3S4wZcU4rmUP24Z73xI6xtecb625bl6","js_sdk_library":"paypal-js","locale":"en_US","pp_placement":"none","referer_url":"app.test.gumroad.com:31337","sdk_integration_source":"none","sdk_name":"payments_sdk","sdk_version":"5.0.515","seller_id":"","page_session_id":"uid_d610c92942_mtk6mde6mtg","user_action":"commit","user_agent":"Mozilla/5.0
+  (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0
+  Safari/537.36","loaded_in_frame":"non_paypal"}],"metrics":[{"metricNamespace":"pp.sdks.ppcp.sdk_client.init.count","metricEventName":"init","metricValue":1,"metricType":"counter","dimensions":{"components":"buttons","integrationSource":"none","jsSdkLibrary":"paypal-js","localStorageEnabled":true,"pageType":"none","token":"none","userAction":"commit","version":"5.0.515","sdk_platform":"web","major_version":"5","isPayPalDomain":"true"}}]}'
+:status: 200
+:method: post
+:headers:
+  Connection: close
+  Content-Length: '964'
+  Etag: W/"3c4-nCVdsfZBOaVrr4bVZgRnWrVIAPI"
+  Access-Control-Allow-Origin: http://app.test.gumroad.com:31337
+  Origin-Trial: AmF3SS0NWoXo3HaojgmIVVXavukRnZH597u+xZNXRCiKWzSKzfNPHw9NC32GmblY12+HXpkCEYeYGyvRBNkkJg0AAABbeyJvcmlnaW4iOiJodHRwczovL3BheXBhbC5jb206NDQzIiwiZmVhdHVyZSI6IlRwY2QiLCJleHBpcnkiOjE3MzUzNDM5OTksImlzU3ViZG9tYWluIjp0cnVlfQ==
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: max-age=0, no-cache, no-store, must-revalidate
+  Paypal-Debug-Id: f457667136999
+  Permissions-Policy: ch-ua-platform-version=(self "https://c.paypal.com"),ch-ua-arch=(self
+    "https://c.paypal.com"),ch-ua-wow64=(self "https://c.paypal.com"),ch-ua-model=(self
+    "https://c.paypal.com"),ch-ua-bitness=(self "https://c.paypal.com"),ch-ua-full-version=(self
+    "https://c.paypal.com"),ch-ua-full-version-list=(self "https://c.paypal.com")
+  Access-Control-Allow-Credentials: 'true'
+  Http-X-Pp-Az-Locator: ccg18.slc
+  Accept-Ch: sec-ch-ua-full, sec-ch-ua-arch, sec-ch-ua-model, sec-ch-ua-platform-version,
+    sec-ch-ua-full-version, sec-ch-ua-full-version-list, sec-ch-ua-bitness, sec-ch-ua-wow64
+  X-Content-Type-Options: nosniff
+  Accept-Ranges: bytes
+  Via: 1.1 varnish, 1.1 varnish
+  Date: Tue, 28 Oct 2025 18:15:10 GMT
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Served-By: cache-iad-kiad7000052-IAD, cache-iad-kiad7000052-IAD, cache-ewr-kewr1740089-EWR
+  X-Cache: MISS, MISS, MISS
+  X-Cache-Hits: 0, 0, 0
+  X-Timer: S1761675311.761418,VS0,VE111
+  Vary: Accept-Encoding
+:content: '{"sys":{"links":{"jsBaseUrl":"https://www.sandbox.paypal.com/js","cssBaseUrl":"https://www.sandbox.paypal.com/css","templateBaseUrl":"https://www.sandbox.paypal.com/templates","resourceBaseUrl":"https://www.sandbox.paypal.com"},"pageInfo":{"date":"Oct
+  28, 2025 11:15:10 -07:00","hostName":"rZJvnqaaQhLn/nmWT8cSUjOx898qoYZ0gJ/s7uf3ja3w9Sxlr9EhuA","rlogId":"rZJvnqaaQhLn%2FnmWT8cSUmDP%2Bhip7g49eFYVqbGPqtrcf3YgDr9DRBZmxdhAyNCBK3Tx355BwZo_19a2c07f6ed","script":"node","debug":null},"locality":{"timezone":{"determiner":"viaCowPrimary","value":"America/New_York"},"country":"US","locale":"en_US","language":"en","directionality":"ltr"},"tracking":{"fpti":{"name":"pta","jsURL":"https://www.paypalobjects.com","serverURL":"https://t.paypal.com/ts","dataString":"pgrp=loggernodeweb%2F.dust&page=loggernodeweb%2F.dust&pgst=1761675310829&calc=f457667136999&pgtf=Nodejs&env=sandbox&s=ci&csci=41e0b74181574164a6803c883b25e675&comp=loggernodeweb&tsrce=loggernodeweb&cu=0"}}}}'

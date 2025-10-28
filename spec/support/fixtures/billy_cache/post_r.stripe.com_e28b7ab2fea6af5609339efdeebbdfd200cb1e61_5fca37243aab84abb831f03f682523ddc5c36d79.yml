@@ -1,0 +1,18 @@
+---
+:scope:
+:url: https://r.stripe.com/b
+:body: client_id=stripe-js&num_requests=2&events=%5B%7B%22event_name%22%3A%22elements.no_code_default_values_request%22%2C%22created%22%3A1761675482977%2C%22batching_enabled%22%3Atrue%2C%22event_count%22%3A%2246%22%2C%22os%22%3A%22MacOS%22%2C%22browserFamily%22%3A%22Chrome%22%2C%22version%22%3A%22619294786c%22%2C%22event_id%22%3A%22fd521edb-3eff-4b6e-86b3-e153bc8e6823%22%2C%22deploy_status%22%3A%22main%22%2C%22browserClassification%22%3A%22modern%22%2C%22browser_classification_v2%22%3A%222024%22%2C%22connection_rtt%22%3A%2250%22%2C%22connection_downlink%22%3A%2210%22%2C%22connection_effective_type%22%3A%224g%22%2C%22key%22%3A%22pk_test_ehGPKw3JPRHYiqEEjgJ02ULC%22%2C%22key_mode%22%3A%22test%22%2C%22referrer%22%3A%22http%3A%2F%2Fapp.test.gumroad.com%3A31337%22%2C%22stripe_js_id%22%3A%22c5b0991f-08be-45c5-9ce6-135f5e97ca9e%22%2C%22stripe_obj_id%22%3A%22sobj-cd8f204d-8d40-41df-9970-3bd0828f4134%22%2C%22controller_load_time%22%3A%221761675482036%22%2C%22stripe_js_release_train%22%3A%22v3%22%2C%22wrapper%22%3A%22react-stripe-js%22%2C%22wrapper_version%22%3A%222.8.0%22%2C%22es_module%22%3A%22true%22%2C%22es_module_version%22%3A%224.6.0%22%2C%22elements_init_source%22%3A%22stripe.elements%22%2C%22deploy_status_time_to_fetch_ms%22%3A%22349%22%2C%22deploy_status_fetch_failed%22%3A%22false%22%2C%22cdn_name%22%3A%22Cloudfront%22%2C%22cdn_pop_dc%22%3A%22JFK%22%2C%22frame_width%22%3A%222005%22%7D%2C%7B%22event_name%22%3A%22elements.pr.update%22%2C%22created%22%3A1761675483021%2C%22batching_enabled%22%3Atrue%2C%22event_count%22%3A%2247%22%2C%22os%22%3A%22MacOS%22%2C%22browserFamily%22%3A%22Chrome%22%2C%22version%22%3A%22619294786c%22%2C%22event_id%22%3A%22d4283819-1fa5-4537-8a95-c22b30c94a02%22%2C%22deploy_status%22%3A%22main%22%2C%22browserClassification%22%3A%22modern%22%2C%22browser_classification_v2%22%3A%222024%22%2C%22connection_rtt%22%3A%2250%22%2C%22connection_downlink%22%3A%2210%22%2C%22connection_effective_type%22%3A%224g%22%2C%22key%22%3A%22pk_test_ehGPKw3JPRHYiqEEjgJ02ULC%22%2C%22key_mode%22%3A%22test%22%2C%22referrer%22%3A%22http%3A%2F%2Fapp.test.gumroad.com%3A31337%22%2C%22stripe_js_id%22%3A%22c5b0991f-08be-45c5-9ce6-135f5e97ca9e%22%2C%22stripe_obj_id%22%3A%22sobj-cd8f204d-8d40-41df-9970-3bd0828f4134%22%2C%22controller_load_time%22%3A%221761675482036%22%2C%22stripe_js_release_train%22%3A%22v3%22%2C%22wrapper%22%3A%22react-stripe-js%22%2C%22wrapper_version%22%3A%222.8.0%22%2C%22es_module%22%3A%22true%22%2C%22es_module_version%22%3A%224.6.0%22%2C%22elements_init_source%22%3A%22stripe.elements%22%2C%22deploy_status_time_to_fetch_ms%22%3A%22349%22%2C%22deploy_status_fetch_failed%22%3A%22false%22%2C%22cdn_name%22%3A%22Cloudfront%22%2C%22cdn_pop_dc%22%3A%22JFK%22%2C%22frame_width%22%3A%222005%22%2C%22usesButtonElement%22%3A%22false%22%2C%22requestShipping%22%3A%22false%22%7D%5D
+:status: 200
+:method: post
+:headers:
+  Server: nginx
+  Date: Tue, 28 Oct 2025 18:18:05 GMT
+  Content-Length: '0'
+  Connection: close
+  access-control-allow-origin: https://js.stripe.com
+  access-control-allow-credentials: 'true'
+  access-control-allow-methods: POST
+  x-stripe-proxy-response: upstream
+  x-stripe-server-rpc-duration-micros: '6762'
+  Content-Type: text/plain
+:content: ''

@@ -1,0 +1,27 @@
+---
+:scope:
+:url: https://www.gstatic.com/recaptcha/api2/audio_2x.png
+:body: ''
+:status: 200
+:method: get
+:headers:
+  Accept-Ranges: bytes
+  Content-Security-Policy-Report-Only: require-trusted-types-for 'script'; report-uri
+    https://csp.withgoogle.com/csp/recaptcha-scs
+  Cross-Origin-Resource-Policy: cross-origin
+  Cross-Origin-Opener-Policy: same-origin-allow-popups; report-to="recaptcha-scs"
+  Report-To: '{"group":"recaptcha-scs","max_age":2592000,"endpoints":[{"url":"https://csp.withgoogle.com/csp/report-to/recaptcha-scs"}]}'
+  Content-Length: '530'
+  X-Content-Type-Options: nosniff
+  Server: sffe
+  X-XSS-Protection: '0'
+  Date: Wed, 22 Oct 2025 19:15:35 GMT
+  Expires: Wed, 29 Oct 2025 19:15:35 GMT
+  Cache-Control: public, max-age=604800
+  Age: '514780'
+  Last-Modified: Tue, 03 Mar 2020 20:15:00 GMT
+  Content-Type: image/png
+  Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+  Connection: close
+:content: !binary |-
+  iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAGPSURBVFjD7ZbNSkJBGIYfhNRFLVIRooIgKCOXES0qJKh95CX0S3QJQdQFRHgJSRAF3UFGiVEeNKXahLTPEKKNLdQ246DlnD8PbTrfLM/zvc/MnJnDgf9Rw6yRRKNMhQplNJKsMuREtIc4KWo0Oowal6zg6SY+xnPH6NbxyLy9cD8J6obxDRrUOcJvNT7IXVtInn0WiRImTJQlDnhoe35LwEp8gGLL/E4Z70hNcNayxgL9ZuN9ZGTbC1O67DQlyabxmhMkZEuKoCEd4lryh+ZOTnPZVyZn5ONGbuec8bl/EnCJkOl3FuZVdBWN7kVczmXG0qmbldu0rA829/Pc8r25kO9Np0bF/teJWBZMyrWPqKEdAWVt3f2c6N5SIycC2bUl2BPdx2okL5CYLcGC6NbUyLtAxmwJIqL7TY18CaTXlqBPdFfVSPMs2y3DfldgWvBzOMW7AlfgCv5C8OmI4EMtyDgiSKsF244INtUCH4WuBTn9H85B+fNhT6AxYPRN97JBlqplQZV71unBLbfc+lXfLAJXo+SJyOcAAAAASUVORK5CYII=

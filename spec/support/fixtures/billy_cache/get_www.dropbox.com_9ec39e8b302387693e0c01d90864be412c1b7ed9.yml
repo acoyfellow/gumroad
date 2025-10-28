@@ -1,0 +1,21 @@
+---
+:scope:
+:url: https://www.dropbox.com/static/api/2/dropins_sdk_v2.js.map
+:body: ''
+:status: 301
+:method: get
+:headers:
+  Access-Control-Allow-Origin: "*"
+  Timing-Allow-Origin: https://www.dropbox.com
+  Location: https://sources.dropboxstatic.com/static/api/2/dropins_sdk_v2.js.map
+  Vary: Accept-Encoding
+  Date: Tue, 28 Oct 2025 18:11:43 GMT
+  Server: envoy
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Cache-Control: no-cache, no-store
+  Alt-Svc: h3=":443"; ma=86400, h3-29=":443"; ma=86400
+  X-Dropbox-Response-Origin: remote
+  X-Dropbox-Request-Id: 20130f2cad674877a4e0172c69010760
+  Connection: close
+  Content-Length: '0'
+:content: ''

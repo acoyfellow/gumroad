@@ -1,0 +1,300 @@
+---
+:scope:
+:url: https://b.stripecdn.com/stripethirdparty-srv/assets/v31.2/HCaptchaInvisible.b626d998042e46813e0f.bundle.js.map
+:body: ''
+:status: 200
+:method: get
+:headers:
+  Content-Length: '35712'
+  Connection: close
+  Date: Tue, 28 Oct 2025 18:11:41 GMT
+  Last-Modified: Tue, 28 Oct 2025 15:49:53 GMT
+  Cache-Control: max-age=31536000, public
+  Accept-Ranges: bytes
+  Server: Cloudfront
+  Etag: '"32eba98cce637fe0867db411da1c9e82"'
+  Via: 1.1 c22d4946ef5faea12b8d3942ceb9259a.cloudfront.net (CloudFront)
+  Strict-Transport-Security: max-age=31556926; includeSubDomains; preload
+  Timing-Allow-Origin: "*"
+  Vary: Accept-Encoding, Origin
+  X-Content-Type-Options: nosniff
+  X-Cache: Miss from cloudfront
+  X-Amz-Cf-Pop: EWR53-P1
+  X-Amz-Cf-Id: vNCSTKNvZ0KC2Tatqozoqn7Qc1jI4Slb8LgamM_8tyZZPxk34QjzNQ==
+:content: '{"version":3,"sources":["webpack:///webpack/bootstrap","webpack:///./src/entries/initializeSentry.ts","webpack:///./src/shared/constants.ts","webpack:///./src/shared/ids.ts","webpack:///./src/entries/setupMessages.ts","webpack:///./src/entries/initialize.ts","webpack:///./src/shared/HCaptchaInvisibleTypes.ts","webpack:///./src/entries/HCaptchaInvisible/HCaptchaPromise.ts","webpack:///./src/entries/HCaptchaInvisible/HCaptchaInvisible.ts"],"names":["webpackJsonpCallback","data","moduleId","chunkId","chunkIds","moreModules","executeModules","i","resolves","length","Object","prototype","hasOwnProperty","call","installedChunks","push","modules","parentJsonpFunction","shift","deferredModules","apply","checkDeferredModules","result","deferredModule","fulfilled","j","depId","splice","__webpack_require__","s","installedModules","24","exports","module","l","m","c","d","name","getter","o","defineProperty","enumerable","get","r","Symbol","toStringTag","value","t","mode","__esModule","ns","create","key","bind","n","object","property","p","jsonpArray","window","oldJsonpFunction","slice","initializeSentry","init","dsn","process","release","ignoreErrors","denyUrls","integrations","Integrations","GlobalHandlers","onunhandledrejection","Dedupe","makeRequestID","uuidv4","isValidOrigin","origin","startsWith","match","endsWith","setupMessages","frameID","allowNonStripeDomains","Error","send","payload","requestID","message","type","parent","postMessage","resolutions","inboundMessage","event","handleRequest","callback","subscribe","handler","onMessage","outbound","target","addEventListener","removeEventListener","request","keys","Promise","resolve","input","sendError","error","initialize","config","app","owner","setTag","body","document","location","params","URLSearchParams","search","root","getElementById","createElement","setAttribute","appendChild","pathname","messageFunctions","onerror","src","lineno","colno","INPUT_TAGS","OUTPUT_TAGS","_hcaptchaPromise","hcaptcha","captchaLoad","hcaptchaPromise","absurd","sanitize","str","String","replace","globals","errorMessage","instanceMap","hCaptchaInvisible","action","sendMessage","actionTag","instanceElement","instanceId","startTime","rqdata","instance","tag","sitekey","id","render","size","element","forEach","global","map","substring","Date","getTime","execute","async","response","duration","eventName","coordinates","MouseEvent","clientX","x","clientY","y","KeyboardEvent","touch","Touch","identifier","now","TouchEvent","touches","PointerEvent","dispatchEvent","simulateEvent","messageData","respond"],"mappings":"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","file":"HCaptchaInvisible.b626d998042e46813e0f.bundle.js","sourcesContent":["
+  \t// install a JSONP callback for chunk loading\n \tfunction webpackJsonpCallback(data)
+  {\n \t\tvar chunkIds = data[0];\n \t\tvar moreModules = data[1];\n \t\tvar executeModules
+  = data[2];\n\n \t\t// add \"moreModules\" to the modules object,\n \t\t// then flag
+  all \"chunkIds\" as loaded and fire callback\n \t\tvar moduleId, chunkId, i = 0,
+  resolves = [];\n \t\tfor(;i < chunkIds.length; i++) {\n \t\t\tchunkId = chunkIds[i];\n
+  \t\t\tif(Object.prototype.hasOwnProperty.call(installedChunks, chunkId) && installedChunks[chunkId])
+  {\n \t\t\t\tresolves.push(installedChunks[chunkId][0]);\n \t\t\t}\n \t\t\tinstalledChunks[chunkId]
+  = 0;\n \t\t}\n \t\tfor(moduleId in moreModules) {\n \t\t\tif(Object.prototype.hasOwnProperty.call(moreModules,
+  moduleId)) {\n \t\t\t\tmodules[moduleId] = moreModules[moduleId];\n \t\t\t}\n \t\t}\n
+  \t\tif(parentJsonpFunction) parentJsonpFunction(data);\n\n \t\twhile(resolves.length)
+  {\n \t\t\tresolves.shift()();\n \t\t}\n\n \t\t// add entry modules from loaded chunk
+  to deferred list\n \t\tdeferredModules.push.apply(deferredModules, executeModules
+  || []);\n\n \t\t// run deferred modules when all chunks ready\n \t\treturn checkDeferredModules();\n
+  \t};\n \tfunction checkDeferredModules() {\n \t\tvar result;\n \t\tfor(var i = 0;
+  i < deferredModules.length; i++) {\n \t\t\tvar deferredModule = deferredModules[i];\n
+  \t\t\tvar fulfilled = true;\n \t\t\tfor(var j = 1; j < deferredModule.length; j++)
+  {\n \t\t\t\tvar depId = deferredModule[j];\n \t\t\t\tif(installedChunks[depId] !==
+  0) fulfilled = false;\n \t\t\t}\n \t\t\tif(fulfilled) {\n \t\t\t\tdeferredModules.splice(i--,
+  1);\n \t\t\t\tresult = __webpack_require__(__webpack_require__.s = deferredModule[0]);\n
+  \t\t\t}\n \t\t}\n\n \t\treturn result;\n \t}\n\n \t// The module cache\n \tvar installedModules
+  = {};\n\n \t// object to store loaded and loading chunks\n \t// undefined = chunk
+  not loaded, null = chunk preloaded/prefetched\n \t// Promise = chunk loading, 0
+  = chunk loaded\n \tvar installedChunks = {\n \t\t24: 0\n \t};\n\n \tvar deferredModules
+  = [];\n\n \t// The require function\n \tfunction __webpack_require__(moduleId) {\n\n
+  \t\t// Check if module is in cache\n \t\tif(installedModules[moduleId]) {\n \t\t\treturn
+  installedModules[moduleId].exports;\n \t\t}\n \t\t// Create a new module (and put
+  it into the cache)\n \t\tvar module = installedModules[moduleId] = {\n \t\t\ti:
+  moduleId,\n \t\t\tl: false,\n \t\t\texports: {}\n \t\t};\n\n \t\t// Execute the
+  module function\n \t\tmodules[moduleId].call(module.exports, module, module.exports,
+  __webpack_require__);\n\n \t\t// Flag the module as loaded\n \t\tmodule.l = true;\n\n
+  \t\t// Return the exports of the module\n \t\treturn module.exports;\n \t}\n\n\n
+  \t// expose the modules object (__webpack_modules__)\n \t__webpack_require__.m =
+  modules;\n\n \t// expose the module cache\n \t__webpack_require__.c = installedModules;\n\n
+  \t// define getter function for harmony exports\n \t__webpack_require__.d = function(exports,
+  name, getter) {\n \t\tif(!__webpack_require__.o(exports, name)) {\n \t\t\tObject.defineProperty(exports,
+  name, { enumerable: true, get: getter });\n \t\t}\n \t};\n\n \t// define __esModule
+  on exports\n \t__webpack_require__.r = function(exports) {\n \t\tif(typeof Symbol
+  !== ''undefined'' && Symbol.toStringTag) {\n \t\t\tObject.defineProperty(exports,
+  Symbol.toStringTag, { value: ''Module'' });\n \t\t}\n \t\tObject.defineProperty(exports,
+  ''__esModule'', { value: true });\n \t};\n\n \t// create a fake namespace object\n
+  \t// mode & 1: value is a module id, require it\n \t// mode & 2: merge all properties
+  of value into the ns\n \t// mode & 4: return value when already ns object\n \t//
+  mode & 8|1: behave like require\n \t__webpack_require__.t = function(value, mode)
+  {\n \t\tif(mode & 1) value = __webpack_require__(value);\n \t\tif(mode & 8) return
+  value;\n \t\tif((mode & 4) && typeof value === ''object'' && value && value.__esModule)
+  return value;\n \t\tvar ns = Object.create(null);\n \t\t__webpack_require__.r(ns);\n
+  \t\tObject.defineProperty(ns, ''default'', { enumerable: true, value: value });\n
+  \t\tif(mode & 2 && typeof value != ''string'') for(var key in value) __webpack_require__.d(ns,
+  key, function(key) { return value[key]; }.bind(null, key));\n \t\treturn ns;\n \t};\n\n
+  \t// getDefaultExport function for compatibility with non-harmony modules\n \t__webpack_require__.n
+  = function(module) {\n \t\tvar getter = module && module.__esModule ?\n \t\t\tfunction
+  getDefault() { return module[''default'']; } :\n \t\t\tfunction getModuleExports()
+  { return module; };\n \t\t__webpack_require__.d(getter, ''a'', getter);\n \t\treturn
+  getter;\n \t};\n\n \t// Object.prototype.hasOwnProperty.call\n \t__webpack_require__.o
+  = function(object, property) { return Object.prototype.hasOwnProperty.call(object,
+  property); };\n\n \t// __webpack_public_path__\n \t__webpack_require__.p = \"\";\n\n
+  \tvar jsonpArray = window[\"webpackJsonp\"] = window[\"webpackJsonp\"] || [];\n
+  \tvar oldJsonpFunction = jsonpArray.push.bind(jsonpArray);\n \tjsonpArray.push =
+  webpackJsonpCallback;\n \tjsonpArray = jsonpArray.slice();\n \tfor(var i = 0; i
+  < jsonpArray.length; i++) webpackJsonpCallback(jsonpArray[i]);\n \tvar parentJsonpFunction
+  = oldJsonpFunction;\n\n\n \t// add entry module to deferred list\n \tdeferredModules.push([897,0]);\n
+  \t// run deferred modules when ready\n \treturn checkDeferredModules();\n","import
+  {Dedupe} from ''@sentry/integrations'';\nimport {init, Integrations} from ''@sentry/browser'';\n\nexport
+  const initializeSentry = (): void => {\n  init({\n    dsn: process.env.SENTRY_DSN,\n    release:
+  process.env.SENTRY_RELEASE,\n    ignoreErrors: [\n      // Random plugins/extensions\n      ''top.GLOBALS'',\n      //
+  See: http://blog.errorception.com/2012/03/tale-of-unfindable-js-error.html\n      ''originalCreateNotification'',\n      ''canvas.contentDocument'',\n      ''MyApp_RemoveAllHighlights'',\n      ''http://tt.epicplay.com'',\n      \"Can''t
+  find variable: ZiteReader\",\n      ''jigsaw is not defined'',\n      ''ComboSearch
+  is not defined'',\n      ''http://loading.retry.widdit.com/'',\n      ''atomicFindClose'',\n      //
+  Facebook borked\n      ''fb_xd_fragment'',\n      // ISP \"optimizing\" proxy -
+  `Cache-Control: no-transform` seems to reduce this. (thanks @acdha)\n      // See
+  http://stackoverflow.com/questions/4113268/how-to-stop-javascript-injection-from-vodafone-proxy\n      ''bmi_SafeAddOnload'',\n      ''EBCallBackMessageReceived'',\n      //
+  See http://toolbar.conduit.com/Developer/HtmlAndGadget/Methods/JSInjection.aspx\n      ''conduitPage'',\n      //
+  Generic error code from errors outside the security sandbox\n      // You can delete
+  this if using raven.js > 1.0, which ignores these automatically.\n      ''Script
+  error.'',\n    ],\n    denyUrls: [\n      // Facebook flakiness\n      /graph\\.facebook\\.com/i,\n      //
+  Facebook blocked\n      /connect\\.facebook\\.net\\/en_US\\/all\\.js/i,\n      //
+  Woopra flakiness\n      /eatdifferent\\.com\\.woopra-ns\\.com/i,\n      /static\\.woopra\\.com\\/js\\/woopra\\.js/i,\n      //
+  Chrome extensions\n      /extensions\\//i,\n      /^chrome:\\/\\//i,\n      // Other
+  plugins\n      /127\\.0\\.0\\.1:4001\\/isrunning/i, // Cacaoweb\n      /webappstoolbarba\\.texthelp\\.com\\//i,\n      /metrics\\.itunes\\.apple\\.com\\.edgesuite\\.net\\//i,\n    ],\n    integrations:
+  [\n      // @ts-expect-error - TS2345 - Argument of type ''{ onunhandledrejection:
+  false; }'' is not assignable to parameter of type ''GlobalHandlersIntegrations''.\n      new
+  Integrations.GlobalHandlers({\n        onunhandledrejection: false,\n      }),\n      new
+  Dedupe(),\n    ],\n  });\n};\n","import type {ChildDefs} from ''./types'';\n\nexport
+  const PARENT_TO_CHILD_TYPE =\n  ''stripe-third-party-parent-to-child'' as const;\nexport
+  const CHILD_TO_PARENT_TYPE =\n  ''stripe-third-party-child-to-parent'' as const;\nexport
+  const READY_TYPE = ''stripe-third-party-frame-ready'' as const;\nexport const ERROR_TYPE
+  = ''stripe-third-party-frame-error'' as const;\nexport const CHILD_DEFINITIONS:
+  ChildDefs = {\n  ShopPayButton: {path: ''ShopPayButton.html''},\n  DemoPayButton:
+  {path: ''DemoPayButton.html''},\n  Arkose: {path: ''Arkose.html''},\n  ArkoseActive:
+  {path: ''ArkoseActive.html''},\n  AddressAutocomplete: {path: ''AddressAutocomplete.html''},\n  AffirmInContext:
+  {path: ''AffirmInContext.html''},\n  AfterpayInContext: {path: ''AfterpayInContext.html''},\n  AmazonPayButton:
+  {path: ''AmazonPayButton.html''},\n  ApplePay: {path: ''ApplePay.html''},\n  IssuingAddToAppleWalletButton:
+  {path: ''IssuingAddToAppleWalletButton.html''},\n  IssuingAddToGoogleWalletButton:
+  {path: ''IssuingAddToGoogleWalletButton.html''},\n  AuthMap: {path: ''AuthMap.html''},\n  DynamicMap:
+  {path: ''DynamicMap.html''},\n  GlanceAgentSdk: {path: ''GlanceAgentSdk.html''},\n  GoogleAnalytics:
+  {path: ''GoogleAnalytics.html''},\n  GoogleTagManager: {path: ''GoogleTagManager.html''},\n  GoogleMaps:
+  {path: ''GoogleMaps.html''},\n  GoogleAPI: {path: ''GoogleAPI.html''},\n  GooglePay:
+  {path: ''GooglePay.html''},\n  GoogleUserContent: {path: ''GoogleUserContent.html''},\n  HCaptcha:
+  {path: ''HCaptcha.html''},\n  HCaptchaInvisible: {path: ''HCaptchaInvisible.html''},\n  HumanSecurity:
+  {path: ''HumanSecurity.html''},\n  HumanSecurityActive: {path: ''HumanSecurityActive.html''},\n  HomeFeedItemPreview:
+  {path: ''HomeFeedItemPreview.html''},\n  Iovation: {path: ''iovation.html''},\n  KlarnaExpressButton:
+  {path: ''KlarnaExpressButton.html''},\n  KlarnaInContext: {path: ''KlarnaInContext.html''},\n  KlarnaTILA:
+  {path: ''KlarnaTILA.html''},\n  KnakEmailPreview: {path: ''KnakEmailPreview.html''},\n  LeanDataBookit:
+  {path: ''LeanDataBookit.html''},\n  LeanDataCustomCalendarBooking: {path: ''LeanDataCustomCalendarBooking.html''},\n  RLogger:
+  {path: ''RLogger.html''},\n  Sprig: {path: ''Sprig.html''},\n  SprigV2: {path: ''SprigV2.html''},\n  StaticMap:
+  {path: ''StaticMap.html''},\n  StatusSite: {path: ''StatusSite.html''},\n  StripeJsV3:
+  {path: ''StripeJsV3.html''},\n  TelnyxVoice: {path: ''TelnyxVoice.html''},\n  Twilio:
+  {path: ''Twilio.html''},\n  TwilioConversations: {path: ''TwilioConversations.html''},\n  TwilioVoice:
+  {path: ''TwilioVoice.html''},\n  TwitterEmbed: {path: ''TwitterEmbed.html''},\n  YouTubePlayer:
+  {path: ''YouTubePlayer.html''},\n  PaypalECS: {path: ''PaypalECS.html''},\n  PaypalFraudnet:
+  {path: ''PaypalFraudnet.html''},\n  PrivacyCompliance: {path: ''PrivacyCompliance.html''},\n  Privy:
+  {path: ''Privy.html''},\n  LedgerWallet: {path: ''LedgerWallet.html''},\n  MillicastViewer:
+  {path: ''MillicastViewer.html''},\n  Perfetto: {path: ''Perfetto.html''},\n  RechnungDeviceFingerprint:
+  {path: ''RechnungDeviceFingerprint.html''},\n  Wordly: {path: ''Wordly.html''},\n  LinkAuthPartnerships:
+  {path: ''LinkAuthPartnerships.html''},\n  LinkPartnerOAuth: {path: ''LinkPartnerOAuth.html''},\n};\n","import
+  {v4 as uuidv4} from ''uuid'';\n\nexport const makeFrameID: () => string = uuidv4;\nexport
+  const makeRequestID: () => string = uuidv4;\n","import {\n  CHILD_TO_PARENT_TYPE,\n  ERROR_TYPE,\n  PARENT_TO_CHILD_TYPE,\n  READY_TYPE,\n}
+  from ''../shared/constants'';\nimport type {\n  ChildTypes,\n  ErrorMessageData,\n  InboundMessageData,\n  InputType,\n  OutboundMessageData,\n  OutputType,\n  ReadyMessageData,\n}
+  from ''../shared/types'';\nimport {makeRequestID} from ''../shared/ids'';\n\nexport
+  type SendFn<Type extends ChildTypes> = (arg1: OutputType<Type>) => void;\ntype ErrorFn
+  = (error: Error) => void;\nexport type RequestFn<Type extends ChildTypes> = (\n  arg1:
+  OutputType<Type>,\n) => Promise<InputType<Type>>;\ntype HandlerFn<Type extends ChildTypes>
+  = (\n  arg1: InputType<Type>,\n  arg2: SendFn<Type>,\n) => unknown; // Allow for
+  an async handler\nexport type SubscribeFn<Type extends ChildTypes> = (\n  arg1:
+  HandlerFn<Type>,\n) => () => void;\n\nexport type MessageFunctions<Type extends
+  ChildTypes> = {\n  subscribe: SubscribeFn<Type>;\n  send: SendFn<Type>;\n  request:
+  RequestFn<Type>;\n};\n\n// todo dish/bender: Determine what this allowlist should
+  look like.\nexport const isValidOrigin = (origin: string) => {\n  return (\n    //
+  We allow localhost and stripe.me for local/devbox ergonomics even\n    // in production,
+  but you should still ensure you verify changes with\n    // tests/storybook before
+  deploying to prod.\n    origin.startsWith(''http://localhost:'') ||\n    origin.startsWith(''http://127.0.0.1:'')
+  ||\n    origin.match(/.+\\.stripe\\.me(?::\\d+)?$/) !== null ||\n    origin.endsWith(''.stripe.com'')
+  ||\n    origin.endsWith(''.link.co'') ||\n    origin.endsWith(''.link.com'') ||\n    origin
+  === ''https://stripe.com'' ||\n    origin === ''https://link.co'' ||\n    origin
+  === ''https://link.com''\n  );\n};\n\nexport const setupMessages = <Type extends
+  ChildTypes>(\n  frameID: string,\n  origin: string,\n  allowNonStripeDomains: boolean,\n):
+  MessageFunctions<Type> & {\n  sendError: ErrorFn;\n} => {\n  if (!allowNonStripeDomains
+  && !isValidOrigin(origin)) {\n    throw new Error(''Invalid origin passed to thirdparty
+  frame'');\n  }\n\n  const send = (payload: OutputType<Type>, requestID: string |
+  null = null) => {\n    const message: OutboundMessageData<Type> = {\n      type:
+  CHILD_TO_PARENT_TYPE,\n      frameID,\n      payload,\n      requestID,\n    };\n    window.parent.postMessage(message,
+  origin);\n  };\n\n  const sendReadyMessage = () => {\n    const message: ReadyMessageData
+  = {\n      type: READY_TYPE,\n      frameID,\n    };\n    window.parent.postMessage(message,
+  origin);\n  };\n\n  const sendError = (error: Error) => {\n    const message: ErrorMessageData
+  = {\n      type: ERROR_TYPE,\n      frameID,\n      error,\n    };\n    window.parent.postMessage(message,
+  origin);\n  };\n\n  const resolutions: {\n    [key: string]: (arg1: InputType<Type>)
+  => void;\n  } = {};\n\n  const inboundMessage = (\n    event: MessageEvent,\n  ):
+  InboundMessageData<Type> | null | undefined => {\n    const {data, origin: eventOrigin}
+  = event;\n    return eventOrigin === origin &&\n      !!data &&\n      typeof data
+  === ''object'' &&\n      data.type === PARENT_TO_CHILD_TYPE &&\n      data.frameID
+  === frameID\n      ? (data as any)\n      : null;\n  };\n\n  const handleRequest
+  = (event: MessageEvent) => {\n    const data = inboundMessage(event);\n    if (data)
+  {\n      const {requestID, payload} = data;\n      const callback = typeof requestID
+  === ''string'' && resolutions[requestID];\n      if (callback) {\n        callback(payload);\n      }\n    }\n  };\n\n  const
+  request = (payload: OutputType<Type>) => {\n    if (Object.keys(resolutions).length
+  === 0) {\n      const target: EventTarget = window;\n      target.addEventListener(''message'',
+  handleRequest as (e: Event) => void);\n    }\n    return new Promise((resolve: (result:
+  Promise<never>) => void) => {\n      const requestID = makeRequestID();\n      resolutions[requestID]
+  = (input: InputType<Type>) => {\n        // @ts-expect-error - TS2345 - Argument
+  of type ''AddressAutocompleteInboundPayload | AuthMapInboundPayload | DynamicMapPayload
+  | GoogleAnalyticsInboundPayload | ... 10 more ...'' is not assignable to parameter
+  of type ''Promise<never>''.\n        resolve(input);\n        delete resolutions[requestID];\n        if
+  (Object.keys(resolutions).length === 0) {\n          const target: EventTarget =
+  window;\n          target.removeEventListener(\n            ''message'',\n            handleRequest
+  as (e: Event) => void,\n          );\n        }\n      };\n      send(payload, requestID);\n    });\n  };\n\n  const
+  subscribe = (handler: HandlerFn<Type>) => {\n    const onMessage = (event: MessageEvent)
+  => {\n      const data = inboundMessage(event);\n      if (data) {\n        const
+  {requestID, payload} = data;\n        if (!(typeof requestID === ''string'' && resolutions[requestID]))
+  {\n          handler(payload, (outbound) => send(outbound, requestID));\n        }\n      }\n    };\n\n    const
+  target = window as EventTarget;\n    target.addEventListener(''message'', onMessage
+  as (e: Event) => void);\n    sendReadyMessage();\n\n    return () => {\n      target.removeEventListener(''message'',
+  onMessage as (e: Event) => void);\n    };\n  };\n\n  return {\n    subscribe,\n    send:
+  (payload) => send(payload, null),\n    request,\n    sendError,\n  };\n};\n","import
+  {setTag} from ''@sentry/browser'';\n\nimport {initializeSentry} from ''./initializeSentry'';\nimport
+  type {MessageFunctions} from ''./setupMessages'';\nimport {setupMessages} from ''./setupMessages'';\nimport
+  {ChildTypes} from ''../shared/types'';\n\nexport type AppConfig<Type extends ChildTypes>
+  = MessageFunctions<Type> & {\n  root: HTMLElement;\n};\n\nexport type InitConfig<Type
+  extends ChildTypes> = {\n  owner: string;\n  app: (config: AppConfig<Type>) => unknown;\n};\n\nexport
+  const ROOT_ID = ''root'';\n\nexport const initialize = <Type extends ChildTypes>(\n  config:
+  InitConfig<Type>,\n) => {\n  initializeSentry();\n\n  const {app, owner} = config;\n  setTag(''owner'',
+  owner);\n  const {body, location} = document;\n  const params = new URLSearchParams(location.search.slice(1));\n  const
+  frameID = params.get(''id'');\n  const origin = params.get(''origin'');\n\n  if
+  (body && frameID && origin) {\n    setTag(''origin'', origin);\n    const root =\n      document.getElementById(ROOT_ID)
+  || document.createElement(''div'');\n    root.setAttribute(''id'', ROOT_ID);\n    body.appendChild(root);\n    const
+  allowNonStripeDomains = location.pathname.endsWith(''/RLogger.html'');\n    const
+  {sendError, ...messageFunctions} = setupMessages(\n      frameID,\n      origin,\n      allowNonStripeDomains,\n    );\n    window.onerror
+  = (\n      message: any,\n      src: any,\n      lineno: any,\n      colno: any,\n      error:
+  any,\n    ) => {\n      sendError(error || new Error(message));\n    };\n    //
+  @ts-expect-error - TS2345 - Argument of type ''{ subscribe: SubscribeFn<keyof ChildDataTypes>;
+  send: SendFn<keyof ChildDataTypes>; request: RequestFn<keyof ChildDataTypes>; root:
+  HTMLElement; }'' is not assignable to parameter of type ''AppConfig<Type>''.\n    app({root,
+  ...messageFunctions});\n  }\n};\n","export const INPUT_TAGS = {\n  execute: ''EXECUTE_HCAPTCHA_INVISIBLE'',\n  initialize:
+  ''INITIALIZE_HCAPTCHA_INVISIBLE'',\n  sendFraudSignals: ''SEND_FRAUD_SIGNALS_HCAPTCHA_INVISIBLE'',\n}
+  as const;\nexport const OUTPUT_TAGS = {\n  response: ''RESPONSE_HCAPTCHA_INVISIBLE'',\n  error:
+  ''ERROR_HCAPTCHA_INVISIBLE'',\n  load: ''LOAD_HCAPTCHA_INVISIBLE'',\n  sendComplete:
+  ''SEND_COMPLETE_HCAPTCHA_INVISIBLE'',\n} as const;\n\nexport type InitializeHCaptchaInput
+  = {\n  tag: typeof INPUT_TAGS.initialize;\n  message: {\n    sitekey: string;\n  };\n};\n\nexport
+  type ExecuteHCaptchaInput = {\n  tag: typeof INPUT_TAGS.execute;\n  message: {\n    data:
+  Record<string, string>;\n    sitekey: string;\n    rqdata?: string;\n  };\n};\n\nexport
+  type EventType = ''mouse'' | ''keyboard'' | ''touch'' | ''pointer'';\n\nexport type
+  EventName =\n  | ''mousemove''\n  | ''mousedown''\n  | ''mouseup''\n  | ''keydown''\n  |
+  ''keyup''\n  | ''touchmove''\n  | ''touchstart''\n  | ''touchend''\n  | ''pointermove''\n  |
+  ''pointerdown''\n  | ''pointerup'';\n\nexport type SendFraudSignalsHCaptchaInput
+  = {\n  tag: typeof INPUT_TAGS.sendFraudSignals;\n  message: {\n    type: EventType;\n    eventName:
+  EventName;\n    coordinates?: {x: number; y: number};\n  };\n};\n\nexport type HCaptchaInvisibleInboundPayload
+  =\n  | InitializeHCaptchaInput\n  | ExecuteHCaptchaInput\n  | SendFraudSignalsHCaptchaInput;\n\nexport
+  type HCaptchaResponseOutboundPayload = {\n  tag: typeof OUTPUT_TAGS.response;\n  value:
+  {\n    response: string;\n    key: string;\n    duration: number;\n  };\n};\nexport
+  type HCaptchaErrorOutboundPayload = {\n  tag: typeof OUTPUT_TAGS.error;\n  value:
+  {\n    error: string;\n  };\n};\nexport type HCaptchaLoadOutboundPayload = {\n  tag:
+  typeof OUTPUT_TAGS.load;\n};\n\nexport type HCaptchaSendCompleteOutboundPayload
+  = {\n  tag: typeof OUTPUT_TAGS.sendComplete;\n};\n\nexport type HCaptchaInvisibleOutboundPayload
+  =\n  | HCaptchaResponseOutboundPayload\n  | HCaptchaErrorOutboundPayload\n  | HCaptchaLoadOutboundPayload\n  |
+  HCaptchaSendCompleteOutboundPayload;\n","// eslint-disable-next-line spaced-comment\n///
+  <reference types=\"@hcaptcha/types\"/>\n\nconst _hcaptchaPromise: Promise<HCaptcha>
+  = new Promise((resolve) => {\n  if (window.hcaptcha) {\n    resolve(window.hcaptcha);\n  }\n\n  //
+  hcaptcha will sometimes console.log a warning if the load fn doesn''t\n  // exist,
+  so just always defined it even if we''ve already resolved above.\n  // @ts-expect-error
+  TS2339\n  window.captchaLoad = () => {\n    resolve(window.hcaptcha);\n  };\n});\nconst
+  hcaptchaPromise = () => _hcaptchaPromise;\n\nexport default hcaptchaPromise;\n","import
+  type {AppConfig} from ''../initialize'';\nimport type {\n  EventName,\n  EventType,\n  HCaptchaInvisibleInboundPayload
+  as InboundPayload,\n  HCaptchaInvisibleOutboundPayload as OutboundPayload,\n} from
+  ''../../shared/HCaptchaInvisibleTypes'';\nimport {initialize} from ''../initialize'';\nimport
+  {INPUT_TAGS, OUTPUT_TAGS} from ''../../shared/HCaptchaInvisibleTypes'';\nimport
+  hcaptchaPromise from ''./HCaptchaPromise'';\nimport type {SendFn} from ''../setupMessages'';\n\nconst
+  absurd = (value: never) => {\n  throw new Error(`Unexpected value: ${value}`);\n};\n\nconst
+  sanitize = (str: string) => {\n  return String(str).replace(/\\W/g, ''_'');\n};\n\n//
+  HCaptcha will consume window globals, but just the variable names, not their values.\n//
+  Each execute supports passing arbitrary data and we''ll transform it into variable
+  names\n// and set them on window (and also clearing previously set ones).\nlet globals:
+  Array<string> = [];\nconst setGlobals = (data: Record<string, string>) => {\n  //
+  Clear the previous globals we\n  globals.forEach((global: string) => {\n    // @ts-expect-error
+  TS7015\n    delete window[global];\n  });\n\n  globals = Object.keys(data).map((key)
+  => {\n    return `stripe_${sanitize(key)}_${sanitize(data[key])}`.substring(0, 10000);\n  });\n\n  globals.forEach((key)
+  => {\n    // @ts-expect-error TS7015\n    window[key] = null;\n  });\n};\n\n// we
+  dispatch the motion event that occurs on the merchant''s page\n// on the hcaptcha
+  iframe, so the event is used when calculating the\n// captcha score\nconst simulateEvent
+  = (\n  type: EventType,\n  eventName: EventName,\n  coordinates?: {x: number; y:
+  number},\n) => {\n  let event;\n  switch (type) {\n    case ''mouse'':\n      if
+  (coordinates) {\n        event = new MouseEvent(eventName, {\n          clientX:
+  coordinates.x,\n          clientY: coordinates.y,\n        });\n      }\n      break;\n    case
+  ''keyboard'':\n      event = new KeyboardEvent(eventName);\n      break;\n    case
+  ''touch'':\n      if (coordinates) {\n        const touch = new Touch({\n          identifier:
+  Date.now(),\n          clientX: coordinates.x,\n          clientY: coordinates.y,\n          //
+  default to using iframe''s body as the target\n          target: document.body,\n        });\n        event
+  = new TouchEvent(eventName, {touches: [touch]});\n      }\n      break;\n    case
+  ''pointer'':\n      if (coordinates) {\n        event = new PointerEvent(eventName,
+  {\n          clientX: coordinates.x,\n          clientY: coordinates.y,\n        });\n      }\n      break;\n    default:\n      return;\n  }\n  if
+  (event) {\n    document.dispatchEvent(event);\n  }\n};\n\nconst errorMessage = (error:
+  unknown) => {\n  if (typeof error === ''string'') {\n    return error;\n  }\n\n  if
+  (error instanceof Error) {\n    return error.message;\n  }\n\n  return ''unknown'';\n};\n\ntype
+  HCaptchaInstance = {\n  element: HTMLElement;\n  id: string;\n};\nconst instanceMap:
+  Record<string, HCaptchaInstance> = {};\n\nexport const hCaptchaInvisible = async
+  (\n  root: HTMLElement,\n  action: InboundPayload,\n  sendMessage: SendFn<''HCaptchaInvisible''>,\n):
+  Promise<OutboundPayload> => {\n  const actionTag = action.tag;\n  const hcaptcha
+  = await hcaptchaPromise();\n\n  switch (actionTag) {\n    case INPUT_TAGS.initialize:\n      if
+  (instanceMap[action.message.sitekey]) {\n        return {tag: OUTPUT_TAGS.load};\n      }\n\n      const
+  instanceElement = document.createElement(''div'');\n      instanceElement.id = `hcaptcha-invisible-${action.message.sitekey}`;\n      root.appendChild(instanceElement);\n\n      const
+  instanceId = hcaptcha.render(instanceElement, {\n        sitekey: action.message.sitekey,\n        size:
+  ''invisible'',\n        ''error-callback'': (error: string) => {\n          sendMessage({\n            tag:
+  OUTPUT_TAGS.error,\n            value: {\n              error: errorMessage(error),\n            },\n          });\n        },\n      });\n\n      instanceMap[action.message.sitekey]
+  = {\n        element: instanceElement,\n        id: instanceId,\n      };\n\n      return
+  {tag: OUTPUT_TAGS.load};\n\n    case INPUT_TAGS.execute:\n      setGlobals(action.message.data);\n      const
+  startTime = new Date().getTime();\n      const {rqdata} = action.message;\n\n      const
+  instance = instanceMap[action.message.sitekey];\n\n      let result;\n      if (instance)
+  {\n        result = await hcaptcha.execute(instance.id, {\n          async: true,\n          ...(rqdata
+  ? {rqdata} : null),\n        });\n      } else {\n        result = await hcaptcha.execute({\n          async:
+  true,\n          ...(rqdata ? {rqdata} : null),\n        });\n      }\n\n      if
+  (!result) {\n        throw new Error(''expected execute promise'');\n      }\n\n      return
+  {\n        tag: OUTPUT_TAGS.response,\n        value: {\n          response: result.response,\n          key:
+  result.key || '''',\n          duration: new Date().getTime() - startTime,\n        },\n      };\n\n    case
+  INPUT_TAGS.sendFraudSignals:\n      simulateEvent(\n        action.message.type,\n        action.message.eventName,\n        action.message.coordinates,\n      );\n      return
+  {\n        tag: OUTPUT_TAGS.sendComplete,\n      };\n\n    default:\n      return
+  absurd(actionTag);\n  }\n};\n\nconst app = ({root, subscribe, send}: AppConfig<''HCaptchaInvisible''>)
+  => {\n  subscribe(async (messageData, respond) => {\n    respond(await hCaptchaInvisible(root,
+  messageData, send));\n  });\n};\n\ninitialize({\n  app,\n  owner: ''checkout'',\n});\n"],"sourceRoot":""}'

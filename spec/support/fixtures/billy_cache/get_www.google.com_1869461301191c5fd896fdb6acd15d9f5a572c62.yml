@@ -1,0 +1,27 @@
+---
+:scope:
+:url: https://www.google.com/recaptcha/enterprise/webworker.js?hl=en&v=-PgDGgfmUF0ySmnjMTJjzqak
+:body: ''
+:status: 200
+:method: get
+:headers:
+  Content-Type: text/javascript; charset=utf-8
+  Cross-Origin-Embedder-Policy: require-corp
+  Report-To:
+  - '{"group":"recaptcha","max_age":2592000,"endpoints":[{"url":"https://csp.withgoogle.com/csp/report-to/recaptcha"}]}'
+  - '{"group":"coop_38fac9d5b82543fc4729580d18ff2d3d","max_age":2592000,"endpoints":[{"url":"https://csp.withgoogle.com/csp/report-to/38fac9d5b82543fc4729580d18ff2d3d"}]}'
+  Expires: Tue, 28 Oct 2025 18:10:53 GMT
+  Date: Tue, 28 Oct 2025 18:10:53 GMT
+  Cache-Control: private, max-age=300
+  Cross-Origin-Resource-Policy: same-site
+  Cross-Origin-Opener-Policy-Report-Only: same-origin; report-to="coop_38fac9d5b82543fc4729580d18ff2d3d"
+  Server: ESF
+  X-XSS-Protection: '0'
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+  Accept-Ranges: none
+  Vary: Accept-Encoding
+  Connection: close
+  Transfer-Encoding: chunked
+:content: importScripts('https://www.gstatic.com/recaptcha/releases/-PgDGgfmUF0ySmnjMTJjzqak/recaptcha__en.js');

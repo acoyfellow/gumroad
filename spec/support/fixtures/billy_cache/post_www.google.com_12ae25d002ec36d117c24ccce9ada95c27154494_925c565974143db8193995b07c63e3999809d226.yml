@@ -1,0 +1,21 @@
+---
+:scope:
+:url: https://www.google.com/recaptcha/enterprise/clr?k=6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
+:body: !binary |-
+  Cig2TGVJeEFjVEFBQUFBSmNaVlJxeUhoNzFVTUlFR05RX01YamlaS2hJEgAaGC1QZ0RHZ2ZtVUYweVNtbmpNVEpqenFhayJpGAAqXAoKCAUQoQcY6AEgAQoICAUQzKMBGDkKCggFEL/rARhFIAEKCggFEMCIAxhRIAEKCggDEMDrARiFwQIKBwgUEMYCGGwKBwgSELwDGCcKCAgTEKIHGOkBEgQIARABOAJAoJwBSJh1
+:status: 200
+:method: post
+:headers:
+  Content-Type: application/binary
+  Cross-Origin-Opener-Policy-Report-Only: same-origin; report-to="coop_38fac9d5b82543fc4729580d18ff2d3d"
+  Cross-Origin-Resource-Policy: cross-origin
+  Report-To: '{"group":"coop_38fac9d5b82543fc4729580d18ff2d3d","max_age":2592000,"endpoints":[{"url":"https://csp.withgoogle.com/csp/report-to/38fac9d5b82543fc4729580d18ff2d3d"}]}'
+  Date: Tue, 28 Oct 2025 18:15:13 GMT
+  Server: ESF
+  Content-Length: '0'
+  X-Xss-Protection: '0'
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+  Connection: close
+:content: ''

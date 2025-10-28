@@ -1,0 +1,25 @@
+---
+:scope:
+:url: https://content-autofill.googleapis.com/v1/pages/ChVDaHJvbWUvMTQxLjAuNzM5MC4xMjMSdAmCCJyUGoHCnBIFDQ64fmwSBQ04rnZrEgUNICIiHRIFDZSQkvoSBQ2UkJL6EgUNTwhdUxIFDczxdE8SBQ09XxGpEgUNICIiHRIFDZFhlU4SBQ0_3shzEgUNU1pHxRIFDVNaR8USBQ2_JFKQIcwlV6hIR9HqEjUJxuasoiUJp-8SBQ0OuH5sEgUNOK52axIFDZFhlU4SBQ0_3shzEgUNU1pHxSHMJVeoSEfR6hJDCXlFiGwhxVQMEgUNICIiHRIFDZSQkvoSBQ2UkJL6EgUNTwhdUxIFDczxdE8SBQ09XxGpEgUNICIiHSHMJVeoSEfR6hIgCaRIN1-7bv-bEgUNU1pHxRIFDb8kUpAhzCVXqEhH0eoYt6nKAQ==?alt=proto
+:body: ''
+:status: 200
+:method: get
+:headers:
+  Cache-Control: private,max-age=604800
+  Content-Type: text/plain
+  X-Goog-Safety-Encoding: base64
+  X-Goog-Safety-Content-Type: application/x-protobuf
+  Vary:
+  - X-Origin
+  - Referer
+  - Origin,Accept-Encoding
+  Date: Tue, 28 Oct 2025 18:11:40 GMT
+  Server: ESF
+  X-XSS-Protection: '0'
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+  Accept-Ranges: none
+  Connection: close
+  Transfer-Encoding: chunked
+:content: CoQBCgcNDrh+bBoACgcNOK52axoACgcNICIiHRoACgcNlJCS+hoACgcNlJCS+hoACgcNTwhdUxoACgcNzPF0TxoACg0NPV8RqRoGCDsQARgDCgcNICIiHRoACgcNkWGVThoACgcNP97IcxoACgcNU1pHxRoACgcNU1pHxRoACgcNvyRSkBoACi0KBw0OuH5sGgAKBw04rnZrGgAKBw2RYZVOGgAKBw0/3shzGgAKBw1TWkfFGgAKVQoLDSAiIh0aBAg0GAEKBw2UkJL6GgAKBw2UkJL6GgAKCw1PCF1TGgQINBgBCgsNzPF0TxoECDgYAQoNDT1fEakaBgg7EAEYAwoLDSAiIh0aBAg0GAEKEgoHDVNaR8UaAAoHDb8kUpAaAA==
