@@ -259,7 +259,9 @@ describe ProductPresenter do
             custom_button_text_option: "pay_prompt",
             custom_summary: "To summarize, I am a product.",
             custom_view_content_button_text: "Download Files",
+            custom_view_content_button_text_max_length: 26,
             custom_receipt_text: "Thank you for purchasing! Feel free to contact us any time for support.",
+            custom_receipt_text_max_length: 500,
             custom_attributes: { "Detail 1" => "Value 1" },
             file_attributes: [
               {
