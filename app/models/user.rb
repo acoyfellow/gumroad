@@ -12,7 +12,7 @@ class User < ApplicationRecord
           AsyncDeviseNotification, Posts, AffiliatedProducts, Followers, LowBalanceFraudCheck, MailerLevel,
           DirectAffiliates, AsJson, Tier, Recommendations, Team, AustralianBacktaxes, WithCdnUrl, CustomFee,
           TwoFactorAuthentication, Versionable, Comments, VipCreator, SignedUrlHelper, Purchases, SecureExternalId,
-          AttributeBlockable
+          AttributeBlockable, Commentable
 
   stripped_fields :name, :facebook_meta_tag, :google_analytics_id, :username, :email, :support_email
 
