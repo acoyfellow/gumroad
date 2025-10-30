@@ -18,7 +18,7 @@ const Index = () => {
   const { user, payouts, pagination } = usePage<PageProps>().props;
 
   const paginationProps = {
-    pages: Math.ceil(pagination.count / pagination.limit),
+    pages: pagination.count ? Math.ceil(pagination.count / pagination.limit) : 1,
     page: pagination.page,
   };
 

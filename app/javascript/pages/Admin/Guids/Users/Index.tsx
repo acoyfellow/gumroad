@@ -1,3 +1,3 @@
-import AdminGuidUsers from "$app/components/Admin/Users";
+import AdminGuidUsers from "$app/components/Admin/Users/UserList";
 
 export default AdminGuidUsers;

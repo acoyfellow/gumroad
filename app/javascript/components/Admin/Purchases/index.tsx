@@ -30,7 +30,7 @@ const AdminPurchases = ({
   pagination,
 }: Props) => {
   const paginationProps = {
-    pages: Math.ceil(pagination.count / pagination.limit),
+    pages: pagination.count ? Math.ceil(pagination.count / pagination.limit) : 1,
     page: pagination.page,
   };
 

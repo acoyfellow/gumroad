@@ -20,6 +20,7 @@ const AdminProductInfo = ({ product }: Props) => {
     fetchData: fetchInfo,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   } = useLazyFetch<InfoProps>({} as InfoProps, {
+    fetchUnlessLoaded: open,
     url: Routes.admin_product_info_path(product.id, { format: "json" }),
     responseParser: (data) => {
       const parsed = cast<{ info: InfoProps }>(data);

@@ -18,6 +18,7 @@ const AdminPurchasesErrorCode = ({ purchase }: { purchase: Purchase }) => {
     fetchData: fetchPastChargebackedPurchases,
   } = useLazyFetch<Purchase[]>([], {
     url: Routes.admin_search_purchase_past_chargebacked_purchases_path(purchase.id),
+    fetchUnlessLoaded: true,
     responseParser: (data) => {
       const parsed = cast<{ purchases: Purchase[] }>(data);
       return parsed.purchases;

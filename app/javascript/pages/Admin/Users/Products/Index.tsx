@@ -1,7 +1,7 @@
 import { usePage } from "@inertiajs/react";
 import React from "react";
 
-import { type CountlessPagination } from "$app/hooks/useLazyFetch";
+import { type Pagination } from "$app/hooks/useLazyFetch";
 
 import PaginatedLoader from "$app/components/Admin/PaginatedLoader";
 import AdminUsersProductsProduct, { type Product as ProductType } from "$app/components/Admin/Products/Product";
@@ -11,7 +11,7 @@ import { type User as UserType } from "$app/components/Admin/Users/User";
 type AdminUsersProductsContentProps = {
   products: ProductType[];
   is_affiliate_user?: boolean;
-  pagination: CountlessPagination;
+  pagination: Pagination;
 };
 
 const AdminUsersProductsContent = ({
@@ -43,7 +43,7 @@ type Props = {
 type AdminUsersProductsProps = {
   user: UserType;
   products: ProductType[];
-  pagination: CountlessPagination;
+  pagination: Pagination;
 };
 
 const AdminUsersProducts = ({ is_affiliate_user = false }: Props) => {

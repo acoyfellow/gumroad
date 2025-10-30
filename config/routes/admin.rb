@@ -37,7 +37,7 @@ namespace :admin do
       resource :payout_info, only: :show
       resources :latest_posts, only: :index
       resources :stats, only: :index
-      resources :products, only: [] do
+      resources :products, only: :index do
         scope module: :products do
           resources :tos_violation_flags, only: [:index, :create]
           resources :purchases, only: :index
@@ -169,8 +169,9 @@ namespace :admin do
 
   # Compliance
 
-  scope module: "compliance" do
-    resources :guids, only: [:show] do
+  namespace "compliance" do
+    get "/users/:user_id/guids", to: "guids#index", as: :guids
+    resources :guids, only: [] do
       scope module: "guids" do
         resources :users, only: [:index]
       end

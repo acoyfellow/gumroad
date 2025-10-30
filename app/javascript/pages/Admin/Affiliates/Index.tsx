@@ -1,7 +1,7 @@
 import React from "react";
 
-import AdminUsers from "$app/components/Admin/Users";
+import AdminUsers from "$app/components/Admin/Users/UserList";
 
-const AdminAffiliateUsers = () => <AdminUsers is_affiliate_user />;
+const AdminAffiliateUsers = () => <AdminUsers isAffiliateUser={true} />;
 
 export default AdminAffiliateUsers;
