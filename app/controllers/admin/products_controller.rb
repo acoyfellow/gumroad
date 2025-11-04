@@ -8,12 +8,13 @@ class Admin::ProductsController < Admin::BaseController
   def show
     @title = @product.name
 
-    render inertia: "Admin/Products/Show", props: {
-      product: @product.as_json(
-        admin: true,
+    render inertia: "Admin/Products/Show", legacy_template: "admin/links/show", props: {
+      title: @product.name,
+      product: Admin::ProductPresenter::Card.new(
+        product: @product,
         admins_can_mark_as_staff_picked: ->(product) { policy([:admin, :products, :staff_picked, product]).create? },
         admins_can_unmark_as_staff_picked: ->(product) { policy([:admin, :products, :staff_picked, product]).destroy? }
-      ),
+      ).props,
       user: Admin::UserPresenter::Card.new(
         user: @product.user,
         impersonatable: policy([:admin, :impersonators, @product.user]).create?

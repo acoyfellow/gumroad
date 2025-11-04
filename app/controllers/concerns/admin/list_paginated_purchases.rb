@@ -7,53 +7,38 @@ module Admin::ListPaginatedPurchases
 
   RECORDS_PER_PAGE = 25
 
-  def index
-    @title = page_title
-
-    service = Admin::Search::PurchasesService.new(**search_params)
-
-    if service.valid?
-      records = service.perform
-    else
-      flash[:alert] = service.errors.full_messages.to_sentence
-      records = Purchase.none
-    end
-
-    pagination, purchases = pagy(
-      records,
-      limit: params[:per_page] || RECORDS_PER_PAGE,
-      page: params[:page]
-    )
-
-    yield [pagination, purchases] if block_given?
-
-    render inertia: inertia_template,
-           props: {
-             purchases: purchases.includes(
-               :price,
-               :purchase_refund_policy,
-               :seller,
-               :subscription,
-               :variant_attributes,
-               link: [:product_refund_policy, :user]
-             ).as_json(admin: true),
-             pagination:,
-             query: params[:query],
-             product_title_query: params[:product_title_query],
-             purchase_status: params[:purchase_status]
-           }
-  end
-
   private
-    def page_title
-      raise NotImplementedError, "must be overriden in subclass"
-    end
+    def list_paginated_purchases(template:, search_params:)
+      service = Admin::Search::PurchasesService.new(**search_params)
 
-    def search_params
-      raise NotImplementedError, "must be overriden in subclass"
-    end
+      if service.valid?
+        purchase_records = service.perform
+      else
+        flash[:alert] = service.errors.full_messages.to_sentence
+        purchase_records = Purchase.none
+      end
 
-    def inertia_template
-      raise NotImplementedError, "must be overriden in subclass"
+      pagination, purchases = pagy_countless(
+        purchase_records,
+        limit: params[:per_page] || RECORDS_PER_PAGE,
+        page: params[:page],
+        countless_minimal: true
+      )
+
+      return redirect_to admin_purchase_path(purchases.first) if purchases.one? && pagination.page == 1
+
+      purchases_props = purchases.map do |purchase|
+        Admin::PurchasePresenter.new(purchase).list_props
+      end
+
+      respond_to do |format|
+        format.html do
+          render(
+            inertia: template,
+            props: { purchases: InertiaRails.merge { purchases_props }, pagination: },
+          )
+        end
+        format.json { render json: { purchases:, pagination: } }
+      end
     end
 end

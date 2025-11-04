@@ -17,7 +17,7 @@ const AdminUsersShow = ({ isAffiliateUser = false }: Props) => {
 
   return (
     <div className="paragraphs">
-      <AdminUserAndProductsTabs selectedTab="users" user={user} />
+      <AdminUserAndProductsTabs selectedTab="users" userId={user.id} />
       <User user={user} isAffiliateUser={isAffiliateUser} />
     </div>
   );

@@ -56,7 +56,6 @@ export type Product = {
 };
 
 type AdminUsersProductsProductProps = {
-  user: User;
   product: Product;
   isAffiliateUser?: boolean;
 };
