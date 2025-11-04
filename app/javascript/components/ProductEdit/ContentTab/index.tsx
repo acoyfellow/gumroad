@@ -27,7 +27,7 @@ import { FileKindIcon } from "$app/components/FileRowContent";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { Modal } from "$app/components/Modal";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { FileEmbedGroup } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
 import { Layout } from "$app/components/ProductEdit/Layout";
 import { ExistingFileEntry, FileEntry, useProductEditContext, Variant } from "$app/components/ProductEdit/state";
@@ -490,35 +490,33 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
               <>
                 <LinkMenuItem editor={editor} />
                 <PopoverMenuItem name="Upload files" icon="upload-fill">
-                  {(close) => (
-                    <div role="menu" aria-label="Image and file uploader" onClick={close}>
-                      <div role="menuitem" onClick={() => setShowEmbedModal(true)}>
-                        <Icon name="media" />
-                        <span>Embed media</span>
-                      </div>
-                      <label role="menuitem">
-                        <input type="file" name="file" multiple onChange={(e) => uploadFileInput(e.target)} />
-                        <Icon name="paperclip" />
-                        <span>Computer files</span>
-                      </label>
-                      {existingFiles.length > 0 ? (
-                        <div
-                          role="menuitem"
-                          onClick={() => {
-                            setSelectingExistingFiles({ selected: [], query: "", isLoading: true });
-                            void fetchLatestExistingFiles();
-                          }}
-                        >
-                          <Icon name="files-earmark" />
-                          <span>Existing product files</span>
-                        </div>
-                      ) : null}
-                      <div role="menuitem" onClick={uploadFromDropbox}>
-                        <Icon name="dropbox" />
-                        <span>Dropbox files</span>
-                      </div>
+                  <div role="menu" aria-label="Image and file uploader">
+                    <div role="menuitem" onClick={() => setShowEmbedModal(true)}>
+                      <Icon name="media" />
+                      <span>Embed media</span>
                     </div>
-                  )}
+                    <label role="menuitem">
+                      <input type="file" name="file" multiple onChange={(e) => uploadFileInput(e.target)} />
+                      <Icon name="paperclip" />
+                      <span>Computer files</span>
+                    </label>
+                    {existingFiles.length > 0 ? (
+                      <div
+                        role="menuitem"
+                        onClick={() => {
+                          setSelectingExistingFiles({ selected: [], query: "", isLoading: true });
+                          void fetchLatestExistingFiles();
+                        }}
+                      >
+                        <Icon name="files-earmark" />
+                        <span>Existing product files</span>
+                      </div>
+                    ) : null}
+                    <div role="menuitem" onClick={uploadFromDropbox}>
+                      <Icon name="dropbox" />
+                      <span>Dropbox files</span>
+                    </div>
+                  </div>
                 </PopoverMenuItem>
                 {selectingExistingFiles ? (
                   <Modal
@@ -632,108 +630,108 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
                 </Modal>
                 <Separator aria-orientation="vertical" />
                 <Popover
-                  trigger={
+                  open={insertMenuState != null}
+                  onOpenChange={(open) => setInsertMenuState(open ? "open" : null)}
+                >
+                  <PopoverTrigger>
                     <div className="toolbar-item">
                       Insert <Icon name="outline-cheveron-down" />
                     </div>
-                  }
-                  open={insertMenuState != null}
-                  onToggle={(open) => setInsertMenuState(open ? "open" : null)}
-                >
-                  <div role="menu" onClick={() => setInsertMenuState(null)}>
-                    {insertMenuState === "inputs" ? (
-                      <>
-                        <div
-                          role="menuitem"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setInsertMenuState("open");
-                          }}
-                        >
-                          <Icon name="outline-cheveron-left" />
-                          <span>Back</span>
-                        </div>
-                        <div role="menuitem" onClick={() => editor.chain().focus().insertShortAnswer({}).run()}>
-                          <Icon name="card-text" />
-                          <span>Short answer</span>
-                        </div>
-                        <div role="menuitem" onClick={() => editor.chain().focus().insertLongAnswer({}).run()}>
-                          <Icon name="file-text" />
-                          <span>Long answer</span>
-                        </div>
-                        <div role="menuitem" onClick={() => editor.chain().focus().insertFileUpload({}).run()}>
-                          <Icon name="folder-plus" />
-                          <span>Upload file</span>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div role="menuitem" onClick={() => setAddingButton({ label: "", url: "" })}>
-                          <Icon name="button" />
-                          <span>Button</span>
-                        </div>
-                        <div role="menuitem" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
-                          <Icon name="horizontal-rule" />
-                          <span>Divider</span>
-                        </div>
-                        <div
-                          role="menuitem"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setInsertMenuState("inputs");
-                          }}
-                          className="flex items-center"
-                        >
-                          <Icon name="input-cursor-text" />
-                          <span>Input</span>
-                          <Icon name="outline-cheveron-right" className="ml-auto" />
-                        </div>
-                        <div role="menuitem" onClick={onInsertMoreLikeThis}>
-                          <Icon name="grid" />
-                          <span>More like this</span>
-                        </div>
-                        <div role="menuitem" onClick={onInsertPosts}>
-                          <Icon name="file-earmark-medical" />
-                          <span>List of posts</span>
-                        </div>
-                        <div role="menuitem" onClick={onInsertLicense}>
-                          <Icon name="outline-key" />
-                          <span>License key</span>
-                        </div>
-                        <div role="menuitem" onClick={() => setShowInsertPostModal(true)}>
-                          <Icon name="twitter" />
-                          <span>Twitter post</span>
-                        </div>
-                        <div
-                          role="menuitem"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowUpsellModal(true);
-                          }}
-                        >
-                          <Icon name="cart-plus" />
-                          <span>Upsell</span>
-                        </div>
-                        <div
-                          role="menuitem"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowReviewModal(true);
-                          }}
-                        >
-                          <Icon name="solid-star" />
-                          <span>Review</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  </PopoverTrigger>
+                  <PopoverContent className="border-0 p-0 shadow-none">
+                    <div role="menu" onClick={() => setInsertMenuState(null)}>
+                      {insertMenuState === "inputs" ? (
+                        <>
+                          <div
+                            role="menuitem"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setInsertMenuState("open");
+                            }}
+                          >
+                            <Icon name="outline-cheveron-left" />
+                            <span>Back</span>
+                          </div>
+                          <div role="menuitem" onClick={() => editor.chain().focus().insertShortAnswer({}).run()}>
+                            <Icon name="card-text" />
+                            <span>Short answer</span>
+                          </div>
+                          <div role="menuitem" onClick={() => editor.chain().focus().insertLongAnswer({}).run()}>
+                            <Icon name="file-text" />
+                            <span>Long answer</span>
+                          </div>
+                          <div role="menuitem" onClick={() => editor.chain().focus().insertFileUpload({}).run()}>
+                            <Icon name="folder-plus" />
+                            <span>Upload file</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div role="menuitem" onClick={() => setAddingButton({ label: "", url: "" })}>
+                            <Icon name="button" />
+                            <span>Button</span>
+                          </div>
+                          <div role="menuitem" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
+                            <Icon name="horizontal-rule" />
+                            <span>Divider</span>
+                          </div>
+                          <div
+                            role="menuitem"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setInsertMenuState("inputs");
+                            }}
+                            className="flex items-center"
+                          >
+                            <Icon name="input-cursor-text" />
+                            <span>Input</span>
+                            <Icon name="outline-cheveron-right" className="ml-auto" />
+                          </div>
+                          <div role="menuitem" onClick={onInsertMoreLikeThis}>
+                            <Icon name="grid" />
+                            <span>More like this</span>
+                          </div>
+                          <div role="menuitem" onClick={onInsertPosts}>
+                            <Icon name="file-earmark-medical" />
+                            <span>List of posts</span>
+                          </div>
+                          <div role="menuitem" onClick={onInsertLicense}>
+                            <Icon name="outline-key" />
+                            <span>License key</span>
+                          </div>
+                          <div role="menuitem" onClick={() => setShowInsertPostModal(true)}>
+                            <Icon name="twitter" />
+                            <span>Twitter post</span>
+                          </div>
+                          <div
+                            role="menuitem"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowUpsellModal(true);
+                            }}
+                          >
+                            <Icon name="cart-plus" />
+                            <span>Upsell</span>
+                          </div>
+                          <div
+                            role="menuitem"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowReviewModal(true);
+                            }}
+                          >
+                            <Icon name="solid-star" />
+                            <span>Review</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </PopoverContent>
                 </Popover>
-                <>
-                  <Separator aria-orientation="vertical" />
-                  <button className="toolbar-item" onClick={handleCreatePageClick}>
-                    <Icon name="plus" /> Page
-                  </button>
-                </>
+                <Separator aria-orientation="vertical" />
+                <button className="toolbar-item" onClick={handleCreatePageClick}>
+                  <Icon name="plus" /> Page
+                </button>
               </>
             }
           />

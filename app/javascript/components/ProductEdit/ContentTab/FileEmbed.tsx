@@ -22,7 +22,7 @@ import { FileRowContent } from "$app/components/FileRowContent";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { PlayVideoIcon } from "$app/components/PlayVideoIcon";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import {
   FileEmbedGroup,
   titleWithFallback,
@@ -489,48 +489,49 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
           ) : null}
 
           {file.is_streamable ? (
-            <Popover
-              trigger={
+            <Popover>
+              <PopoverTrigger>
                 <Button aria-label="Thumbnail view">
                   <Icon name={node.attrs.collapsed ? "arrows-expand" : "arrows-collapse"} />
                 </Button>
-              }
-            >
-              {(close) => (
+              </PopoverTrigger>
+              <PopoverContent className="border-0 p-0 shadow-none">
                 <div role="menu">
-                  <div
-                    role="menuitem"
-                    onClick={() => {
-                      updateAttributes({ collapsed: !node.attrs.collapsed });
-                      close();
-                    }}
-                  >
-                    <Icon name={node.attrs.collapsed ? "arrows-expand" : "arrows-collapse"} />
-                    <span>{node.attrs.collapsed ? "Expand selected" : "Collapse selected"}</span>
-                  </div>
-                  <div
-                    role="menuitem"
-                    onClick={() => {
-                      editor.commands.command(({ tr }) => {
-                        const targetState = !node.attrs.collapsed;
-                        tr.doc.descendants((node, pos) => {
-                          if (node.type.name === FileEmbed.name && node.attrs.collapsed !== targetState) {
-                            tr.setNodeMarkup(pos, null, {
-                              ...node.attrs,
-                              collapsed: targetState,
-                            });
-                          }
+                  <PopoverClose>
+                    <div
+                      role="menuitem"
+                      onClick={() => {
+                        updateAttributes({ collapsed: !node.attrs.collapsed });
+                      }}
+                    >
+                      <Icon name={node.attrs.collapsed ? "arrows-expand" : "arrows-collapse"} />
+                      <span>{node.attrs.collapsed ? "Expand selected" : "Collapse selected"}</span>
+                    </div>
+                  </PopoverClose>
+                  <PopoverClose>
+                    <div
+                      role="menuitem"
+                      onClick={() => {
+                        editor.commands.command(({ tr }) => {
+                          const targetState = !node.attrs.collapsed;
+                          tr.doc.descendants((node, pos) => {
+                            if (node.type.name === FileEmbed.name && node.attrs.collapsed !== targetState) {
+                              tr.setNodeMarkup(pos, null, {
+                                ...node.attrs,
+                                collapsed: targetState,
+                              });
+                            }
+                          });
+                          return true;
                         });
-                        return true;
-                      });
-                      close();
-                    }}
-                  >
-                    <Icon name={node.attrs.collapsed ? "arrows-expand" : "arrows-collapse"} />
-                    <span>{node.attrs.collapsed ? "Expand all thumbnails" : "Collapse all thumbnails"}</span>
-                  </div>
+                      }}
+                    >
+                      <Icon name={node.attrs.collapsed ? "arrows-expand" : "arrows-collapse"} />
+                      <span>{node.attrs.collapsed ? "Expand all thumbnails" : "Collapse all thumbnails"}</span>
+                    </div>
+                  </PopoverClose>
                 </div>
-              )}
+              </PopoverContent>
             </Popover>
           ) : null}
 

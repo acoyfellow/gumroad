@@ -15,7 +15,7 @@ import { assertDefined } from "$app/utils/assert";
 
 import { InputtedDiscount } from "$app/components/CheckoutDashboard/DiscountInput";
 import { Icon } from "$app/components/Icons";
-import { Popover, Props as PopoverProps } from "$app/components/Popover";
+import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { Separator } from "$app/components/Separator";
 import { TestimonialSelectModal } from "$app/components/TestimonialSelectModal";
 import { CodeBlock } from "$app/components/TiptapExtensions/CodeBlock";
@@ -103,20 +103,24 @@ export const MenuItem = ({
 export const PopoverMenuItem = ({
   name,
   icon,
-  active,
-  ...props
-}: { name: string; icon: IconName; active?: boolean } & Pick<PopoverProps, "children"> & Partial<PopoverProps>) => (
-  <Popover
-    aria-label={name}
-    trigger={
+  children,
+}: {
+  name: string;
+  icon: IconName;
+  children: React.ReactNode;
+}) => (
+  <Popover aria-label={name}>
+    <PopoverTrigger>
       <MenuItemTooltip tip={name}>
-        <div className={cx("toolbar-item", active)}>
+        <div className="toolbar-item">
           <Icon name={icon} />
         </div>
       </MenuItemTooltip>
-    }
-    {...props}
-  />
+    </PopoverTrigger>
+    <PopoverContent usePortal={false}>
+      <PopoverClose>{children}</PopoverClose>
+    </PopoverContent>
+  </Popover>
 );
 
 declare module "@tiptap/core" {
@@ -385,36 +389,34 @@ export const RichTextEditorToolbar = ({
         className={cx("rich-text-editor-toolbar", color, className)}
         onMouseLeave={() => setShowTooltip(false)}
       >
-        <Popover
-          aria-label="Text formats"
-          trigger={
+        <Popover aria-label="Text formats">
+          <PopoverTrigger>
             <div className="toolbar-item">
               {activeFormatOption?.name ?? "Text"} <Icon name="outline-cheveron-down" />
             </div>
-          }
-        >
-          {(close) => (
-            <ul role="menu">
+          </PopoverTrigger>
+          <PopoverContent className="border-0 p-0 shadow-none" arrowClassName="fill-white dark:fill-black/35">
+            <ul role="menu" className="flex flex-col">
               {textFormatOptions.map((option) => (
-                <li
-                  key={option.name}
-                  role="menuitemradio"
-                  aria-checked={option === activeFormatOption}
-                  onClick={() => {
-                    const commands = editor.chain();
-                    if (isList(option.type, editor.extensionManager.extensions))
-                      commands.toggleList(option.type, "listItem", false, option.attrs);
-                    else commands.toggleNode(option.type, "paragraph", option.attrs);
-                    commands.focus().run();
-                    close();
-                  }}
-                >
-                  <Icon name={option.icon} />
-                  <span>{option.name}</span>
-                </li>
+                <PopoverClose key={option.name}>
+                  <li
+                    role="menuitemradio"
+                    aria-checked={option === activeFormatOption}
+                    onClick={() => {
+                      const commands = editor.chain();
+                      if (isList(option.type, editor.extensionManager.extensions))
+                        commands.toggleList(option.type, "listItem", false, option.attrs);
+                      else commands.toggleNode(option.type, "paragraph", option.attrs);
+                      commands.focus().run();
+                    }}
+                  >
+                    <Icon name={option.icon} />
+                    <span>{option.name}</span>
+                  </li>
+                </PopoverClose>
               ))}
             </ul>
-          )}
+          </PopoverContent>
         </Popover>
         <Separator aria-orientation="vertical" />
         <MenuItem
@@ -467,39 +469,40 @@ export const RichTextEditorToolbar = ({
             {insertMenuItems.length > 1 ? (
               <>
                 <Separator aria-orientation="vertical" />
-                <Popover
-                  trigger={
+                <Popover>
+                  <PopoverTrigger>
                     <div className="toolbar-item">
                       Insert <Icon name="outline-cheveron-down" />
                     </div>
-                  }
-                >
-                  {(close) => (
-                    <div role="menu" onClick={close}>
-                      {insertMenuItems.map((item, i) => (
-                        <React.Fragment key={i}>
-                          {item.name === "horizontalRule" ? (
-                            <div role="menuitem" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
-                              <Icon name="horizontal-rule" />
-                              <span>Divider</span>
-                            </div>
-                          ) : (
-                            item.config.submenu?.item(editor)
-                          )}
-                        </React.Fragment>
-                      ))}
-                      <div role="menuitem" onClick={() => setIsUpsellModalOpen(true)}>
-                        <Icon name="cart-plus" />
-                        <span>Upsell</span>
-                      </div>
-                      {productId ? (
-                        <div role="menuitem" onClick={() => setIsReviewModalOpen(true)}>
-                          <Icon name="solid-star" />
-                          <span>Reviews</span>
+                  </PopoverTrigger>
+                  <PopoverContent className="border-0 p-0 shadow-none" arrowClassName="fill-white dark:fill-black/35">
+                    <PopoverClose>
+                      <div role="menu">
+                        {insertMenuItems.map((item, i) => (
+                          <React.Fragment key={i}>
+                            {item.name === "horizontalRule" ? (
+                              <div role="menuitem" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
+                                <Icon name="horizontal-rule" />
+                                <span>Divider</span>
+                              </div>
+                            ) : (
+                              item.config.submenu?.item(editor)
+                            )}
+                          </React.Fragment>
+                        ))}
+                        <div role="menuitem" onClick={() => setIsUpsellModalOpen(true)}>
+                          <Icon name="cart-plus" />
+                          <span>Upsell</span>
                         </div>
-                      ) : null}
-                    </div>
-                  )}
+                        {productId ? (
+                          <div role="menuitem" onClick={() => setIsReviewModalOpen(true)}>
+                            <Icon name="solid-star" />
+                            <span>Reviews</span>
+                          </div>
+                        ) : null}
+                      </div>
+                    </PopoverClose>
+                  </PopoverContent>
                 </Popover>
               </>
             ) : null}

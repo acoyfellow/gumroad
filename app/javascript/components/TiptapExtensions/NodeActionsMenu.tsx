@@ -5,7 +5,7 @@ import * as React from "react";
 import { assertDefined } from "$app/utils/assert";
 
 import { Icon } from "$app/components/Icons";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 
 export const NodeActionsMenu = ({
   editor,
@@ -18,57 +18,52 @@ export const NodeActionsMenu = ({
   const selectedNode = editor.state.selection instanceof NodeSelection ? editor.state.selection.node : null;
   const [selectedActionIndex, setSelectedActionIndex] = React.useState<number | null>(null);
 
-  React.useEffect(() => {
-    if (selectedNode === null) setOpen(false);
-  }, [selectedNode]);
+  const isOpen = !!selectedNode && open;
 
   return (
-    <Popover
-      open={open}
-      onToggle={setOpen}
-      className="actions-menu"
-      aria-label="Actions"
-      trigger={
+    <Popover open={isOpen} onOpenChange={setOpen} aria-label="Actions">
+      <PopoverTrigger>
         <div className="button small filled" data-drag-handle draggable>
           <Icon name="outline-drag" />
         </div>
-      }
-    >
-      <div role="menu">
-        {actions && selectedActionIndex !== null ? (
-          <>
-            <div onClick={() => setSelectedActionIndex(null)} role="menuitem">
-              <Icon name="outline-cheveron-left" />
-              <span>Back</span>
-            </div>
-            {assertDefined(actions[selectedActionIndex]).menu(() => setOpen(false))}
-          </>
-        ) : (
-          <>
-            <div onClick={() => editor.commands.moveNodeUp()} role="menuitem">
-              <Icon name="arrow-up" />
-              <span>Move up</span>
-            </div>
-            <div onClick={() => editor.commands.moveNodeDown()} role="menuitem">
-              <Icon name="arrow-down" />
-              <span>Move down</span>
-            </div>
-            {actions?.map(({ item }, index) => (
-              <div key={index} onClick={() => setSelectedActionIndex(index)} role="menuitem">
-                {item()}
+      </PopoverTrigger>
+      <PopoverContent className="actions-menu border-0 p-0 shadow-none">
+        <div role="menu">
+          {actions && selectedActionIndex !== null ? (
+            <>
+              <div onClick={() => setSelectedActionIndex(null)} role="menuitem">
+                <Icon name="outline-cheveron-left" />
+                <span>Back</span>
               </div>
-            ))}
-            <div
-              style={{ color: "rgb(var(--danger))" }}
-              onClick={() => editor.commands.deleteSelection()}
-              role="menuitem"
-            >
-              <Icon name="trash2" />
-              <span>Delete</span>
-            </div>
-          </>
-        )}
-      </div>
+              {assertDefined(actions[selectedActionIndex]).menu(() => setOpen(false))}
+            </>
+          ) : (
+            <>
+              <div onClick={() => editor.commands.moveNodeUp()} role="menuitem">
+                <Icon name="arrow-up" />
+                <span>Move up</span>
+              </div>
+              <div onClick={() => editor.commands.moveNodeDown()} role="menuitem">
+                <Icon name="arrow-down" />
+                <span>Move down</span>
+              </div>
+              {actions?.map(({ item }, index) => (
+                <div key={index} onClick={() => setSelectedActionIndex(index)} role="menuitem">
+                  {item()}
+                </div>
+              ))}
+              <div
+                style={{ color: "rgb(var(--danger))" }}
+                onClick={() => editor.commands.deleteSelection()}
+                role="menuitem"
+              >
+                <Icon name="trash2" />
+                <span>Delete</span>
+              </div>
+            </>
+          )}
+        </div>
+      </PopoverContent>
     </Popover>
   );
 };

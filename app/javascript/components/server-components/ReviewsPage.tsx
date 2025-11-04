@@ -8,7 +8,7 @@ import { Button, NavigationButton } from "$app/components/Button";
 import { useDiscoverUrl } from "$app/components/DomainSettings";
 import { Icon } from "$app/components/Icons";
 import { Layout } from "$app/components/Library/Layout";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { Thumbnail } from "$app/components/Product/Thumbnail";
 import { RatingStars } from "$app/components/RatingStars";
 import { ReviewForm } from "$app/components/ReviewForm";
@@ -167,46 +167,41 @@ const ReviewsPage = ({
   );
 };
 
-const Row = ({ review, onChange }: { review: Review; onChange: (review: Review) => void }) => {
-  const [isEditing, setIsEditing] = React.useState(false);
-
-  return (
-    <tr>
-      <td className="icon-cell">
-        <a href={review.product.url}>
-          {review.product.thumbnail_url ? (
-            <img alt={review.product.name} src={review.product.thumbnail_url} />
-          ) : (
-            <img src={cast(nativeTypeThumbnails(`./${review.product.native_type}.svg`))} />
-          )}
+const Row = ({ review, onChange }: { review: Review; onChange: (review: Review) => void }) => (
+  <tr>
+    <td className="icon-cell">
+      <a href={review.product.url}>
+        {review.product.thumbnail_url ? (
+          <img alt={review.product.name} src={review.product.thumbnail_url} />
+        ) : (
+          <img src={cast(nativeTypeThumbnails(`./${review.product.native_type}.svg`))} />
+        )}
+      </a>
+    </td>
+    <td style={{ wordWrap: "break-word" }}>
+      <div>
+        <a href={review.product.url} target="_blank" rel="noreferrer">
+          <h4>{review.product.name}</h4>
         </a>
-      </td>
-      <td style={{ wordWrap: "break-word" }}>
-        <div>
-          <a href={review.product.url} target="_blank" rel="noreferrer">
-            <h4>{review.product.name}</h4>
-          </a>
-          By{" "}
-          <a href={review.product.seller.url} target="_blank" rel="noreferrer">
-            {review.product.seller.name}
-          </a>
-        </div>
-      </td>
-      <td style={{ whiteSpace: "nowrap" }} aria-label={`${review.rating} ${review.rating === 1 ? "star" : "stars"}`}>
-        <RatingStars rating={review.rating} />
-      </td>
-      <td style={{ wordWrap: "break-word" }}>{review.message ? `"${review.message}"` : null}</td>
-      <td>
-        <div className="actions">
-          <Popover
-            open={isEditing}
-            onToggle={setIsEditing}
-            trigger={
-              <Button aria-label="Edit">
-                <Icon name="pencil" />
-              </Button>
-            }
-          >
+        By{" "}
+        <a href={review.product.seller.url} target="_blank" rel="noreferrer">
+          {review.product.seller.name}
+        </a>
+      </div>
+    </td>
+    <td style={{ whiteSpace: "nowrap" }} aria-label={`${review.rating} ${review.rating === 1 ? "star" : "stars"}`}>
+      <RatingStars rating={review.rating} />
+    </td>
+    <td style={{ wordWrap: "break-word" }}>{review.message ? `"${review.message}"` : null}</td>
+    <td>
+      <div className="actions">
+        <Popover>
+          <PopoverTrigger>
+            <Button aria-label="Edit">
+              <Icon name="pencil" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="border-0 p-0 shadow-none">
             <div className="stack">
               <ReviewForm
                 permalink={review.product.permalink}
@@ -216,11 +211,11 @@ const Row = ({ review, onChange }: { review: Review; onChange: (review: Review) 
                 onChange={(newReview) => onChange({ ...review, ...newReview })}
               />
             </div>
-          </Popover>
-        </div>
-      </td>
-    </tr>
-  );
-};
+          </PopoverContent>
+        </Popover>
+      </div>
+    </td>
+  </tr>
+);
 
 export default register({ component: ReviewsPage, propParser: createCast() });

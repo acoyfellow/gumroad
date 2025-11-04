@@ -21,7 +21,8 @@ import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { Modal } from "$app/components/Modal";
 import { Pagination, PaginationProps } from "$app/components/Pagination";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
+import { Search } from "$app/components/Search";
 import { showAlert } from "$app/components/server-components/Alert";
 import { extractSortParam } from "$app/components/server-components/UtmLinksPage";
 import Placeholder from "$app/components/ui/Placeholder";
@@ -142,7 +143,7 @@ const UtmLinkList = () => {
       selectedTab="utm_links"
       actions={
         <>
-          <SearchBoxPopover initialQuery={query} onSearch={onSearch} />
+          <Search value={query} onSearch={onSearch} />
           <Link to="/dashboard/utm_links/new" className="button accent">
             Create link
           </Link>
@@ -335,72 +336,24 @@ const TruncatedTextWithTooltip = ({ text, maxLength }: { text: string; maxLength
   return <WithTooltip tip={isTruncated ? original : null}>{truncated}</WithTooltip>;
 };
 
-const UtmLinkActions = ({ link, children }: { link: SavedUtmLink; children: React.ReactNode }) => {
-  const [open, setOpen] = React.useState(false);
+const UtmLinkActions = ({ link, children }: { link: SavedUtmLink; children: React.ReactNode }) => (
+  <div className="actions" onClick={(e) => e.stopPropagation()}>
+    <CopyToClipboard copyTooltip="Copy short link" text={link.short_url}>
+      <Button aria-label="Copy link">
+        <Icon name="link" />
+      </Button>
+    </CopyToClipboard>
 
-  return (
-    <div className="actions" onClick={(e) => e.stopPropagation()}>
-      <CopyToClipboard copyTooltip="Copy short link" text={link.short_url}>
-        <Button aria-label="Copy link">
-          <Icon name="link" />
+    <Popover aria-label="Open action menu">
+      <PopoverTrigger>
+        <Button>
+          <Icon name="three-dots" />
         </Button>
-      </CopyToClipboard>
-
-      <Popover
-        open={open}
-        onToggle={setOpen}
-        aria-label="Open action menu"
-        trigger={
-          <Button>
-            <Icon name="three-dots" />
-          </Button>
-        }
-      >
-        {children}
-      </Popover>
-    </div>
-  );
-};
-
-const SearchBoxPopover = ({ initialQuery, onSearch }: { initialQuery: string; onSearch: (query: string) => void }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const searchInputRef = React.useRef<HTMLInputElement>(null);
-  const [query, setQuery] = React.useState(initialQuery);
-
-  React.useEffect(() => {
-    if (isOpen) searchInputRef.current?.focus();
-  }, [isOpen]);
-
-  return (
-    <Popover
-      open={isOpen}
-      onToggle={setIsOpen}
-      aria-label="Toggle Search"
-      trigger={
-        <WithTooltip tip="Search" position="bottom">
-          <div className="button">
-            <Icon name="solid-search" />
-          </div>
-        </WithTooltip>
-      }
-    >
-      <div className="input">
-        <Icon name="solid-search" />
-        <input
-          ref={searchInputRef}
-          type="text"
-          placeholder="Search"
-          value={query}
-          onChange={(evt) => {
-            const newQuery = evt.target.value;
-            setQuery(newQuery);
-            onSearch(newQuery);
-          }}
-        />
-      </div>
+      </PopoverTrigger>
+      <PopoverContent>{children}</PopoverContent>
     </Popover>
-  );
-};
+  </div>
+);
 
 const UtmLinkDetails = ({
   utmLink,

@@ -20,7 +20,7 @@ import { register, GlobalProps, buildStaticRouter } from "$app/utils/serverCompo
 
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
-import { Popover } from "$app/components/Popover";
+import { Search } from "$app/components/Search";
 import { showAlert } from "$app/components/server-components/Alert";
 import { DraftsTab } from "$app/components/server-components/EmailsPage/DraftsTab";
 import { EmailForm } from "$app/components/server-components/EmailsPage/EmailForm";
@@ -29,7 +29,6 @@ import { ScheduledTab } from "$app/components/server-components/EmailsPage/Sched
 import { PageHeader } from "$app/components/ui/PageHeader";
 import Placeholder from "$app/components/ui/Placeholder";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
-import { WithTooltip } from "$app/components/WithTooltip";
 const TABS = ["published", "scheduled", "drafts", "subscribers"] as const;
 
 export const emailTabPath = (tab: (typeof TABS)[number]) => `/emails/${tab}`;
@@ -45,12 +44,7 @@ export const Layout = ({
   children: React.ReactNode;
   hasPosts?: boolean;
 }) => {
-  const searchInputRef = React.useRef<HTMLInputElement>(null);
-  const [isSearchPopoverOpen, setIsSearchPopoverOpen] = React.useState(false);
   const [query, setQuery] = useSearchContext();
-  React.useEffect(() => {
-    if (isSearchPopoverOpen) searchInputRef.current?.focus();
-  }, [isSearchPopoverOpen]);
 
   return (
     <div>
@@ -58,31 +52,7 @@ export const Layout = ({
         title="Emails"
         actions={
           <>
-            {hasPosts ? (
-              <Popover
-                open={isSearchPopoverOpen}
-                onToggle={setIsSearchPopoverOpen}
-                aria-label="Toggle Search"
-                trigger={
-                  <WithTooltip tip="Search" position="bottom">
-                    <div className="button">
-                      <Icon name="solid-search" />
-                    </div>
-                  </WithTooltip>
-                }
-              >
-                <div className="input">
-                  <Icon name="solid-search" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="Search emails"
-                    value={query}
-                    onChange={(evt) => setQuery(evt.target.value)}
-                  />
-                </div>
-              </Popover>
-            ) : null}
+            {hasPosts ? <Search onSearch={setQuery} value={query} placeholder="Search emails" /> : null}
             <NewEmailButton />
           </>
         }

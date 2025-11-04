@@ -5,8 +5,8 @@ import { cast } from "ts-safe-cast";
 import { CurrentUser } from "$app/types/user";
 import { assertResponseError } from "$app/utils/request";
 
+import { DashboardNavProfilePopover } from "$app/components/Admin/Nav/ProfilePopover";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
-import { Popover } from "$app/components/Popover";
 import { showAlert } from "$app/components/server-components/Alert";
 
 type ResponseData = {
@@ -48,16 +48,8 @@ const AdminNavFooter = () => {
   };
 
   return (
-    <Popover
-      position="top"
-      trigger={
-        <>
-          <img className="user-avatar" src={loggedInUser?.avatarUrl} alt="Your avatar" />
-          {loggedInUser?.name}
-        </>
-      }
-    >
-      <div role="menu">
+    <DashboardNavProfilePopover user={current_user}>
+      <div role="menu" className="w-52 shadow-none!">
         {current_user.impersonated_user ? (
           <>
             <a role="menuitem" href={Routes.root_url()}>
@@ -78,7 +70,7 @@ const AdminNavFooter = () => {
           </a>
         ) : null}
       </div>
-    </Popover>
+    </DashboardNavProfilePopover>
   );
 };
 

@@ -91,8 +91,16 @@ export const NavLinkDropdownItem = ({
   href: string;
   onClick?: (ev: React.MouseEvent<HTMLAnchorElement>) => void;
 }) => (
-  <a role="menuitem" href={href} onClick={onClick}>
-    <Icon name={icon} />
+  <a
+    role="menuitem"
+    href={href}
+    onClick={onClick}
+    // className="block truncate px-4 py-2 no-underline hover:bg-foreground/10"
+  >
+    <Icon
+      name={icon}
+      // className="mr-3 ml-1"
+    />
     {text}
   </a>
 );
@@ -112,7 +120,7 @@ export const Nav = ({ title, children, footer, compact }: Props) => {
 
   return (
     <NavContext.Provider value={contextValue}>
-      <nav aria-label="Main" className={classNames("main-nav", { compact, open })}>
+      <nav aria-label="Main" className={classNames("main-nav w-52!", { compact, open })}>
         <div className="navbar">
           <a href={Routes.root_url()}>
             <span className="logo-g">&nbsp;</span>

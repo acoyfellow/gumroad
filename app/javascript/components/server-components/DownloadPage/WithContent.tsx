@@ -23,7 +23,7 @@ import {
 } from "$app/components/Download/RichContent";
 import { TranscodingNoticeModal } from "$app/components/Download/TranscodingNoticeModal";
 import { Icon } from "$app/components/Icons";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { FileEmbed } from "$app/components/ProductEdit/ContentTab/FileEmbed";
 import { showAlert } from "$app/components/server-components/Alert";
 import { LicenseKey } from "$app/components/TiptapExtensions/LicenseKey";
@@ -337,37 +337,34 @@ const WithContent = ({
       {showPageList ? (
         <div role="navigation" className="mt-auto flex gap-4 border-t border-border pt-4 lg:justify-end lg:pb-4">
           {isDesktop ? null : (
-            <Popover
-              aria-label="Table of Contents"
-              position="bottom"
-              trigger={
+            <Popover aria-label="Table of Contents">
+              <PopoverTrigger>
                 <div className="button">
                   <Icon name="unordered-list" />
                 </div>
-              }
-            >
-              {(close) => (
+              </PopoverTrigger>
+              <PopoverContent className="border-0 p-0 shadow-none">
                 <div role="menu">
                   {pages.map((page, index) => (
-                    <div
-                      key={page.page_id}
-                      role="menuitemradio"
-                      aria-checked={index === activePageIndex}
-                      onClick={() => {
-                        setActivePageIndex(index);
-                        close();
-                      }}
-                    >
-                      <Icon
-                        name={pageIcons[index] ?? "file-text"}
-                        aria-label={pageIcons[index] ? PAGE_ICON_LABEL[pageIcons[index]] : "file-text"}
-                      />
-                      &ensp;
-                      {page.title ?? "Untitled"}
-                    </div>
+                    <PopoverClose key={page.page_id}>
+                      <div
+                        role="menuitemradio"
+                        aria-checked={index === activePageIndex}
+                        onClick={() => {
+                          setActivePageIndex(index);
+                        }}
+                      >
+                        <Icon
+                          name={pageIcons[index] ?? "file-text"}
+                          aria-label={pageIcons[index] ? PAGE_ICON_LABEL[pageIcons[index]] : "file-text"}
+                        />
+                        &ensp;
+                        {page.title ?? "Untitled"}
+                      </div>
+                    </PopoverClose>
                   ))}
                 </div>
-              )}
+              </PopoverContent>
             </Popover>
           )}
           <WithTooltip position="top" tip={hasPreviousPage ? null : "No more pages"}>

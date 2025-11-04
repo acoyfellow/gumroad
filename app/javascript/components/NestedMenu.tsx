@@ -1,14 +1,14 @@
-import cx from "classnames";
 import * as React from "react";
 import { CSSProperties } from "react";
 
 import { isOpenTuple } from "$app/utils/array";
 import { assert } from "$app/utils/assert";
+import { classNames } from "$app/utils/classNames";
 
 import { Button } from "$app/components/Button";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Icon } from "$app/components/Icons";
-import { useDropdownPosition } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { useIsOnTouchDevice } from "$app/components/useIsOnTouchDevice";
 import { useOnOutsideClick } from "$app/components/useOnOutsideClick";
 import { useWindowDimensions } from "$app/components/useWindowDimensions";
@@ -209,7 +209,6 @@ const MenubarItem = ({
   }, [isHighlighted]);
   const ref = React.useRef<HTMLDivElement>(null);
   const uid = React.useId();
-  const dropdownPosition = useDropdownPosition(ref);
 
   const handleToggleMenu = (open: boolean) => {
     if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
@@ -230,44 +229,48 @@ const MenubarItem = ({
 
   return menuItem.children.length > 0 ? (
     <div
-      className={cx("popover", { expanded: menuOpen })}
+      className={classNames({ expanded: menuOpen })}
       ref={ref}
       onMouseEnter={() => handleToggleMenu(true)}
       onMouseLeave={closeAfterDelay}
     >
-      <a
-        href={menuItem.href ?? "#"}
-        className={cx("pill button", { expandable: showExpandableIcon })}
-        role="menuitem"
-        aria-current={isHighlighted}
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
-        aria-controls={uid}
-        onClick={(e) => {
-          if (isOnTouchDevice) e.preventDefault();
-          else onSelectItem?.(menuItem, e);
-        }}
-      >
-        {menuItem.label}
-      </a>
-      <div className="dropdown" hidden={!menuOpen} style={dropdownPosition}>
-        <ItemsList
-          menuId={uid}
-          menuItem={menuItem}
-          showAllItemOnInitialList={showAllItem ?? false}
-          open={menuOpen}
-          onSelectItem={(newSelectedItem, e) => {
-            if (newSelectedItem === selectedItem) handleToggleMenu(false);
-            onSelectItem?.(newSelectedItem, e);
-          }}
-        />
-      </div>
+      <Popover open={menuOpen}>
+        <PopoverTrigger>
+          <a
+            href={menuItem.href ?? "#"}
+            className={classNames("pill button", { expandable: showExpandableIcon })}
+            role="menuitem"
+            aria-current={isHighlighted}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            aria-controls={uid}
+            onClick={(e) => {
+              if (isOnTouchDevice) e.preventDefault();
+              else onSelectItem?.(menuItem, e);
+            }}
+          >
+            {menuItem.label}
+          </a>
+        </PopoverTrigger>
+        <PopoverContent className="border-0 p-0 shadow-none" arrowClassName="dark:fill-black/35" usePortal={false}>
+          <ItemsList
+            key={`${uid}-${menuOpen}`}
+            menuId={uid}
+            menuItem={menuItem}
+            showAllItemOnInitialList={showAllItem ?? false}
+            onSelectItem={(newSelectedItem, e) => {
+              if (newSelectedItem === selectedItem) handleToggleMenu(false);
+              onSelectItem?.(newSelectedItem, e);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
     </div>
   ) : (
     <div onMouseEnter={() => handleToggleMenu(true)} onMouseLeave={() => handleToggleMenu(false)}>
       <a
         href={menuItem.href ?? "#"}
-        className={cx("pill button", { expandable: showExpandableIcon })}
+        className={classNames("pill button", { expandable: showExpandableIcon })}
         role="menuitem"
         aria-current={isHighlighted}
         {...extraAriaAttrs}
@@ -292,9 +295,8 @@ const OverlayMenu = ({
   footer?: React.ReactNode;
   menuTop?: string | undefined;
 } & React.AriaAttributes) => {
-  const { onSelectItem, selectedItem, topLevelMenuItems } = useMenuContext();
+  const { onSelectItem, topLevelMenuItems } = useMenuContext();
   const [menuOpen, setMenuOpen] = React.useState(false);
-  React.useEffect(() => setMenuOpen(false), [selectedItem]);
 
   const overlayMenuUID = React.useId();
   return (
@@ -314,6 +316,7 @@ const OverlayMenu = ({
           <Icon name="x" className="text-white" />
         </button>
         <ItemsList
+          key={`${overlayMenuUID}-${menuOpen}`}
           menuId={overlayMenuUID}
           menuItem={{
             key: "items#key",
@@ -322,7 +325,6 @@ const OverlayMenu = ({
             parent: null,
           }}
           footer={footer}
-          open={menuOpen}
           onSelectItem={(newSelectedItem, e) => {
             setMenuOpen(false);
             onSelectItem?.(newSelectedItem, e);
@@ -337,22 +339,25 @@ const ItemsList = ({
   menuId,
   menuItem: initialMenuItem,
   showAllItemOnInitialList,
-  open,
   onSelectItem,
   footer,
 }: {
   menuId?: string;
   menuItem: MenuItemWithChildren;
   showAllItemOnInitialList?: boolean;
-  open: boolean;
   onSelectItem?: SelectItemHandler;
   footer?: React.ReactNode;
 }) => {
   const [displayedItem, setDisplayedItem] = React.useState(initialMenuItem);
-  React.useEffect(() => setDisplayedItem(initialMenuItem), [open]);
 
   return (
-    <div id={menuId} style={displayedItem.css} role="menu" aria-label={displayedItem.label} className="overflow-hidden">
+    <div
+      id={menuId}
+      style={displayedItem.css}
+      role="menu"
+      aria-label={displayedItem.label}
+      className="overflow-hidden border! p-0! dark:border-black/35!"
+    >
       {footer}
 
       {displayedItem.key !== initialMenuItem.key ? (

@@ -7,7 +7,7 @@ import { register } from "$app/utils/serverComponentUtil";
 
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { useRunOnce } from "$app/components/useRunOnce";
 
 const zoomLevelMin = 0.1;
@@ -195,25 +195,25 @@ export const PdfReaderPage = ({
           <div className="flex flex-1 items-center border-r p-4">
             <h1 className="truncate">{title}</h1>
           </div>
-          <Popover
-            aria-label="Appearance"
-            trigger={
+          <Popover aria-label="Appearance">
+            <PopoverTrigger>
               <div className="border-r p-4">
                 <Icon name="zoom-in" />
               </div>
-            }
-          >
-            <fieldset>
-              <legend>Appearance</legend>
-              <div>
-                <Button className="mr-2" onClick={zoomOut}>
-                  <Icon name="zoom-out" />
-                </Button>
-                <Button onClick={zoomIn}>
-                  <Icon name="zoom-in" />
-                </Button>
-              </div>
-            </fieldset>
+            </PopoverTrigger>
+            <PopoverContent>
+              <fieldset>
+                <legend>Appearance</legend>
+                <div>
+                  <Button className="mr-2" onClick={zoomOut}>
+                    <Icon name="zoom-out" />
+                  </Button>
+                  <Button onClick={zoomIn}>
+                    <Icon name="zoom-in" />
+                  </Button>
+                </div>
+              </fieldset>
+            </PopoverContent>
           </Popover>
           <div className="flex items-center gap-1 p-4 whitespace-nowrap tabular-nums">
             <div className="pagination">

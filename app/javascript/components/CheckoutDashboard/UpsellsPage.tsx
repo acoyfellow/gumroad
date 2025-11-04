@@ -27,12 +27,13 @@ import { DiscountInput, InputtedDiscount } from "$app/components/CheckoutDashboa
 import { Layout, Page } from "$app/components/CheckoutDashboard/Layout";
 import { useClientAlert } from "$app/components/ClientAlertProvider";
 import { Details } from "$app/components/Details";
+import { Dropdown } from "$app/components/Dropdown";
 import { Icon } from "$app/components/Icons";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { Modal } from "$app/components/Modal";
 import { Pagination, PaginationProps } from "$app/components/Pagination";
-import { Popover } from "$app/components/Popover";
 import { applySelection } from "$app/components/Product/ConfigurationSelector";
+import { Search } from "$app/components/Search";
 import { Select } from "$app/components/Select";
 import { CrossSellModal, UpsellModal } from "$app/components/server-components/CheckoutPage";
 import { PageHeader } from "$app/components/ui/PageHeader";
@@ -148,11 +149,6 @@ const UpsellsPage = (props: UpsellsPageProps) => {
   }, [upsells]);
 
   const [searchQuery, setSearchQuery] = React.useState<string | null>(null);
-  const [isSearchPopoverOpen, setIsSearchPopoverOpen] = React.useState(false);
-  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
-  React.useEffect(() => {
-    if (isSearchPopoverOpen) searchInputRef.current?.focus();
-  }, [isSearchPopoverOpen]);
 
   const handleCancel = () => {
     setView("list");
@@ -229,30 +225,13 @@ const UpsellsPage = (props: UpsellsPageProps) => {
       actions={
         <>
           {upsells.length > 0 && (
-            <Popover
-              open={isSearchPopoverOpen}
-              onToggle={setIsSearchPopoverOpen}
-              aria-label="Search"
-              trigger={
-                <div className="button">
-                  <Icon name="solid-search" />
-                </div>
-              }
-            >
-              <div className="input">
-                <Icon name="solid-search" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search"
-                  value={searchQuery ?? ""}
-                  onChange={(evt) => {
-                    setSearchQuery(evt.target.value);
-                    debouncedLoadUpsells();
-                  }}
-                />
-              </div>
-            </Popover>
+            <Search
+              onSearch={(query) => {
+                setSearchQuery(query);
+                debouncedLoadUpsells();
+              }}
+              value={searchQuery ?? ""}
+            />
           )}
           <Button color="accent" onClick={() => setView("create")} disabled={isReadOnly}>
             New upsell
@@ -866,9 +845,9 @@ const Form = ({
                     }
                   >
                     {discount ? (
-                      <div className="dropdown">
+                      <Dropdown>
                         <DiscountInput discount={discount} setDiscount={setDiscount} currencyCode="usd" />
-                      </div>
+                      </Dropdown>
                     ) : null}
                   </Details>
                 </fieldset>

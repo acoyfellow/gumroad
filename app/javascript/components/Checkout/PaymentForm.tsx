@@ -50,9 +50,11 @@ import {
   isTippingEnabled,
   getTotalPriceFromProducts,
 } from "$app/components/Checkout/payment";
+import { Dropdown } from "$app/components/Dropdown";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { PriceInput } from "$app/components/PriceInput";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Tabs } from "$app/components/ui/Tabs";
@@ -224,28 +226,28 @@ const EmailAddress = () => {
               <h4>Email address</h4>
             </label>
           </legend>
-          <div className={cx("popover", { expanded: !!state.emailTypoSuggestion })} style={{ width: "100%" }}>
-            <input
-              id={`${uid}email`}
-              type="email"
-              aria-invalid={errors.has("email")}
-              value={state.email}
-              onChange={(evt) => dispatch({ type: "set-value", email: evt.target.value.toLowerCase() })}
-              placeholder="Your email address"
-              disabled={(loggedInUser && loggedInUser.email !== null) || isProcessing(state)}
-              onBlur={checkForEmailTypos}
-            />
-
-            {state.emailTypoSuggestion ? (
-              <div className="dropdown grid gap-2">
+          <div className="relative inline-block w-full">
+            <Popover open={!!state.emailTypoSuggestion}>
+              <PopoverTrigger asChild>
+                <input
+                  id={`${uid}email`}
+                  type="email"
+                  aria-invalid={errors.has("email")}
+                  value={state.email}
+                  onChange={(evt) => dispatch({ type: "set-value", email: evt.target.value.toLowerCase() })}
+                  placeholder="Your email address"
+                  disabled={(loggedInUser && loggedInUser.email !== null) || isProcessing(state)}
+                  onBlur={checkForEmailTypos}
+                />
+              </PopoverTrigger>
+              <PopoverContent className="grid gap-2" matchTriggerWidth>
                 <div>Did you mean {state.emailTypoSuggestion}?</div>
-
                 <div className="button-group">
                   <Button onClick={rejectEmailTypoSuggestion}>No</Button>
                   <Button onClick={acceptEmailTypoSuggestion}>Yes</Button>
                 </div>
-              </div>
-            ) : null}
+              </PopoverContent>
+            </Popover>
           </div>
         </fieldset>
       </div>
@@ -552,7 +554,7 @@ const CustomerDetails = () => {
             <CountryInput />
           </div>
           {addressVerification && addressVerification.type !== "done" ? (
-            <div className="dropdown paragraphs">
+            <Dropdown className="flex flex-col gap-4">
               {addressVerification.type === "verification-required" ? (
                 <>
                   <div>
@@ -586,7 +588,7 @@ const CustomerDetails = () => {
                   <Button onClick={verifyAddress}>Yes, it is</Button>
                 </>
               )}
-            </div>
+            </Dropdown>
           ) : null}
         </div>
       ) : null}

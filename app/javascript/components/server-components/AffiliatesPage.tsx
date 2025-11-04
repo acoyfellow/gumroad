@@ -51,7 +51,7 @@ import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { NumberInput } from "$app/components/NumberInput";
 import { Pagination } from "$app/components/Pagination";
-import { Popover } from "$app/components/Popover";
+import { Search } from "$app/components/Search";
 import { showAlert } from "$app/components/server-components/Alert";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import Placeholder from "$app/components/ui/Placeholder";
@@ -130,47 +130,6 @@ const extractSortParam = (rawParams: URLSearchParams): Sort<SortKey> | null => {
     default:
       return null;
   }
-};
-
-const SearchBoxPopover = ({ initialQuery, onSearch }: { initialQuery: string; onSearch: (query: string) => void }) => {
-  const [searchBoxOpen, setSearchBoxOpen] = React.useState(false);
-  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
-  const [searchQuery, setSearchQuery] = React.useState(initialQuery);
-
-  React.useEffect(() => {
-    if (searchBoxOpen) searchInputRef.current?.focus();
-  }, [searchBoxOpen]);
-
-  return (
-    <Popover
-      open={searchBoxOpen}
-      onToggle={setSearchBoxOpen}
-      aria-label="Toggle Search"
-      trigger={
-        <WithTooltip tip="Search" position="bottom">
-          <div className="button">
-            <Icon name="solid-search" />
-          </div>
-        </WithTooltip>
-      }
-    >
-      <div className="input input-wrapper">
-        <Icon name="solid-search" />
-        <input
-          ref={searchInputRef}
-          value={searchQuery}
-          autoFocus
-          type="text"
-          placeholder="Search"
-          onChange={(evt) => {
-            const newQuery = evt.target.value;
-            setSearchQuery(newQuery);
-            onSearch(newQuery);
-          }}
-        />
-      </div>
-    </Popover>
-  );
 };
 
 const ApproveAllButton = ({
@@ -443,7 +402,7 @@ const AffiliatesTab = () => {
       title="Affiliates"
       actions={
         <>
-          <SearchBoxPopover onSearch={onSearch} initialQuery={searchQuery} />
+          <Search onSearch={onSearch} value={searchQuery} />
           <WithTooltip position="bottom" tip={data.affiliates_disabled_reason}>
             <Link
               to="/affiliates/new"

@@ -72,58 +72,31 @@ nav.main-nav {
   footer {
     margin-top: auto;
 
-    .popover {
-      position: relative;
+    .user-avatar {
+      margin-right: spacer(3);
+    }
 
-      & > summary {
-        display: revert;
-
-        &::before {
-          float: right;
-          margin: 0;
-          @extend %icon, .icon-outline-cheveron-down;
-        }
+    [role="menu"] {
+      .icon {
+        margin-left: spacer(1);
+        margin-right: spacer(1) + spacer(2);
       }
 
-      &[open] > summary {
-        margin: 0;
-
-        &::before {
-          @extend .icon-outline-cheveron-up;
-        }
+      > hr {
+        margin: spacer(2) 0;
       }
 
-      .user-avatar {
-        margin-right: spacer(3);
-      }
-
-      .dropdown {
-        width: 100%;
-        margin: 0 spacer(4);
-      }
-
-      [role="menu"] {
-        .icon {
-          margin-left: spacer(1);
-          margin-right: spacer(1) + spacer(2);
+      [role="menuitemradio"] {
+        > * {
+          vertical-align: middle;
         }
-
-        > hr {
-          margin: spacer(2) 0;
-        }
-
-        [role="menuitemradio"] {
-          > * {
-            vertical-align: middle;
-          }
-          &[aria-checked="true"] {
-            &::before {
-              @extend %icon, .icon-solid-check-circle;
-              color: full-color(success);
-              margin-left: spacer(2);
-              float: right;
-              height: $big-icon-size;
-            }
+        &[aria-checked="true"] {
+          &::before {
+            @extend %icon, .icon-solid-check-circle;
+            color: full-color(success);
+            margin-left: spacer(2);
+            float: right;
+            height: $big-icon-size;
           }
         }
       }

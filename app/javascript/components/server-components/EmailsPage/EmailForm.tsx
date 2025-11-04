@@ -35,7 +35,7 @@ import {
 import { EvaporateUploaderProvider } from "$app/components/EvaporateUploader";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { PriceInput } from "$app/components/PriceInput";
 import { ImageUploadSettingsContext, RichTextEditor } from "$app/components/RichTextEditor";
 import { S3UploadConfigProvider } from "$app/components/S3UploadConfig";
@@ -635,25 +635,26 @@ export const EmailForm = () => {
         actions={
           <>
             {channel.email && channel.profile ? (
-              <Popover
-                trigger={
+              <Popover>
+                <PopoverTrigger>
                   <Button disabled={isBusy}>
                     <Icon name="eye-fill" />
                     Preview
                     <Icon name="outline-cheveron-down" />
                   </Button>
-                }
-              >
-                <div className="grid gap-3">
-                  <Button disabled={isBusy} onClick={() => save("save_and_preview_post")}>
-                    <Icon name="file-earmark-medical-fill" />
-                    Preview Post
-                  </Button>
-                  <Button disabled={isBusy} onClick={() => save("save_and_preview_email")}>
-                    <Icon name="envelope-fill" />
-                    Preview Email
-                  </Button>
-                </div>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <div className="grid gap-3">
+                    <Button disabled={isBusy} onClick={() => save("save_and_preview_post")}>
+                      <Icon name="file-earmark-medical-fill" />
+                      Preview Post
+                    </Button>
+                    <Button disabled={isBusy} onClick={() => save("save_and_preview_email")}>
+                      <Icon name="envelope-fill" />
+                      Preview Email
+                    </Button>
+                  </div>
+                </PopoverContent>
               </Popover>
             ) : (
               <Button
@@ -668,76 +669,77 @@ export const EmailForm = () => {
               <Icon name="x-square" />
               Cancel
             </Link>
-            <Popover
-              trigger={
+            <Popover>
+              <PopoverTrigger>
                 <Button disabled={isBusy}>
                   {channel.profile ? "Publish" : "Send"}
                   <Icon name="outline-cheveron-down" />
                 </Button>
-              }
-            >
-              <div className="grid gap-3">
-                <div style={{ display: "grid", gridTemplateColumns: "1fr max-content" }}>
-                  {isSaving && secondsLeftToPublish > 0 ? (
-                    <>
-                      <Button color="accent" disabled>
-                        {channel.profile ? "Publishing" : "Sending"} in {secondsLeftToPublish}...
-                      </Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <div className="grid gap-3">
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr max-content" }}>
+                    {isSaving && secondsLeftToPublish > 0 ? (
+                      <>
+                        <Button color="accent" disabled>
+                          {channel.profile ? "Publishing" : "Sending"} in {secondsLeftToPublish}...
+                        </Button>
+                        <Button
+                          style={{ marginLeft: "var(--spacer-2)" }}
+                          onClick={() => {
+                            if (publishCountdownRef.current) {
+                              publishCountdownRef.current.abort();
+                              publishCountdownRef.current = null;
+                            }
+                            setIsSaving(false);
+                            setSecondsLeftToPublish(0);
+                          }}
+                        >
+                          <Icon name="x" />
+                        </Button>
+                      </>
+                    ) : (
                       <Button
-                        style={{ marginLeft: "var(--spacer-2)" }}
+                        color="accent"
                         onClick={() => {
-                          if (publishCountdownRef.current) {
-                            publishCountdownRef.current.abort();
-                            publishCountdownRef.current = null;
-                          }
-                          setIsSaving(false);
-                          setSecondsLeftToPublish(0);
+                          if (!validate("save_and_publish")) return;
+
+                          setIsSaving(true);
+                          publishCountdownRef.current = new Countdown(
+                            DEFAULT_SECONDS_LEFT_TO_PUBLISH,
+                            (secondsLeft) => {
+                              setSecondsLeftToPublish(secondsLeft);
+                            },
+                            () => {
+                              publishCountdownRef.current = null;
+                              save("save_and_publish");
+                            },
+                          );
                         }}
                       >
-                        <Icon name="x" />
+                        {channel.profile ? "Publish now" : "Send now"}
                       </Button>
-                    </>
-                  ) : (
-                    <Button
-                      color="accent"
-                      onClick={() => {
-                        if (!validate("save_and_publish")) return;
-
-                        setIsSaving(true);
-                        publishCountdownRef.current = new Countdown(
-                          DEFAULT_SECONDS_LEFT_TO_PUBLISH,
-                          (secondsLeft) => {
-                            setSecondsLeftToPublish(secondsLeft);
-                          },
-                          () => {
-                            publishCountdownRef.current = null;
-                            save("save_and_publish");
-                          },
-                        );
+                    )}
+                  </div>
+                  <Separator>OR</Separator>
+                  <fieldset className={cx({ danger: invalidFields.has("scheduleDate") })}>
+                    <DateInput
+                      withTime
+                      aria-label="Schedule date"
+                      value={scheduleDate}
+                      min={new Date()}
+                      disabled={isPublished}
+                      onChange={(date) => {
+                        if (date) setScheduleDate(date);
+                        markFieldAsValid("scheduleDate");
                       }}
-                    >
-                      {channel.profile ? "Publish now" : "Send now"}
-                    </Button>
-                  )}
+                    />
+                  </fieldset>
+                  <Button disabled={isPublished || isBusy} onClick={() => save("save_and_schedule")}>
+                    Schedule
+                  </Button>
                 </div>
-                <Separator>OR</Separator>
-                <fieldset className={cx({ danger: invalidFields.has("scheduleDate") })}>
-                  <DateInput
-                    withTime
-                    aria-label="Schedule date"
-                    value={scheduleDate}
-                    min={new Date()}
-                    disabled={isPublished}
-                    onChange={(date) => {
-                      if (date) setScheduleDate(date);
-                      markFieldAsValid("scheduleDate");
-                    }}
-                  />
-                </fieldset>
-                <Button disabled={isPublished || isBusy} onClick={() => save("save_and_schedule")}>
-                  Schedule
-                </Button>
-              </div>
+              </PopoverContent>
             </Popover>
             <Button color="accent" disabled={isBusy} onClick={() => save()}>
               Save

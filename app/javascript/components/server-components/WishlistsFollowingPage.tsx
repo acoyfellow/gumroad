@@ -7,7 +7,7 @@ import { register } from "$app/utils/serverComponentUtil";
 
 import { Icon } from "$app/components/Icons";
 import { Layout } from "$app/components/Library/Layout";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { showAlert } from "$app/components/server-components/Alert";
 import Placeholder from "$app/components/ui/Placeholder";
 
@@ -81,12 +81,17 @@ const WishlistsFollowingPage = ({
                   </td>
                   <td>
                     <div className="actions">
-                      <Popover aria-label="Actions" trigger={<Icon name="three-dots" />}>
-                        <div role="menu">
-                          <div role="menuitem" className="danger" onClick={() => void destroy(wishlist)}>
-                            <Icon name="bookmark-x" /> Unfollow
+                      <Popover aria-label="Actions">
+                        <PopoverTrigger>
+                          <Icon name="three-dots" />
+                        </PopoverTrigger>
+                        <PopoverContent className="border-0 p-0 shadow-none">
+                          <div role="menu">
+                            <div role="menuitem" className="danger" onClick={() => void destroy(wishlist)}>
+                              <Icon name="bookmark-x" /> Unfollow
+                            </div>
                           </div>
-                        </div>
+                        </PopoverContent>
                       </Popover>
                     </div>
                   </td>

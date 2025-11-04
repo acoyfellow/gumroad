@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { showAlert } from "$app/components/server-components/Alert";
 
 type Props = {
@@ -36,20 +36,18 @@ export const DownloadTaxFormsPopover = ({ taxForms }: Props) => {
     <Popover
       aria-label="Download tax forms"
       open={isOpen}
-      onToggle={(open: boolean) => {
+      onOpenChange={(open) => {
         setIsOpen(open);
-        if (open) {
-          setSelectedYears(new Set());
-        }
+        if (open) setSelectedYears(new Set());
       }}
-      trigger={
+    >
+      <PopoverTrigger>
         <Button aria-label="Tax forms">
           <span>Tax forms</span>
           <Icon name="download" />
         </Button>
-      }
-    >
-      {isOpen ? (
+      </PopoverTrigger>
+      <PopoverContent>
         <div className="max-w-[300px] space-y-4 sm:max-w-full">
           {Object.keys(taxForms).length === 0 ? (
             <section className="text-muted">No tax forms available.</section>
@@ -98,7 +96,7 @@ export const DownloadTaxFormsPopover = ({ taxForms }: Props) => {
             </>
           )}
         </div>
-      ) : null}
+      </PopoverContent>
     </Popover>
   );
 };

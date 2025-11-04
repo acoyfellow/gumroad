@@ -10,7 +10,7 @@ import { useAppDomain } from "$app/components/DomainSettings";
 import { FacebookShareButton } from "$app/components/FacebookShareButton";
 import { Icon } from "$app/components/Icons";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { Product, WishlistForProduct } from "$app/components/Product";
 import { PriceSelection } from "$app/components/Product/ConfigurationSelector";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -139,25 +139,25 @@ export const ShareSection = ({
           open={loggedInUser ? undefined : false}
         />
 
-        <Popover
-          aria-label="Share"
-          trigger={
+        <Popover aria-label="Share">
+          <PopoverTrigger>
             <WithTooltip tip="Share" position="bottom">
               <Button aria-label="Share">
                 <Icon name="share" />
               </Button>
             </WithTooltip>
-          }
-        >
-          <div className="grid grid-cols-1 gap-4">
-            <TwitterShareButton url={product.long_url} text={`Buy ${product.name} on @Gumroad`} />
-            <FacebookShareButton url={product.long_url} text={product.name} />
-            <CopyToClipboard text={product.long_url} copyTooltip="Copy product URL">
-              <Button aria-label="Copy product URL">
-                <Icon name="link" /> Copy link
-              </Button>
-            </CopyToClipboard>
-          </div>
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="grid grid-cols-1 gap-4">
+              <TwitterShareButton url={product.long_url} text={`Buy ${product.name} on @Gumroad`} />
+              <FacebookShareButton url={product.long_url} text={product.name} />
+              <CopyToClipboard text={product.long_url} copyTooltip="Copy product URL">
+                <Button aria-label="Copy product URL">
+                  <Icon name="link" /> Copy link
+                </Button>
+              </CopyToClipboard>
+            </div>
+          </PopoverContent>
         </Popover>
       </div>
       {saveState.type === "success" ? (

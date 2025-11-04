@@ -16,7 +16,7 @@ import { buildStaticRouter, GlobalProps, register } from "$app/utils/serverCompo
 
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import WorkflowEmails from "$app/components/server-components/WorkflowsPage/WorkflowEmails";
 import WorkflowForm, { WorkflowTrigger } from "$app/components/server-components/WorkflowsPage/WorkflowForm";
 import WorkflowList from "$app/components/server-components/WorkflowsPage/WorkflowList";
@@ -69,10 +69,8 @@ export const PublishButton = ({
   isDisabled,
   sendToPastCustomers,
   onClick,
-}: PublishButtonProps) => {
-  const [popoverOpen, setPopoverOpen] = React.useState(false);
-
-  return isPublished ? (
+}: PublishButtonProps) =>
+  isPublished ? (
     <Button onClick={() => onClick("save_and_unpublish")} disabled={isDisabled}>
       Unpublish
     </Button>
@@ -81,28 +79,25 @@ export const PublishButton = ({
       Publish
     </Button>
   ) : (
-    <Popover
-      disabled={isDisabled}
-      trigger={
+    <Popover>
+      <PopoverTrigger disabled={isDisabled}>
         <div className="button" color="accent">
           Publish
           <Icon name="outline-cheveron-down" />
         </div>
-      }
-      open={popoverOpen}
-      onToggle={setPopoverOpen}
-    >
-      <fieldset>
-        <Button color="accent" onClick={() => onClick("save_and_publish")} disabled={isDisabled}>
-          Publish now
-        </Button>
-        <Toggle value={sendToPastCustomers.enabled} onChange={sendToPastCustomers.toggle}>
-          {sendToPastCustomers.label}
-        </Toggle>
-      </fieldset>
+      </PopoverTrigger>
+      <PopoverContent>
+        <fieldset>
+          <Button color="accent" onClick={() => onClick("save_and_publish")} disabled={isDisabled}>
+            Publish now
+          </Button>
+          <Toggle value={sendToPastCustomers.enabled} onChange={sendToPastCustomers.toggle}>
+            {sendToPastCustomers.label}
+          </Toggle>
+        </fieldset>
+      </PopoverContent>
     </Popover>
   );
-};
 
 export const sendToPastCustomersCheckboxLabel = (workflowTrigger: WorkflowTrigger) =>
   workflowTrigger === "new_subscriber"

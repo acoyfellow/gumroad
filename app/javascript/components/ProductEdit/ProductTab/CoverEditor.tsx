@@ -12,7 +12,7 @@ import { assertResponseError } from "$app/utils/request";
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { Covers } from "$app/components/Product/Covers";
 import { RemoveButton } from "$app/components/RemoveButton";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -84,20 +84,21 @@ export const CoverEditor = ({
               ))}
             </Sortable>
 
-            <WithTooltip tip={canAddPreview ? null : "Maximum number of previews uploaded"}>
-              <Popover
-                disabled={!canAddPreview || isUploading}
-                aria-label="Add cover"
-                trigger={
+            <Popover
+              open={isUploaderOpen}
+              onOpenChange={(open) => {
+                if (canAddPreview && !isUploading) setIsUploaderOpen(open);
+              }}
+              aria-label="Add cover"
+            >
+              <PopoverTrigger disabled={!canAddPreview || isUploading}>
+                <WithTooltip tip={canAddPreview ? null : "Maximum number of previews uploaded"}>
                   <div className="button">
                     <Icon name="plus" />
                   </div>
-                }
-                open={isUploaderOpen}
-                onToggle={(value) => {
-                  if (canAddPreview && !isUploading) setIsUploaderOpen(value);
-                }}
-              >
+                </WithTooltip>
+              </PopoverTrigger>
+              <PopoverContent>
                 <div className="paragraphs">
                   <CoverUploader
                     permalink={permalink}
@@ -109,8 +110,8 @@ export const CoverEditor = ({
                     setIsUploading={setIsUploading}
                   />
                 </div>
-              </Popover>
-            </WithTooltip>
+              </PopoverContent>
+            </Popover>
           </div>
           <Covers covers={covers} activeCoverId={activeCoverId} setActiveCoverId={setActiveCoverId} />
         </div>

@@ -14,7 +14,7 @@ import { Button } from "$app/components/Button";
 import { DateRangePicker } from "$app/components/DateRangePicker";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ExportSubscribersPopover } from "$app/components/server-components/FollowersPage/ExportSubscribersPopover";
 import Placeholder from "$app/components/ui/Placeholder";
@@ -54,23 +54,21 @@ const AudiencePage = ({ total_follower_count }: { total_follower_count: number }
     <AnalyticsLayout
       selectedTab="following"
       actions={
-        hasContent ? (
-          <>
-            <Popover
-              aria-label="Export"
-              trigger={
-                <WithTooltip tip="Export" position="bottom">
-                  <Button aria-label="Export">
-                    <Icon aria-label="Download" name="download" />
-                  </Button>
-                </WithTooltip>
-              }
-            >
-              {(close) => <ExportSubscribersPopover closePopover={close} />}
-            </Popover>
-            <DateRangePicker {...dateRange} />
-          </>
-        ) : null
+        <>
+          <Popover aria-label="Export">
+            <PopoverTrigger>
+              <WithTooltip tip="Export" position="bottom">
+                <Button aria-label="Export">
+                  <Icon aria-label="Download" name="download" />
+                </Button>
+              </WithTooltip>
+            </PopoverTrigger>
+            <PopoverContent>
+              <ExportSubscribersPopover />
+            </PopoverContent>
+          </Popover>
+          <DateRangePicker {...dateRange} />
+        </>
       }
     >
       {hasContent ? (

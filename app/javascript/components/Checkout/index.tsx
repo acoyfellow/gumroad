@@ -14,7 +14,7 @@ import { assertResponseError } from "$app/utils/request";
 
 import { Button, NavigationButton } from "$app/components/Button";
 import { PaymentForm } from "$app/components/Checkout/PaymentForm";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { Card } from "$app/components/Product/Card";
 import {
   applySelection,
@@ -391,7 +391,6 @@ const CartItemComponent = ({
   updateCart: (update: Partial<CartState>) => void;
   isGift: boolean;
 }) => {
-  const [editPopoverOpen, setEditPopoverOpen] = React.useState(false);
   const [selection, setSelection] = React.useState<PriceSelection>({
     rent: item.rent,
     optionId: item.option_id,
@@ -429,7 +428,6 @@ const CartItemComponent = ({
       pay_in_installments: selection.payInInstallments,
     };
     updateCart({ items });
-    setEditPopoverOpen(false);
   };
 
   const option = item.product.options.find((option) => option.id === item.option_id);
@@ -507,33 +505,36 @@ const CartItemComponent = ({
               item.product.installment_plan ||
               isPWYW ? (
                 <li>
-                  <Popover
-                    trigger={<span className="link">Configure</span>}
-                    open={editPopoverOpen}
-                    onToggle={setEditPopoverOpen}
-                  >
-                    <div className="paragraphs" style={{ width: "24rem" }}>
-                      <ConfigurationSelector
-                        selection={selection}
-                        setSelection={(selection) => {
-                          setError(null);
-                          setSelection(selection);
-                        }}
-                        product={item.product}
-                        discount={
-                          discount.discount && discount.discount.type !== "ppp" ? discount.discount.value : null
-                        }
-                        showInstallmentPlan
-                      />
-                      {error ? (
-                        <div role="alert" className="danger">
-                          {error}
-                        </div>
-                      ) : null}
-                      <Button color="accent" onClick={saveChanges}>
-                        Save changes
-                      </Button>
-                    </div>
+                  <Popover>
+                    <PopoverTrigger>
+                      <span className="link">Configure</span>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <div className="paragraphs" style={{ width: "24rem" }}>
+                        <ConfigurationSelector
+                          selection={selection}
+                          setSelection={(selection) => {
+                            setError(null);
+                            setSelection(selection);
+                          }}
+                          product={item.product}
+                          discount={
+                            discount.discount && discount.discount.type !== "ppp" ? discount.discount.value : null
+                          }
+                          showInstallmentPlan
+                        />
+                        {error ? (
+                          <div role="alert" className="danger">
+                            {error}
+                          </div>
+                        ) : null}
+                        <PopoverClose>
+                          <Button color="accent" onClick={saveChanges}>
+                            Save changes
+                          </Button>
+                        </PopoverClose>
+                      </div>
+                    </PopoverContent>
                   </Popover>
                 </li>
               ) : null}

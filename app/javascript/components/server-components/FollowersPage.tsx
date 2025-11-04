@@ -11,7 +11,8 @@ import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
+import { Search } from "$app/components/Search";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ExportSubscribersPopover } from "$app/components/server-components/FollowersPage/ExportSubscribersPopover";
 import { PageHeader } from "$app/components/ui/PageHeader";
@@ -68,18 +69,12 @@ export const FollowersPage = ({ followers: initialFollowers, per_page, total }: 
   const [loading, setLoading] = React.useState(false);
   const [followers, setFollowers] = React.useState<Follower[]>(initialFollowers);
   const [selectedFollowerId, setSelectedFollowerId] = React.useState<string | null>(null);
-  const [searchBoxOpen, setSearchBoxOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [totalCount, setTotalCount] = React.useState(total);
   const [totalFilteredCount, setTotalFilteredCount] = React.useState(total);
   const [removing, setRemoving] = React.useState(false);
   const [page, setPage] = React.useState(1);
-  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
   const selectedFollower = followers.find((follower) => follower.id === selectedFollowerId);
-
-  React.useEffect(() => {
-    if (searchBoxOpen) searchInputRef.current?.focus();
-  }, [searchBoxOpen]);
 
   const loadFollowers = async (email: string, page = 1) => {
     try {
@@ -122,39 +117,19 @@ export const FollowersPage = ({ followers: initialFollowers, per_page, total }: 
       actions={
         <>
           {(followers.length > 0 || searchQuery.length > 0) && (
-            <Popover
-              open={searchBoxOpen}
-              onToggle={setSearchBoxOpen}
-              aria-label="Search"
-              trigger={
-                <WithTooltip tip="Search" position="bottom">
-                  <div className="button">
-                    <Icon name="solid-search" />
-                  </div>
-                </WithTooltip>
-              }
-            >
-              <input
-                ref={searchInputRef}
-                value={searchQuery}
-                autoFocus
-                type="text"
-                placeholder="Search followers"
-                onChange={(evt) => setSearchQuery(evt.target.value)}
-              />
-            </Popover>
+            <Search onSearch={setSearchQuery} value={searchQuery} placeholder="Search followers" />
           )}
-          <Popover
-            aria-label="Export"
-            trigger={
+          <Popover aria-label="Export">
+            <PopoverTrigger>
               <WithTooltip tip="Export" position="bottom">
                 <Button aria-label="Export">
                   <Icon aria-label="Download" name="download" />
                 </Button>
               </WithTooltip>
-            }
-          >
-            {(close) => <ExportSubscribersPopover closePopover={close} />}
+            </PopoverTrigger>
+            <PopoverContent>
+              <ExportSubscribersPopover />
+            </PopoverContent>
           </Popover>
 
           {currentSeller ? (

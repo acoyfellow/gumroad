@@ -19,7 +19,7 @@ import { assertResponseError, request } from "$app/utils/request";
 import { Button, NavigationButton } from "$app/components/Button";
 import { useClientAlert } from "$app/components/ClientAlertProvider";
 import { Icon } from "$app/components/Icons";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { TypeSafeOptionSelect } from "$app/components/TypeSafeOptionSelect";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { WithTooltip } from "$app/components/WithTooltip";
@@ -230,48 +230,47 @@ const NewProductPage = ({
               </NavigationButton>
             </Link>
             {ai_generation_enabled ? (
-              <Popover
-                open={aiPopoverOpen}
-                onToggle={setAiPopoverOpen}
-                trigger={
+              <Popover open={aiPopoverOpen} onOpenChange={setAiPopoverOpen}>
+                <PopoverTrigger>
                   <Button color="primary" outline aria-label="Create a product with AI">
                     <Icon name="sparkle" />
                   </Button>
-                }
-              >
-                <div className="w-96 max-w-full">
-                  <fieldset>
-                    <legend>
-                      <label htmlFor={`ai-prompt-${formUID}`}>Create a product with AI</label>
-                    </legend>
-                    <p>
-                      Got an idea? Give clear instructions, and let AI create your product—quick and easy! Customize it
-                      to make it yours.
-                    </p>
-                    <textarea
-                      id={`ai-prompt-${formUID}`}
-                      placeholder="e.g., a 'Coding with AI using Cursor for Designers' ebook with 5 chapters for $35'."
-                      value={aiPrompt}
-                      onChange={(e) => setAiPrompt(e.target.value)}
-                      rows={4}
-                      maxLength={500}
-                      className="w-full resize-y"
-                      autoFocus
-                    />
-                  </fieldset>
-                  <div className="mt-3 flex justify-end gap-2">
-                    <Button onClick={() => setAiPopoverOpen(false)} disabled={isGeneratingUsingAi}>
-                      Cancel
-                    </Button>
-                    <Button
-                      color="primary"
-                      onClick={() => void generateWithAi()}
-                      disabled={isGeneratingUsingAi || !aiPrompt.trim()}
-                    >
-                      {isGeneratingUsingAi ? "Generating..." : "Generate"}
-                    </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <div className="w-96 max-w-full">
+                    <fieldset>
+                      <legend>
+                        <label htmlFor={`ai-prompt-${formUID}`}>Create a product with AI</label>
+                      </legend>
+                      <p>
+                        Got an idea? Give clear instructions, and let AI create your product—quick and easy! Customize
+                        it to make it yours.
+                      </p>
+                      <textarea
+                        id={`ai-prompt-${formUID}`}
+                        placeholder="e.g., a 'Coding with AI using Cursor for Designers' ebook with 5 chapters for $35'."
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        rows={4}
+                        maxLength={500}
+                        className="w-full resize-y"
+                        autoFocus
+                      />
+                    </fieldset>
+                    <div className="mt-3 flex justify-end gap-2">
+                      <Button onClick={() => setAiPopoverOpen(false)} disabled={isGeneratingUsingAi}>
+                        Cancel
+                      </Button>
+                      <Button
+                        color="primary"
+                        onClick={() => void generateWithAi()}
+                        disabled={isGeneratingUsingAi || !aiPrompt.trim()}
+                      >
+                        {isGeneratingUsingAi ? "Generating..." : "Generate"}
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                </PopoverContent>
               </Popover>
             ) : null}
             <Button color="accent" type="submit" form={`new-product-form-${formUID}`} disabled={isSubmitting}>

@@ -5,6 +5,7 @@ import { createCast } from "ts-safe-cast";
 import { register } from "$app/utils/serverComponentUtil";
 import { initTeamMemberReadOnlyAccess } from "$app/utils/team_member_read_only";
 
+import { DashboardNavProfilePopover } from "$app/components/Admin/Nav/ProfilePopover";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { useAppDomain, useDiscoverUrl } from "$app/components/DomainSettings";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
@@ -15,7 +16,6 @@ import {
   UnbecomeDropdownItem,
   NavLinkDropdownMembershipItem,
 } from "$app/components/Nav";
-import { Popover } from "$app/components/Popover";
 import { UnreadTicketsBadge } from "$app/components/support/UnreadTicketsBadge";
 import { useRunOnce } from "$app/components/useRunOnce";
 
@@ -83,16 +83,8 @@ export const Nav = (props: Props) => {
               ) : null
             }
           />
-          <Popover
-            position="top"
-            trigger={
-              <>
-                <img className="user-avatar" src={currentSeller?.avatarUrl} alt="Your avatar" />
-                {currentSeller?.name || currentSeller?.email}
-              </>
-            }
-          >
-            <div role="menu">
+          <DashboardNavProfilePopover user={currentSeller}>
+            <div role="menu" className="w-52 shadow-none!">
               {teamMemberships != null && teamMemberships.length > 0 ? (
                 <>
                   {teamMemberships.map((teamMembership) => (
@@ -110,7 +102,7 @@ export const Nav = (props: Props) => {
               <NavLinkDropdownItem text="Logout" icon="box-arrow-in-right-fill" href={Routes.logout_url(routeParams)} />
               {loggedInUser?.isImpersonating ? <UnbecomeDropdownItem /> : null}
             </div>
-          </Popover>
+          </DashboardNavProfilePopover>
         </>
       }
       {...props}

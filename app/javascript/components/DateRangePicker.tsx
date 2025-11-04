@@ -14,7 +14,7 @@ import * as React from "react";
 
 import { DateInput } from "$app/components/DateInput";
 import { Icon } from "$app/components/Icons";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { useUserAgentInfo } from "$app/components/UserAgent";
 
 export const DateRangePicker = ({
@@ -41,99 +41,125 @@ export const DateRangePicker = ({
   return (
     <Popover
       open={open}
-      onToggle={(open) => {
+      onOpenChange={(open) => {
         setIsCustom(false);
         setOpen(open);
       }}
-      trigger={
+    >
+      <PopoverTrigger>
         <div className="input" aria-label="Date range selector">
           <span suppressHydrationWarning>{Intl.DateTimeFormat(locale).formatRange(from, to)}</span>
           <Icon name="outline-cheveron-down" className="ml-auto" />
         </div>
-      }
-    >
-      {isCustom ? (
-        <div className="paragraphs">
-          <fieldset>
-            <legend>
-              <label htmlFor={`${uid}-from`}>From (including)</label>
-            </legend>
-            <DateInput
-              id={`${uid}-from`}
-              value={from}
-              onChange={(date) => {
-                if (date) setFrom(date);
+      </PopoverTrigger>
+      <PopoverContent className="p-0" matchTriggerWidth>
+        {isCustom ? (
+          <div className="flex flex-col gap-4 p-4">
+            <fieldset>
+              <legend>
+                <label htmlFor={`${uid}-from`}>From (including)</label>
+              </legend>
+              <DateInput
+                id={`${uid}-from`}
+                value={from}
+                onChange={(date) => {
+                  if (date) setFrom(date);
+                }}
+              />
+            </fieldset>
+            <fieldset>
+              <legend>
+                <label htmlFor={`${uid}-to`}>To (including)</label>
+              </legend>
+              <DateInput
+                id={`${uid}-to`}
+                value={to}
+                onChange={(date) => {
+                  if (date) setTo(date);
+                }}
+              />
+            </fieldset>
+          </div>
+        ) : (
+          <div className="flex flex-col py-2">
+            <div
+              role="menuitem"
+              className="px-4 py-2 hover:bg-foreground/10"
+              onClick={() => quickSet(subDays(today, 30), today)}
+            >
+              Last 30 days
+            </div>
+            <div
+              role="menuitem"
+              className="px-4 py-2 hover:bg-foreground/10"
+              onClick={() => quickSet(startOfMonth(today), today)}
+            >
+              This month
+            </div>
+            <div
+              role="menuitem"
+              className="px-4 py-2 hover:bg-foreground/10"
+              onClick={() => {
+                const lastMonth = subMonths(today, 1);
+                quickSet(startOfMonth(lastMonth), endOfMonth(lastMonth));
               }}
-            />
-          </fieldset>
-          <fieldset>
-            <legend>
-              <label htmlFor={`${uid}-to`}>To (including)</label>
-            </legend>
-            <DateInput
-              id={`${uid}-to`}
-              value={to}
-              onChange={(date) => {
-                if (date) setTo(date);
+            >
+              Last month
+            </div>
+            <div
+              role="menuitem"
+              className="px-4 py-2 hover:bg-foreground/10"
+              onClick={() => quickSet(startOfMonth(subMonths(today, 3)), endOfMonth(subMonths(today, 1)))}
+            >
+              Last 3 months
+            </div>
+            <div
+              role="menuitem"
+              className="px-4 py-2 hover:bg-foreground/10"
+              onClick={() => quickSet(startOfQuarter(today), today)}
+            >
+              This quarter
+            </div>
+            <div
+              role="menuitem"
+              className="px-4 py-2 hover:bg-foreground/10"
+              onClick={() => {
+                const lastQuarter = subQuarters(today, 1);
+                quickSet(startOfQuarter(lastQuarter), endOfQuarter(lastQuarter));
               }}
-            />
-          </fieldset>
-        </div>
-      ) : (
-        <div role="menu">
-          <div role="menuitem" onClick={() => quickSet(subDays(today, 30), today)}>
-            Last 30 days
+            >
+              Last quarter
+            </div>
+            <div
+              role="menuitem"
+              className="px-4 py-2 hover:bg-foreground/10"
+              onClick={() => quickSet(startOfYear(today), today)}
+            >
+              This year
+            </div>
+            <div
+              role="menuitem"
+              className="px-4 py-2 hover:bg-foreground/10"
+              onClick={() => {
+                const lastYear = subYears(today, 1);
+                quickSet(startOfYear(lastYear), endOfYear(lastYear));
+              }}
+            >
+              Last year
+            </div>
+            <div
+              role="menuitem"
+              className="px-4 py-2 hover:bg-foreground/10"
+              onClick={() => quickSet(new Date("2012-10-13"), today)}
+            >
+              All time
+            </div>
+            <div role="menuitem" className="px-4 py-2 hover:bg-foreground/10" onClick={() => setIsCustom(true)}>
+              Custom range...
+            </div>
           </div>
-          <div role="menuitem" onClick={() => quickSet(startOfMonth(today), today)}>
-            This month
-          </div>
-          <div
-            role="menuitem"
-            onClick={() => {
-              const lastMonth = subMonths(today, 1);
-              quickSet(startOfMonth(lastMonth), endOfMonth(lastMonth));
-            }}
-          >
-            Last month
-          </div>
-          <div
-            role="menuitem"
-            onClick={() => quickSet(startOfMonth(subMonths(today, 3)), endOfMonth(subMonths(today, 1)))}
-          >
-            Last 3 months
-          </div>
-          <div role="menuitem" onClick={() => quickSet(startOfQuarter(today), today)}>
-            This quarter
-          </div>
-          <div
-            role="menuitem"
-            onClick={() => {
-              const lastQuarter = subQuarters(today, 1);
-              quickSet(startOfQuarter(lastQuarter), endOfQuarter(lastQuarter));
-            }}
-          >
-            Last quarter
-          </div>
-          <div role="menuitem" onClick={() => quickSet(startOfYear(today), today)}>
-            This year
-          </div>
-          <div
-            role="menuitem"
-            onClick={() => {
-              const lastYear = subYears(today, 1);
-              quickSet(startOfYear(lastYear), endOfYear(lastYear));
-            }}
-          >
-            Last year
-          </div>
-          <div role="menuitem" onClick={() => quickSet(new Date("2012-10-13"), today)}>
-            All time
-          </div>
-          <div role="menuitem" onClick={() => setIsCustom(true)}>
-            Custom range...
-          </div>
-        </div>
-      )}
+        )}
+      </PopoverContent>
     </Popover>
   );
 };

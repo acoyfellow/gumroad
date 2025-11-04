@@ -13,6 +13,7 @@ import { register } from "$app/utils/serverComponentUtil";
 
 import { Button } from "$app/components/Button";
 import { Details } from "$app/components/Details";
+import { Dropdown } from "$app/components/Dropdown";
 import { Icon } from "$app/components/Icons";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -94,7 +95,7 @@ const ThirdPartyAnalyticsPage = ({ settings_pages, third_party_analytics, produc
               </label>
             }
           >
-            <div className="dropdown paragraphs">
+            <Dropdown className="flex flex-col gap-4">
               <fieldset>
                 <legend>
                   <label htmlFor={`${uid}googleAnalyticsId`}>Google Analytics Property ID</label>
@@ -133,7 +134,7 @@ const ThirdPartyAnalyticsPage = ({ settings_pages, third_party_analytics, produc
                 />
                 Send 'Purchase' events for free ($0) sales
               </label>
-            </div>
+            </Dropdown>
           </Details>
         </section>
         <section className="p-4! md:p-8!">
@@ -157,7 +158,7 @@ const ThirdPartyAnalyticsPage = ({ settings_pages, third_party_analytics, produc
               </label>
             }
           >
-            <div className="dropdown paragraphs">
+            <Dropdown className="flex flex-col gap-4">
               <fieldset>
                 <legend>
                   <label htmlFor={`${uid}facebookMetaTag`}>Facebook Business</label>
@@ -173,7 +174,7 @@ const ThirdPartyAnalyticsPage = ({ settings_pages, third_party_analytics, produc
                 />
                 <small>Enter meta tag containing the Facebook domain verification code.</small>
               </fieldset>
-            </div>
+            </Dropdown>
           </Details>
         </section>
         <section className="p-4! md:p-8!">

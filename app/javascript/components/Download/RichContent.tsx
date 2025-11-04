@@ -14,7 +14,7 @@ import { Button, NavigationButton } from "$app/components/Button";
 import { FileRow, shouldShowSubtitlesForFile } from "$app/components/Download/FileList";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { titleWithFallback } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
 import { useRichTextEditor } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -364,72 +364,72 @@ const FileGroupDownloadAllButton = ({ folderId, files }: { folderId: string; fil
   const firstDownloadableFile = files[0];
 
   return (
-    <Popover
-      disabled={isDownloading}
-      trigger={
+    <Popover>
+      <PopoverTrigger disabled={isDownloading}>
         <div className="button" contentEditable={false}>
           Download all
           <Icon name="outline-cheveron-down" />
         </div>
-      }
-    >
-      <div className="grid gap-2">
-        {isArchiving ? (
-          <Button contentEditable={false} disabled>
-            <LoadingSpinner />
-            Zipping files...
-          </Button>
-        ) : files.length === 1 && firstDownloadableFile ? (
-          <NavigationButton
-            contentEditable={false}
-            href={firstDownloadableFile.url}
-            download={firstDownloadableFile.downloadFileName}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Download file
-          </NavigationButton>
-        ) : (
+      </PopoverTrigger>
+      <PopoverContent>
+        <div className="grid gap-2">
+          {isArchiving ? (
+            <Button contentEditable={false} disabled>
+              <LoadingSpinner />
+              Zipping files...
+            </Button>
+          ) : files.length === 1 && firstDownloadableFile ? (
+            <NavigationButton
+              contentEditable={false}
+              href={firstDownloadableFile.url}
+              download={firstDownloadableFile.downloadFileName}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Download file
+            </NavigationButton>
+          ) : (
+            <Button
+              contentEditable={false}
+              disabled={isDownloading}
+              onClick={asyncVoid(async () => {
+                setIsDownloading(true);
+                try {
+                  const archive = await downloadInfo.getFolderArchive(folderId);
+                  if (!archive.url) setIsArchiving(true);
+                  else window.location.href = archive.url;
+                } catch (e) {
+                  assertResponseError(e);
+                  showAlert(e.message, "error");
+                }
+                setIsDownloading(false);
+              })}
+            >
+              Download as ZIP
+            </Button>
+          )}
           <Button
             contentEditable={false}
             disabled={isDownloading}
             onClick={asyncVoid(async () => {
               setIsDownloading(true);
               try {
-                const archive = await downloadInfo.getFolderArchive(folderId);
-                if (!archive.url) setIsArchiving(true);
-                else window.location.href = archive.url;
+                const fileDownloadInfos = await downloadInfo.getDownloadUrlsForFiles(files.map((f) => f.id));
+                if (fileDownloadInfos.length === 0) return;
+                Dropbox.save({ files: fileDownloadInfos });
               } catch (e) {
                 assertResponseError(e);
                 showAlert(e.message, "error");
+              } finally {
+                setIsDownloading(false);
               }
-              setIsDownloading(false);
             })}
           >
-            Download as ZIP
+            <Icon name="dropbox" />
+            Save to Dropbox
           </Button>
-        )}
-        <Button
-          contentEditable={false}
-          disabled={isDownloading}
-          onClick={asyncVoid(async () => {
-            setIsDownloading(true);
-            try {
-              const fileDownloadInfos = await downloadInfo.getDownloadUrlsForFiles(files.map((f) => f.id));
-              if (fileDownloadInfos.length === 0) return;
-              Dropbox.save({ files: fileDownloadInfos });
-            } catch (e) {
-              assertResponseError(e);
-              showAlert(e.message, "error");
-            } finally {
-              setIsDownloading(false);
-            }
-          })}
-        >
-          <Icon name="dropbox" />
-          Save to Dropbox
-        </Button>
-      </div>
+        </div>
+      </PopoverContent>
     </Popover>
   );
 };
