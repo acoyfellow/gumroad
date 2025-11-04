@@ -9,7 +9,6 @@ import { Button } from "$app/components/Button";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Icon } from "$app/components/Icons";
 import { useDropdownPosition } from "$app/components/Popover";
-import { ModelSideBar } from "$app/components/ui/ModelSideBar";
 import { useIsOnTouchDevice } from "$app/components/useIsOnTouchDevice";
 import { useOnOutsideClick } from "$app/components/useOnOutsideClick";
 import { useWindowDimensions } from "$app/components/useWindowDimensions";
@@ -326,12 +325,14 @@ const OverlayMenu = ({
       >
         <Icon name="filter" />
       </Button>
-      <ModelSideBar
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        ariaLabel={buttonLabel ?? "Menu"}
-        {...(menuTop && { top: menuTop })}
+      <div
+        className="z-modal fixed inset-0 bg-black/80"
+        style={menuTop ? { top: menuTop } : undefined}
+        hidden={!menuOpen}
       >
+        <button className="absolute top-4 right-4 text-xl" onClick={() => setMenuOpen(false)} aria-label="Close Menu">
+          <Icon name="x" className="text-white" />
+        </button>
         <ItemsList
           menuId={overlayMenuUID}
           menuItem={{
@@ -346,8 +347,9 @@ const OverlayMenu = ({
             setMenuOpen(false);
             onSelectItem?.(newSelectedItem, e);
           }}
+          className="fixed flex h-full w-80 max-w-[calc(100vw-3.25rem)] flex-col overflow-x-hidden overflow-y-auto bg-white dark:bg-dark-gray"
         />
-      </ModelSideBar>
+      </div>
     </>
   );
 };
