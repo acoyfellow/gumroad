@@ -2404,6 +2404,17 @@ class Purchase < ApplicationRecord
     end
   end
 
+  def total_price_before_installments
+    return nil unless is_installment_payment
+
+    minimum_price_cents = minimum_paid_price_cents_per_unit_before_discount - offer_amount_off(minimum_paid_price_cents_per_unit_before_discount)
+    minimum_price_cents *= quantity
+    minimum_price_cents *= purchasing_power_parity_factor if is_purchasing_power_parity_discounted? && link.purchasing_power_parity_enabled? && original_offer_code.blank?
+
+    calculated_price = minimum_price_cents.round
+    calculated_price > 0 ? calculated_price : price_cents
+  end
+
   private
     def offer_amount_off(purchase_min_price)
       # For commissions, apply deposit purchase's offer code to its completion
@@ -3172,7 +3183,7 @@ class Purchase < ApplicationRecord
       return unless is_installment_payment
 
       nth_installment = subscription&.purchases&.successful&.count || 0
-      installment_payments = fetch_installment_plan.calculate_installment_payment_price_cents(total_price_cents)
+      installment_payments = fetch_installment_payments_from_snapshot_or_plan(total_price_cents)
       installment_payments[nth_installment] || installment_payments.last
     end
 
@@ -3395,7 +3406,7 @@ class Purchase < ApplicationRecord
     end
 
     def gift_purchases_cannot_be_on_installment_plans
-      return unless is_installment_payment?
+      return unless is_installment_payment
 
       if is_gift_sender_purchase? || is_gift_receiver_purchase?
         errors.add(:base, "Gift purchases cannot be on installment plans.")
@@ -3607,5 +3618,15 @@ class Purchase < ApplicationRecord
 
     def fetch_installment_plan
       installment_plan || subscription&.last_payment_option&.installment_plan
+    end
+
+    def fetch_installment_payments_from_snapshot_or_plan(total_price_cents)
+      payment_option = subscription&.last_payment_option
+
+      if payment_option&.installment_plan_snapshot.present?
+        payment_option.installment_plan_snapshot.calculate_installment_payment_price_cents
+      else
+        fetch_installment_plan.calculate_installment_payment_price_cents(total_price_cents)
+      end
     end
 end

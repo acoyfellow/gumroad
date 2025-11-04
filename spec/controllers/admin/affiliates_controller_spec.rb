@@ -2,8 +2,9 @@
 
 require "spec_helper"
 require "shared_examples/admin_base_controller_concern"
+require "inertia_rails/rspec"
 
-describe Admin::AffiliatesController do
+describe Admin::AffiliatesController, inertia: true do
   render_views
 
   it_behaves_like "inherits from Admin::BaseController"
@@ -37,48 +38,17 @@ describe Admin::AffiliatesController do
         get :index, params: { query: "edgar" }
 
         expect(response).to be_successful
-        expect(response.body).to include("data-page")
-        expect(response.body).to include("Admin/Affiliates/Index")
+        expect(inertia.component).to eq("Admin/Affiliates/Index")
+        expect(assigns[:users].to_a).to match_array(@affiliate_users)
       end
 
       it "returns JSON response when requested" do
-        get :index, params: { query: "edgar" }, format: :json
+        get :index, params: { query: "test" }, format: :json
 
         expect(response).to be_successful
         expect(response.content_type).to match(%r{application/json})
-        expect(response.parsed_body["users"]).to be_present
-        expect(response.parsed_body["users"].map { |user| user["id"] }).to match_array(affiliate_users.map(&:external_id))
+        expect(response.parsed_body["users"].map { _1["id"] }).to match_array(@affiliate_users.drop(5).map(&:external_id))
         expect(response.parsed_body["pagination"]).to be_present
-      end
-
-      context "when paginating" do
-        before do
-          get :index, params: { query: "edgar", page: page, per_page: 5, format: :json }
-        end
-
-        context "when on first page" do
-          let(:page) { 1 }
-
-          it "paginates results" do
-            expect(response).to be_successful
-            expect(response.content_type).to match(%r{application/json})
-            expect(response.parsed_body["users"]).to be_present
-            expect(response.parsed_body["users"].map { |user| user["id"] }).to match_array(affiliate_users.first(5).map(&:external_id))
-            expect(response.parsed_body["pagination"]).to be_present
-          end
-        end
-
-        context "when on second page" do
-          let(:page) { 2 }
-
-          it "paginates results" do
-            expect(response).to be_successful
-            expect(response.content_type).to match(%r{application/json})
-            expect(response.parsed_body["users"]).to be_present
-            expect(response.parsed_body["users"].map { |user| user["id"] }).to match_array(affiliate_users.last(5).map(&:external_id))
-            expect(response.parsed_body["pagination"]).to be_present
-          end
-        end
       end
     end
   end

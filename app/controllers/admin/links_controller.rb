@@ -28,6 +28,22 @@ class Admin::LinksController < Admin::BaseController
     redirect_to url_redirect.download_page_url
   end
 
+  def show
+    @title = @product.name
+    render inertia: "Admin/Products/Show", legacy_template: "admin/links/show", props: {
+      title: @product.name,
+      product: Admin::ProductPresenter::Card.new(
+        product: @product,
+        admins_can_mark_as_staff_picked: ->(product) { policy([:admin, :products, :staff_picked, product]).create? },
+        admins_can_unmark_as_staff_picked: ->(product) { policy([:admin, :products, :staff_picked, product]).destroy? }
+      ).props,
+      user: Admin::UserPresenter::Card.new(
+        user: @product.user,
+        impersonatable: policy([:admin, :impersonators, @product.user]).create?
+      ).props
+    }
+  end
+
   def access_product_file
     url_redirect = @product.url_redirects.build
     product_file = ProductFile.find_by_external_id(params[:product_file_id])

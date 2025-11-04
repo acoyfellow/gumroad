@@ -7,11 +7,10 @@ class Admin::Search::UsersController < Admin::BaseController
     @title = "Search for #{params[:query].present? ? params[:query].strip : "users"}"
     @users = User.admin_search(params[:query]).order(created_at: :desc)
 
-    list_paginated_users(users: @users, template: "Admin/Search/Users/Index") do |users|
-      if users.length == 1
-        redirect_to admin_user_path(users.first)
-        return
-      end
-    end
+    list_paginated_users(
+      template: "Admin/Search/Users/Index",
+      users: @users,
+      single_result_redirect_path: method(:admin_user_path)
+    )
   end
 end

@@ -13,17 +13,14 @@ type ProductMatchProps = {
   created_at: string;
 };
 
-type Props = {
-  product_matches: ProductMatchProps[];
-};
-
 const ProductMatch = ({ product }: { product: ProductMatchProps }) => {
   const userName = product.user.name && product.user.name.length > 0 ? product.user.name : `User ${product.user.id}`;
 
   return (
     <tr>
       <td data-label="Product" className="space-x-1">
-        <span>{product.price_formatted}</span>,
+        <span>{product.price_formatted}</span>
+        <span>&bull;</span>
         <Link href={Routes.admin_product_url(product.id)} title={product.id.toString()}>
           {product.name}
         </Link>
@@ -45,7 +42,7 @@ const ProductMatch = ({ product }: { product: ProductMatchProps }) => {
 };
 
 const AdminProductsMultipleMatches = () => {
-  const { product_matches } = usePage<Props>().props;
+  const { product_matches } = usePage<{ product_matches: ProductMatchProps[] }>().props;
 
   return (
     <table>

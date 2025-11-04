@@ -11,16 +11,17 @@ class Admin::UsersController < Admin::BaseController
   def show
     @title = "#{@user.display_name} on Gumroad"
 
-    if request.format.json?
-      render json: @user
-    else
-      render inertia: "Admin/Users/Show",
-             props: {
-               user: Admin::UserPresenter::Card.new(
-                user: @user,
-                impersonatable: policy([:admin, :impersonators, @user]).create?
-              ).props,
-             }
+    respond_to do |format|
+      format.html do
+        render inertia: "Admin/Users/Show",
+               props: {
+                 user: Admin::UserPresenter::Card.new(
+                   user: @user,
+                   impersonatable: policy([:admin, :impersonators, @user]).create?
+                 ).props,
+               }
+      end
+      format.json { render json: @user }
     end
   end
 

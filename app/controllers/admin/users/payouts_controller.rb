@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-class Admin::Users::PayoutsController < Admin::Users::BaseController
+class Admin::Users::PayoutsController < Admin::BaseController
   include Pagy::Backend
-  include Admin::FetchUser
 
-  before_action :fetch_payment, only: %i[show retry cancel fail sync]
   before_action :fetch_user, only: [:index, :pause, :resume]
 
   RECORDS_PER_PAGE = 20
@@ -13,7 +11,7 @@ class Admin::Users::PayoutsController < Admin::Users::BaseController
   def index
     @title = "Payouts"
 
-    pagination, payouts = pagy(
+    pagination, @payouts = pagy(
       @user.payments.order(id: :desc),
       limit: params[:per_page] || RECORDS_PER_PAGE,
       page: params[:page]
@@ -21,77 +19,9 @@ class Admin::Users::PayoutsController < Admin::Users::BaseController
 
     render inertia: "Admin/Users/Payouts/Index",
            props: {
-             user: @user.as_json(original: true, only: %i[id]),
-             payouts: payouts.as_json(admin: true),
-             pagination:
+             payouts: @payouts.includes(:user, bank_account: :credit_card).map { Admin::PaymentPresenter.new(payment: _1).props },
+             pagination: PagyPresenter.new(pagination).props
            }
-  end
-
-  def show
-    @title = "Payout"
-
-    render inertia: "Admin/Users/Payouts/Show",
-           props: { payout: @payment.as_json(admin: true) }
-  end
-
-  def retry
-    unless @payment.cancelled? || @payment.failed? || @payment.returned?
-      return render json: { success: false, message: "Failed! Payout is not in a cancelled, failed or returned state." }
-    end
-    if @payment.user.payments.last != @payment
-      return render json: { success: false, message: "Failed! This is not the most recent payout for this user." }
-    end
-
-    Payouts.create_payments_for_balances_up_to_date_for_users(@payment.payout_period_end_date, @payment.processor,
-                                                              [@payment.user], from_admin: true)
-    render json: { success: true }
-  end
-
-  def cancel
-    return render json: { success: false, message: "Failed! You can only cancel PayPal payouts." } unless @payment.paypal_processor?
-    return render json: { success: false, message: "Failed! Payout is not in an unclaimed state." } unless @payment.unclaimed?
-
-    @payment.with_lock do
-      @payment.mark_cancelled!
-    end
-
-    render json: { success: true, message: "Marked as cancelled." }
-  end
-
-  def fail
-    error_message = if !@payment.processing?
-      "Failed! Payout is not in the processing state."
-    elsif @payment.created_at > 2.days.ago
-      "Failed! Payout can be marked as failed only two days after creation."
-    end
-    return render json: { success: false, message: error_message } if error_message
-
-    @payment.with_lock do
-      @payment.correlation_id = "Marked as failed by user with ID #{current_user.id}"
-      @payment.mark_failed!
-    end
-
-    render json: { success: true, message: "Marked as failed." }
-  end
-
-  def sync
-    return render json: { success: false, message: "Failed! You can only sync PayPal payouts." } unless @payment.paypal_processor?
-    return render json: { success: false, message: "Failed! Payout is already in terminal state." } unless Payment::NON_TERMINAL_STATES.include?(@payment.state)
-
-    @payment.with_lock do
-      @payment.sync_with_payout_processor
-    end
-
-    if @payment.errors.empty?
-      render json: { success: true, message: "Synced!" }
-    else
-      render json: { success: false, message: @payment.errors.first.message }
-    end
-  end
-
-  def sync_all
-    SyncStuckPaypalPayoutsJob.perform_async
-    render json: { success: true }
   end
 
   def pause
@@ -120,7 +50,7 @@ class Admin::Users::PayoutsController < Admin::Users::BaseController
   end
 
   private
-    def fetch_payment
-      @payment = Payment.find_by(id: params[:id]) || e404
+    def fetch_user
+      @user = User.find_by(id: params[:user_id]) || e404
     end
 end

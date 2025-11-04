@@ -2,59 +2,60 @@
 
 require "spec_helper"
 require "shared_examples/admin_base_controller_concern"
+require "inertia_rails/rspec"
 
-describe Admin::Search::PurchasesController do
+describe Admin::Search::PurchasesController, type: :controller, inertia: true do
   render_views
 
   it_behaves_like "inherits from Admin::BaseController"
 
-  let(:admin_user) { create(:admin_user) }
-
   before do
-    sign_in admin_user
+    sign_in create(:admin_user)
   end
 
   describe "#index" do
-    let(:email) { "user@example.com" }
+    let!(:email) { "user@example.com" }
+    let(:ip_v4) { "203.0.113.42" }
 
-    context "when one purchase is found" do
-      let(:ip_v4) { "203.0.113.42" }
-      let(:purchase_by_email) { create(:purchase, email:) }
-      let(:purchase_by_ip) { create(:purchase, ip_address: ip_v4) }
+    it "returns successful response with Inertia page data" do
+      get :index, params: { query: email }
 
-      it "redirects to the admin purchase page when one purchase is found" do
-        get :index, params: { query: purchase_by_email.email }
-        expect(response).to redirect_to admin_purchase_path(purchase_by_email)
-
-        get :index, params: { query: purchase_by_ip.ip_address }
-        expect(response).to redirect_to admin_purchase_path(purchase_by_ip)
-      end
+      expect(response).to be_successful
+      expect(inertia.component).to eq("Admin/Search/Purchases/Index")
     end
 
-    context "when multiple purchases are found" do
-      let!(:purchase_1) { create(:purchase, email:, created_at: 3.days.ago) }
-      let!(:purchase_2) { create(:gift, gifter_email: email, gifter_purchase: create(:purchase, created_at: 2.days.ago)).gifter_purchase }
-      let!(:purchase_3) { create(:gift, giftee_email: email, giftee_purchase: create(:purchase, created_at: 1.day.ago)).giftee_purchase }
+    it "returns JSON response when requested" do
+      purchase_1, purchase_2, purchase_3 = create_list(:purchase, 3, email:)
+      get :index, params: { query: email, per_page: 2 }, format: :json
 
-      it "returns purchases from Admin::Search::PurchasesService" do
-        expect(Admin::Search::PurchasesService).to receive(:new).with(query: email, product_title_query: nil, purchase_status: nil).and_call_original
+      expect(response).to be_successful
+      expect(response.content_type).to match(%r{application/json})
+      expect(response.parsed_body["purchases"]).to contain_exactly(hash_including("id" => purchase_1.id), hash_including("id" => purchase_2.id))
+      expect(response.parsed_body["purchases"]).not_to include(hash_including("id" => purchase_3.id))
+      expect(response.parsed_body["pagination"]).to be_present
+    end
 
-        get :index, params: { query: email }
+    it "redirects to the admin purchase page when one purchase is found" do
+      purchase_by_email = create(:purchase, email:)
+      purchase_by_ip = create(:purchase, ip_address: ip_v4)
 
-        expect(response).to be_successful
-        expect(response.body).to include("data-page")
-        expect(response.body).to include("Admin/Search/Purchases/Index")
+      get :index, params: { query: email }
+      expect(response).to redirect_to admin_purchase_path(purchase_by_email)
 
-        data_page = response.body.match(/data-page="([^"]+)"/)[1]
-        json_object = JSON.parse(CGI.unescapeHTML(data_page))
-        props = json_object["props"]
+      get :index, params: { query: ip_v4 }
+      expect(response).to redirect_to admin_purchase_path(purchase_by_ip)
+    end
 
-        expect(props["purchases"]).to eq([purchase_3, purchase_2, purchase_1].as_json(admin: true))
-        expect(props["query"]).to eq(email)
-        expect(props["product_title_query"]).to be_nil
-        expect(props["purchase_status"]).to be_nil
-        expect(props["pagination"]).to be_present
-      end
+    it "returns purchases from AdminSearchService" do
+      purchase_1 = create(:purchase, email:)
+      purchase_2 = create(:gift, gifter_email: email, gifter_purchase: create(:purchase)).gifter_purchase
+      purchase_3 = create(:gift, giftee_email: email, giftee_purchase: create(:purchase)).giftee_purchase
+
+      expect_any_instance_of(AdminSearchService).to receive(:search_purchases).with(query: email, product_title_query: nil, purchase_status: nil).and_call_original
+      get :index, params: { query: email }
+
+      assert_response :success
+      expect(assigns(:purchases)).to include(purchase_1, purchase_2, purchase_3)
     end
 
     describe "product_title_query" do
@@ -71,23 +72,23 @@ describe Admin::Search::PurchasesController do
           # Create another purchase with same email and same product to avoid redirect
           create(:purchase, email: email, link: product)
 
-          expect(Admin::Search::PurchasesService).to receive(:new).with(query: email, product_title_query:, purchase_status: nil).and_call_original
+          expect_any_instance_of(AdminSearchService).to receive(:search_purchases).with(query: email, product_title_query:, purchase_status: nil).and_call_original
 
           get :index, params: { query: email, product_title_query: product_title_query }
 
-          expect(response).to be_successful
-          expect(response.body).to include("data-page")
-          expect(response.body).to include("Admin/Search/Purchases/Index")
+          assert_response :success
+          expect(assigns(:purchases)).to include(purchase)
+        end
+      end
 
-          data_page = response.body.match(/data-page="([^"]+)"/)[1]
-          json_object = JSON.parse(CGI.unescapeHTML(data_page))
-          props = json_object["props"]
+      context "when query is not set" do
+        it "ignores product_title_query" do
+          expect_any_instance_of(AdminSearchService).to receive(:search_purchases).with(query: "", product_title_query:, purchase_status: nil).and_call_original
 
-          expect(props["purchases"]).to include(purchase.as_json(admin: true))
-          expect(props["query"]).to eq(email)
-          expect(props["product_title_query"]).to eq(product_title_query)
-          expect(props["purchase_status"]).to be_nil
-          expect(props["pagination"]).to be_present
+          get :index, params: { query: "", product_title_query: product_title_query }
+
+          assert_response :success
+          expect(assigns(:purchases)).to include(purchase)
         end
       end
     end
@@ -105,23 +106,23 @@ describe Admin::Search::PurchasesController do
           # Create another purchase with same email and same status to avoid redirect
           create(:purchase, purchase_state: "successful", email: email)
 
-          expect(Admin::Search::PurchasesService).to receive(:new).with(query: email, product_title_query: nil, purchase_status:).and_call_original
+          expect_any_instance_of(AdminSearchService).to receive(:search_purchases).with(query: email, product_title_query: nil, purchase_status:).and_call_original
 
           get :index, params: { query: email, purchase_status: purchase_status }
 
-          expect(response).to be_successful
-          expect(response.body).to include("data-page")
-          expect(response.body).to include("Admin/Search/Purchases/Index")
+          assert_response :success
+          expect(assigns(:purchases)).to include(successful_purchase)
+        end
+      end
 
-          data_page = response.body.match(/data-page="([^"]+)"/)[1]
-          json_object = JSON.parse(CGI.unescapeHTML(data_page))
-          props = json_object["props"]
+      context "when query is not set" do
+        it "ignores purchase_status" do
+          expect_any_instance_of(AdminSearchService).to receive(:search_purchases).with(query: "", product_title_query: nil, purchase_status:).and_call_original
 
-          expect(props["purchases"]).to include(successful_purchase.as_json(admin: true))
-          expect(props["query"]).to eq(email)
-          expect(props["product_title_query"]).to be_nil
-          expect(props["purchase_status"]).to eq(purchase_status)
-          expect(props["pagination"]).to be_present
+          get :index, params: { query: "", purchase_status: purchase_status }
+
+          assert_response :success
+          expect(assigns(:purchases)).to include(successful_purchase)
         end
       end
     end

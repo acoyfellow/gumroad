@@ -2,46 +2,38 @@
 
 require "spec_helper"
 require "shared_examples/admin_base_controller_concern"
+require "inertia_rails/rspec"
 
-describe Admin::Users::PayoutsController do
+describe Admin::Users::PayoutsController, type: :controller, inertia: true do
   it_behaves_like "inherits from Admin::BaseController"
 
-  render_views
-
   let(:admin_user) { create(:admin_user) }
-  let(:admin_user_with_payout_privileges) { create(:admin_user) }
+  let(:seller) { create(:user) }
+  let(:payout_period_end_date) { Date.today - 1 }
 
-  describe "GET 'index'" do
-    let(:user) { create(:user) }
-    let!(:payout_1) { create(:payment_completed, user:) }
-    let!(:payout_2) { create(:payment_failed, user:) }
-    let(:ordered_payouts) { [payout_2, payout_1] }
+  describe "GET index" do
+    render_views
+
+    let!(:payout_1) { create(:payment_completed, user: seller) }
+    let!(:payout_2) { create(:payment_failed, user: seller) }
     let!(:other_user_payout) { create(:payment_failed) }
 
     it "lists all the payouts for a user" do
       sign_in admin_user
-      get :index, params: { user_id: user.id }
+      get :index, params: { user_id: seller.id }
 
       expect(response).to be_successful
-      expect(response.body).to include("data-page")
-      expect(response.body).to include("Admin/Users/Payouts/Index")
-
-      data_page = response.body.match(/data-page="([^"]+)"/)[1]
-      json_object = JSON.parse(CGI.unescapeHTML(data_page))
-      props = json_object["props"]
-
-      expect(props["title"]).to eq("Payouts")
-      expect(props["user"]).to eq(user.as_json(original: true, only: %i[id]))
-      expect(props["payouts"]).to eq(ordered_payouts.as_json(admin: true))
-      expect(props["pagination"]).to be_present
+      expect(inertia.component).to eq("Admin/Users/Payouts/Index")
+      expect(inertia.props[:payouts]).to contain_exactly(
+        hash_including(id: payout_1.id),
+        hash_including(id: payout_2.id)
+      )
     end
   end
 
-  describe "POST 'pause'" do
-    let!(:seller) { create(:user) }
-
+  describe "POST pause" do
     before do
-      sign_in admin_user_with_payout_privileges
+      sign_in admin_user
     end
 
     it "pauses payouts for seller, sets the pause source as admin, and saves the provided reason" do
@@ -54,7 +46,7 @@ describe Admin::Users::PayoutsController do
       end.to change { seller.comments.with_type_payouts_paused.count }.by(1)
 
       expect(seller.reload.payouts_paused_internally?).to be true
-      expect(seller.payouts_paused_by).to eq(admin_user_with_payout_privileges.id)
+      expect(seller.payouts_paused_by).to eq(admin_user.id)
       expect(seller.payouts_paused_by_source).to eq(User::PAYOUT_PAUSE_SOURCE_ADMIN)
       expect(seller.payouts_paused_for_reason).to eq("Chargeback rate too high.")
     end
@@ -69,17 +61,16 @@ describe Admin::Users::PayoutsController do
       end.not_to change { seller.comments.with_type_payouts_paused.count }
 
       expect(seller.reload.payouts_paused_internally?).to be true
-      expect(seller.payouts_paused_by).to eq(admin_user_with_payout_privileges.id)
+      expect(seller.payouts_paused_by).to eq(admin_user.id)
       expect(seller.payouts_paused_by_source).to eq(User::PAYOUT_PAUSE_SOURCE_ADMIN)
       expect(seller.payouts_paused_for_reason).to be nil
     end
   end
 
-  describe "POST 'resume'" do
-    let!(:seller) { create(:user) }
+  describe "POST resume" do
     before do
       seller.update!(payouts_paused_internally: true)
-      sign_in admin_user_with_payout_privileges
+      sign_in admin_user
     end
 
     it "resumes payouts for seller and clears the payout pause source if payouts are paused by admin" do
