@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { request } from "$app/utils/request";
+import { request, assertResponseError } from "$app/utils/request";
 
 import { useProductEditContext } from "$app/components/ProductEdit/state";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
@@ -15,27 +15,26 @@ export const ReceiptPreview = () => {
   const [receiptHtml, setReceiptHtml] = React.useState<string>("");
 
   const fetchReceiptPreview = React.useCallback(async () => {
-    if (!uniquePermalink) return;
+    try {
+      const url = Routes.internal_product_receipt_preview_index_url(uniquePermalink, {
+        params: {
+          custom_receipt_text,
+          custom_view_content_button_text,
+        },
+      });
 
-    const params = new URLSearchParams();
-    if (custom_receipt_text) {
-      params.append("custom_receipt_text", custom_receipt_text);
+      const response = await request({
+        method: "GET",
+        url,
+        accept: "html",
+      });
+
+      const html = await response.text();
+      setReceiptHtml(html);
+    } catch (error) {
+      assertResponseError(error);
+      setReceiptHtml("Error loading receipt preview");
     }
-    if (custom_view_content_button_text) {
-      params.append("custom_view_content_button_text", custom_view_content_button_text);
-    }
-
-    const url = `/internal/products/${uniquePermalink}/receipt_preview${params.toString() ? `?${params.toString()}` : ""}`;
-
-    const response = await request({
-      method: "GET",
-      url,
-      accept: "html",
-    });
-
-    const html = await response.text();
-
-    setReceiptHtml(html);
   }, [uniquePermalink, custom_receipt_text, custom_view_content_button_text]);
 
   const debouncedFetchReceiptPreview = useDebouncedCallback(() => void fetchReceiptPreview(), 300);
