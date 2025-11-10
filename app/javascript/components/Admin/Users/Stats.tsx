@@ -4,7 +4,7 @@ import { cast } from "ts-safe-cast";
 import { request, assertResponseError } from "$app/utils/request";
 
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { showAlert } from "$app/components/server-components/Alert";
+import { useClientAlert } from "$app/components/ClientAlertProvider";
 import { useIsIntersecting } from "$app/components/useIsIntersecting";
 
 type UserStatsProps = {
@@ -22,6 +22,7 @@ type ResponseData = {
 };
 
 const AdminUserStats = ({ user_id }: { user_id: number }) => {
+  const { showAlert } = useClientAlert();
   const [userStats, setUserStats] = React.useState<UserStatsProps | null>(null);
 
   const elementRef = useIsIntersecting<HTMLUListElement>((isIntersecting) => {

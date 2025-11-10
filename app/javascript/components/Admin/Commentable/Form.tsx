@@ -5,7 +5,8 @@ import { cast } from "ts-safe-cast";
 import { request } from "$app/utils/request";
 
 import type { CommentProps } from "$app/components/Admin/Commentable/Comment";
-import { showAlert } from "$app/components/server-components/Alert";
+
+import { useClientAlert } from "$app/components/ClientAlertProvider";
 
 type AdminCommentableFormProps = {
   endpoint: string;
@@ -19,6 +20,7 @@ type PageProps = {
 
 const AdminCommentableForm = ({ endpoint, onCommentAdded, commentableType }: AdminCommentableFormProps) => {
   const { authenticity_token } = usePage<PageProps>().props;
+  const { showAlert } = useClientAlert();
   const form = useForm("AdminAddComment", { comment: { content: "" }, authenticity_token });
   const {
     data: {

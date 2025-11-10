@@ -2,7 +2,7 @@ import * as React from "react";
 
 import AdminPausePayoutsForm from "$app/components/Admin/Users/PayoutInfo/PausePayoutsForm";
 import AdminResumePayoutsForm from "$app/components/Admin/Users/PayoutInfo/ResumePayoutsForm";
-import { showAlert } from "$app/components/server-components/Alert";
+import { useClientAlert } from "$app/components/ClientAlertProvider";
 
 const AdminTogglePayoutsForm = ({
   user_id,
@@ -13,6 +13,8 @@ const AdminTogglePayoutsForm = ({
   payouts_paused_by: "stripe" | "admin" | "system" | "user" | null;
   reason: string | null;
 }) => {
+  const { showAlert } = useClientAlert();
+
   const [pausedBy, setPausedBy] = React.useState(payouts_paused_by);
   const [paused, setPaused] = React.useState(pausedBy && ["admin", "system", "stripe"].includes(pausedBy));
 

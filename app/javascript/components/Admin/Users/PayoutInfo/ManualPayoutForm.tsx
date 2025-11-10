@@ -3,17 +3,9 @@ import * as React from "react";
 import { formatPriceCentsWithCurrencySymbol } from "$app/utils/currency";
 
 import { Form } from "$app/components/Admin/Form";
-import { showAlert } from "$app/components/server-components/Alert";
+import { useClientAlert } from "$app/components/ClientAlertProvider";
 
-export const AdminManualPayoutForm = ({
-  user_id,
-  stripe,
-  paypal,
-  manual_payout_period_end_date,
-  unpaid_balance_up_to_date,
-  currency,
-  ask_confirmation,
-}: {
+type AdminManualPayoutFormProps = {
   user_id: number;
   stripe: {
     unpaid_balance_held_by_gumroad: string;
@@ -27,52 +19,66 @@ export const AdminManualPayoutForm = ({
   unpaid_balance_up_to_date: number;
   currency: string | null;
   ask_confirmation: boolean;
-}) => (
-  <Form
-    url={Routes.admin_pay_user_path(user_id)}
-    method="POST"
-    confirmMessage={ask_confirmation ? "DON'T USE UNLESS to transfer the balance to Stripe Connect account" : undefined}
-    onSuccess={() => showAlert("Successfully issued payout.", "success")}
-  >
-    {(isLoading) => (
-      <fieldset>
-        <input type="hidden" name="payday[payout_processor]" value={stripe ? "STRIPE" : "PAYPAL"} />
-        <input type="hidden" name="payday[payout_period_end_date]" value={manual_payout_period_end_date} />
-        {stripe ? (
-          <div>
-            <p>
-              (held by Gumroad: {stripe.unpaid_balance_held_by_gumroad}, held in their Gumroad-managed Stripe account:{" "}
-              {stripe.unpaid_balance_held_by_stripe} {currency})
-            </p>
+};
+
+export const AdminManualPayoutForm = ({
+  user_id,
+  stripe,
+  paypal,
+  manual_payout_period_end_date,
+  unpaid_balance_up_to_date,
+  currency,
+  ask_confirmation,
+}: AdminManualPayoutFormProps) => {
+  const { showAlert } = useClientAlert();
+
+  return (
+    <Form
+      url={Routes.admin_pay_user_path(user_id)}
+      method="POST"
+      confirmMessage={ask_confirmation ? "DON'T USE UNLESS to transfer the balance to Stripe Connect account" : undefined}
+      onSuccess={() => showAlert("Successfully issued payout.", "success")}
+    >
+      {(isLoading) => (
+        <fieldset>
+          <input type="hidden" name="payday[payout_processor]" value={stripe ? "STRIPE" : "PAYPAL"} />
+          <input type="hidden" name="payday[payout_period_end_date]" value={manual_payout_period_end_date} />
+          {stripe ? (
+            <div>
+              <p>
+                (held by Gumroad: {stripe.unpaid_balance_held_by_gumroad}, held in their Gumroad-managed Stripe account:{" "}
+                {stripe.unpaid_balance_held_by_stripe} {currency})
+              </p>
+            </div>
+          ) : null}
+          {paypal ? (
+            <div>
+              {unpaid_balance_up_to_date > paypal.split_payment_by_cents && (
+                <label>
+                  <input
+                    type="checkbox"
+                    name="payday[should_split_the_amount]"
+                    defaultChecked={paypal.should_payout_be_split}
+                    className="small"
+                  />
+                  Break up into {paypal.split_payment_by_cents} chunks?
+                </label>
+              )}
+            </div>
+          ) : null}
+          <div className="button-group">
+            <button type="submit" disabled={isLoading} className="button small">
+              {isLoading ? "Issuing Payout..." : "Issue Payout"}
+            </button>
           </div>
-        ) : null}
-        {paypal ? (
-          <div>
-            {unpaid_balance_up_to_date > paypal.split_payment_by_cents && (
-              <label>
-                <input
-                  type="checkbox"
-                  name="payday[should_split_the_amount]"
-                  defaultChecked={paypal.should_payout_be_split}
-                  className="small"
-                />
-                Break up into {paypal.split_payment_by_cents} chunks?
-              </label>
-            )}
-          </div>
-        ) : null}
-        <div className="button-group">
-          <button type="submit" disabled={isLoading} className="button small">
-            {isLoading ? "Issuing Payout..." : "Issue Payout"}
-          </button>
-        </div>
-        <small>
-          Balance that will be paid by clicking this button:{" "}
-          {formatPriceCentsWithCurrencySymbol("usd", unpaid_balance_up_to_date, { symbolFormat: "short" })}
-        </small>
-      </fieldset>
-    )}
-  </Form>
-);
+          <small>
+            Balance that will be paid by clicking this button:{" "}
+            {formatPriceCentsWithCurrencySymbol("usd", unpaid_balance_up_to_date, { symbolFormat: "short" })}
+          </small>
+        </fieldset>
+      )}
+    </Form>
+  );
+};
 
 export default AdminManualPayoutForm;

@@ -7,7 +7,7 @@ import { assertResponseError } from "$app/utils/request";
 
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { Popover } from "$app/components/Popover";
-import { showAlert } from "$app/components/server-components/Alert";
+import { useClientAlert } from "$app/components/ClientAlertProvider";
 
 type ResponseData = {
   redirect_to: string;
@@ -19,6 +19,7 @@ type PageProps = {
 };
 
 const AdminNavFooter = () => {
+  const { showAlert } = useClientAlert();
   const { current_user, authenticity_token: authenticityToken } = cast<PageProps>(usePage().props);
   const loggedInUser = useLoggedInUser();
 

@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { Form } from "$app/components/Admin/Form";
-import { showAlert } from "$app/components/server-components/Alert";
+import { useClientAlert } from "$app/components/ClientAlertProvider";
 
 type AdminSuspendForTosFormProps = {
   user_id: number;
@@ -22,6 +22,8 @@ export const AdminSuspendForTosForm = ({
   default_reason,
   onSuccess = () => {},
 }: AdminSuspendForTosFormProps) => {
+  const { showAlert } = useClientAlert();
+
   const onFormSuccess = () => {
     showAlert(success_message, "success");
     onSuccess();

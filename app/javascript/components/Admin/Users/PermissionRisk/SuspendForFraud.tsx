@@ -2,13 +2,15 @@ import * as React from "react";
 
 import { Form } from "$app/components/Admin/Form";
 import type { User } from "$app/components/Admin/Users/User";
-import { showAlert } from "$app/components/server-components/Alert";
+import { useClientAlert } from "$app/components/ClientAlertProvider";
 
 type SuspendForFraudProps = {
   user: User;
 };
 
 const SuspendForFraud = ({ user }: SuspendForFraudProps) => {
+  const { showAlert } = useClientAlert();
+
   const show = user.flagged_for_fraud || user.on_probation;
 
   return (
