@@ -42,7 +42,7 @@ describe("Product Edit Receipt Tab", type: :system, js: true) do
     end
   end
 
-  describe "Receipt preview functionality" do
+  describe "Receipt preview" do
     it "shows live preview when the user makes changes", :js do
       visit "#{edit_link_path(product.unique_permalink)}/receipt"
 
