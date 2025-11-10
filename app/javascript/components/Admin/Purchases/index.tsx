@@ -10,8 +10,8 @@ import { Form } from "$app/components/Admin/Form";
 import { NoIcon, BooleanIcon } from "$app/components/Admin/Icons";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { Icon } from "$app/components/Icons";
-import { AdminResendReceiptForm } from "$app/components/server-components/Admin/ResendReceiptForm";
-import { showAlert } from "$app/components/server-components/Alert";
+import AdminResendReceiptForm from "$app/components/Admin/Purchases/ResendReceiptForm";
+import { useClientAlert } from "$app/components/ClientAlertProvider";
 
 import { type RefundPolicy, RefundPolicyTitle } from "./RefundPolicy";
 import { type PurchaseStatesInfo, PurchaseStates } from "./States";
@@ -465,8 +465,10 @@ const Info = ({ purchase }: { purchase: Purchase }) => (
   </div>
 );
 
-const GiftInfo = ({ purchaseId, gift }: { purchaseId: number; gift: Gift }) =>
-  gift.is_sender_purchase ? (
+const GiftInfo = ({ purchaseId, gift }: { purchaseId: number; gift: Gift }) => {
+  const { showAlert } = useClientAlert();
+
+  return gift.is_sender_purchase ? (
     <>
       <details>
         <summary>
@@ -526,6 +528,7 @@ const GiftInfo = ({ purchaseId, gift }: { purchaseId: number; gift: Gift }) =>
       </dl>
     </details>
   );
+};
 
 const ActionButtons = ({ purchase }: { purchase: Purchase }) => (
   <div className="button-group">
