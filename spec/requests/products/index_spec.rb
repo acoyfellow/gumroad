@@ -495,7 +495,7 @@ describe "Products Page Scenario", type: :system, js: true do
       expect(table).to have_selector(:table_row, count: 2)
       expect(page).to have_selector("[aria-label='Pagination']")
 
-      select_disclosure "Toggle Search" do
+      select_disclosure "Search" do
         expect(page).to have_field("Search products")
       end
       fill_in "Search products", with: "Chicken"
@@ -509,7 +509,7 @@ describe "Products Page Scenario", type: :system, js: true do
       stub_const("LinksController::PER_PAGE", 1)
       visit(products_path)
 
-      select_disclosure "Toggle Search" do
+      select_disclosure "Search" do
         fill_in "Search products", with: "product"
       end
       expect(page).to have_link(product.long_url, href: product.long_url)
@@ -527,7 +527,7 @@ describe "Products Page Scenario", type: :system, js: true do
       stub_const("LinksController::PER_PAGE", 1)
       visit(products_path)
 
-      select_disclosure "Toggle Search" do
+      select_disclosure "Search" do
         fill_in "Search products", with: "membership"
       end
       expect(page).to have_link(membership.long_url, href: membership.long_url)
@@ -545,7 +545,7 @@ describe "Products Page Scenario", type: :system, js: true do
       stub_const("LinksController::PER_PAGE", 1)
       visit(products_path)
 
-      select_disclosure "Toggle Search" do
+      select_disclosure "Search" do
         fill_in "Search products", with: "product"
       end
       expect(page).to have_link(product.long_url, href: product.long_url)
@@ -564,7 +564,7 @@ describe "Products Page Scenario", type: :system, js: true do
       stub_const("LinksController::PER_PAGE", 1)
       visit(products_path)
 
-      select_disclosure "Toggle Search" do
+      select_disclosure "Search" do
         fill_in "Search products", with: "membership"
       end
       expect(page).to have_link(membership.long_url, href: membership.long_url)

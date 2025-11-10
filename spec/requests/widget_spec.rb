@@ -57,21 +57,20 @@ describe "Widget Page scenario", js: true, type: :system do
       within_section "Share your product", section_element: :section  do
         expect(page).to have_field("Widget code", with: %(<script src="#{@base_url}/js/gumroad.js"></script>\n<a class="gumroad-button" href="#{@product.long_url}">Buy on</a>))
 
-        expect(page).not_to have_content("Copy to Clipboard")
         copy_button = find_button("Copy embed code")
+        expect(copy_button).not_to have_tooltip
         copy_button.hover
-        expect(page).to have_content("Copy to Clipboard")
+        expect(copy_button).to have_tooltip(text: "Copy to Clipboard")
 
         copy_button.click
-        expect(page).to have_content("Copied!")
+        expect(copy_button).to have_tooltip(text: "Copied!")
 
         # Hover somewhere else to trigger mouseout
         first("textarea").hover
-        expect(page).not_to have_content("Copy to Clipboard")
-        expect(page).not_to have_content("Copied!")
+        expect(copy_button).not_to have_tooltip
 
         copy_button.hover
-        expect(page).to have_content("Copy to Clipboard")
+        expect(copy_button).to have_tooltip(text: "Copy to Clipboard")
       end
     end
 
@@ -86,17 +85,16 @@ describe "Widget Page scenario", js: true, type: :system do
         expect(page).to have_css("iframe[src*='embed=true'][style*='height']", wait: 10)
 
         copy_button = find_button("Copy embed code")
-        expect(copy_button).not_to have_tooltip(text: "Copy to Clipboard")
+        expect(copy_button).not_to have_tooltip
         copy_button.hover
         expect(copy_button).to have_tooltip(text: "Copy to Clipboard")
 
         copy_button.click
-        expect(page).to have_content("Copied!")
+        expect(copy_button).to have_tooltip(text: "Copied!")
 
         # Hover somewhere else to trigger mouseout
         first("textarea").hover
-        expect(page).not_to have_content("Copy to Clipboard")
-        expect(page).not_to have_content("Copied!")
+        expect(copy_button).not_to have_tooltip
 
         copy_button.hover
         expect(copy_button).to have_tooltip(text: "Copy to Clipboard")

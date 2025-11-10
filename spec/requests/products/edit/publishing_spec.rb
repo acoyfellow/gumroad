@@ -43,8 +43,7 @@ describe("Product Edit - Publishing Scenario", type: :system, js: true) do
 
       # Hover somewhere else to trigger mouseout
       first("a").hover
-      expect(copy_button).not_to have_tooltip(text: "Copy to Clipboard")
-      expect(copy_button).not_to have_tooltip(text: "Copied!")
+      expect(copy_button).not_to have_tooltip
 
       copy_button.hover
       expect(copy_button).to have_tooltip(text: "Copy to Clipboard")

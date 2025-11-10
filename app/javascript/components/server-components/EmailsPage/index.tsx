@@ -62,7 +62,7 @@ export const Layout = ({
               <Popover
                 open={isSearchPopoverOpen}
                 onToggle={setIsSearchPopoverOpen}
-                aria-label="Toggle Search"
+                aria-label="Search"
                 trigger={
                   <WithTooltip tip="Search" side="bottom">
                     <div className="button">

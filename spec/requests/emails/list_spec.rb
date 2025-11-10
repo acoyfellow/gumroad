@@ -42,7 +42,7 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
 
         within_table "Published" do
           expect(page).to have_table_row({ "Subject" => "Email 1 (sent)", "Emailed" => "1", "Opened" => "100%", "Clicks" => "123", "Views" => "n/a" })
-          cell = page.find("td[data-label='Clicks'] > [aria-describedby]", text: "123")
+          cell = page.find("td[data-label='Clicks'] div", text: "123").hover
           expect(cell).to have_tooltip(text: url1, visible: false)
           expect(cell).to have_tooltip(text: url2.truncate(70), visible: false)
           expect(page).to have_table_row({ "Subject" => "Email 3 (sent)", "Emailed" => "--", "Opened" => "--", "Clicks" => "0", "Views" => "0" })
@@ -274,7 +274,7 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
         visit "#{emails_path}/published"
         wait_for_ajax
 
-        select_disclosure "Toggle Search" do
+        select_disclosure "Search" do
           fill_in "Search emails", with: "email"
         end
         wait_for_ajax
@@ -329,7 +329,7 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
         visit "#{emails_path}/published"
         wait_for_ajax
 
-        select_disclosure "Toggle Search" do
+        select_disclosure "Search" do
           fill_in "Search emails", with: "email"
         end
         wait_for_ajax
@@ -352,7 +352,7 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
         select_tab "Scheduled"
         wait_for_ajax
 
-        select_disclosure "Toggle Search" do
+        select_disclosure "Search" do
           fill_in "Search emails", with: "email"
         end
         wait_for_ajax
@@ -375,7 +375,7 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
         select_tab "Drafts"
         wait_for_ajax
 
-        select_disclosure "Toggle Search" do
+        select_disclosure "Search" do
           fill_in "Search emails", with: "email"
         end
         wait_for_ajax

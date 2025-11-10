@@ -623,9 +623,9 @@ describe("Workflows", js: true, type: :system) do
         within find("[aria-label='Email message']") do
           expect(page).to have_text("When you're ready to buy, complete checking out", normalize_ws: true)
           expect(page).to have_link("complete checking out", href: checkout_index_url(host: UrlService.domain_with_protocol))
-          find_abandoned_cart_item(@product.name).hover
-          expect(page).to have_text("This cannot be deleted")
-          within find_abandoned_cart_item(@product.name) do
+          cart_item = find_abandoned_cart_item(@product.name).hover
+          expect(cart_item).to have_tooltip(text: "This cannot be deleted")
+          within cart_item do
             expect(page).to have_link(@product.name, href: @product.long_url)
             expect(page).to have_link(seller.name, href: seller.subdomain_with_protocol)
           end

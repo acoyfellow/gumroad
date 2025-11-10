@@ -922,7 +922,8 @@ describe "Sales page", type: :system, js: true do
 
         table_row = find(:table_row, { "Name" => "Customer 1" })
         icon = table_row.find("[aria-label='Not Shipped']")
-        expect(icon).to have_tooltip(text: "Not Shipped", visible: false)
+        icon.hover
+        expect(icon).to have_tooltip(text: "Not Shipped")
         table_row.click
         within_section "Product 1", section_element: :aside do
           within_section "Order information", section_element: :section do

@@ -19,7 +19,7 @@ export const SearchPopover = ({ card_types }: Props) => {
     <Popover
       open={open}
       onToggle={setOpen}
-      aria-label="Toggle Search"
+      aria-label="Search"
       trigger={
         <WithTooltip tip="Search" side="bottom">
           <div className="button">

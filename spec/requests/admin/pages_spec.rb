@@ -45,7 +45,7 @@ describe "Admin Pages Scenario", type: :system, js: true do
 
     before do
       visit admin_purchase_path(purchase)
-      select_disclosure "Toggle Search"
+      select_disclosure "Search"
     end
 
     it "searches users by query field" do
@@ -82,7 +82,7 @@ describe "Admin Pages Scenario", type: :system, js: true do
       offer_code.purchases << purchase
 
       visit admin_purchase_path(purchase)
-      select_disclosure "Toggle Search"
+      select_disclosure "Search"
 
       fill_in "Search purchases (email, IP, card, external ID)", with: "#{email}\n"
 
@@ -119,7 +119,7 @@ describe "Admin Pages Scenario", type: :system, js: true do
       end
 
       visit admin_purchase_path(purchase)
-      select_disclosure "Toggle Search"
+      select_disclosure "Search"
 
       fill_in "Search purchases (email, IP, card, external ID)", with: "#{email}\n"
 

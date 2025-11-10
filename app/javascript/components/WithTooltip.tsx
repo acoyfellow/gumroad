@@ -1,6 +1,8 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
 import * as React from "react";
 
+import { classNames } from "$app/utils/classNames";
+
 export type Position = "top" | "left" | "bottom" | "right";
 
 export const tooltipClasses = "w-40 z-30 max-w-max rounded-md bg-primary p-3 text-primary-foreground";
@@ -10,6 +12,7 @@ export const WithTooltip = ({
   children,
   open,
   triggerProps,
+  className,
   ...props
 }: {
   tip: React.ReactNode | null;
@@ -25,7 +28,11 @@ export const WithTooltip = ({
         <div>{children}</div>
       </Tooltip.Trigger>
       <Tooltip.Portal>
-        <Tooltip.Content onPointerDownOutside={(e) => e.preventDefault()} {...props} className={tooltipClasses}>
+        <Tooltip.Content
+          onPointerDownOutside={(e) => e.preventDefault()}
+          {...props}
+          className={classNames(tooltipClasses, className)}
+        >
           <Tooltip.Arrow className="fill-primary" />
           {tip}
         </Tooltip.Content>

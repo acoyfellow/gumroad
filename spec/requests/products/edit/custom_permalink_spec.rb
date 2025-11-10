@@ -53,15 +53,14 @@ describe("Product Edit custom permalink edit", type: :system, js: true) do
       expect(page).not_to have_content("Copy to Clipboard")
       copy_link = find_button("Copy URL")
       copy_link.hover
-      expect(page).to have_content("Copy to Clipboard")
+      expect(copy_link).to have_tooltip(text: "Copy to Clipboard")
 
       copy_link.click
-      expect(page).to have_content("Copied!")
+      expect(copy_link).to have_tooltip(text: "Copied!")
 
       # Hover somewhere else to trigger mouseout
       find("label", text: "URL").hover
-      expect(page).not_to have_content("Copy to Clipboard")
-      expect(page).not_to have_content("Copied!")
+      expect(copy_link).not_to have_tooltip
     end
   end
 
