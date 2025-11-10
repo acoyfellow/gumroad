@@ -34,7 +34,7 @@ export type GlobalProps = {
 
 const AdminAppWrapper = ({ children, global }: { children: React.ReactNode; global: GlobalProps }) => (
   <DesignContextProvider value={global.design_settings}>
-    <TooltipProvider delayDuration={0}>
+    <TooltipProvider delayDuration={0} disableHoverableContent>
       <DomainSettingsProvider
         value={{
           scheme: global.domain_settings.scheme,

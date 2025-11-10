@@ -9,6 +9,7 @@ import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { Popover } from "$app/components/Popover";
 import { useRunOnce } from "$app/components/useRunOnce";
+import { WithTooltip } from "$app/components/WithTooltip";
 
 const zoomLevelMin = 0.1;
 const zoomLevelMax = 5.0;
@@ -235,8 +236,7 @@ export const PdfReaderPage = ({
         </div>
 
         <div
-          className="has-tooltip"
-          style={{ display: "flex", zIndex: "var(--z-index-menubar)" }}
+          className="relative z-20 grid"
           onMouseMove={(e) => {
             const width = e.currentTarget.offsetWidth;
             const percent = Math.ceil((100 * e.clientX) / width) / 100;
@@ -251,18 +251,16 @@ export const PdfReaderPage = ({
             max={pageCount}
             value={pageNumber}
             onChange={(e) => updatePage(parseInt(e.target.value, 10))}
-            style={{
-              flexGrow: 1,
-              "--progress": `${((pageNumber - 1) / (pageCount - 1)) * 100}%`,
-            }}
+            style={{ "--progress": `${((pageNumber - 1) / (pageCount - 1)) * 100}%` }}
           />
-          <div
-            className="js-page-slider-popover"
-            role="tooltip"
-            style={{ left: pageTooltip?.left, display: pageTooltip ? "block" : "none" }}
+          <WithTooltip
+            tip={`Page ${pageTooltip?.pageNumber}`}
+            open={pageTooltip != null}
+            triggerProps={{ className: "absolute h-full", style: { left: pageTooltip?.left ?? 0 } }}
+            side="bottom"
           >
-            Page {pageTooltip?.pageNumber}
-          </div>
+            <div />
+          </WithTooltip>
         </div>
 
         <div className="main relative flex-1 overflow-auto bg-background" role="document">

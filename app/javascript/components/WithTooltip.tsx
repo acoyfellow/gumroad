@@ -3,7 +3,7 @@ import * as React from "react";
 
 export type Position = "top" | "left" | "bottom" | "right";
 
-export const tooltipClasses = "w-40 max-w-max rounded-md bg-primary p-3 text-primary-foreground";
+export const tooltipClasses = "w-40 z-30 max-w-max rounded-md bg-primary p-3 text-primary-foreground";
 
 export const WithTooltip = ({
   tip,
@@ -25,7 +25,7 @@ export const WithTooltip = ({
         <div>{children}</div>
       </Tooltip.Trigger>
       <Tooltip.Portal>
-        <Tooltip.Content {...props} className={tooltipClasses}>
+        <Tooltip.Content onPointerDownOutside={(e) => e.preventDefault()} {...props} className={tooltipClasses}>
           <Tooltip.Arrow className="fill-primary" />
           {tip}
         </Tooltip.Content>

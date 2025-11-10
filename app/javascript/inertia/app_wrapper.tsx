@@ -60,7 +60,7 @@ type GlobalProps = {
 export default function AppWrapper({ children, global }: { children: React.ReactNode; global: GlobalProps }) {
   return (
     <DesignContextProvider value={global.design_settings}>
-      <TooltipProvider delayDuration={0}>
+      <TooltipProvider delayDuration={0} disableHoverableContent>
         <DomainSettingsProvider
           value={{
             scheme: global.domain_settings.scheme,
