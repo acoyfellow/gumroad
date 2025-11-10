@@ -16,7 +16,7 @@ export const ReceiptPreview = () => {
 
   const fetchReceiptPreview = React.useCallback(async () => {
     try {
-      const url = Routes.internal_product_receipt_preview_index_url(uniquePermalink, {
+      const url = Routes.internal_product_receipt_preview_index_path(uniquePermalink, {
         params: {
           custom_receipt_text,
           custom_view_content_button_text,
