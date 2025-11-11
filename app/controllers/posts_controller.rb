@@ -3,10 +3,12 @@
 class PostsController < ApplicationController
   include CustomDomainConfig
 
-  before_action :authenticate_user!, only: %i[send_for_purchase]
-  after_action :verify_authorized, only: %i[send_for_purchase]
+  before_action :authenticate_user!, only: %i[send_for_purchase send_missed_posts]
+  after_action :verify_authorized, only: %i[send_for_purchase send_missed_posts]
   before_action :fetch_post, only: %i[send_for_purchase]
-  before_action :ensure_seller_is_eligible_to_send_emails, only: %i[send_for_purchase]
+  before_action :fetch_purchase, only: %i[send_for_purchase send_missed_posts]
+  before_action :ensure_seller_is_eligible_to_send_emails, only: %i[send_for_purchase send_missed_posts]
+  before_action :ensure_can_contact_for_purchase, only: %i[send_for_purchase send_missed_posts]
   before_action :set_user_and_custom_domain_config, only: %i[show]
   before_action :check_if_needs_redirect, only: %i[show]
 
@@ -54,26 +56,17 @@ class PostsController < ApplicationController
   def send_for_purchase
     authorize @post
 
-    purchase = current_seller.sales.find_by_external_id!(params[:purchase_id])
-
-    # Limit the number of emails sent per post to avoid abuse.
-    Rails.cache.fetch("post_email:#{@post.id}:#{purchase.id}", expires_in: 8.hours) do
-      CreatorContactingCustomersEmailInfo.where(purchase:, installment: @post).destroy_all
-
-      PostEmailApi.process(
-        post: @post,
-        recipients: [
-          {
-            email: purchase.email,
-            purchase:,
-            url_redirect: purchase.url_redirect,
-            subscription: purchase.subscription,
-          }.compact_blank
-        ])
-      true
-    end
+    SendPostsForPurchaseService.send_post(post: @post, purchase: @purchase)
 
     head :no_content
+  end
+
+  def send_missed_posts
+    authorize [:audience, @purchase], :send_missed_posts?
+
+    SendPostsForPurchaseService.send_missed_posts_for(purchase: @purchase)
+
+    render json: { message: "Missed emails are queued for delivery" }, status: :ok
   end
 
   def increment_post_views
@@ -99,14 +92,14 @@ class PostsController < ApplicationController
       end
       e404 if @post.blank?
 
-      if viewed_by_seller
-        e404 if @post.seller != current_seller
+      if @post.seller_id?
+        @seller = @post.seller
+      else
+        @seller = @post.link.seller
       end
 
-      if @post.seller_id?
-        e404 if @post.seller.suspended?
-      elsif @post.link_id?
-        e404 if @post.link.seller&.suspended?
+      if viewed_by_seller
+        e404 if @seller != current_seller
       end
     end
 
@@ -120,10 +113,22 @@ class PostsController < ApplicationController
       end
     end
 
+    def fetch_purchase
+      @purchase = current_seller.sales.find_by_external_id(params[:purchase_id])
+      return e404_json if @purchase.blank?
+
+      @seller = @purchase.seller
+    end
+
     def ensure_seller_is_eligible_to_send_emails
-      seller = @post.seller || @post.link.seller
-      unless seller&.eligible_to_send_emails?
+      unless @seller&.eligible_to_send_emails?
         render json: { message: "You are not eligible to resend this email." }, status: :unauthorized
+      end
+    end
+
+    def ensure_can_contact_for_purchase
+      unless @purchase.can_contact?
+        render json: { message: "This customer has opted out of receiving emails." }, status: :forbidden
       end
     end
 end

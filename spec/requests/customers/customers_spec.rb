@@ -474,7 +474,7 @@ describe "Sales page", type: :system, js: true do
         visit customers_path
         find(:table_row, { "Name" => "Customer 1" }).click
         within_modal "Product 1" do
-          within_section "Send missed posts", section_element: :section do
+          within_section "All missed emails", section_element: :section do
             10.times do |i|
               expect(page).to have_section("Post #{i}")
             end
@@ -484,8 +484,8 @@ describe "Sales page", type: :system, js: true do
             within_section "Post 10" do
               expect(page).to have_link("Post 10", href: post.full_url)
               expect(page).to have_text("Originally sent on #{post.published_at.strftime("%b %-d")}")
-              click_on "Send"
-              expect(page).to have_button("Sending...", disabled: true)
+              click_on "Resend"
+              expect(page).to have_button("Resending...", disabled: true)
             end
           end
         end
@@ -496,7 +496,7 @@ describe "Sales page", type: :system, js: true do
         visit customers_path
         find(:table_row, { "Name" => "Customer 1" }).click
         within_modal "Product 1" do
-          within_section "Send missed posts", section_element: :section do
+          within_section "All missed emails", section_element: :section do
             expect(page).to_not have_button("Show more")
             expect(page).to_not have_section("Post 10")
           end
@@ -508,24 +508,77 @@ describe "Sales page", type: :system, js: true do
             end
           end
         end
-
         expect(page).to have_alert(text: "Sent")
         within_section("Post 10") { expect(page).to have_button("Sent", disabled: true) }
+
+        visit customers_path
+        find(:table_row, { "Name" => "Customer 1" }).click
+        within_modal "Product 1" do
+          within_section "All missed emails", section_element: :section do
+            expect(page).to have_button("Resend all")
+            click_on "Resend all"
+            expect(page).to have_button("Resending all...", disabled: true)
+            expect(page).to have_button("Sent", disabled: true, count: 10)
+          end
+        end
+        expect(page).to have_alert(text: "Missed emails are queued for delivery")
       end
 
       it "does not allow re-sending an email if the seller is not eligible to send emails" do
         visit customers_path
         find(:table_row, { "Name" => "Customer 1" }).click
         within_modal "Product 1" do
-          within_section "Send missed posts", section_element: :section do
+          within_section "All missed emails", section_element: :section do
             click_on "Show more"
             within_section "Post 10" do
-              click_on "Send"
-              expect(page).to have_button("Sending...", disabled: true)
+              click_on "Resend"
+              expect(page).to have_button("Resending...", disabled: true)
             end
           end
         end
         expect(page).to have_alert(text: "You are not eligible to resend this email.")
+        expect(EmailInfo.last.installment).to be_nil
+
+        within_modal "Product 1" do
+          within_section "All missed emails", section_element: :section do
+            expect(page).to have_button("Resend all")
+            click_on "Resend all"
+            expect(page).to have_button("Resending all...", disabled: true)
+          end
+        end
+        expect(page).to have_alert(text: "You are not eligible to resend this email.")
+        expect(EmailInfo.last.installment).to be_nil
+      end
+
+      it "does not allow re-sending customer has opted out of receiving emails" do
+        allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
+        create(:payment_completed, user: seller)
+        purchase1.update!(can_contact: false)
+
+        visit customers_path
+        find(:table_row, { "Name" => "Customer 1" }).click
+        within_modal "Product 1" do
+          within_section "All missed emails", section_element: :section do
+            click_on "Show more"
+            within_section "Post 10" do
+              click_on "Resend"
+              expect(page).to have_button("Resending...", disabled: true)
+            end
+          end
+        end
+        expect(page).to have_alert(text: "This customer has opted out of receiving emails.")
+        expect(EmailInfo.last.installment).to be_nil
+
+        visit customers_path
+        find(:table_row, { "Name" => "Customer 1" }).click
+        within_modal "Product 1" do
+          within_section "All missed emails", section_element: :section do
+            expect(page).to have_button("Resend all")
+            click_on "Resend all"
+            expect(page).to have_button("Resending all...", disabled: true)
+          end
+        end
+        expect(page).to have_alert(text: "This customer has opted out of receiving emails.")
         expect(EmailInfo.last.installment).to be_nil
       end
     end

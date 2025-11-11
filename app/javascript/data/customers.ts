@@ -241,6 +241,16 @@ export const resendPost = async (purchaseId: string, postId: string) => {
   if (!response.ok) throw new ResponseError(cast<{ message: string }>(await response.json()).message);
 };
 
+export const resendPosts = async (purchaseId: string) => {
+  const response = await request({
+    method: "POST",
+    accept: "json",
+    url: Routes.send_missed_posts_path(purchaseId),
+  });
+  if (!response.ok) throw new ResponseError(cast<{ message: string }>(await response.json()).message);
+  return cast<{ message: string }>(await response.json());
+};
+
 export const updatePurchase = (
   purchaseId: string,
   update: Partial<{ email: string; giftee_email: string; quantity: number } & Address>,

@@ -25,6 +25,7 @@ import {
   resendPing,
   refund,
   resendPost,
+  resendPosts,
   resendReceipt,
   updateLicense,
   updatePurchase,
@@ -715,6 +716,21 @@ const CustomerDrawer = ({
     setLoadingId(null);
   };
 
+  const handleResendAll = async () => {
+    setLoadingId("all");
+    try {
+      const response = await resendPosts(customer.id);
+      missedPosts?.forEach((post) => {
+        sentEmailIds.current.add(post.id);
+      });
+      showAlert(response.message, "success");
+    } catch (e) {
+      assertResponseError(e);
+      showAlert(e.message, "error");
+    }
+    setLoadingId(null);
+  };
+
   const [productPurchases, setProductPurchases] = React.useState<Customer[]>([]);
   const [selectedProductPurchaseId, setSelectedProductPurchaseId] = React.useState<string | null>(null);
   const selectedProductPurchase = productPurchases.find(({ id }) => id === selectedProductPurchaseId);
@@ -1199,7 +1215,7 @@ const CustomerDrawer = ({
       {missedPosts?.length !== 0 ? (
         <section className="stack">
           <header>
-            <h3>Send missed posts</h3>
+            <h3>All missed emails</h3>
           </header>
           {missedPosts ? (
             <>
@@ -1218,7 +1234,7 @@ const CustomerDrawer = ({
                     disabled={!!loadingId || sentEmailIds.current.has(post.id)}
                     onClick={() => void onSend(post.id, "post")}
                   >
-                    {sentEmailIds.current.has(post.id) ? "Sent" : loadingId === post.id ? "Sending...." : "Send"}
+                    {sentEmailIds.current.has(post.id) ? "Sent" : loadingId === post.id ? "Resending..." : "Resend"}
                   </Button>
                 </section>
               ))}
@@ -1230,6 +1246,13 @@ const CustomerDrawer = ({
                     Show more
                   </Button>
                 </section>
+              ) : null}
+              {missedPosts.length > 0 ? (
+                <div>
+                  <Button color="primary" disabled={!!loadingId} onClick={() => void handleResendAll()}>
+                    {loadingId === "all" ? "Resending all..." : "Resend all"}
+                  </Button>
+                </div>
               ) : null}
             </>
           ) : (
