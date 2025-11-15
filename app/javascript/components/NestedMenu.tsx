@@ -9,6 +9,7 @@ import { Button } from "$app/components/Button";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Icon } from "$app/components/Icons";
 import { useDropdownPosition } from "$app/components/Popover";
+import { Sheet } from "$app/components/ui/Sheet";
 import { useIsOnTouchDevice } from "$app/components/useIsOnTouchDevice";
 import { useOnOutsideClick } from "$app/components/useOnOutsideClick";
 import { useWindowDimensions } from "$app/components/useWindowDimensions";
@@ -309,9 +310,11 @@ const OverlayMenu = ({
 } & React.AriaAttributes) => {
   const { onSelectItem, selectedItem, topLevelMenuItems } = useMenuContext();
   const [menuOpen, setMenuOpen] = React.useState(false);
+
   React.useEffect(() => setMenuOpen(false), [selectedItem]);
 
   const overlayMenuUID = React.useId();
+
   return (
     <>
       <Button
@@ -325,14 +328,13 @@ const OverlayMenu = ({
       >
         <Icon name="filter" />
       </Button>
-      <div
-        className="z-modal fixed inset-0 bg-black/80"
-        style={menuTop ? { top: menuTop } : undefined}
-        hidden={!menuOpen}
+
+      <Sheet
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        modal
+        className="h-full w-80 max-w-[calc(100vw-3.25rem)] p-0 md:w-80 md:border-l-0"
       >
-        <button className="absolute top-4 right-4 text-xl" onClick={() => setMenuOpen(false)} aria-label="Close Menu">
-          <Icon name="x" className="text-white" />
-        </button>
         <ItemsList
           menuId={overlayMenuUID}
           menuItem={{
@@ -347,9 +349,9 @@ const OverlayMenu = ({
             setMenuOpen(false);
             onSelectItem?.(newSelectedItem, e);
           }}
-          className="fixed flex h-full w-80 max-w-[calc(100vw-3.25rem)] flex-col overflow-x-hidden overflow-y-auto bg-white dark:bg-dark-gray"
+          className="h-full overflow-x-hidden overflow-y-auto"
         />
-      </div>
+      </Sheet>
     </>
   );
 };
