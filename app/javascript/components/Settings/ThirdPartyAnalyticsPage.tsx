@@ -53,15 +53,15 @@ const ThirdPartyAnalyticsPage = ({ settings_pages, third_party_analytics, produc
     </Button>
   );
   const handleSave = () => {
-    form.setData({
+    form.transform((data) => ({
       user: {
-        ...thirdPartyAnalytics,
-        snippets: thirdPartyAnalytics.snippets.map((snippet) => ({
+        ...data.user,
+        snippets: data.user.snippets.map((snippet: Snippet) => ({
           ...snippet,
           id: snippet.id && !snippet.id.startsWith(NEW_SNIPPET_ID_PREFIX) ? snippet.id : null,
         })),
       },
-    });
+    }));
 
     form.put(Routes.settings_third_party_analytics_path(), {
       preserveScroll: true,
