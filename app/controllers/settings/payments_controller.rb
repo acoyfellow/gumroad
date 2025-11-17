@@ -80,7 +80,11 @@ class Settings::PaymentsController < Settings::BaseController
       end
     end
 
-    redirect_to settings_payments_path, status: :see_other, notice: "Thanks! You're all set."
+    if flash[:notice].blank?
+      flash[:notice] = "Thanks! You're all set."
+    end
+
+    redirect_to settings_payments_path, status: :see_other
   end
 
   def set_country
@@ -176,24 +180,23 @@ class Settings::PaymentsController < Settings::BaseController
 
       return true if result[:success]
 
-      message = case result[:error]
+      case result[:error]
       when :check_card_information_prompt
-        "Please check your card information, we couldn't verify it."
+        render json: { success: false, error_message: "Please check your card information, we couldn't verify it." }
       when :credit_card_error
-        strip_tags(result[:data])
+        render json: { success: false, error_message: strip_tags(result[:data]) }
       when :bank_account_error
-        strip_tags(result[:data])
+        render json: { success: false, error_message: strip_tags(result[:data]) }
       when :account_number_does_not_match
-        "The account numbers do not match."
+        render json: { success: false, error_message: "The account numbers do not match." }
       when :provide_valid_email_prompt
-        "Please provide a valid email address."
+        render json: { success: false, error_message: "Please provide a valid email address." }
       when :provide_ascii_only_email_prompt
-        "Email address cannot contain non-ASCII characters"
+        render json: { success: false, error_message: "Email address cannot contain non-ASCII characters" }
       when :paypal_payouts_not_supported
-        "PayPal payouts are not supported in your country."
+        render json: { success: false, error_message: "PayPal payouts are not supported in your country." }
       end
 
-      redirect_to settings_payments_path, status: :see_other, alert: message
       false
     end
 
@@ -208,7 +211,7 @@ class Settings::PaymentsController < Settings::BaseController
           comment_type: :note,
           content: result[:error_message]
         )
-        redirect_to settings_payments_path, status: :see_other, alert: result[:error_message]
+        render json: { success: false, error_message: result[:error_message], error_code: result[:error_code] }
         false
       end
     end
