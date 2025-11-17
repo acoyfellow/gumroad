@@ -71,7 +71,6 @@ class Settings::AdvancedController < Settings::BaseController
     end
 
     if current_seller.save
-      flash[:notice] = "Your account has been updated!"
       render inertia: "Settings/Advanced", props: settings_presenter.advanced_props, status: :ok
     else
       message = current_seller.errors.full_messages.to_sentence
