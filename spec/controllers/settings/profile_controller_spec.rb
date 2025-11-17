@@ -31,8 +31,9 @@ describe Settings::ProfileController, :vcr, type: :controller, inertia: true do
 
     it "submits the form successfully" do
       put :update, params: { user: { name: "New name", username: "gum" } }
-      expect(response).to be_successful
-      expect(inertia.component).to eq("Settings/Profile")
+      expect(response).to redirect_to(settings_profile_path)
+      expect(response).to have_http_status :see_other
+      expect(flash[:notice]).to eq("Changes saved!")
       expect(seller.reload.name).to eq("New name")
       expect(seller.username).to eq("gum")
     end
@@ -44,8 +45,9 @@ describe Settings::ProfileController, :vcr, type: :controller, inertia: true do
       expect { put :update, params: { user: { username: "" } } }.to change {
         seller.reload.read_attribute(:username)
       }.from("oldusername").to(nil)
-      expect(response).to be_successful
-      expect(inertia.component).to eq("Settings/Profile")
+      expect(response).to redirect_to(settings_profile_path)
+      expect(response).to have_http_status :see_other
+      expect(flash[:notice]).to eq("Changes saved!")
     end
 
     it "performs model validations" do
@@ -53,7 +55,6 @@ describe Settings::ProfileController, :vcr, type: :controller, inertia: true do
       expect(response).to redirect_to(settings_profile_path)
       expect(response).to have_http_status :see_other
       expect(flash[:alert]).to eq("Username is too short (minimum is 3 characters)")
-      expect(session[:inertia_errors]).to be_present
     end
 
     describe "when the user has not confirmed their email address" do
@@ -66,7 +67,6 @@ describe Settings::ProfileController, :vcr, type: :controller, inertia: true do
         expect(response).to redirect_to(settings_profile_path)
         expect(response).to have_http_status :see_other
         expect(flash[:alert]).to eq("You have to confirm your email address before you can do that.")
-        expect(session[:inertia_errors]).to be_present
       end
     end
 
@@ -78,8 +78,9 @@ describe Settings::ProfileController, :vcr, type: :controller, inertia: true do
       seller.avatar.attach(file_fixture("test.png"))
 
       put :update, params: { tabs: [{ name: "Tab 1", sections: [section1.external_id] }, { name: "Tab 2", sections: [section2.external_id] }, { name: "Tab 3", sections: [] }] }
-      expect(response).to be_successful
-      expect(inertia.component).to eq("Settings/Profile")
+      expect(response).to redirect_to(settings_profile_path)
+      expect(response).to have_http_status :see_other
+      expect(flash[:notice]).to eq("Changes saved!")
       expect(seller.seller_profile_sections.count).to eq 3
       expect(seller.seller_profile_sections.on_profile.count).to eq 2
       expect(seller.reload.seller_profile.json_data["tabs"]).to eq [{ name: "Tab 1", sections: [section1.id] }, { name: "Tab 2", sections: [section2.id] }, { name: "Tab 3", sections: [] }].as_json
@@ -100,7 +101,6 @@ describe Settings::ProfileController, :vcr, type: :controller, inertia: true do
       expect(response).to redirect_to(settings_profile_path)
       expect(response).to have_http_status :see_other
       expect(flash[:alert]).to eq("The logo is already removed. Please refresh the page and try again.")
-      expect(session[:inertia_errors]).to be_present
     end
 
     it "regenerates the subscribe preview when the avatar changes" do
@@ -117,8 +117,9 @@ describe Settings::ProfileController, :vcr, type: :controller, inertia: true do
         }
       end.to change { GenerateSubscribePreviewJob.jobs.size }.by(1)
 
-      expect(response).to be_successful
-      expect(inertia.component).to eq("Settings/Profile")
+      expect(response).to redirect_to(settings_profile_path)
+      expect(response).to have_http_status :see_other
+      expect(flash[:notice]).to eq("Changes saved!")
       expect(GenerateSubscribePreviewJob).to have_enqueued_sidekiq_job(seller.id)
     end
   end

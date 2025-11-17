@@ -39,8 +39,9 @@ describe Settings::MainController, type: :controller, inertia: true do
 
     it "submits the form successfully" do
       put :update, params: { user: user_params.merge(email: "hello@example.com") }
-      expect(response).to be_successful
-      expect(inertia.component).to eq("Settings/Main")
+      expect(response).to redirect_to(settings_main_path)
+      expect(response).to have_http_status :see_other
+      expect(flash[:notice]).to eq("Your account has been updated!")
       expect(seller.reload.unconfirmed_email).to eq("hello@example.com")
     end
 
@@ -50,7 +51,6 @@ describe Settings::MainController, type: :controller, inertia: true do
       expect(response).to redirect_to(settings_main_path)
       expect(response).to have_http_status :see_other
       expect(flash[:alert]).to eq("Something broke. We're looking into what happened. Sorry about this!")
-      expect(session[:inertia_errors]).to be_present
     end
 
     describe "expires products" do
@@ -64,8 +64,9 @@ describe Settings::MainController, type: :controller, inertia: true do
 
       it "expires the user's products", :sidekiq_inline do
         put :update, params: { user: user_params.merge(enable_recurring_subscription_charge_email: false) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
         expect(Rails.cache.read(product.scoped_cache_key("en"))).to be(nil)
         expect(product.reload.product_cached_values.fresh).to eq([])
       end
@@ -76,7 +77,6 @@ describe Settings::MainController, type: :controller, inertia: true do
       expect(response).to redirect_to(settings_main_path)
       expect(response).to have_http_status :see_other
       expect(flash[:alert]).to eq("Email is invalid")
-      expect(session[:inertia_errors]).to be_present
     end
 
     describe "email changing" do
@@ -89,24 +89,27 @@ describe Settings::MainController, type: :controller, inertia: true do
           expect { put :update, params: { user: user_params.merge(email: "new@gumroad.com") } }.to change {
             seller.reload.unconfirmed_email
           }.from("test@gumroad.com").to("new@gumroad.com")
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Main")
+          expect(response).to redirect_to(settings_main_path)
+          expect(response).to have_http_status :see_other
+          expect(flash[:notice]).to eq("Your account has been updated!")
         end
 
         it "does not change email column" do
           expect do
             put :update, params: { user: user_params.merge(email: "new@gumroad.com") }
           end.to_not change { seller.reload.email }.from("test@gumroad.com")
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Main")
+          expect(response).to redirect_to(settings_main_path)
+          expect(response).to have_http_status :see_other
+          expect(flash[:notice]).to eq("Your account has been updated!")
         end
 
         it "sends email_changed notification" do
           expect do
             put :update, params: { user: user_params.merge(email: "another+email@example.com") }
           end.to have_enqueued_mail(UserSignupMailer, :email_changed)
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Main")
+          expect(response).to redirect_to(settings_main_path)
+          expect(response).to have_http_status :see_other
+          expect(flash[:notice]).to eq("Your account has been updated!")
         end
       end
 
@@ -121,16 +124,18 @@ describe Settings::MainController, type: :controller, inertia: true do
           end.to change {
             seller.reload.unconfirmed_email
           }.from("new@gumroad.com").to(nil)
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Main")
+          expect(response).to redirect_to(settings_main_path)
+          expect(response).to have_http_status :see_other
+          expect(flash[:notice]).to eq("Your account has been updated!")
         end
 
         it "doesn't send email_changed notification" do
           expect do
             put :update, params: { user: user_params.merge(email: seller.email) }
           end.not_to have_enqueued_mail(UserSignupMailer, :email_changed)
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Main")
+          expect(response).to redirect_to(settings_main_path)
+          expect(response).to have_http_status :see_other
+          expect(flash[:notice]).to eq("Your account has been updated!")
         end
       end
     end
@@ -140,16 +145,18 @@ describe Settings::MainController, type: :controller, inertia: true do
 
       expect do
         put :update, params: { user: user_params.merge(enable_free_downloads_email: false) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.enable_free_downloads_email
       }.from(true).to(false)
 
       expect do
         put :update, params: { user: user_params.merge(enable_free_downloads_email: true) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.enable_free_downloads_email
       }.from(false).to(true)
@@ -160,16 +167,18 @@ describe Settings::MainController, type: :controller, inertia: true do
 
       expect do
         put :update, params: { user: user_params.merge(enable_free_downloads_push_notification: false) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.enable_free_downloads_push_notification
       }.from(true).to(false)
 
       expect do
         put :update, params: { user: user_params.merge(enable_free_downloads_push_notification: true) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.enable_free_downloads_push_notification
       }.from(false).to(true)
@@ -180,16 +189,18 @@ describe Settings::MainController, type: :controller, inertia: true do
 
       expect do
         put :update, params: { user: user_params.merge(enable_recurring_subscription_charge_email: false) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.enable_recurring_subscription_charge_email
       }.from(true).to(false)
 
       expect do
         put :update, params: { user: user_params.merge(enable_recurring_subscription_charge_email: true) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.enable_recurring_subscription_charge_email
       }.from(false).to(true)
@@ -200,16 +211,18 @@ describe Settings::MainController, type: :controller, inertia: true do
 
       expect do
         put :update, params: { user: user_params.merge(enable_recurring_subscription_charge_push_notification: false) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.enable_recurring_subscription_charge_push_notification
       }.from(true).to(false)
 
       expect do
         put :update, params: { user: user_params.merge(enable_recurring_subscription_charge_push_notification: true) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.enable_recurring_subscription_charge_push_notification
       }.from(false).to(true)
@@ -220,16 +233,18 @@ describe Settings::MainController, type: :controller, inertia: true do
 
       expect do
         put :update, params: { user: user_params.merge(enable_payment_push_notification: false) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.enable_payment_push_notification
       }.from(true).to(false)
 
       expect do
         put :update, params: { user: user_params.merge(enable_payment_push_notification: true) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.enable_payment_push_notification
       }.from(false).to(true)
@@ -240,16 +255,18 @@ describe Settings::MainController, type: :controller, inertia: true do
 
       expect do
         put :update, params: { user: user_params.merge(disable_comments_email: false) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.disable_comments_email
       }.from(true).to(false)
 
       expect do
         put :update, params: { user: user_params.merge(disable_comments_email: true) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.disable_comments_email
       }.from(false).to(true)
@@ -258,16 +275,18 @@ describe Settings::MainController, type: :controller, inertia: true do
     it "updates the disable_reviews_email flag correctly" do
       expect do
         put :update, params: { user: user_params.merge(disable_reviews_email: true) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.disable_reviews_email
       }.from(false).to(true)
 
       expect do
         put :update, params: { user: user_params.merge(disable_reviews_email: false) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.disable_reviews_email
       }.from(true).to(false)
@@ -276,16 +295,18 @@ describe Settings::MainController, type: :controller, inertia: true do
     it "updates the show_nsfw_products flag correctly" do
       expect do
         put :update, params: { user: user_params.merge(show_nsfw_products: true) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.show_nsfw_products
       }.from(false).to(true)
 
       expect do
         put :update, params: { user: user_params.merge(show_nsfw_products: false) }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Main")
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Your account has been updated!")
       end.to change {
         seller.reload.show_nsfw_products
       }.from(true).to(false)
@@ -299,8 +320,9 @@ describe Settings::MainController, type: :controller, inertia: true do
 
         it "updates the seller refund policy fine print" do
           put :update, params: { user: { seller_refund_policy: { max_refund_period_in_days: "30", fine_print: "This is a fine print" } } }
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Main")
+          expect(response).to redirect_to(settings_main_path)
+          expect(response).to have_http_status :see_other
+          expect(flash[:notice]).to eq("Your account has been updated!")
 
           expect(seller.refund_policy.reload.max_refund_period_in_days).to eq(30)
           expect(seller.refund_policy.fine_print).to eq("This is a fine print")
@@ -313,8 +335,9 @@ describe Settings::MainController, type: :controller, inertia: true do
 
           it "does not update the seller refund policy" do
             put :update, params: { user: { seller_refund_policy: { max_refund_period_in_days: "30", fine_print: "This is a fine print" } } }
-            expect(response).to be_successful
-            expect(inertia.component).to eq("Settings/Main")
+            expect(response).to redirect_to(settings_main_path)
+            expect(response).to have_http_status :see_other
+            expect(flash[:notice]).to eq("Your account has been updated!")
 
             expect(seller.refund_policy.reload.max_refund_period_in_days).to eq(0)
           end
@@ -329,8 +352,9 @@ describe Settings::MainController, type: :controller, inertia: true do
 
         it "does not update the seller refund policy" do
           put :update, params: { user: { seller_refund_policy: { max_refund_period_in_days: "30", fine_print: "This is a fine print" } } }
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Main")
+          expect(response).to redirect_to(settings_main_path)
+          expect(response).to have_http_status :see_other
+          expect(flash[:notice]).to eq("Your account has been updated!")
 
           expect(seller.refund_policy.reload.max_refund_period_in_days).to eq(0)
           expect(seller.refund_policy.fine_print).to be_nil
@@ -361,8 +385,9 @@ describe Settings::MainController, type: :controller, inertia: true do
 
           put :update, params: { user: user_params.merge(product_level_support_emails:) }
 
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Main")
+          expect(response).to redirect_to(settings_main_path)
+          expect(response).to have_http_status :see_other
+          expect(flash[:notice]).to eq("Your account has been updated!")
           expect(product1.reload.support_email).to eq("contact@example.com")
           expect(product2.reload.support_email).to eq("contact@example.com")
         end
@@ -376,7 +401,6 @@ describe Settings::MainController, type: :controller, inertia: true do
           expect(response).to redirect_to(settings_main_path)
           expect(response).to have_http_status :see_other
           expect(flash[:alert]).to eq("Something broke. We're looking into what happened. Sorry about this!")
-          expect(session[:inertia_errors]).to be_present
         end
 
         it "only associates products belonging to current seller" do
@@ -389,8 +413,9 @@ describe Settings::MainController, type: :controller, inertia: true do
 
           put :update, params: { user: user_params.merge(product_level_support_emails:) }
 
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Main")
+          expect(response).to redirect_to(settings_main_path)
+          expect(response).to have_http_status :see_other
+          expect(flash[:notice]).to eq("Your account has been updated!")
           expect(product1.reload.support_email).to eq("contact@example.com")
           expect(other_product.reload.support_email).to be_nil
         end
@@ -401,8 +426,9 @@ describe Settings::MainController, type: :controller, inertia: true do
 
           put :update, params: { user: user_params.merge(product_level_support_emails: []) }
 
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Main")
+          expect(response).to redirect_to(settings_main_path)
+          expect(response).to have_http_status :see_other
+          expect(flash[:notice]).to eq("Your account has been updated!")
           expect(product1.reload.support_email).to be_nil
           expect(product2.reload.support_email).to be_nil
         end
@@ -419,8 +445,9 @@ describe Settings::MainController, type: :controller, inertia: true do
 
             put :update, params: { user: user_params.merge(product_level_support_emails:) }
 
-            expect(response).to be_successful
-            expect(inertia.component).to eq("Settings/Main")
+            expect(response).to redirect_to(settings_main_path)
+            expect(response).to have_http_status :see_other
+            expect(flash[:notice]).to eq("Your account has been updated!")
             expect(product1.reload.support_email).to be_nil
           end
         end
@@ -434,8 +461,9 @@ describe Settings::MainController, type: :controller, inertia: true do
         expect { post :resend_confirmation_email }
           .to have_enqueued_mail(UserSignupMailer, :confirmation_instructions)
 
-        expect(response).to be_successful
-        expect(response.parsed_body["success"]).to be(true)
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Confirmation email resent!")
       end
     end
 
@@ -444,8 +472,9 @@ describe Settings::MainController, type: :controller, inertia: true do
         expect { post :resend_confirmation_email }
           .not_to have_enqueued_mail(UserSignupMailer)
 
-        expect(response).to be_successful
-        expect(response.parsed_body["success"]).to be(false)
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:alert]).to eq("Sorry, something went wrong. Please try again.")
       end
     end
 

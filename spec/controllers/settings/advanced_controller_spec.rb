@@ -32,8 +32,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
     it "submits the form successfully" do
       put :update, params: { user: { notification_endpoint: "https://example.com" } }
 
-      expect(response).to be_successful
-      expect(inertia.component).to eq("Settings/Advanced")
+      expect(response).to redirect_to(settings_advanced_path)
+      expect(response).to have_http_status :see_other
       expect(flash[:notice]).to eq("Your account has been updated!")
       expect(seller.reload.notification_endpoint).to eq("https://example.com")
     end
@@ -45,7 +45,6 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
       expect(response).to redirect_to(settings_advanced_path)
       expect(response).to have_http_status :see_other
       expect(flash[:alert]).to eq("Something broke. We're looking into what happened. Sorry about this!")
-      expect(session[:inertia_errors]).to be_present
     end
 
     context "when params contains a domain" do
@@ -61,8 +60,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
             seller.reload.custom_domain.domain
           }.from("example-domain.com").to("test-custom-domain.gumroad.com")
 
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Advanced")
+          expect(response).to redirect_to(settings_advanced_path)
+          expect(response).to have_http_status :see_other
           expect(flash[:notice]).to eq("Your account has been updated!")
         end
 
@@ -81,8 +80,9 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
             end.to_not change {
               seller.reload.custom_domain.failed_verification_attempts_count
             }
-            expect(response).to be_successful
-            expect(inertia.component).to eq("Settings/Advanced")
+            expect(response).to redirect_to(settings_advanced_path)
+            expect(response).to have_http_status :see_other
+            expect(flash[:notice]).to be_present
           end
         end
       end
@@ -94,8 +94,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
           end.to change { CustomDomain.alive.count }.by(1)
 
           expect(seller.custom_domain.domain).to eq "test-custom-domain.gumroad.com"
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Advanced")
+          expect(response).to redirect_to(settings_advanced_path)
+          expect(response).to have_http_status :see_other
           expect(flash[:notice]).to eq("Your account has been updated!")
         end
       end
@@ -113,8 +113,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
           }.by(0)
           expect(custom_domain.reload.deleted_at).to be_nil
           expect(seller.reload.custom_domain).to eq custom_domain
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Advanced")
+          expect(response).to redirect_to(settings_advanced_path)
+          expect(response).to have_http_status :see_other
           expect(flash[:notice]).to eq("Your account has been updated!")
         end
       end
@@ -132,8 +132,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
           }.from(false).to(true)
 
           expect(seller.reload.custom_domain).to be_nil
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Advanced")
+          expect(response).to redirect_to(settings_advanced_path)
+          expect(response).to have_http_status :see_other
           expect(flash[:notice]).to eq("Your account has been updated!")
         end
       end
@@ -141,8 +141,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
       context "when user doesn't have an existing custom_domain" do
         it "renders success response" do
           expect { put :update, params: { user: { enable_verify_domain_third_party_services: "0" }, domain: "" } }.to change { CustomDomain.alive.count }.by(0)
-          expect(response).to be_successful
-          expect(inertia.component).to eq("Settings/Advanced")
+          expect(response).to redirect_to(settings_advanced_path)
+          expect(response).to have_http_status :see_other
           expect(flash[:notice]).to eq("Your account has been updated!")
         end
       end
@@ -155,8 +155,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
         end.to change { seller.blocked_customer_objects.active.email.count }.by(2)
 
         expect(seller.blocked_customer_objects.active.email.pluck(:object_value)).to match_array(["customer1@example.com", "customer2@example.com"])
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Advanced")
+        expect(response).to redirect_to(settings_advanced_path)
+        expect(response).to have_http_status :see_other
         expect(flash[:notice]).to eq("Your account has been updated!")
       end
 
@@ -170,8 +170,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
         end.to change { seller.blocked_customer_objects.active.email.count }.by(1)
 
         expect(seller.blocked_customer_objects.active.email.pluck(:object_value)).to match_array(["customer3@example.com", "customer2@example.com", "customer1@example.com"])
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Advanced")
+        expect(response).to redirect_to(settings_advanced_path)
+        expect(response).to have_http_status :see_other
         expect(flash[:notice]).to eq("Your account has been updated!")
       end
 
@@ -183,8 +183,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
         end.to change { seller.blocked_customer_objects.active.email.count }.from(1).to(2)
 
         expect(seller.blocked_customer_objects.active.email.pluck(:object_value)).to match_array(["customer2@example.com", "john@example.com"])
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Advanced")
+        expect(response).to redirect_to(settings_advanced_path)
+        expect(response).to have_http_status :see_other
         expect(flash[:notice]).to eq("Your account has been updated!")
       end
 
@@ -200,8 +200,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
         end.to change { seller.blocked_customer_objects.active.email.count }.from(0).to(2)
 
         expect(seller.blocked_customer_objects.active.email.pluck(:object_value)).to match_array(["john@example.com", "smith@example.com"])
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Advanced")
+        expect(response).to redirect_to(settings_advanced_path)
+        expect(response).to have_http_status :see_other
         expect(flash[:notice]).to eq("Your account has been updated!")
       end
 
@@ -217,8 +217,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
         end.to_not change { another_seller.blocked_customer_objects.active.email.pluck(:object_value) }
 
         expect(another_seller.blocked_customer_objects.active.email.pluck(:object_value)).to match_array(["john@example.com"])
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Advanced")
+        expect(response).to redirect_to(settings_advanced_path)
+        expect(response).to have_http_status :see_other
         expect(flash[:notice]).to eq("Your account has been updated!")
       end
 
@@ -233,7 +233,6 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
         expect(response).to redirect_to(settings_advanced_path)
         expect(response).to have_http_status :see_other
         expect(flash[:alert]).to eq("The email rob@@example.com cannot be blocked as it is invalid.")
-        expect(session[:inertia_errors]).to be_present
       end
 
       it "unblocks all emails if the 'blocked_customer_emails' param is empty" do
@@ -246,8 +245,8 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
         end.to change { seller.blocked_customer_objects.active.email.count }.from(2).to(0)
 
         expect(seller.blocked_customer_objects.active.email.count).to eq(0)
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Advanced")
+        expect(response).to redirect_to(settings_advanced_path)
+        expect(response).to have_http_status :see_other
         expect(flash[:notice]).to eq("Your account has been updated!")
       end
 
@@ -261,7 +260,6 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
         expect(response).to redirect_to(settings_advanced_path)
         expect(response).to have_http_status :see_other
         expect(flash[:alert]).to eq("Sorry, something went wrong. Please try again.")
-        expect(session[:inertia_errors]).to be_present
       end
 
       it "blocks the specified emails even if other form fields fail validations" do
@@ -274,7 +272,6 @@ describe Settings::AdvancedController, :vcr, type: :controller, inertia: true do
         expect(response).to redirect_to(settings_advanced_path)
         expect(response).to have_http_status :see_other
         expect(flash[:alert]).to eq("invalid-domain is not a valid domain name.")
-        expect(session[:inertia_errors]).to be_present
       end
     end
   end

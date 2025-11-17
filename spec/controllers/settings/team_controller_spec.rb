@@ -39,7 +39,8 @@ describe Settings::TeamController, type: :controller, inertia: true do
       it "redirects" do
         get :show
 
-        expect(response).to redirect_to(settings_main_url)
+        expect(response).to redirect_to(settings_main_path)
+        expect(response).to have_http_status :see_other
         expect(flash[:alert]).to eq("Your Gumroad account doesn't have an email associated. Please assign and verify your email, and try again.")
       end
     end

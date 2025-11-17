@@ -37,7 +37,6 @@ describe Settings::PasswordController, :vcr, type: :controller, inertia: true do
         expect(response).to redirect_to(settings_password_path)
         expect(response).to have_http_status :see_other
         expect(flash[:alert]).to eq("Incorrect password.")
-        expect(session[:inertia_errors]).to be_present
       end
     end
 
@@ -46,8 +45,9 @@ describe Settings::PasswordController, :vcr, type: :controller, inertia: true do
         with_real_pwned_password_check do
           put :update, params: { user: { password: user.password, new_password: "#{user.password}-new" } }
         end
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Password")
+        expect(response).to redirect_to(settings_password_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("You have successfully changed your password.")
       end
     end
 
@@ -59,7 +59,6 @@ describe Settings::PasswordController, :vcr, type: :controller, inertia: true do
         expect(response).to redirect_to(settings_password_path)
         expect(response).to have_http_status :see_other
         expect(flash[:alert]).to be_present
-        expect(session[:inertia_errors]).to be_present
       end
     end
 
@@ -69,8 +68,9 @@ describe Settings::PasswordController, :vcr, type: :controller, inertia: true do
           put :update, params: { user: { password: user.password, new_password: "#{user.password}-new" } }
         end.to change { user.reload.last_active_sessions_invalidated_at }.from(nil).to(DateTime.current)
 
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/Password")
+        expect(response).to redirect_to(settings_password_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("You have successfully changed your password.")
         expect(request.env["warden"].session["last_sign_in_at"]).to eq(DateTime.current.to_i)
       end
     end
@@ -87,8 +87,9 @@ describe Settings::PasswordController, :vcr, type: :controller, inertia: true do
       with_real_pwned_password_check do
         put :update, params: { user: { password: "", new_password: "#{user}-new" } }
       end
-      expect(response).to be_successful
-      expect(inertia.component).to eq("Settings/Password")
+      expect(response).to redirect_to(settings_password_path)
+      expect(response).to have_http_status :see_other
+      expect(flash[:notice]).to eq("You have successfully changed your password.")
     end
   end
 end

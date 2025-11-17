@@ -212,7 +212,6 @@ export type ErrorMessageInfo = {
 const PaymentsPage = (props: PaymentsPageProps) => {
   const userAgentInfo = useUserAgentInfo();
 
-  // Initialize useForm with the main form data
   const form = useForm({
     user: props.compliance_info,
     payouts_paused_by_user: props.payouts_paused_by_user,
@@ -250,7 +249,6 @@ const PaymentsPage = (props: PaymentsPageProps) => {
     }
   };
 
-  // Use local state for UI-specific fields
   const payoutsPausedByUser = form.data.payouts_paused_by_user;
   const setPayoutsPausedByUser = (value: boolean) => form.setData("payouts_paused_by_user", value);
 
@@ -749,7 +747,6 @@ const PaymentsPage = (props: PaymentsPageProps) => {
       return;
     }
 
-    // Update form data with payment method specific fields before submission
     const baseData = {
       ...form.data,
       payout_threshold_cents: payoutThresholdCents.value || 0,

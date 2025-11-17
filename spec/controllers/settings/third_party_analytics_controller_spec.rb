@@ -42,8 +42,9 @@ describe Settings::ThirdPartyAnalyticsController, type: :controller, inertia: tr
             facebook_meta_tag:,
           }
         }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Settings/ThirdPartyAnalytics")
+        expect(response).to redirect_to(settings_third_party_analytics_path)
+        expect(response).to have_http_status :see_other
+        expect(flash[:notice]).to eq("Changes saved!")
         seller.reload
         expect(seller.disable_third_party_analytics).to eq(false)
         expect(seller.google_analytics_id).to eq(google_analytics_id)
@@ -70,7 +71,6 @@ describe Settings::ThirdPartyAnalyticsController, type: :controller, inertia: tr
         expect(response).to redirect_to(settings_third_party_analytics_path)
         expect(response).to have_http_status :see_other
         expect(flash[:alert]).to eq("Please enter a valid Google Analytics ID")
-        expect(session[:inertia_errors]).to be_present
 
         seller.reload
         expect(seller.disable_third_party_analytics).to eq(false)
@@ -90,7 +90,6 @@ describe Settings::ThirdPartyAnalyticsController, type: :controller, inertia: tr
         expect(response).to redirect_to(settings_third_party_analytics_path)
         expect(response).to have_http_status :see_other
         expect(flash[:alert]).to eq("Something broke. We're looking into what happened. Sorry about this!")
-        expect(session[:inertia_errors]).to be_present
       end
     end
   end
