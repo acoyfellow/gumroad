@@ -40,11 +40,11 @@ class Settings::MainController < Settings::BaseController
   def resend_confirmation_email
     if current_seller.unconfirmed_email.present? || !current_seller.confirmed?
       current_seller.send_confirmation_instructions
-      return redirect_to settings_main_path, notice: "Confirmation email resent!", status: :see_other
+      return redirect_to settings_main_path, status: :see_other, notice: "Confirmation email resent!"
     end
     redirect_to settings_main_path,
-                  alert: "Sorry, something went wrong. Please try again.",
-                  status: :see_other
+                  status: :see_other,
+                  alert: "Sorry, something went wrong. Please try again."
   end
 
   private

@@ -19,7 +19,6 @@ class Settings::AdvancedController < Settings::BaseController
         message = "The email #{@invalid_blocked_email} cannot be blocked as it is invalid."
         return redirect_to(
           settings_advanced_path,
-          inertia: { errors: { error_message: message } },
           alert: message,
           status: :see_other
         )
@@ -30,7 +29,6 @@ class Settings::AdvancedController < Settings::BaseController
       message = "Sorry, something went wrong. Please try again."
       return redirect_to(
         settings_advanced_path,
-        inertia: { errors: { error_message: message } },
         alert: message,
         status: :see_other
       )
@@ -43,7 +41,6 @@ class Settings::AdvancedController < Settings::BaseController
       message = "Something broke. We're looking into what happened. Sorry about this!"
       return redirect_to(
         settings_advanced_path,
-        inertia: { errors: { error_message: message } },
         alert: message,
         status: :see_other
       )
@@ -61,7 +58,6 @@ class Settings::AdvancedController < Settings::BaseController
       if error_message
         return redirect_to(
           settings_advanced_path,
-          inertia: { errors: { error_message: } },
           alert: error_message,
           status: :see_other
         )
@@ -71,12 +67,15 @@ class Settings::AdvancedController < Settings::BaseController
     end
 
     if current_seller.save
-      render inertia: "Settings/Advanced", props: settings_presenter.advanced_props, status: :ok
+      return redirect_to(
+              settings_advanced_path,
+              status: :see_other,
+              notice: "Your account has been updated!"
+            )
     else
       message = current_seller.errors.full_messages.to_sentence
       redirect_to(
         settings_advanced_path,
-        inertia: { errors: { error_message: message } },
         alert: message,
         status: :see_other
       )

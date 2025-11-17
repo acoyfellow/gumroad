@@ -3,7 +3,6 @@ import * as React from "react";
 
 import { SettingPage } from "$app/parsers/settings";
 
-import { showAlert } from "$app/components/server-components/Alert";
 import AccountDeletionSection from "$app/components/Settings/AdvancedPage/AccountDeletionSection";
 import ApplicationsSection from "$app/components/Settings/AdvancedPage/ApplicationsSection";
 import BlockEmailsSection from "$app/components/Settings/AdvancedPage/BlockEmailsSection";
@@ -49,13 +48,6 @@ const AdvancedPage = (props: AdvancedPageProps) => {
 
     form.put(Routes.settings_advanced_path(), {
       preserveScroll: true,
-      onSuccess: () => {
-        showAlert("Your account has been updated!", "success");
-      },
-      onError: (errors: Record<string, string>) => {
-        const errorMessage = errors.error_message || Object.values(errors).join(", ");
-        showAlert(errorMessage, "error");
-      },
     });
   };
 
