@@ -45,11 +45,6 @@ const PasswordPage = (props: PasswordPageProps) => {
       onSuccess: (response) => {
         if (response.props.new_password) setRequireOldPassword(true);
         form.reset();
-        showAlert("You have successfully changed your password.", "success");
-      },
-      onError: (errors) => {
-        const errorMessage = errors.error || Object.values(errors).join(", ");
-        showAlert(errorMessage, "error");
       },
     });
   };

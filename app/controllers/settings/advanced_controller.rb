@@ -19,18 +19,17 @@ class Settings::AdvancedController < Settings::BaseController
         message = "The email #{@invalid_blocked_email} cannot be blocked as it is invalid."
         return redirect_to(
           settings_advanced_path,
-          alert: message,
-          status: :see_other
+          status: :see_other,
+          alert: message
         )
       end
     rescue => e
       Bugsnag.notify(e)
       logger.error "Couldn't block customer emails: #{e.message}"
-      message = "Sorry, something went wrong. Please try again."
       return redirect_to(
         settings_advanced_path,
-        alert: message,
-        status: :see_other
+        status: :see_other,
+        alert: "Sorry, something went wrong. Please try again."
       )
     end
 
@@ -38,11 +37,10 @@ class Settings::AdvancedController < Settings::BaseController
       current_seller.with_lock { current_seller.update(advanced_params) }
     rescue => e
       Bugsnag.notify(e)
-      message = "Something broke. We're looking into what happened. Sorry about this!"
       return redirect_to(
         settings_advanced_path,
-        alert: message,
-        status: :see_other
+        status: :see_other,
+        alert: "Something broke. We're looking into what happened. Sorry about this!"
       )
     end
 
@@ -58,8 +56,8 @@ class Settings::AdvancedController < Settings::BaseController
       if error_message
         return redirect_to(
           settings_advanced_path,
-          alert: error_message,
-          status: :see_other
+          status: :see_other,
+          alert: error_message
         )
       end
     elsif params[:domain] == "" && current_seller.custom_domain.present?
@@ -68,10 +66,10 @@ class Settings::AdvancedController < Settings::BaseController
 
     if current_seller.save
       return redirect_to(
-              settings_advanced_path,
-              status: :see_other,
-              notice: "Your account has been updated!"
-            )
+        settings_advanced_path,
+        status: :see_other,
+        notice: "Your account has been updated!"
+      )
     else
       message = current_seller.errors.full_messages.to_sentence
       redirect_to(

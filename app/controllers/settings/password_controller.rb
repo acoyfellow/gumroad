@@ -12,48 +12,46 @@ class Settings::PasswordController < Settings::BaseController
 
   def update
     added_password = false
-    payload = params[:user] || {}
 
     if @user.provider.present?
       unless @user.confirmed?
-        message = "You have to confirm your email address before you can do that."
         return redirect_to(
           settings_password_path,
-          inertia: { errors: { error: message } },
-          alert: message,
-          status: :see_other
+          status: :see_other,
+          alert: "You have to confirm your email address before you can do that."
         )
       end
 
-      @user.password = payload[:new_password]
+      @user.password = params["user"]["new_password"]
       @user.provider = nil
       added_password = true
     else
-      unless payload[:password].present? && @user.valid_password?(payload[:password])
-        message = "Incorrect password."
+      if params["user"].blank? || params["user"]["password"].blank? ||
+         !@user.valid_password?(params["user"]["password"])
         return redirect_to(
           settings_password_path,
-          inertia: { errors: { error: message } },
-          alert: message,
-          status: :see_other
+          status: :see_other,
+          alert: "Incorrect password."
         )
       end
-      @user.password = payload[:new_password]
+
+      @user.password = params["user"]["new_password"]
     end
 
     if @user.save
       invalidate_active_sessions_except_the_current_session!
+
       bypass_sign_in(@user)
-      render inertia: "Settings/Password",
-            props: settings_presenter.password_props.merge(new_password: added_password),
-            status: :ok
-    else
-      message = "New password #{@user.errors[:password].to_sentence}"
       redirect_to(
         settings_password_path,
-        inertia: { errors: { error: message } },
-        alert: message,
-        status: :see_other
+        status: :see_other,
+        notice: "You have successfully changed your password."
+      )
+    else
+      redirect_to(
+        settings_password_path,
+        status: :see_other,
+        alert: "New password #{@user.errors[:password].to_sentence}"
       )
     end
   end
