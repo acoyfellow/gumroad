@@ -1,3 +1,4 @@
+import { router } from "@inertiajs/react";
 import { StripeCardElement } from "@stripe/stripe-js";
 import cx from "classnames";
 import parsePhoneNumberFromString, { CountryCode } from "libphonenumber-js";
@@ -9,7 +10,6 @@ import { SavedCreditCard } from "$app/parsers/card";
 import { SettingPage } from "$app/parsers/settings";
 import { formatPriceCentsWithCurrencySymbol, formatPriceCentsWithoutCurrencySymbol } from "$app/utils/currency";
 import { asyncVoid } from "$app/utils/promise";
-import { request, assertResponseError } from "$app/utils/request";
 
 import { Button } from "$app/components/Button";
 import { ConfirmBalanceForfeitOnPayoutMethodChangeModal } from "$app/components/ConfirmBalanceForfeitOnPayoutMethodChangeModal";
@@ -17,7 +17,6 @@ import { CountrySelectionModal } from "$app/components/CountrySelectionModal";
 import { Icon } from "$app/components/Icons";
 import { StripeConnectEmbeddedNotificationBanner } from "$app/components/PayoutPage/StripeConnectEmbeddedNotificationBanner";
 import { PriceInput } from "$app/components/PriceInput";
-import { showAlert } from "$app/components/server-components/Alert";
 import { CreditCardForm } from "$app/components/Settings/AdvancedPage/CreditCardForm";
 import { Layout } from "$app/components/Settings/Layout";
 import AccountDetailsSection from "$app/components/Settings/PaymentsPage/AccountDetailsSection";
@@ -152,6 +151,8 @@ export type PaymentsPageProps = {
   minimum_payout_threshold_cents: number;
   payout_frequency: PayoutFrequency;
   payout_frequency_daily_supported: boolean;
+  error_message?: string | null;
+  error_code?: string | null;
 };
 
 export type PayoutMethod = "bank" | "card" | "paypal" | "stripe";
@@ -212,7 +213,12 @@ export type ErrorMessageInfo = {
 const PaymentsPage = (props: PaymentsPageProps) => {
   const userAgentInfo = useUserAgentInfo();
   const [isSaving, setIsSaving] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState<ErrorMessageInfo | null>(null);
+  const [errorMessage, setErrorMessage] = React.useState<ErrorMessageInfo | null>(() => {
+    if (props.error_message) {
+      return { message: props.error_message, code: props.error_code ?? null };
+    }
+    return null;
+  });
   const formRef = React.useRef<HTMLDivElement & HTMLFormElement>(null);
   const [errorFieldNames, setErrorFieldNames] = React.useState(() => new Set<FormFieldName>());
   const markFieldInvalid = (fieldName: FormFieldName) => setErrorFieldNames(new Set(errorFieldNames.add(fieldName)));
@@ -277,6 +283,16 @@ const PaymentsPage = (props: PaymentsPageProps) => {
   React.useEffect(() => {
     if (errorMessage) formRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [errorMessage]);
+
+  // Update errorMessage when props change (when page is re-rendered with errors from server)
+  React.useEffect(() => {
+    if (props.error_message) {
+      setErrorMessage({ message: props.error_message, code: props.error_code ?? null });
+    } else if (props.error_message === null) {
+      // Explicitly clear error if prop is null (not just undefined)
+      setErrorMessage(null);
+    }
+  }, [props.error_message, props.error_code]);
 
   const isStreetAddressPOBox = (input: string) => {
     const countryCode: CountryCode = cast(props.user.country_code);
@@ -754,29 +770,15 @@ const PaymentsPage = (props: PaymentsPageProps) => {
       data = { ...data, ...{ payment_address: paypalEmailAddress } };
     }
 
-    try {
-      const response = await request({
-        method: "PUT",
-        url: Routes.settings_payments_path(),
-        accept: "json",
-        data,
-      });
-
-      const parsedResponse = cast<
-        { success: true } | { success: false; error_message: string; error_code?: string | null }
-      >(await response.json());
-      if (parsedResponse.success) {
-        showAlert("Thanks! You're all set.", "success");
-        window.location.reload();
-      } else {
-        setErrorMessage({ message: parsedResponse.error_message, code: parsedResponse.error_code ?? null });
-      }
-    } catch (e) {
-      assertResponseError(e);
-      showAlert("Sorry, something went wrong. Please try again.", "error");
-    }
-
-    setIsSaving(false);
+    router.put(Routes.settings_payments_path(), data, {
+      preserveScroll: true,
+      onSuccess: () => {
+        setErrorMessage(null);
+      },
+      onFinish: () => {
+        setIsSaving(false);
+      },
+    });
   });
 
   const [showUpdateCountryConfirmationModal, setShowUpdateCountryConfirmationModal] = React.useState(false);
