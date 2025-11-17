@@ -213,12 +213,7 @@ export type ErrorMessageInfo = {
 const PaymentsPage = (props: PaymentsPageProps) => {
   const userAgentInfo = useUserAgentInfo();
   const [isSaving, setIsSaving] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState<ErrorMessageInfo | null>(() => {
-    if (props.error_message) {
-      return { message: props.error_message, code: props.error_code ?? null };
-    }
-    return null;
-  });
+  const [errorMessage, setErrorMessage] = React.useState<ErrorMessageInfo | null>(null);
   const formRef = React.useRef<HTMLDivElement & HTMLFormElement>(null);
   const [errorFieldNames, setErrorFieldNames] = React.useState(() => new Set<FormFieldName>());
   const markFieldInvalid = (fieldName: FormFieldName) => setErrorFieldNames(new Set(errorFieldNames.add(fieldName)));

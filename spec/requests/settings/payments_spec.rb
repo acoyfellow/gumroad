@@ -344,7 +344,7 @@ describe("Payments Settings Scenario", type: :system, js: true) do
       select("California", from: "State")
       expect do
         click_on("Update settings")
-        wait_for_ajax
+
         expect(page).to have_alert(text: "Thanks! You're all set.")
       end.to change { @user.alive_user_compliance_info.reload.state }.to("CA")
     end
@@ -388,7 +388,7 @@ describe("Payments Settings Scenario", type: :system, js: true) do
       find_field("State", match: :first).select("California")
       expect do
         click_on("Update settings")
-        wait_for_ajax
+
         expect(page).to have_alert(text: "Thanks! You're all set.")
       end.to change { @user.alive_user_compliance_info.reload.business_state }.to("CA")
     end
@@ -611,7 +611,7 @@ describe("Payments Settings Scenario", type: :system, js: true) do
           expect do
             expect do
               click_on "Update settings"
-              wait_for_ajax
+
               expect(page).to have_alert(text: "Thanks! You're all set.")
             end.to change { user.reload.user_compliance_infos.count }.by(1)
           end.to change { user.alive_user_compliance_info.is_business }.to be(false)
@@ -630,7 +630,7 @@ describe("Payments Settings Scenario", type: :system, js: true) do
         fill_in "Street address", with: "123, Smith street"
         expect do
           click_on "Update settings"
-          wait_for_ajax
+
           expect(page).to have_alert(text: "Thanks! You're all set.")
         end.to change { @user.alive_user_compliance_info.reload.street_address }.to("123, Smith street")
 
@@ -650,7 +650,7 @@ describe("Payments Settings Scenario", type: :system, js: true) do
         find_field("Address", match: :first).set("123 North street")
         expect do
           click_on "Update settings"
-          wait_for_ajax
+
           expect(page).to have_alert(text: "Thanks! You're all set.")
         end.to change { @user.alive_user_compliance_info.reload.business_street_address }.to("123 North street")
         fill_in "Street address", with: "po box 123 smith street"
@@ -935,7 +935,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
           expect(page).to have_button "Confirm"
           click_on "Confirm"
         end
-        wait_for_ajax
         expect(page).to have_alert(text: "Your country has been updated!")
       end
 
@@ -961,7 +960,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
             click_on "Confirm"
           end
 
-          wait_for_ajax
           expect(page).to have_alert(text: "Your country has been updated!")
           expect(balance.reload.unpaid?).to be false
           expect(balance.forfeited?).to be true
@@ -1001,7 +999,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
 
           click_on("Update settings")
 
-          wait_for_ajax
           expect(page).to have_alert(text: "Thanks! You're all set.")
           expect(@user.reload.stripe_account).to be nil
           expect(@user.active_bank_account).to be nil
@@ -1060,7 +1057,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
             click_on "Confirm"
           end
 
-          wait_for_ajax
           expect(page).to have_alert(text: "Thanks! You're all set.")
           expect(@user.reload.stripe_account).to be nil
           expect(@user.active_bank_account).to be nil
@@ -1205,7 +1201,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
         select("1990", from: "Year")
         expect do
           click_on "Update settings"
-          wait_for_ajax
           expect(page).to have_alert(text: "Thanks! You're all set.")
         end.to change { @user.alive_user_compliance_info.reload.street_address }.to("P.O. Box 123, Tokyo central hall")
       end
@@ -5849,7 +5844,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
           check "I have proof of residence within this country"
           check "If I am signing up as a business, it is registered in the country above"
           click_on "Save"
-          wait_for_ajax
         end
         expect(page).to have_selector "h1", text: "Settings"
         expect(page).to_not have_content "We need this information so we can start paying you."
@@ -6057,7 +6051,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
           check "Pause payouts", unchecked: true
         end
         click_on "Update settings"
-        wait_for_ajax
 
         expect(page).to have_alert(text: "Thanks! You're all set.")
         expect(user.reload.payouts_paused_by_user?).to be true
@@ -6068,7 +6061,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
           uncheck "Pause payouts", checked: true
         end
         click_on "Update settings"
-        wait_for_ajax
 
         expect(page).to have_alert(text: "Thanks! You're all set.")
         expect(user.reload.payouts_paused_by_user?).to be false
@@ -6141,7 +6133,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
         expect(page).to_not have_text("Your payout threshold must be at least $10.")
 
         click_on "Update settings"
-        wait_for_ajax
 
         expect(page).to have_alert(text: "Thanks! You're all set.")
         expect(user.reload.minimum_payout_amount_cents).to eq(1500)
@@ -6170,8 +6161,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
           expect(page).to_not have_text("Your payout threshold must be at least $34.74.")
 
           click_on "Update settings"
-          wait_for_ajax
-
           expect(page).to have_alert(text: "Thanks! You're all set.")
           expect(user.reload.minimum_payout_amount_cents).to eq(4000)
         end
@@ -6186,8 +6175,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
         select "Monthly", from: "Schedule"
 
         click_on "Update settings"
-        wait_for_ajax
-
         expect(page).to have_alert(text: "Thanks! You're all set.")
         expect(user.reload.payout_frequency).to eq(User::PayoutSchedule::MONTHLY)
 
@@ -6197,7 +6184,6 @@ describe("Payments Settings Scenario", type: :system, js: true) do
         select "Quarterly", from: "Schedule"
 
         click_on "Update settings"
-        wait_for_ajax
 
         expect(page).to have_alert(text: "Thanks! You're all set.")
         expect(user.reload.payout_frequency).to eq(User::PayoutSchedule::QUARTERLY)

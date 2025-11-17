@@ -16,8 +16,7 @@ class Settings::AdvancedController < Settings::BaseController
       end
 
       if @invalid_blocked_email.present?
-        message = "The email #{@invalid_blocked_email} cannot be blocked as it is invalid."
-        return redirect_to settings_advanced_path, status: :see_other, alert: message
+        return redirect_to settings_advanced_path, status: :see_other, alert: "The email #{@invalid_blocked_email} cannot be blocked as it is invalid."
       end
     rescue => e
       Bugsnag.notify(e)
