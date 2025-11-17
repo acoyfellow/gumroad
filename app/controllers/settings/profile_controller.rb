@@ -13,10 +13,27 @@ class Settings::ProfileController < Settings::BaseController
   end
 
   def update
-    return render json: { success: false, error_message: "You have to confirm your email address before you can do that." } unless current_seller.confirmed?
+    unless current_seller.confirmed?
+      message = "You have to confirm your email address before you can do that."
+      return redirect_to(
+        settings_profile_path,
+        inertia: { errors: { error_message: message } },
+        alert: message,
+        status: :see_other
+      )
+    end
 
     if permitted_params[:profile_picture_blob_id].present?
-      return render json: { success: false, error_message: "The logo is already removed. Please refresh the page and try again." } if ActiveStorage::Blob.find_signed(permitted_params[:profile_picture_blob_id]).nil?
+      blob = ActiveStorage::Blob.find_signed(permitted_params[:profile_picture_blob_id])
+      if blob.nil?
+        message = "The logo is already removed. Please refresh the page and try again."
+        return redirect_to(
+          settings_profile_path,
+          inertia: { errors: { error_message: message } },
+          alert: message,
+          status: :see_other
+        )
+      end
       current_seller.avatar.attach permitted_params[:profile_picture_blob_id]
     elsif permitted_params.has_key?(:profile_picture_blob_id) && current_seller.avatar.attached?
       current_seller.avatar.purge
@@ -39,11 +56,21 @@ class Settings::ProfileController < Settings::BaseController
         current_seller.update!(permitted_params[:user]) if permitted_params[:user]
 
         current_seller.clear_products_cache if permitted_params[:profile_picture_blob_id].present?
-        render json: { success: true }
       end
     rescue ActiveRecord::RecordInvalid => e
-      render json: { success: false, error_message: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
+      message = e.record.errors.full_messages.to_sentence
+      return redirect_to(
+        settings_profile_path,
+        inertia: { errors: { error_message: message } },
+        alert: message,
+        status: :see_other
+      )
     end
+
+    profile_presenter = ProfilePresenter.new(pundit_user:, seller: current_seller)
+    render inertia: "Settings/Profile", props: settings_presenter.profile_props.merge(
+      profile_presenter.profile_settings_props(request:)
+    ), status: :ok
   end
 
   private

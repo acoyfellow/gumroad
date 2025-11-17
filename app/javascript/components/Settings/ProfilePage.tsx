@@ -49,9 +49,17 @@ const SettingsPage = ({ creator_profile, profile_settings, settings_pages, ...pr
 
   const uid = React.useId();
 
-  const canUpdate = (loggedInUser?.policies.settings_profile.update || false) && !form.processing;
+  const canUpdate = Boolean(loggedInUser?.policies.settings_profile.update) && !form.processing;
 
   const handleSave = () => {
+    form.transform((data) => {
+      const { background_color, highlight_color, font, profile_picture_blob_id, ...user } = data;
+      return {
+        profile_picture_blob_id,
+        user,
+        seller_profile: { background_color, highlight_color, font },
+      };
+    });
     form.put(Routes.settings_profile_path(), {
       preserveScroll: true,
       onSuccess: () => {
