@@ -62,13 +62,6 @@ const SettingsPage = ({ creator_profile, profile_settings, settings_pages, ...pr
     });
     form.put(Routes.settings_profile_path(), {
       preserveScroll: true,
-      onSuccess: () => {
-        showAlert("Changes saved!", "success");
-      },
-      onError: (errors) => {
-        const errorMessage = Object.values(errors).join(", ");
-        showAlert(errorMessage, "error");
-      },
     });
   };
 

@@ -17,21 +17,17 @@ class Settings::ProfileController < Settings::BaseController
       message = "You have to confirm your email address before you can do that."
       return redirect_to(
         settings_profile_path,
-        inertia: { errors: { error_message: message } },
-        alert: message,
-        status: :see_other
+        status: :see_other,
+        alert: "You have to confirm your email address before you can do that."
       )
     end
 
     if permitted_params[:profile_picture_blob_id].present?
-      blob = ActiveStorage::Blob.find_signed(permitted_params[:profile_picture_blob_id])
-      if blob.nil?
-        message = "The logo is already removed. Please refresh the page and try again."
+      if ActiveStorage::Blob.find_signed(permitted_params[:profile_picture_blob_id]).nil?
         return redirect_to(
           settings_profile_path,
-          inertia: { errors: { error_message: message } },
-          alert: message,
-          status: :see_other
+          status: :see_other,
+          alert: "The logo is already removed. Please refresh the page and try again."
         )
       end
       current_seller.avatar.attach permitted_params[:profile_picture_blob_id]
@@ -58,19 +54,18 @@ class Settings::ProfileController < Settings::BaseController
         current_seller.clear_products_cache if permitted_params[:profile_picture_blob_id].present?
       end
     rescue ActiveRecord::RecordInvalid => e
-      message = e.record.errors.full_messages.to_sentence
       return redirect_to(
         settings_profile_path,
-        inertia: { errors: { error_message: message } },
-        alert: message,
-        status: :see_other
+        status: :see_other,
+        alert: e.record.errors.full_messages.to_sentence
       )
     end
 
-    profile_presenter = ProfilePresenter.new(pundit_user:, seller: current_seller)
-    render inertia: "Settings/Profile", props: settings_presenter.profile_props.merge(
-      profile_presenter.profile_settings_props(request:)
-    ), status: :ok
+    redirect_to(
+      settings_profile_path,
+      status: :see_other,
+      notice: "Changes saved!"
+    )
   end
 
   private
