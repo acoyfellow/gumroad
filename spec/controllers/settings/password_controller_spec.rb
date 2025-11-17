@@ -1,118 +1,85 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "inertia_rails/rspec"
+require "shared_examples/sellers_base_controller_concern"
+require "shared_examples/authorize_called"
 
-describe Settings::PasswordController, type: :controller, inertia: true do
-  render_views
+describe Settings::PasswordController, :vcr do
+  it_behaves_like "inherits from Sellers::BaseController"
 
-  let(:user) { create(:user, password: "oldpassword123") }
+  let (:user) { create(:user) }
 
   before do
     sign_in user
   end
 
+  it_behaves_like "authorize called for controller", Settings::Password::UserPolicy do
+    let(:record) { user }
+  end
+
   describe "GET show" do
-    before do
+    it "returns http success and assigns correct instance variables" do
       get :show
-    end
 
-    it "returns successful response with Inertia page data" do
       expect(response).to be_successful
-      expect(inertia.component).to eq("Settings/Password")
-    end
-
-    it "includes settings pages" do
-      expect(inertia.props[:settings_pages]).to be_an(Array)
-      expect(inertia.props[:settings_pages]).not_to be_empty
-    end
-
-    it "includes password requirement flag" do
-      expect(inertia.props[:require_old_password]).to be_in([true, false])
-    end
-
-    context "when user signed up with password" do
-      it "requires old password" do
-        get :show
-        expect(inertia.props[:require_old_password]).to be(true)
-      end
-    end
-
-    context "when user signed up with OAuth" do
-      let(:user) { create(:user, provider: "google") }
-
-      it "does not require old password" do
-        get :show
-        expect(inertia.props[:require_old_password]).to be(false)
-      end
+      expect(assigns(:react_component_props)).to eq(
+        require_old_password: true, settings_pages: %w(main profile team payments password third_party_analytics advanced)
+      )
     end
   end
 
   describe "PUT update" do
-    let(:params) do
-      {
-        user: {
-          password: "oldpassword123",
-          new_password: "newpassword456"
-        }
-      }
-    end
-
-    it "returns successful JSON response" do
-      put :update, params:, format: :json
-
-      expect(response).to be_successful
-      expect(response.parsed_body["success"]).to be(true)
-    end
-
-    it "updates password successfully" do
-      put :update, params:, format: :json
-
-      user.reload
-      expect(user.valid_password?("newpassword456")).to be(true)
-    end
-
-    context "with incorrect old password" do
-      let(:params) do
-        {
-          user: {
-            password: "wrongpassword",
-            new_password: "newpassword456"
-          }
-        }
-      end
-
-      it "returns error response" do
-        put :update, params:, format: :json
-
+    context "when request payload is missing" do
+      it "returns failure response" do
+        with_real_pwned_password_check do
+          put :update, xhr: true
+        end
         expect(response.parsed_body["success"]).to be(false)
-        expect(response.parsed_body["error"]).to include("Incorrect password")
-      end
-
-      it "does not change password" do
-        put :update, params:, format: :json
-
-        user.reload
-        expect(user.valid_password?("oldpassword123")).to be(true)
       end
     end
 
-    context "when user signed up with OAuth" do
-      let(:user) { create(:user, provider: "google") }
-      let(:params) do
-        {
-          user: {
-            new_password: "newpassword456"
-          }
-        }
-      end
-
-      it "allows setting password without old password" do
-        put :update, params:, format: :json
-
-        expect(response).to be_successful
+    context "when the specified new password is not compromised" do
+      it "returns success response" do
+        with_real_pwned_password_check do
+          put :update, xhr: true, params: { user: { password: user.password, new_password: "#{user.password}-new" } }
+        end
         expect(response.parsed_body["success"]).to be(true)
       end
+    end
+
+    context "when the specified new password is compromised" do
+      it "returns failure response" do
+        with_real_pwned_password_check do
+          put :update, xhr: true, params: { user: { password: user.password, new_password: "password" } }
+        end
+        expect(response.parsed_body["success"]).to be(false)
+      end
+    end
+
+    it "invalidates the user's active sessions and keeps the current session active" do
+      travel_to(DateTime.current) do
+        expect do
+          put :update, xhr: true, params: { user: { password: user.password, new_password: "#{user.password}-new" } }
+        end.to change { user.reload.last_active_sessions_invalidated_at }.from(nil).to(DateTime.current)
+
+        expect(response.parsed_body["success"]).to be(true)
+        expect(request.env["warden"].session["last_sign_in_at"]).to eq(DateTime.current.to_i)
+      end
+    end
+  end
+
+  describe "PUT update with social-provided account" do
+    let (:user) { create(:user, provider: :facebook) }
+
+    before do
+      sign_in user
+    end
+
+    it "returns http success without checking for old password" do
+      with_real_pwned_password_check do
+        put :update, xhr: true, params: { user: { password: "", new_password: "#{user}-new" } }
+      end
+      expect(response.parsed_body["success"]).to be(true)
     end
   end
 end

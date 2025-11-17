@@ -1,96 +1,90 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "inertia_rails/rspec"
+require "shared_examples/sellers_base_controller_concern"
+require "shared_examples/authorize_called"
 
-describe Settings::ThirdPartyAnalyticsController, type: :controller, inertia: true do
-  render_views
+describe Settings::ThirdPartyAnalyticsController do
+  let(:seller) { create(:named_seller) }
 
-  let(:user) { create(:user) }
+  include_context "with user signed in as admin for seller"
 
-  before do
-    sign_in user
+  it_behaves_like "authorize called for controller", Settings::ThirdPartyAnalytics::UserPolicy do
+    let(:record) { seller }
   end
 
   describe "GET show" do
-    before do
+    it "returns http success and assigns correct instance variables" do
       get :show
-    end
-
-    it "returns successful response with Inertia page data" do
       expect(response).to be_successful
-      expect(inertia.component).to eq("Settings/ThirdPartyAnalytics")
-    end
+      expect(assigns[:title]).to eq("Settings")
 
-    it "includes settings pages" do
-      expect(inertia.props[:settings_pages]).to be_an(Array)
-      expect(inertia.props[:settings_pages]).not_to be_empty
-    end
-
-    it "includes third party analytics configuration" do
-      expect(inertia.props).to include(
-        third_party_analytics: be_a(Hash),
-        products: be_an(Array)
-      )
-    end
-
-    it "includes analytics settings" do
-      expect(inertia.props[:third_party_analytics]).to include(
-        disable_third_party_analytics: be_in([true, false]),
-        google_analytics_id: be_a(String),
-        facebook_pixel_id: be_a(String),
-        snippets: be_an(Array)
-      )
-    end
-
-    context "when user has products" do
-      let!(:product) { create(:product, user:) }
-
-      it "includes products for analytics configuration" do
-        get :show
-        expect(inertia.props[:products]).not_to be_empty
-      end
+      settings_presenter = assigns[:settings_presenter]
+      expect(settings_presenter.pundit_user).to eq(controller.pundit_user)
     end
   end
 
   describe "PUT update" do
-    let(:params) do
-      {
-        user: {
-          disable_third_party_analytics: false,
-          snippets: []
-        }
-      }
-    end
+    google_analytics_id = "G-1234567"
+    facebook_pixel_id = "123456789"
+    facebook_meta_tag = '<meta name="facebook-domain-verification" content="dkd8382hfdjs" />'
 
-    it "returns successful JSON response" do
-      put :update, params:, format: :json
-
-      expect(response).to be_successful
-      expect(response.parsed_body).to have_key("success")
-    end
-
-    it "updates analytics settings" do
-      put :update, params: { user: { disable_third_party_analytics: true } }, format: :json
-
-      user.reload
-      expect(user.disable_third_party_analytics).to be(true)
-    end
-
-    context "with Google Analytics ID" do
-      let(:params) do
-        {
+    context "when all of the fields are valid" do
+      it "returns a successful response" do
+        put :update, as: :json, params: {
           user: {
-            google_analytics_id: "G-12345678"
+            disable_third_party_analytics: false,
+            google_analytics_id:,
+            facebook_pixel_id:,
+            skip_free_sale_analytics: true,
+            enable_verify_domain_third_party_services: true,
+            facebook_meta_tag:,
           }
         }
+        expect(response.parsed_body["success"]).to eq(true)
+        seller.reload
+        expect(seller.disable_third_party_analytics).to eq(false)
+        expect(seller.google_analytics_id).to eq(google_analytics_id)
+        expect(seller.facebook_pixel_id).to eq(facebook_pixel_id)
+        expect(seller.skip_free_sale_analytics).to eq(true)
+        expect(seller.enable_verify_domain_third_party_services).to eq(true)
+        expect(seller.facebook_meta_tag).to eq(facebook_meta_tag)
       end
+    end
 
-      it "updates Google Analytics ID" do
-        put :update, params:, format: :json
+    context "when a field is invalid" do
+      it "returns an error response and doesn't persist changes" do
+        put :update, as: :json, params: {
+          user: {
+            disable_third_party_analytics: false,
+            google_analytics_id: "bad",
+            facebook_pixel_id:,
+            skip_free_sale_analytics: true,
+            enable_verify_domain_third_party_services: true,
+            facebook_meta_tag:,
+          }
+        }
 
-        user.reload
-        expect(user.google_analytics_id).to eq("G-12345678")
+        expect(response.parsed_body["success"]).to eq(false)
+        expect(response.parsed_body["error_message"]).to eq("Please enter a valid Google Analytics ID")
+
+        seller.reload
+        expect(seller.disable_third_party_analytics).to eq(false)
+        expect(seller.google_analytics_id).to be_nil
+        expect(seller.facebook_pixel_id).to be_nil
+        expect(seller.skip_free_sale_analytics).to eq(false)
+        expect(seller.enable_verify_domain_third_party_services).to eq(false)
+        expect(seller.facebook_meta_tag).to be_nil
+      end
+    end
+
+    context "when updating throws an error" do
+      it "returns an error response" do
+        allow_any_instance_of(User).to receive(:update).and_raise(StandardError)
+        put :update, as: :json, params: {}
+
+        expect(response.parsed_body["success"]).to eq(false)
+        expect(response.parsed_body["error_message"]).to eq("Something broke. We're looking into what happened. Sorry about this!")
       end
     end
   end

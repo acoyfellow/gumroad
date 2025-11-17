@@ -1,49 +1,49 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "inertia_rails/rspec"
+require "shared_examples/sellers_base_controller_concern"
+require "shared_examples/authorize_called"
 
-describe Settings::TeamController, type: :controller, inertia: true do
-  render_views
+describe Settings::TeamController do
+  it_behaves_like "inherits from Sellers::BaseController"
 
-  let(:user) { create(:user) }
+  let(:seller) { create(:named_seller) }
 
-  before do
-    sign_in user
+  include_context "with user signed in as admin for seller"
+
+  it_behaves_like "authorize called for controller", Settings::Team::UserPolicy do
+    let(:record) { seller }
   end
 
   describe "GET show" do
-    before do
+    it "returns http success and assigns correct instance variables" do
       get :show
-    end
 
-    it "returns successful response with Inertia page data" do
       expect(response).to be_successful
-      expect(inertia.component).to eq("Settings/Team")
+      settings_presenter = assigns[:settings_presenter]
+      expect(settings_presenter.pundit_user).to eq(controller.pundit_user)
+      team_presenter = assigns[:team_presenter]
+      expect(team_presenter.pundit_user).to eq(controller.pundit_user)
+      react_component_props = assigns[:react_component_props]
+      expect(react_component_props[:member_infos].map(&:to_hash)).to eq(team_presenter.member_infos.map(&:to_hash))
+      expect(react_component_props[:settings_pages]).to eq(settings_presenter.pages)
     end
 
-    it "includes settings pages" do
-      expect(inertia.props[:settings_pages]).to be_an(Array)
-      expect(inertia.props[:settings_pages]).not_to be_empty
-    end
+    context "when user does not have an email" do
+      before do
+        seller.update!(
+          provider: :twitter,
+          twitter_user_id: "123",
+          email: nil
+        )
+      end
 
-    it "includes team member information" do
-      expect(inertia.props).to include(
-        member_infos: be_an(Array),
-        can_invite_member: be_in([true, false])
-      )
-    end
-
-    context "when user has team members" do
-      let!(:team_membership) { create(:team_membership, seller: user, user: create(:user)) }
-
-      it "includes the team members in the response" do
+      it "redirects" do
         get :show
-        member_infos = inertia.props[:member_infos].map { |info| info.respond_to?(:to_hash) ? info.to_hash : info }
-        member_types = member_infos.map { |info| info[:type] }
-        expect(member_types).to include("membership")
+
+        expect(response).to redirect_to(settings_main_url)
+        expect(flash[:alert]).to eq("Your Gumroad account doesn't have an email associated. Please assign and verify your email, and try again.")
       end
     end
   end
-
 end
