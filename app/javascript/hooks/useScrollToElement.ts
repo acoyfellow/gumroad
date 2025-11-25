@@ -75,4 +75,3 @@ export function useScrollToElement<T extends HTMLElement = HTMLElement>(
 
   return elementRef;
 }
-

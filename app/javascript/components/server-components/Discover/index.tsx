@@ -135,9 +135,7 @@ const addInitialOffset = (params: SearchRequest) =>
 
 const Discover = (props: Props) => {
   const location = useOriginalLocation();
-  const resultsRef = useScrollToElement<HTMLElement>(
-    props.is_black_friday_page && props.show_black_friday_hero,
-  );
+  const resultsRef = useScrollToElement(props.is_black_friday_page && props.show_black_friday_hero);
 
   const defaultSortOrder = props.curated_product_ids.length > 0 ? "curated" : undefined;
   const parseUrlParams = (href: string) => {
