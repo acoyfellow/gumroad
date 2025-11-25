@@ -281,16 +281,16 @@ const Discover = (props: Props) => {
               <div className="mt-8 text-base" dangerouslySetInnerHTML={{ __html: props.black_friday_button_html }} />
             )}
           </div>
-        <div className="h-14 w-full overflow-hidden border-b border-black bg-yellow-400">
-          <div className="flex h-14 min-w-fit items-center gap-x-4 whitespace-nowrap hover:[animation-play-state:paused] motion-safe:animate-[marquee-scroll_42s_linear_infinite] motion-reduce:animate-none">
-            {props.black_friday_stats && (
-              <>
-                <BlackFridayBanner stats={props.black_friday_stats} currencyCode={props.currency_code} />
-                <BlackFridayBanner stats={props.black_friday_stats} currencyCode={props.currency_code} />
-              </>
-            )}
+          <div className="h-14 w-full overflow-hidden border-b border-black bg-yellow-400">
+            <div className="flex h-14 min-w-fit items-center gap-x-4 whitespace-nowrap hover:[animation-play-state:paused] motion-safe:animate-[marquee-scroll_42s_linear_infinite] motion-reduce:animate-none">
+              {props.black_friday_stats ? (
+                <>
+                  <BlackFridayBanner stats={props.black_friday_stats} currencyCode={props.currency_code} />
+                  <BlackFridayBanner stats={props.black_friday_stats} currencyCode={props.currency_code} />
+                </>
+              ) : null}
+            </div>
           </div>
-        </div>
         </header>
       ) : null}
       <div className="grid gap-16! px-4 py-16 lg:ps-16 lg:pe-16">
