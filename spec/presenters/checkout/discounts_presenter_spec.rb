@@ -128,6 +128,7 @@ describe Checkout::DiscountsPresenter do
                      is_tiered_membership: false,
                    },
                  ],
+                 show_black_friday_banner: false,
                })
     end
   end

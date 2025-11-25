@@ -132,9 +132,16 @@ export type DiscountsPageProps = {
   pages: Page[];
   products: Product[];
   pagination: PaginationProps;
+  show_black_friday_banner: boolean;
 };
 
-const DiscountsPage = ({ offer_codes, pages, products, pagination: initialPagination }: DiscountsPageProps) => {
+const DiscountsPage = ({
+  offer_codes,
+  pages,
+  products,
+  pagination: initialPagination,
+  show_black_friday_banner,
+}: DiscountsPageProps) => {
   const loggedInUser = useLoggedInUser();
   const [{ offerCodes, pagination }, setState] = React.useState<{
     offerCodes: OfferCode[];
@@ -327,9 +334,8 @@ const DiscountsPage = ({ offer_codes, pages, products, pagination: initialPagina
         </>
       }
     >
-      { /* TODO: Black Friday mode, we need a different feature flag in order to remove this when Black Friday is over, but we do want it to be visible before Blackfriday so sellers have time to prepare */ }
       <section className="p-4 md:p-8">
-        {!offerCodes.some((offerCode) => offerCode.code === BLACK_FRIDAY_CODE) ? (
+        {show_black_friday_banner && !offerCodes.some((offerCode) => offerCode.code === BLACK_FRIDAY_CODE) ? (
           <div role="status" className="mb-8 border !border-pink bg-pink/20 px-4 py-3 md:px-8">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
               <div className="flex flex-1 flex-row items-center gap-2 md:gap-4">

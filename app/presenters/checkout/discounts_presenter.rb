@@ -26,6 +26,7 @@ class Checkout::DiscountsPresenter
           is_tiered_membership: product.is_tiered_membership?,
         }
       end,
+      show_black_friday_banner: Feature.active?(:black_friday_seller_banner),
     }
   end
 
