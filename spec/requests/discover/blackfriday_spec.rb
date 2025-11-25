@@ -14,14 +14,18 @@ describe("Black Friday 2025", js: true, type: :system) do
   describe "Black Friday hero section" do
     before do
       Feature.activate(:offer_codes_search)
+
+      product = create(:product, :recommendable, user: @creator, price_cents: 1000)
+      offer_code = create(:offer_code, user: @creator, code: "BLACKFRIDAY2025", amount_percentage: 25, products: [product])
+      create_list(:purchase, 5, link: product, offer_code:, price_cents: 750)
     end
 
     after do
       Feature.deactivate(:offer_codes_search)
+      Rails.cache.delete("black_friday_stats")
     end
 
     it "shows hero on discover page with CTA when feature is enabled", :sidekiq_inline do
-      product = create(:product, :recommendable, user: @creator)
       index_model_records(Link)
 
       visit discover_url(host: discover_host)
@@ -31,10 +35,15 @@ describe("Black Friday 2025", js: true, type: :system) do
       expect(page).to have_text("Snag creator-made deals")
       expect(page).to have_link("Get Black Friday deals", href: /\/blackfriday/)
       expect(page).to have_text("BLACK FRIDAY IS LIVE")
+      expect(page).to have_text("1")
+      expect(page).to have_text("ACTIVE DEALS")
+      expect(page).to have_text("$37.50")
+      expect(page).to have_text("IN SALES SO FAR")
+      expect(page).to have_text("25%")
+      expect(page).to have_text("AVERAGE DISCOUNT")
     end
 
     it "shows hero on blackfriday page without CTA when feature is enabled", :sidekiq_inline do
-      product = create(:product, :recommendable, user: @creator)
       index_model_records(Link)
 
       visit blackfriday_url(host: discover_host)
@@ -44,11 +53,13 @@ describe("Black Friday 2025", js: true, type: :system) do
       expect(page).to have_text("Snag creator-made deals")
       expect(page).not_to have_link("Get Black Friday deals")
       expect(page).to have_text("BLACK FRIDAY IS LIVE")
+      expect(page).to have_text("1")
+      expect(page).to have_text("ACTIVE DEALS")
     end
 
     it "hides hero when feature is disabled", :sidekiq_inline do
       Feature.deactivate(:offer_codes_search)
-      product = create(:product, :recommendable, user: @creator)
+      create(:product, :recommendable, user: @creator)
       index_model_records(Link)
 
       visit discover_url(host: discover_host)

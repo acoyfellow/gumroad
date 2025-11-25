@@ -6,7 +6,7 @@ import { getRecommendedProducts } from "$app/data/discover";
 import { SearchResults, SearchRequest } from "$app/data/search";
 import { CardProduct } from "$app/parsers/product";
 import { last } from "$app/utils/array";
-import { CurrencyCode } from "$app/utils/currency";
+import { CurrencyCode, formatPriceCentsWithCurrencySymbol } from "$app/utils/currency";
 import { discoverTitleGenerator, Taxonomy } from "$app/utils/discover";
 import { asyncVoid } from "$app/utils/promise";
 import { assertResponseError } from "$app/utils/request";
@@ -32,6 +32,11 @@ type Props = {
   show_black_friday_hero: boolean;
   is_black_friday_page: boolean;
   black_friday_button_html: string;
+  black_friday_stats: {
+    active_deals_count: number;
+    revenue_cents: number;
+    average_discount_percentage: number;
+  } | null;
 };
 
 const sortTitles = {
@@ -87,29 +92,34 @@ const ProductsCarousel = ({ products, title }: { products: CardProduct[]; title:
   );
 };
 
-// TODO: replace the hardcoded values with the actual data from the backend
-// And cache them with a 10.minutes expiration period
-// check how long it takes in production to fetch the data in order to determine
-// the most suitable caching policy
-const BlackFridayBanner = () => (
+const BlackFridayBanner = ({
+  stats,
+  currencyCode,
+}: {
+  stats: { active_deals_count: number; revenue_cents: number; average_discount_percentage: number };
+  currencyCode: CurrencyCode;
+}) => (
   <div className="flex h-full shrink-0 items-center gap-x-4 [&>*]:flex-shrink-0">
     <span className="mx-2 inline-block text-lg">✦</span>
     <span className="flex items-center text-xl font-medium text-black">BLACK FRIDAY IS LIVE</span>
     <span className="mx-2 inline-block text-lg">✦</span>
     <span className="flex items-center text-xl font-medium text-black">
-      <span className="mr-1.5 font-bold">1,844</span>ACTIVE DEALS
+      <span className="mr-1.5 font-bold">{stats.active_deals_count.toLocaleString()}</span>ACTIVE DEALS
     </span>
     <span className="mx-2 inline-block text-lg">✦</span>
     <span className="flex items-center text-xl font-medium text-black">CREATOR-MADE PRODUCTS</span>
     <span className="mx-2 inline-block text-lg">✦</span>
     <span className="flex items-center text-xl font-medium text-black">
-      <span className="mr-1.5 font-bold">$1,590,877</span>IN SALES SO FAR
+      <span className="mr-1.5 font-bold">
+        {formatPriceCentsWithCurrencySymbol(currencyCode, stats.revenue_cents, { symbolFormat: "short" })}
+      </span>
+      IN SALES SO FAR
     </span>
     <span className="mx-2 inline-block text-lg">✦</span>
     <span className="flex items-center text-xl font-medium text-black">BIG SAVINGS</span>
     <span className="mx-2 inline-block text-lg">✦</span>
     <span className="flex items-center text-xl font-medium text-black">
-      <span className="mr-1.5 font-bold">35%</span>AVERAGE DISCOUNT
+      <span className="mr-1.5 font-bold">{stats.average_discount_percentage}%</span>AVERAGE DISCOUNT
     </span>
   </div>
 );
@@ -271,12 +281,16 @@ const Discover = (props: Props) => {
               <div className="mt-8 text-base" dangerouslySetInnerHTML={{ __html: props.black_friday_button_html }} />
             )}
           </div>
-          <div className="h-14 w-full overflow-hidden border-b border-black bg-yellow-400">
-            <div className="flex h-14 min-w-fit items-center gap-x-4 whitespace-nowrap hover:[animation-play-state:paused] motion-safe:animate-[marquee-scroll_42s_linear_infinite] motion-reduce:animate-none">
-              <BlackFridayBanner />
-              <BlackFridayBanner />
-            </div>
+        <div className="h-14 w-full overflow-hidden border-b border-black bg-yellow-400">
+          <div className="flex h-14 min-w-fit items-center gap-x-4 whitespace-nowrap hover:[animation-play-state:paused] motion-safe:animate-[marquee-scroll_42s_linear_infinite] motion-reduce:animate-none">
+            {props.black_friday_stats && (
+              <>
+                <BlackFridayBanner stats={props.black_friday_stats} currencyCode={props.currency_code} />
+                <BlackFridayBanner stats={props.black_friday_stats} currencyCode={props.currency_code} />
+              </>
+            )}
           </div>
+        </div>
         </header>
       ) : null}
       <div className="grid gap-16! px-4 py-16 lg:ps-16 lg:pe-16">
