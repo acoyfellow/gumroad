@@ -38,6 +38,6 @@ module SearchProducts
     def offer_codes_search_feature_active?(params)
       return false if ALLOWED_OFFER_CODES.exclude?(params[:offer_code])
 
-      Feature.black_friday_feature_active?(:offer_codes_search, actor: current_user, feature_key: params[:feature_key])
+      Feature.active?(:offer_codes_search, current_user) || (params[:feature_key].present? && ActiveSupport::SecurityUtils.secure_compare(params[:feature_key], ENV["SECRET_FEATURE_KEY"].to_s))
     end
 end

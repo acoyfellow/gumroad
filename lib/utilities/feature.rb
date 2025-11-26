@@ -34,8 +34,4 @@ module Feature
   def inactive?(feature_name, actor = nil)
     !Flipper.enabled?(feature_name, actor)
   end
-
-  def black_friday_feature_active?(feature_name, actor: nil, feature_key: nil)
-    active?(feature_name, actor) || (feature_key.present? && ActiveSupport::SecurityUtils.secure_compare(feature_key, ENV["SECRET_FEATURE_KEY"].to_s))
-  end
 end

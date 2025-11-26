@@ -140,6 +140,6 @@ class DiscoverController < ApplicationController
     end
 
     def black_friday_feature_active?
-      Feature.black_friday_feature_active?(:offer_codes_search, actor: current_user, feature_key: params[:feature_key])
+      Feature.active?(:offer_codes_search, current_user) || (params[:feature_key].present? && ActiveSupport::SecurityUtils.secure_compare(params[:feature_key], ENV["SECRET_FEATURE_KEY"].to_s))
     end
 end
