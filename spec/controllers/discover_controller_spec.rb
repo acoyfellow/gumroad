@@ -120,6 +120,114 @@ describe DiscoverController do
     end
   end
 
+  describe "offer codes search feature" do
+    let!(:black_friday_product) { create(:product, :recommendable, name: "Black Friday Product") }
+
+    before do
+      Link.import(refresh: true, force: true)
+    end
+
+    context "when feature is enabled for the user" do
+      before do
+        Feature.activate_user(:offer_codes_search, @buyer)
+      end
+
+      after do
+        Feature.deactivate_user(:offer_codes_search, @buyer)
+      end
+
+      it "allows searching with BLACK_FRIDAY_CODE offer code" do
+        get :index, params: { offer_code: SearchProducts::BLACK_FRIDAY_CODE }
+
+        expect(response).to be_successful
+        expect(assigns(:react_discover_props)[:is_black_friday_page]).to be true
+        expect(assigns(:react_discover_props)[:show_black_friday_hero]).to be true
+      end
+
+      it "includes black friday stats when feature is active" do
+        get :index, params: { offer_code: SearchProducts::BLACK_FRIDAY_CODE }
+
+        expect(response).to be_successful
+        expect(assigns(:react_discover_props)[:black_friday_stats]).not_to be_nil
+      end
+    end
+
+    context "when feature is disabled for the user" do
+      before do
+        Feature.deactivate(:offer_codes_search)
+      end
+
+      it "ignores the offer code and uses __no_match__ instead" do
+        get :index, params: { offer_code: SearchProducts::BLACK_FRIDAY_CODE }
+
+        expect(response).to be_successful
+        expect(assigns(:react_discover_props)[:is_black_friday_page]).to be false
+        expect(assigns(:react_discover_props)[:show_black_friday_hero]).to be false
+      end
+
+      it "does not include black friday stats" do
+        get :index, params: { offer_code: SearchProducts::BLACK_FRIDAY_CODE }
+
+        expect(response).to be_successful
+        expect(assigns(:react_discover_props)[:black_friday_stats]).to be_nil
+      end
+    end
+
+    context "when feature is enabled via feature_key" do
+      it "allows searching with valid feature_key" do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("SECRET_FEATURE_KEY").and_return("secret123")
+
+        get :index, params: { offer_code: SearchProducts::BLACK_FRIDAY_CODE, feature_key: "secret123" }
+
+        expect(response).to be_successful
+        expect(assigns(:react_discover_props)[:is_black_friday_page]).to be true
+        expect(assigns(:react_discover_props)[:show_black_friday_hero]).to be true
+      end
+
+      it "rejects invalid feature_key" do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("SECRET_FEATURE_KEY").and_return("secret123")
+
+        get :index, params: { offer_code: SearchProducts::BLACK_FRIDAY_CODE, feature_key: "wrong_key" }
+
+        expect(response).to be_successful
+        expect(assigns(:react_discover_props)[:is_black_friday_page]).to be false
+        expect(assigns(:react_discover_props)[:show_black_friday_hero]).to be false
+      end
+    end
+
+    context "with non-allowed offer codes" do
+      it "ignores offer codes not in ALLOWED_OFFER_CODES" do
+        Feature.activate_user(:offer_codes_search, @buyer)
+
+        get :index, params: { offer_code: "INVALID_CODE" }
+
+        expect(response).to be_successful
+        expect(assigns(:react_discover_props)[:is_black_friday_page]).to be false
+
+        Feature.deactivate_user(:offer_codes_search, @buyer)
+      end
+    end
+
+    context "when logged out" do
+      before do
+        sign_out @buyer
+      end
+
+      it "still checks feature for anonymous actor" do
+        Feature.activate(:offer_codes_search)
+
+        get :index, params: { offer_code: SearchProducts::BLACK_FRIDAY_CODE }
+
+        expect(response).to be_successful
+        expect(assigns(:react_discover_props)[:show_black_friday_hero]).to be true
+
+        Feature.deactivate(:offer_codes_search)
+      end
+    end
+  end
+
   describe "#recommended_products" do
     it "returns recommended products when taxonomy is blank" do
       cart = create(:cart, user: @buyer)
