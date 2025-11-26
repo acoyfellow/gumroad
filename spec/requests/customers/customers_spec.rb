@@ -470,11 +470,17 @@ describe "Sales page", type: :system, js: true do
         stripe_connect_account = create(:merchant_account_stripe_connect, user: seller)
         create(:purchase, seller:, link: product1, merchant_account: stripe_connect_account)
 
+        workflow = create(:workflow, seller:, link: product1, name: "Test Workflow", published_at: Time.current)
+        create(:installment, workflow:, published_at: Time.current)
+
         post = posts.last
         visit customers_path
         find(:table_row, { "Name" => "Customer 1" }).click
         within_modal "Product 1" do
-          within_section "All missed emails", section_element: :section do
+          within find("section[aria-label='Missed emails']") do
+            find(:combo_box, match: :first).click
+            expect(page).to have_combo_box(expanded: true, with_enabled_options: ["All missed emails", "Test Workflow"])
+
             10.times do |i|
               expect(page).to have_section("Post #{i}")
             end
@@ -496,7 +502,7 @@ describe "Sales page", type: :system, js: true do
         visit customers_path
         find(:table_row, { "Name" => "Customer 1" }).click
         within_modal "Product 1" do
-          within_section "All missed emails", section_element: :section do
+          within find("section[aria-label='Missed emails']") do
             expect(page).to_not have_button("Show more")
             expect(page).to_not have_section("Post 10")
           end
@@ -514,7 +520,7 @@ describe "Sales page", type: :system, js: true do
         visit customers_path
         find(:table_row, { "Name" => "Customer 1" }).click
         within_modal "Product 1" do
-          within_section "All missed emails", section_element: :section do
+          within find("section[aria-label='Missed emails']") do
             expect(page).to have_button("Resend all")
             click_on "Resend all"
             expect(page).to have_button("Resending all...", disabled: true)
@@ -528,7 +534,7 @@ describe "Sales page", type: :system, js: true do
         visit customers_path
         find(:table_row, { "Name" => "Customer 1" }).click
         within_modal "Product 1" do
-          within_section "All missed emails", section_element: :section do
+          within find("section[aria-label='Missed emails']") do
             click_on "Show more"
             within_section "Post 10" do
               click_on "Resend"
@@ -540,7 +546,7 @@ describe "Sales page", type: :system, js: true do
         expect(EmailInfo.last.installment).to be_nil
 
         within_modal "Product 1" do
-          within_section "All missed emails", section_element: :section do
+          within find("section[aria-label='Missed emails']") do
             expect(page).to have_button("Resend all")
             click_on "Resend all"
             expect(page).to have_button("Resending all...", disabled: true)
@@ -558,7 +564,7 @@ describe "Sales page", type: :system, js: true do
         visit customers_path
         find(:table_row, { "Name" => "Customer 1" }).click
         within_modal "Product 1" do
-          within_section "All missed emails", section_element: :section do
+          within find("section[aria-label='Missed emails']") do
             click_on "Show more"
             within_section "Post 10" do
               click_on "Resend"
@@ -572,7 +578,7 @@ describe "Sales page", type: :system, js: true do
         visit customers_path
         find(:table_row, { "Name" => "Customer 1" }).click
         within_modal "Product 1" do
-          within_section "All missed emails", section_element: :section do
+          within find("section[aria-label='Missed emails']") do
             expect(page).to have_button("Resend all")
             click_on "Resend all"
             expect(page).to have_button("Resending all...", disabled: true)

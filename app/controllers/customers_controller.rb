@@ -110,7 +110,7 @@ class CustomersController < Sellers::BaseController
   def missed_posts
     purchase = Purchase.where(email: params[:purchase_email].to_s).find_by_external_id!(params[:purchase_id])
 
-    render json: CustomerPresenter.new(purchase:).missed_posts
+    render json: CustomerPresenter.new(purchase:).missed_posts(workflow_id: params[:workflow_id])
   end
 
   def product_purchases

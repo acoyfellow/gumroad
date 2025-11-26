@@ -2,8 +2,17 @@
 
 class SendPostsForPurchaseService
   class << self
-    def find_missed_posts_for(purchase:)
-      Installment.missed_for_purchase(purchase)
+    def find_missed_posts_for(purchase:, workflow_id: nil)
+      result = Installment.missed_for_purchase(purchase)
+
+      if workflow_id.present?
+        workflow = purchase.seller.workflows.alive.published.find_by_external_id(workflow_id)
+        return Installment.none unless workflow&.applies_to_purchase?(purchase)
+
+        result = result.where(workflow_id: workflow.id)
+      end
+
+      result
     end
 
     def send_post(post:, purchase:)
@@ -24,12 +33,12 @@ class SendPostsForPurchaseService
       end
     end
 
-    def send_missed_posts_for(purchase:)
-      SendMissedPostsJob.perform_async(purchase.id)
+    def send_missed_posts_for(purchase:, workflow_id: nil)
+      SendMissedPostsJob.perform_async(purchase.id, workflow_id)
     end
 
-    def deliver_missed_posts_for(purchase:)
-      find_missed_posts_for(purchase:).find_each do |post|
+    def deliver_missed_posts_for(purchase:, workflow_id: nil)
+      find_missed_posts_for(purchase:, workflow_id:).find_each do |post|
         send_post(post:, purchase:)
       end
     end

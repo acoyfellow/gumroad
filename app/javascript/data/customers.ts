@@ -195,17 +195,43 @@ export type MissedPost = {
   url: string;
   published_at: string;
 };
-export const getMissedPosts = (purchaseId: string, purchaseEmail: string) =>
-  request({
+
+export type Workflow = {
+  id: string;
+  label: string;
+};
+
+export type WorkflowsResponse = Workflow[];
+
+export const getMissedPosts = (purchaseId: string, purchaseEmail: string, workflowId?: string) => {
+  const params: { purchase_email: string; workflow_id?: string } = { purchase_email: purchaseEmail };
+  if (workflowId) {
+    params.workflow_id = workflowId;
+  }
+
+  return request({
     method: "GET",
     accept: "json",
-    url: Routes.missed_posts_path(purchaseId, { purchase_email: purchaseEmail }),
+    url: Routes.missed_posts_path(purchaseId, params),
   })
     .then((res) => {
       if (!res.ok) throw new ResponseError();
       return res.json();
     })
     .then((json) => cast<MissedPost[]>(json));
+};
+
+export const getWorkflowsForPurchase = (purchaseId: string) =>
+  request({
+    method: "GET",
+    accept: "json",
+    url: Routes.workflows_path({ purchase_id: purchaseId, format: "json" }),
+  })
+    .then((res) => {
+      if (!res.ok) throw new ResponseError();
+      return res.json();
+    })
+    .then((json) => cast<WorkflowsResponse>(json));
 
 export type CustomerEmail = { id: string; name: string; state: string; state_at: string } & (
   | { type: "receipt"; url: string }
@@ -241,11 +267,13 @@ export const resendPost = async (purchaseId: string, postId: string) => {
   if (!response.ok) throw new ResponseError(cast<{ message: string }>(await response.json()).message);
 };
 
-export const resendPosts = async (purchaseId: string) => {
+export const resendPosts = async (purchaseId: string, workflowId?: string) => {
   const response = await request({
     method: "POST",
     accept: "json",
-    url: Routes.send_missed_posts_path(purchaseId),
+    url: Routes.send_missed_posts_path(purchaseId, {
+      workflow_id: workflowId,
+    }),
   });
   if (!response.ok) throw new ResponseError(cast<{ message: string }>(await response.json()).message);
   return cast<{ message: string }>(await response.json());

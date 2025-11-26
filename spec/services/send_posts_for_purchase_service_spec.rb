@@ -94,7 +94,7 @@ describe SendPostsForPurchaseService do
     it "enqueues SendMissedPostsJob with purchase ID" do
       described_class.send_missed_posts_for(purchase:)
 
-      expect(SendMissedPostsJob).to have_enqueued_sidekiq_job(purchase.id).on("default")
+      expect(SendMissedPostsJob).to have_enqueued_sidekiq_job(purchase.id, nil).on("default")
     end
   end
 

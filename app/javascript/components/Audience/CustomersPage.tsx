@@ -11,6 +11,7 @@ import {
   Discount,
   License,
   MissedPost,
+  Workflow,
   Query,
   Charge,
   SortKey,
@@ -19,6 +20,7 @@ import {
   changeCanContact,
   getCustomerEmails,
   getMissedPosts,
+  getWorkflowsForPurchase,
   getPagedCustomers,
   getProductPurchases,
   markShipped,
@@ -58,6 +60,7 @@ import { asyncVoid } from "$app/utils/promise";
 import { RecurrenceId, recurrenceLabels } from "$app/utils/recurringPricing";
 import { AbortError, assertResponseError } from "$app/utils/request";
 
+import EmptyState from "$app/components/Admin/EmptyState";
 import { Button, NavigationButton } from "$app/components/Button";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { DateInput } from "$app/components/DateInput";
@@ -688,20 +691,57 @@ const CustomerDrawer = ({
 
   const [loadingId, setLoadingId] = React.useState<string | null>(null);
   const [missedPosts, setMissedPosts] = React.useState<MissedPost[] | null>(null);
+  const [workflows, setWorkflows] = React.useState<Workflow[]>([]);
+  const [selectedWorkflowId, setSelectedWorkflowId] = React.useState<string | undefined>(undefined);
   const [shownMissedPosts, setShownMissedPosts] = React.useState(PAGE_SIZE);
   const [emails, setEmails] = React.useState<CustomerEmail[] | null>(null);
   const [shownEmails, setShownEmails] = React.useState(PAGE_SIZE);
   const sentEmailIds = React.useRef<Set<string>>(new Set());
+  const initialLoadCompleteRef = React.useRef(false);
+
   useRunOnce(() => {
-    getMissedPosts(customer.id, customer.email).then(setMissedPosts, (e: unknown) => {
-      assertResponseError(e);
-      showAlert(e.message, "error");
-    });
     getCustomerEmails(customer.id).then(setEmails, (e: unknown) => {
       assertResponseError(e);
       showAlert(e.message, "error");
     });
+
+    getWorkflowsForPurchase(customer.id).then(
+      (data) => {
+        setWorkflows(data);
+      },
+      (e: unknown) => {
+        assertResponseError(e);
+        showAlert(e.message, "error");
+      },
+    );
+
+    getMissedPosts(customer.id, customer.email).then(
+      (data) => {
+        setMissedPosts(data);
+        initialLoadCompleteRef.current = true;
+      },
+      (e: unknown) => {
+        assertResponseError(e);
+        showAlert(e.message, "error");
+      },
+    );
   });
+
+  React.useEffect(() => {
+    if (initialLoadCompleteRef.current) {
+      setMissedPosts(null);
+      getMissedPosts(customer.id, customer.email, selectedWorkflowId).then(
+        (data) => {
+          setMissedPosts(data);
+        },
+        (e: unknown) => {
+          assertResponseError(e);
+          showAlert(e.message, "error");
+          setMissedPosts([]);
+        },
+      );
+    }
+  }, [selectedWorkflowId, customer.id, customer.email]);
 
   const onSend = async (id: string, type: "receipt" | "post") => {
     setLoadingId(id);
@@ -719,7 +759,7 @@ const CustomerDrawer = ({
   const handleResendAll = async () => {
     setLoadingId("all");
     try {
-      const response = await resendPosts(customer.id);
+      const response = await resendPosts(customer.id, selectedWorkflowId);
       missedPosts?.forEach((post) => {
         sentEmailIds.current.add(post.id);
       });
@@ -1212,12 +1252,26 @@ const CustomerDrawer = ({
       {commission ? (
         <CommissionSection commission={commission} onChange={(commission) => onChange({ commission })} />
       ) : null}
-      {missedPosts?.length !== 0 ? (
-        <section className="stack">
-          <header>
-            <h3>All missed emails</h3>
-          </header>
-          {missedPosts ? (
+      <section className="stack" aria-label="Missed emails">
+        <div>
+          <Select
+            value={
+              selectedWorkflowId
+                ? (workflows.find((w) => w.id === selectedWorkflowId) ?? null)
+                : { id: "", label: "All missed emails" }
+            }
+            onChange={(option) => {
+              if (option && "id" in option) {
+                setSelectedWorkflowId(option.id);
+              } else {
+                setSelectedWorkflowId(undefined);
+              }
+            }}
+            options={[{ id: "", label: "All missed emails" }, ...workflows]}
+          />
+        </div>
+        {missedPosts ? (
+          missedPosts.length > 0 ? (
             <>
               {missedPosts.slice(0, shownMissedPosts).map((post) => (
                 <section key={post.id}>
@@ -1247,23 +1301,23 @@ const CustomerDrawer = ({
                   </Button>
                 </section>
               ) : null}
-              {missedPosts.length > 0 ? (
-                <div>
-                  <Button color="primary" disabled={!!loadingId} onClick={() => void handleResendAll()}>
-                    {loadingId === "all" ? "Resending all..." : "Resend all"}
-                  </Button>
-                </div>
-              ) : null}
+              <div>
+                <Button color="primary" disabled={!!loadingId} onClick={() => void handleResendAll()}>
+                  {loadingId === "all" ? "Resending all..." : "Resend all"}
+                </Button>
+              </div>
             </>
           ) : (
-            <section>
-              <div className="text-center">
-                <LoadingSpinner className="size-8" />
-              </div>
-            </section>
-          )}
-        </section>
-      ) : null}
+            <EmptyState className="text-center" message="All caught up! No missed emails." />
+          )
+        ) : (
+          <section>
+            <div className="text-center">
+              <LoadingSpinner className="size-8" />
+            </div>
+          </section>
+        )}
+      </section>
       {emails?.length !== 0 ? (
         <section className="stack">
           <header>

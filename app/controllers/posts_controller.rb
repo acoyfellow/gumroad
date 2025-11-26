@@ -64,7 +64,7 @@ class PostsController < ApplicationController
   def send_missed_posts
     authorize [:audience, @purchase], :send_missed_posts?
 
-    SendPostsForPurchaseService.send_missed_posts_for(purchase: @purchase)
+    SendPostsForPurchaseService.send_missed_posts_for(purchase: @purchase, workflow_id: params[:workflow_id])
 
     render json: { message: "Missed emails are queued for delivery" }, status: :ok
   end

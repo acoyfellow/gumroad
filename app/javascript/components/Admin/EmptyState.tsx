@@ -1,11 +1,14 @@
 import React from "react";
 
+import { classNames } from "$app/utils/classNames";
+
 type Props = {
+  className?: string;
   message: string;
 };
 
-const EmptyState = ({ message }: Props) => (
-  <div className="placeholder">
+const EmptyState = ({ className, message }: Props) => (
+  <div className={classNames("placeholder", className)}>
     <h2 id="empty-message">{message}</h2>
   </div>
 );

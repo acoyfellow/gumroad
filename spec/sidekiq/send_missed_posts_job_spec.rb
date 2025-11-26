@@ -9,7 +9,7 @@ describe SendMissedPostsJob do
     let(:purchase) { create(:purchase, seller:, link: product) }
 
     it "finds purchase by ID and calls service" do
-      expect(SendPostsForPurchaseService).to receive(:deliver_missed_posts_for).with(purchase:)
+      expect(SendPostsForPurchaseService).to receive(:deliver_missed_posts_for).with(purchase:, workflow_id: nil)
 
       described_class.new.perform(purchase.id)
     end

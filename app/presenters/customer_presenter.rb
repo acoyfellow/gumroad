@@ -7,9 +7,10 @@ class CustomerPresenter
     @purchase = purchase
   end
 
-  def missed_posts
-    posts = SendPostsForPurchaseService.find_missed_posts_for(purchase:).order(published_at: :desc)
-    posts.map do |post|
+  def missed_posts(workflow_id: nil)
+    posts = SendPostsForPurchaseService.find_missed_posts_for(purchase:, workflow_id:)
+
+    posts.order(published_at: :desc).map do |post|
       {
         id: post.external_id,
         name: post.name,
