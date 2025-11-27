@@ -698,7 +698,6 @@ const CustomerDrawer = ({
   const [emails, setEmails] = React.useState<CustomerEmail[] | null>(null);
   const [shownEmails, setShownEmails] = React.useState(PAGE_SIZE);
   const sentEmailIds = React.useRef<Set<string>>(new Set());
-
   useRunOnce(() => {
     getCustomerEmails(customer.id).then(setEmails, (e: unknown) => {
       assertResponseError(e);

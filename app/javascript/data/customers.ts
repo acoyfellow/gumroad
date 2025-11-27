@@ -203,23 +203,20 @@ export type Workflow = {
 
 export type WorkflowsResponse = Workflow[];
 
-export const getMissedPosts = (purchaseId: string, purchaseEmail: string, workflowId?: string) => {
-  const params: { purchase_email: string; workflow_id?: string } = { purchase_email: purchaseEmail };
-  if (workflowId) {
-    params.workflow_id = workflowId;
-  }
-
-  return request({
+export const getMissedPosts = (purchaseId: string, purchaseEmail: string, workflowId?: string) =>
+  request({
     method: "GET",
     accept: "json",
-    url: Routes.missed_posts_path(purchaseId, params),
+    url: Routes.missed_posts_path(purchaseId, {
+      purchase_email: purchaseEmail,
+      workflow_id: workflowId,
+    }),
   })
     .then((res) => {
       if (!res.ok) throw new ResponseError();
       return res.json();
     })
     .then((json) => cast<MissedPost[]>(json));
-};
 
 export const getWorkflowsForPurchase = async (purchaseId: string) => {
   const response = await request({

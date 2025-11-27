@@ -8,9 +8,9 @@ class CustomerPresenter
   end
 
   def missed_posts(workflow_id: nil)
-    posts = SendPostsForPurchaseService.find_missed_posts_for(purchase:, workflow_id:)
+    posts = SendPostsForPurchaseService.find_missed_posts_for(purchase:, workflow_id:).order(published_at: :desc)
 
-    posts.order(published_at: :desc).map do |post|
+    posts.map do |post|
       {
         id: post.external_id,
         name: post.name,
