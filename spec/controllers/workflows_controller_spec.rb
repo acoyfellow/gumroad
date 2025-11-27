@@ -26,41 +26,29 @@ describe WorkflowsController, type: :controller, inertia: true do
     end
 
     context "with JSON format" do
-      it "returns bad request when purchase_id is not present" do
-        get :index, format: :json
+      let(:product) { create(:product, user: seller) }
+      let(:purchase) { create(:purchase, seller:, link: product) }
+      let!(:workflow1) { create(:workflow, seller:, link: product, name: "Beta Workflow", published_at: Time.current) }
+      let!(:workflow2) { create(:workflow, seller:, link: product, name: "Alpha Workflow", published_at: Time.current) }
+      let!(:installment1) { create(:installment, workflow: workflow1, published_at: Time.current) }
+      let!(:installment2) { create(:installment, workflow: workflow2, published_at: Time.current) }
 
-        expect(response).to have_http_status(:bad_request)
+      it "returns with workflow options data sorted by name" do
+        get :index, format: :json, params: { purchase_id: purchase.external_id }
+
+        expect(response).to be_successful
         expect(response.content_type).to match(%r{application/json})
-        json = response.parsed_body
-        expect(json).to have_key("error")
-        expect(json["error"]).to eq("Bad request")
-      end
 
-      context "with valid purchase_id" do
-        let(:product) { create(:product, user: seller) }
-        let(:purchase) { create(:purchase, seller:, link: product) }
-        let!(:workflow1) { create(:workflow, seller:, link: product, name: "Beta Workflow", published_at: Time.current) }
-        let!(:workflow2) { create(:workflow, seller:, link: product, name: "Alpha Workflow", published_at: Time.current) }
-        let!(:installment1) { create(:installment, workflow: workflow1, published_at: Time.current) }
-        let!(:installment2) { create(:installment, workflow: workflow2, published_at: Time.current) }
-
-        it "returns JSON with workflow options data sorted by name" do
-          get :index, format: :json, params: { purchase_id: purchase.external_id }
-
-          expect(response).to be_successful
-          expect(response.content_type).to match(%r{application/json})
-
-          expect(response.parsed_body).to eq([
-                                               {
-                                                 "id" => workflow2.external_id,
-                                                 "label" => "Alpha Workflow"
-                                               },
-                                               {
-                                                 "id" => workflow1.external_id,
-                                                 "label" => "Beta Workflow"
-                                               }
-                                             ])
-        end
+        expect(response.parsed_body).to eq([
+                                             {
+                                               "id" => workflow2.external_id,
+                                               "label" => "Alpha Workflow"
+                                             },
+                                             {
+                                               "id" => workflow1.external_id,
+                                               "label" => "Beta Workflow"
+                                             }
+                                           ])
       end
     end
   end

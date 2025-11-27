@@ -22,8 +22,6 @@ class WorkflowsController < Sellers::BaseController
         render inertia: "Workflows/Index", props: workflows_presenter.workflows_props
       end
       format.json do
-        return render json: { error: "Bad request" }, status: :bad_request unless params[:purchase_id].present?
-
         render json: workflows_presenter.workflow_options_by_purchase_props(purchase: current_seller.sales.find_by_external_id(params[:purchase_id]))
       end
     end

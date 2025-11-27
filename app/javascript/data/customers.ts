@@ -221,17 +221,15 @@ export const getMissedPosts = (purchaseId: string, purchaseEmail: string, workfl
     .then((json) => cast<MissedPost[]>(json));
 };
 
-export const getWorkflowsForPurchase = (purchaseId: string) =>
-  request({
+export const getWorkflowsForPurchase = async (purchaseId: string) => {
+  const response = await request({
     method: "GET",
     accept: "json",
     url: Routes.workflows_path({ purchase_id: purchaseId, format: "json" }),
-  })
-    .then((res) => {
-      if (!res.ok) throw new ResponseError();
-      return res.json();
-    })
-    .then((json) => cast<WorkflowsResponse>(json));
+  });
+  if (!response.ok) throw new ResponseError();
+  return cast<WorkflowsResponse>(await response.json());
+};
 
 export type CustomerEmail = { id: string; name: string; state: string; state_at: string } & (
   | { type: "receipt"; url: string }

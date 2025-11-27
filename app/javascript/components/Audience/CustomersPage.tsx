@@ -698,7 +698,6 @@ const CustomerDrawer = ({
   const [emails, setEmails] = React.useState<CustomerEmail[] | null>(null);
   const [shownEmails, setShownEmails] = React.useState(PAGE_SIZE);
   const sentEmailIds = React.useRef<Set<string>>(new Set());
-  const initialLoadCompleteRef = React.useRef(false);
 
   useRunOnce(() => {
     getCustomerEmails(customer.id).then(setEmails, (e: unknown) => {
@@ -715,33 +714,20 @@ const CustomerDrawer = ({
         showAlert(e.message, "error");
       },
     );
+  });
 
-    getMissedPosts(customer.id, customer.email).then(
+  React.useEffect(() => {
+    setMissedPosts(null);
+    getMissedPosts(customer.id, customer.email, selectedWorkflowId).then(
       (data) => {
         setMissedPosts(data);
-        initialLoadCompleteRef.current = true;
       },
       (e: unknown) => {
         assertResponseError(e);
         showAlert(e.message, "error");
+        setMissedPosts([]);
       },
     );
-  });
-
-  React.useEffect(() => {
-    if (initialLoadCompleteRef.current) {
-      setMissedPosts(null);
-      getMissedPosts(customer.id, customer.email, selectedWorkflowId).then(
-        (data) => {
-          setMissedPosts(data);
-        },
-        (e: unknown) => {
-          assertResponseError(e);
-          showAlert(e.message, "error");
-          setMissedPosts([]);
-        },
-      );
-    }
   }, [selectedWorkflowId, customer.id, customer.email]);
 
   const onSend = async (id: string, type: "receipt" | "post") => {
