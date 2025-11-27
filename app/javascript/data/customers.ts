@@ -196,13 +196,6 @@ export type MissedPost = {
   published_at: string;
 };
 
-export type Workflow = {
-  id: string;
-  label: string;
-};
-
-export type WorkflowsResponse = Workflow[];
-
 export const getMissedPosts = (purchaseId: string, purchaseEmail: string, workflowId?: string) =>
   request({
     method: "GET",
@@ -218,6 +211,11 @@ export const getMissedPosts = (purchaseId: string, purchaseEmail: string, workfl
     })
     .then((json) => cast<MissedPost[]>(json));
 
+export type Workflow = {
+  id: string;
+  label: string;
+};
+
 export const getWorkflowsForPurchase = async (purchaseId: string) => {
   const response = await request({
     method: "GET",
@@ -225,7 +223,7 @@ export const getWorkflowsForPurchase = async (purchaseId: string) => {
     url: Routes.workflows_path({ purchase_id: purchaseId, format: "json" }),
   });
   if (!response.ok) throw new ResponseError();
-  return cast<WorkflowsResponse>(await response.json());
+  return cast<Workflow[]>(await response.json());
 };
 
 export type CustomerEmail = { id: string; name: string; state: string; state_at: string } & (
