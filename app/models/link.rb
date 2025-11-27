@@ -112,7 +112,8 @@ class Link < ApplicationRecord
   has_many :skus_alive_not_default, -> { alive.not_is_default_sku }, class_name: "Sku"
   has_many :installments
   has_many :subscriptions
-  has_and_belongs_to_many :offer_codes, join_table: "offer_codes_products", foreign_key: "product_id"
+  has_many :offer_codes_products, foreign_key: "product_id", dependent: :destroy
+  has_many :offer_codes, through: :offer_codes_products
   has_many :transcoded_videos
   has_many :imported_customers
   has_many :licenses
