@@ -21,120 +21,6 @@ type ThirdPartyAnalyticsPageProps = {
   products: Products;
 };
 
-const NEW_SNIPPET_ID_PREFIX = "__GUMROAD";
-
-const LOCATION_TITLES: Record<string, string> = {
-  receipt: "Receipt",
-  product: "Product page",
-  all: "All pages",
-};
-
-const SnippetRow = ({
-  snippet,
-  thirdPartyAnalytics,
-  updateThirdPartyAnalytics,
-  products,
-}: {
-  snippet: Snippet;
-  thirdPartyAnalytics: ThirdPartyAnalytics;
-  updateThirdPartyAnalytics: (update: Partial<ThirdPartyAnalytics>) => void;
-  products: Products;
-}) => {
-  const [expanded, setExpanded] = React.useState(!!snippet.id?.startsWith(NEW_SNIPPET_ID_PREFIX));
-
-  const updateSnippet = (update: Partial<Snippet>) => {
-    const snippetIndex = thirdPartyAnalytics.snippets.findIndex(({ id }) => id === snippet.id);
-    updateThirdPartyAnalytics({
-      snippets: [
-        ...thirdPartyAnalytics.snippets.slice(0, snippetIndex),
-        { ...snippet, ...update },
-        ...thirdPartyAnalytics.snippets.slice(snippetIndex + 1),
-      ],
-    });
-  };
-
-  const uid = React.useId();
-
-  return (
-    <div role="listitem">
-      <div className="content">
-        <Icon name="code-square" className="type-icon" />
-        <div>
-          <h4>{snippet.name || "Untitled"}</h4>
-          <ul className="inline">
-            <li>{products.find(({ permalink }) => permalink === snippet.product)?.name ?? "All products"}</li>
-            <li>{LOCATION_TITLES[snippet.location]}</li>
-          </ul>
-        </div>
-      </div>
-      <div className="actions">
-        <Button onClick={() => setExpanded((prevExpanded) => !prevExpanded)} aria-label="Edit snippet">
-          {expanded ? <Icon name="outline-cheveron-up" /> : <Icon name="outline-cheveron-down" />}
-        </Button>
-        <Button
-          onClick={() =>
-            updateThirdPartyAnalytics({
-              snippets: thirdPartyAnalytics.snippets.filter(({ id }) => id !== snippet.id),
-            })
-          }
-          aria-label="Delete snippet"
-        >
-          <Icon name="trash2" />
-        </Button>
-      </div>
-      {expanded ? (
-        <div className="flex flex-col gap-4">
-          <fieldset>
-            <label htmlFor={`${uid}name`}>Name</label>
-            <input
-              id={`${uid}name`}
-              type="text"
-              value={snippet.name}
-              onChange={(evt) => updateSnippet({ name: evt.target.value })}
-            />
-          </fieldset>
-          <fieldset>
-            <label htmlFor={`${uid}location`}>Location</label>
-            <TypeSafeOptionSelect
-              id={`${uid}location`}
-              value={snippet.location}
-              onChange={(key) => updateSnippet({ location: key })}
-              options={SNIPPET_LOCATIONS.map((location) => ({
-                id: location,
-                label: LOCATION_TITLES[location] ?? "Receipt",
-              }))}
-            />
-          </fieldset>
-          <fieldset>
-            <label htmlFor={`${uid}product`}>Products</label>
-            <TypeSafeOptionSelect
-              id={`${uid}product`}
-              value={snippet.product ?? ""}
-              onChange={(key) => updateSnippet({ product: key || null })}
-              options={[
-                { id: "", label: "All products" },
-                ...products.map(({ permalink, name }) => ({
-                  id: permalink,
-                  label: name,
-                })),
-              ]}
-            />
-          </fieldset>
-          <fieldset>
-            <label htmlFor={`${uid}code`}>Code</label>
-            <textarea
-              id={`${uid}code`}
-              placeholder="Enter your analytics code"
-              value={snippet.code}
-              onChange={(evt) => updateSnippet({ code: evt.target.value })}
-            />
-          </fieldset>
-        </div>
-      ) : null}
-    </div>
-  );
-};
-
 export default function ThirdPartyAnalyticsPage() {
   const props = cast<ThirdPartyAnalyticsPageProps>(usePage().props);
   const loggedInUser = useLoggedInUser();
@@ -330,3 +216,117 @@ export default function ThirdPartyAnalyticsPage() {
     </SettingsLayout>
   );
 }
+
+const NEW_SNIPPET_ID_PREFIX = "__GUMROAD";
+
+const LOCATION_TITLES: Record<string, string> = {
+  receipt: "Receipt",
+  product: "Product page",
+  all: "All pages",
+};
+
+const SnippetRow = ({
+  snippet,
+  thirdPartyAnalytics,
+  updateThirdPartyAnalytics,
+  products,
+}: {
+  snippet: Snippet;
+  thirdPartyAnalytics: ThirdPartyAnalytics;
+  updateThirdPartyAnalytics: (update: Partial<ThirdPartyAnalytics>) => void;
+  products: Products;
+}) => {
+  const [expanded, setExpanded] = React.useState(!!snippet.id?.startsWith(NEW_SNIPPET_ID_PREFIX));
+
+  const updateSnippet = (update: Partial<Snippet>) => {
+    const snippetIndex = thirdPartyAnalytics.snippets.findIndex(({ id }) => id === snippet.id);
+    updateThirdPartyAnalytics({
+      snippets: [
+        ...thirdPartyAnalytics.snippets.slice(0, snippetIndex),
+        { ...snippet, ...update },
+        ...thirdPartyAnalytics.snippets.slice(snippetIndex + 1),
+      ],
+    });
+  };
+
+  const uid = React.useId();
+
+  return (
+    <div role="listitem">
+      <div className="content">
+        <Icon name="code-square" className="type-icon" />
+        <div>
+          <h4>{snippet.name || "Untitled"}</h4>
+          <ul className="inline">
+            <li>{products.find(({ permalink }) => permalink === snippet.product)?.name ?? "All products"}</li>
+            <li>{LOCATION_TITLES[snippet.location]}</li>
+          </ul>
+        </div>
+      </div>
+      <div className="actions">
+        <Button onClick={() => setExpanded((prevExpanded) => !prevExpanded)} aria-label="Edit snippet">
+          {expanded ? <Icon name="outline-cheveron-up" /> : <Icon name="outline-cheveron-down" />}
+        </Button>
+        <Button
+          onClick={() =>
+            updateThirdPartyAnalytics({
+              snippets: thirdPartyAnalytics.snippets.filter(({ id }) => id !== snippet.id),
+            })
+          }
+          aria-label="Delete snippet"
+        >
+          <Icon name="trash2" />
+        </Button>
+      </div>
+      {expanded ? (
+        <div className="flex flex-col gap-4">
+          <fieldset>
+            <label htmlFor={`${uid}name`}>Name</label>
+            <input
+              id={`${uid}name`}
+              type="text"
+              value={snippet.name}
+              onChange={(evt) => updateSnippet({ name: evt.target.value })}
+            />
+          </fieldset>
+          <fieldset>
+            <label htmlFor={`${uid}location`}>Location</label>
+            <TypeSafeOptionSelect
+              id={`${uid}location`}
+              value={snippet.location}
+              onChange={(key) => updateSnippet({ location: key })}
+              options={SNIPPET_LOCATIONS.map((location) => ({
+                id: location,
+                label: LOCATION_TITLES[location] ?? "Receipt",
+              }))}
+            />
+          </fieldset>
+          <fieldset>
+            <label htmlFor={`${uid}product`}>Products</label>
+            <TypeSafeOptionSelect
+              id={`${uid}product`}
+              value={snippet.product ?? ""}
+              onChange={(key) => updateSnippet({ product: key || null })}
+              options={[
+                { id: "", label: "All products" },
+                ...products.map(({ permalink, name }) => ({
+                  id: permalink,
+                  label: name,
+                })),
+              ]}
+            />
+          </fieldset>
+          <fieldset>
+            <label htmlFor={`${uid}code`}>Code</label>
+            <textarea
+              id={`${uid}code`}
+              placeholder="Enter your analytics code"
+              value={snippet.code}
+              onChange={(evt) => updateSnippet({ code: evt.target.value })}
+            />
+          </fieldset>
+        </div>
+      ) : null}
+    </div>
+  );
+};

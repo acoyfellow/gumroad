@@ -91,7 +91,7 @@ type PaymentsPageProps = {
   payouts_paused_by_user: boolean;
   payout_threshold_cents: number;
   minimum_payout_threshold_cents: number;
-  payout_frequency: "daily" | "weekly" | "monthly" | "quarterly";
+  payout_frequency: PayoutFrequency;
   payout_frequency_daily_supported: boolean;
   errors?: {
     base?: string[];
@@ -172,7 +172,6 @@ export default function PaymentsPage() {
   const [debitCard, setDebitCard] = React.useState<PayoutDebitCardData | null>(null);
   const [showNewBankAccount, setShowNewBankAccount] = React.useState(!props.bank_account_details.account_number_visual);
 
-  // Scroll to form when errors appear
   React.useEffect(() => {
     if ((errors?.base && errors.base.length > 0) || clientErrorMessage) {
       formRef.current?.scrollIntoView({ behavior: "smooth" });

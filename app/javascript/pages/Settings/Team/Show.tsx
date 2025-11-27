@@ -46,6 +46,34 @@ type TeamPageProps = {
   settings_pages: SettingPage[];
 };
 
+export default function TeamPage() {
+  const props = cast<TeamPageProps>(usePage().props);
+  const [memberInfos, setMemberInfos] = React.useState<MemberInfo[]>(props.member_infos);
+
+  const options: Option[] = ROLES.map((role) => ({
+    id: role,
+    label: ROLE_TITLES[role],
+  }));
+
+  const refreshMemberInfos = asyncVoid(async () => {
+    const result = await fetchMemberInfos();
+    if (result.success) {
+      setMemberInfos(result.member_infos);
+    }
+  });
+
+  return (
+    <SettingsLayout currentPage="team" pages={props.settings_pages}>
+      <form>
+        {props.can_invite_member ? (
+          <AddTeamMembersSection refreshMemberInfos={refreshMemberInfos} options={options} />
+        ) : null}
+        <TeamMembersSection memberInfos={memberInfos} refreshMemberInfos={refreshMemberInfos} />
+      </form>
+    </SettingsLayout>
+  );
+}
+
 const AddTeamMembersSection = ({
   refreshMemberInfos,
   options,
@@ -368,31 +396,3 @@ const TeamMembersSection = ({
     </section>
   );
 };
-
-export default function TeamPage() {
-  const props = cast<TeamPageProps>(usePage().props);
-  const [memberInfos, setMemberInfos] = React.useState<MemberInfo[]>(props.member_infos);
-
-  const options: Option[] = ROLES.map((role) => ({
-    id: role,
-    label: ROLE_TITLES[role],
-  }));
-
-  const refreshMemberInfos = asyncVoid(async () => {
-    const result = await fetchMemberInfos();
-    if (result.success) {
-      setMemberInfos(result.member_infos);
-    }
-  });
-
-  return (
-    <SettingsLayout currentPage="team" pages={props.settings_pages}>
-      <form>
-        {props.can_invite_member ? (
-          <AddTeamMembersSection refreshMemberInfos={refreshMemberInfos} options={options} />
-        ) : null}
-        <TeamMembersSection memberInfos={memberInfos} refreshMemberInfos={refreshMemberInfos} />
-      </form>
-    </SettingsLayout>
-  );
-}
