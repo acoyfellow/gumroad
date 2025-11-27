@@ -195,7 +195,6 @@ export type MissedPost = {
   url: string;
   published_at: string;
 };
-
 export const getMissedPosts = (purchaseId: string, purchaseEmail: string, workflowId?: string) =>
   request({
     method: "GET",
@@ -215,7 +214,6 @@ export type Workflow = {
   id: string;
   label: string;
 };
-
 export const getWorkflowsForPurchase = async (purchaseId: string) => {
   const response = await request({
     method: "GET",
