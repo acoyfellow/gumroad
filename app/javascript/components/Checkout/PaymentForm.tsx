@@ -590,7 +590,11 @@ const CustomerDetails = () => {
           ) : null}
         </div>
       ) : null}
-      {state.warning ? <Alert color="warning">{state.warning}</Alert> : null}
+      {state.warning ? (
+        <Alert role="status" color="warning">
+          {state.warning}
+        </Alert>
+      ) : null}
       {isTippingEnabled(state) ? <TipSelector /> : null}
       {state.products.length === 1 && state.products[0]?.canGift && !state.products[0]?.payInInstallments ? (
         <GiftForm isMembership={state.products[0]?.nativeType === "membership"} />
