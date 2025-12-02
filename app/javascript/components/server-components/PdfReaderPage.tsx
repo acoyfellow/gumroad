@@ -196,8 +196,8 @@ export const PdfReaderPage = ({
           <div className="flex flex-1 items-center border-r p-4">
             <h1 className="truncate">{title}</h1>
           </div>
-          <Popover aria-label="Appearance">
-            <PopoverTrigger className="border-r p-4">
+          <Popover>
+            <PopoverTrigger aria-label="Appearance" className="border-r p-4">
               <Icon name="zoom-in" />
             </PopoverTrigger>
             <PopoverContent>

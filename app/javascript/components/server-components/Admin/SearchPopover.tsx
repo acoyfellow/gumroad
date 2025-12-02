@@ -13,8 +13,8 @@ type Props = { card_types: { id: string; name: string }[] };
 export const SearchPopover = ({ card_types }: Props) => {
   const searchParams = new URL(useOriginalLocation()).searchParams;
   return (
-    <Popover aria-label="Toggle Search">
-      <PopoverTrigger asChild>
+    <Popover>
+      <PopoverTrigger aria-label="Toggle Search" asChild>
         <Button>
           <Icon name="solid-search" />
         </Button>

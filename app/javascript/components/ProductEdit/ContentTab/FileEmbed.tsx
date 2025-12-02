@@ -497,7 +497,7 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
               </PopoverTrigger>
               <PopoverContent sideOffset={4} className="border-0 p-0 shadow-none">
                 <div role="menu">
-                  <PopoverClose>
+                  <PopoverClose asChild>
                     <div
                       role="menuitem"
                       onClick={() => {
@@ -508,7 +508,7 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
                       <span>{node.attrs.collapsed ? "Expand selected" : "Collapse selected"}</span>
                     </div>
                   </PopoverClose>
-                  <PopoverClose>
+                  <PopoverClose asChild>
                     <div
                       role="menuitem"
                       onClick={() => {

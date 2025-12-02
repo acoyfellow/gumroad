@@ -527,7 +527,7 @@ const CartItemComponent = ({
                             {error}
                           </div>
                         ) : null}
-                        <PopoverClose>
+                        <PopoverClose asChild>
                           <Button color="accent" onClick={saveChanges}>
                             Save changes
                           </Button>

@@ -132,7 +132,7 @@ const ExportPayoutsPopoverContent = () => {
         >
           {payouts.length && selectedPayouts.size === payouts.length ? "Deselect all" : "Select all"}
         </Button>
-        <PopoverClose>
+        <PopoverClose asChild>
           <Button
             color="primary"
             onClick={handleDownload}
@@ -148,7 +148,7 @@ const ExportPayoutsPopoverContent = () => {
 };
 
 export const ExportPayoutsPopover = () => (
-  <Popover aria-label="Bulk export">
+  <Popover>
     <PopoverTrigger aria-label="Bulk export" asChild>
       <Button>
         <Icon name="download" />

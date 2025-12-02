@@ -55,7 +55,7 @@ const AudiencePage = ({ total_follower_count }: { total_follower_count: number }
       selectedTab="following"
       actions={
         <>
-          <Popover aria-label="Export">
+          <Popover>
             <WithTooltip tip="Export" position="bottom">
               <PopoverTrigger aria-label="Export" asChild>
                 <Button>

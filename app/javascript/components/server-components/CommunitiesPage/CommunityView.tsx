@@ -617,8 +617,8 @@ export const CommunityView = () => {
                         : selectedCommunity.seller.name}
                     </span>
 
-                    <Popover open={switcherOpen} onOpenChange={setSwitcherOpen} aria-label="Switch creator">
-                      <PopoverTrigger className="flex h-8 w-8 justify-center">
+                    <Popover open={switcherOpen} onOpenChange={setSwitcherOpen}>
+                      <PopoverTrigger aria-label="Switch creator" className="flex h-8 w-8 justify-center">
                         <Icon name="outline-cheveron-down" />
                       </PopoverTrigger>
                       <PopoverContent className="shrink-0 border-0 p-0 shadow-none">

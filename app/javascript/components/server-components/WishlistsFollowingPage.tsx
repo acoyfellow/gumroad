@@ -82,8 +82,8 @@ const WishlistsFollowingPage = ({
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-3 lg:justify-end">
-                      <Popover aria-label="Actions">
-                        <PopoverTrigger>
+                      <Popover>
+                        <PopoverTrigger aria-label="Actions">
                           <Icon name="three-dots" />
                         </PopoverTrigger>
                         <PopoverContent className="border-0 p-0 shadow-none">

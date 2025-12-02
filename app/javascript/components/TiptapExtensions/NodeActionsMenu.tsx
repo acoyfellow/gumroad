@@ -1,5 +1,4 @@
 import { Editor } from "@tiptap/core";
-import { NodeSelection } from "@tiptap/pm/state";
 import * as React from "react";
 
 import { assertDefined } from "$app/utils/assert";
@@ -16,20 +15,18 @@ export const NodeActionsMenu = ({
   actions?: { item: () => React.ReactNode; menu: (close: () => void) => React.ReactNode }[];
 }) => {
   const [open, setOpen] = React.useState(false);
-  const selectedNode = editor.state.selection instanceof NodeSelection ? editor.state.selection.node : null;
   const [selectedActionIndex, setSelectedActionIndex] = React.useState<number | null>(null);
 
-  const isOpen = !!selectedNode && open;
-
   return (
-    <Popover open={isOpen} onOpenChange={setOpen} aria-label="Actions">
-      <PopoverTrigger data-drag-handle draggable asChild>
-        <Button small color="filled">
-          <Icon name="outline-drag" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent sideOffset={4} className="actions-menu border-0 p-0 shadow-none">
-        <div role="menu">
+    <Popover open={open} onOpenChange={setOpen}>
+      <div className="actions-menu">
+        <PopoverTrigger aria-label="Actions" data-drag-handle draggable asChild>
+          <Button small color="filled">
+            <Icon name="outline-drag" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent sideOffset={4} className="border-0 p-0 shadow-none" onInteractOutside={(e) => e.preventDefault()}>
+          <div role="menu">
           {actions && selectedActionIndex !== null ? (
             <>
               <div onClick={() => setSelectedActionIndex(null)} role="menuitem">
@@ -63,8 +60,9 @@ export const NodeActionsMenu = ({
               </div>
             </>
           )}
-        </div>
-      </PopoverContent>
+          </div>
+        </PopoverContent>
+      </div>
     </Popover>
   );
 };

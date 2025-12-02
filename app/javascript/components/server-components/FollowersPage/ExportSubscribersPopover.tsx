@@ -85,7 +85,7 @@ export const ExportSubscribersPopover = () => {
         </label>
       </div>
       <div className="grid">
-        <PopoverClose>
+        <PopoverClose asChild>
           <Button disabled={noOptionSelected || loading} onClick={() => void handleDownload()}>
             {loading ? <LoadingSpinner color="grey" /> : "Download"}
           </Button>

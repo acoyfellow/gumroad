@@ -67,7 +67,7 @@ export const RefundPolicySelector = ({
                       placeholder="Select a product"
                       onChange={(option) => setSelectedRefundPolicyId(option?.id ?? null)}
                     />
-                    <PopoverClose>
+                    <PopoverClose asChild>
                       <Button
                         color="primary"
                         disabled={selectedRefundPolicyId === null}

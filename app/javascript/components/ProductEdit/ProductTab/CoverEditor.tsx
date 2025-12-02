@@ -91,11 +91,10 @@ export const CoverEditor = ({
               onOpenChange={(open) => {
                 if (canAddPreview && !isUploading) setIsUploaderOpen(open);
               }}
-              aria-label="Add cover"
             >
               <WithTooltip tip={canAddPreview ? null : "Maximum number of previews uploaded"}>
                 <PopoverTrigger disabled={!canAddPreview || isUploading} asChild>
-                  <Button>
+                  <Button aria-label="Add cover">
                     <Icon name="plus" />
                   </Button>
                 </PopoverTrigger>

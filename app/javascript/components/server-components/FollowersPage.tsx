@@ -121,7 +121,7 @@ export const FollowersPage = ({ followers: initialFollowers, per_page, total }: 
           {(followers.length > 0 || searchQuery.length > 0) && (
             <Search onSearch={setSearchQuery} value={searchQuery} placeholder="Search followers" />
           )}
-          <Popover aria-label="Export">
+          <Popover>
             <WithTooltip tip="Export" position="bottom">
               <PopoverTrigger aria-label="Export" asChild>
                 <Button>

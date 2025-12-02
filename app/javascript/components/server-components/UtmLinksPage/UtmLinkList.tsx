@@ -341,8 +341,8 @@ const UtmLinkActions = ({ link, children }: { link: SavedUtmLink; children: Reac
         <Icon name="link" />
       </Button>
     </CopyToClipboard>
-    <Popover aria-label="Open action menu">
-      <PopoverTrigger asChild>
+    <Popover>
+      <PopoverTrigger aria-label="Open action menu" asChild>
         <Button>
           <Icon name="three-dots" />
         </Button>

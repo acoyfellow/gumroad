@@ -14,8 +14,8 @@ export const DownloadPopover = ({ authenticityToken }: Props) => {
   const [from, setFrom] = React.useState(subMonths(new Date(), 1));
   const [to, setTo] = React.useState(new Date());
   return (
-    <Popover aria-label="Export">
-      <PopoverTrigger className="js-toggle-download-box" asChild>
+    <Popover>
+      <PopoverTrigger aria-label="Export" className="js-toggle-download-box" asChild>
         <Button>
           <Icon name="download" />
         </Button>

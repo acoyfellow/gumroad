@@ -85,8 +85,8 @@ const SearchPopover = () => {
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen} aria-label="Toggle Search">
-      <PopoverTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger aria-label="Toggle Search" asChild>
         <Button>
           <Icon name="solid-search" />
         </Button>

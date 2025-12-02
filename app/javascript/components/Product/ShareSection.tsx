@@ -138,7 +138,7 @@ export const ShareSection = ({
           open={loggedInUser ? undefined : false}
         />
 
-        <Popover aria-label="Share">
+        <Popover>
           <PopoverTrigger aria-label="Share" asChild>
             <Button>
               <Icon name="share" />

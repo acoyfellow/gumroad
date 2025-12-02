@@ -10,8 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover
 type Props = { contentHTML: string };
 
 export const FilterPopover = ({ contentHTML }: Props) => (
-  <Popover aria-label="Filter">
-    <PopoverTrigger className="js-toggle-filter-list" asChild>
+  <Popover>
+    <PopoverTrigger aria-label="Filter" className="js-toggle-filter-list" asChild>
       <Button>
         <Icon name="filter" />
       </Button>

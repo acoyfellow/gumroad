@@ -109,17 +109,15 @@ export const PopoverMenuItem = ({
   icon: IconName;
   children: React.ReactNode;
 }) => (
-  <Popover aria-label={name}>
-    <PopoverTrigger>
+  <Popover>
+    <PopoverTrigger aria-label={name}>
       <MenuItemTooltip tip={name}>
         <div className="toolbar-item">
           <Icon name={icon} />
         </div>
       </MenuItemTooltip>
     </PopoverTrigger>
-    <PopoverContent className="border-0 p-0 shadow-none">
-      <PopoverClose>{children}</PopoverClose>
-    </PopoverContent>
+    <PopoverContent className="border-0 p-0 shadow-none">{children}</PopoverContent>
   </Popover>
 );
 
@@ -389,8 +387,8 @@ export const RichTextEditorToolbar = ({
         className={cx("rich-text-editor-toolbar", color, className)}
         onMouseLeave={() => setShowTooltip(false)}
       >
-        <Popover aria-label="Text formats">
-          <PopoverTrigger className="toolbar-item">
+        <Popover>
+          <PopoverTrigger aria-label="Text formats" className="toolbar-item">
             {activeFormatOption?.name ?? "Text"} <Icon name="outline-cheveron-down" />
           </PopoverTrigger>
           <PopoverContent className="border-0 p-0 shadow-none" arrowClassName="fill-white dark:fill-black/35">
@@ -472,32 +470,32 @@ export const RichTextEditorToolbar = ({
                     Insert <Icon name="outline-cheveron-down" />
                   </PopoverTrigger>
                   <PopoverContent className="border-0 p-0 shadow-none" arrowClassName="fill-white dark:fill-black/35">
-                    <PopoverClose>
-                      <div role="menu">
-                        {insertMenuItems.map((item, i) => (
-                          <React.Fragment key={i}>
-                            {item.name === "horizontalRule" ? (
+                    <div role="menu">
+                      {insertMenuItems.map((item, i) => (
+                        <React.Fragment key={i}>
+                          {item.name === "horizontalRule" ? (
+                            <PopoverClose asChild>
                               <div role="menuitem" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
                                 <Icon name="horizontal-rule" />
                                 <span>Divider</span>
                               </div>
-                            ) : (
-                              item.config.submenu?.item(editor)
-                            )}
-                          </React.Fragment>
-                        ))}
-                        <div role="menuitem" onClick={() => setIsUpsellModalOpen(true)}>
-                          <Icon name="cart-plus" />
-                          <span>Upsell</span>
-                        </div>
-                        {productId ? (
-                          <div role="menuitem" onClick={() => setIsReviewModalOpen(true)}>
-                            <Icon name="solid-star" />
-                            <span>Reviews</span>
-                          </div>
-                        ) : null}
+                            </PopoverClose>
+                          ) : (
+                            item.config.submenu?.item(editor)
+                          )}
+                        </React.Fragment>
+                      ))}
+                      <div role="menuitem" onClick={() => setIsUpsellModalOpen(true)}>
+                        <Icon name="cart-plus" />
+                        <span>Upsell</span>
                       </div>
-                    </PopoverClose>
+                      {productId ? (
+                        <div role="menuitem" onClick={() => setIsReviewModalOpen(true)}>
+                          <Icon name="solid-star" />
+                          <span>Reviews</span>
+                        </div>
+                      ) : null}
+                    </div>
                   </PopoverContent>
                 </Popover>
               </>

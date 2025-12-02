@@ -86,8 +86,8 @@ const ActionsPopover = ({
 
   return (
     <>
-      <Popover open={open} onOpenChange={setOpen} aria-label="Open product action menu">
-        <PopoverTrigger>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger aria-label="Open product action menu">
           <Icon name="three-dots" />
         </PopoverTrigger>
         <PopoverContent className="border-0 p-0 shadow-none" usePortal>

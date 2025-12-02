@@ -656,8 +656,9 @@ export const AddSectionButton = ({ side = "bottom", index }: { index: number; si
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen} aria-label="Add section">
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
+        aria-label="Add section"
         className={classNames("absolute -top-px aspect-square place-self-center", { "top-full": side === "top" })}
       >
         <div className={classNames(sectionButtonClasses, "rounded-b border")}>
@@ -665,7 +666,7 @@ export const AddSectionButton = ({ side = "bottom", index }: { index: number; si
         </div>
       </PopoverTrigger>
       <PopoverContent side={side} className="border-0 p-0 shadow-none" arrowClassName="dark:fill-black">
-        <PopoverClose>
+        <PopoverClose asChild>
           <div role="menu">
             <div role="menuitem" onClick={() => addSection("SellerProfileProductsSection")}>
               <Icon name="grid" />

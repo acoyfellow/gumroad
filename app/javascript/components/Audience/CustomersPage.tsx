@@ -258,8 +258,8 @@ const CustomersPage = ({
               }}
               placeholder="Search sales"
             />
-            <Popover aria-label="Filter">
-              <PopoverTrigger asChild>
+            <Popover>
+              <PopoverTrigger aria-label="Filter" asChild>
                 <Button>
                   <Icon name="filter" />
                 </Button>
@@ -378,8 +378,8 @@ const CustomersPage = ({
                 </div>
               </PopoverContent>
             </Popover>
-            <Popover aria-label="Export">
-              <PopoverTrigger asChild>
+            <Popover>
+              <PopoverTrigger aria-label="Export" asChild>
                 <Button>
                   <Icon name="download" />
                 </Button>

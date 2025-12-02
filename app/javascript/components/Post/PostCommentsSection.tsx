@@ -253,23 +253,25 @@ const CommentContainer = ({ comment, upsertComment, confirmCommentDeletion }: Co
           {comment.author_id === seller_id ? <span className="pill small">Creator</span> : null}
           <div className="ml-auto">
             {comment.is_editable || comment.is_deletable ? (
-              <Popover aria-label="Open comment action menu">
-                <PopoverTrigger>
+              <Popover>
+                <PopoverTrigger aria-label="Open comment action menu">
                   <Icon name="three-dots" />
                 </PopoverTrigger>
                 <PopoverContent arrowClassName="dark:fill-black">
-                  <PopoverClose>
-                    <div className="grid gap-3">
-                      {comment.is_editable ? (
+                  <div className="grid gap-3">
+                    {comment.is_editable ? (
+                      <PopoverClose asChild>
                         <Button onClick={() => setEditDraft(comment.content.original)}>Edit</Button>
-                      ) : null}
-                      {comment.is_deletable ? (
+                      </PopoverClose>
+                    ) : null}
+                    {comment.is_deletable ? (
+                      <PopoverClose asChild>
                         <Button color="danger" onClick={() => confirmCommentDeletion(comment)}>
                           Delete
                         </Button>
-                      ) : null}
-                    </div>
-                  </PopoverClose>
+                      </PopoverClose>
+                    ) : null}
+                  </div>
                 </PopoverContent>
               </Popover>
             ) : null}
