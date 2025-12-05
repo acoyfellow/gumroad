@@ -8,7 +8,6 @@ class Settings::ThirdPartyAnalyticsController < Settings::BaseController
 
     render inertia: "Settings/ThirdPartyAnalytics/Show", props: {
       third_party_analytics: settings_presenter.third_party_analytics_props,
-      settings_pages: settings_presenter.pages,
       products: current_seller.links.alive.map { |product| { permalink: product.unique_permalink, name: product.name } }
     }
   end

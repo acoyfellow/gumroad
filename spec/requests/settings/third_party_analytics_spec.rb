@@ -29,7 +29,6 @@ describe("Third-party Analytics Settings Scenario", type: :system, js: true) do
       visit settings_third_party_analytics_path
       fill_in "Google Analytics Property ID", with: google_analytics_id
       click_on "Update settings"
-      wait_for_ajax
       expect(page).to have_alert(text: "Changes saved!")
       expect(seller.reload.google_analytics_id).to eq(google_analytics_id)
     end

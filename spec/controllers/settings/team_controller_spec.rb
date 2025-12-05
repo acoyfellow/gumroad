@@ -27,7 +27,6 @@ describe Settings::TeamController, type: :controller, inertia: true do
       expected_props = {
         member_infos: team_presenter.member_infos.map(&:to_hash),
         can_invite_member: Pundit.policy!(controller.pundit_user, [:settings, :team, TeamInvitation]).create?,
-        settings_pages: settings_presenter.pages,
       }
       # Compare only the expected props from inertia.props (ignore shared props)
       actual_props = inertia.props.slice(*expected_props.keys)

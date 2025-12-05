@@ -26,7 +26,6 @@ describe Settings::PasswordController, :vcr, type: :controller, inertia: true do
       expect(inertia.component).to eq("Settings/Password/Show")
       expected_props = {
         require_old_password: user.provider.blank?,
-        settings_pages: SettingsPresenter.new(pundit_user: controller.pundit_user).pages,
       }
       # Compare only the expected props from inertia.props (ignore shared props)
       actual_props = inertia.props.slice(*expected_props.keys)

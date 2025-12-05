@@ -10,8 +10,7 @@ class Settings::TeamController < Settings::BaseController
 
     render inertia: "Settings/Team/Show", props: {
       member_infos: team_presenter.member_infos,
-      can_invite_member: policy([:settings, :team, TeamInvitation]).create?,
-      settings_pages: settings_presenter.pages,
+      can_invite_member: -> { policy([:settings, :team, TeamInvitation]).create? },
     }
   end
 

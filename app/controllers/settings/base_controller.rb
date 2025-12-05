@@ -5,9 +5,7 @@ class Settings::BaseController < Sellers::BaseController
 
   inertia_share do
     {
-      settings: {
-        pages: settings_presenter.pages
-      }
+      settings_pages: -> { settings_presenter.pages }
     }
   end
 

@@ -22,7 +22,6 @@ describe Settings::ThirdPartyAnalyticsController, type: :controller, inertia: tr
       settings_presenter = SettingsPresenter.new(pundit_user: controller.pundit_user)
       expected_props = {
         third_party_analytics: settings_presenter.third_party_analytics_props,
-        settings_pages: settings_presenter.pages,
         products: seller.links.alive.map { |product| { permalink: product.unique_permalink, name: product.name } },
       }
       # Compare only the expected props from inertia.props (ignore shared props)
