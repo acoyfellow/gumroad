@@ -8,5 +8,7 @@ class SendMissedPostsJob
     purchase = Purchase.find(purchase_id)
 
     SendPostsForPurchaseService.deliver_missed_posts_for(purchase:, workflow_id:)
+  rescue SendPostsForPurchaseService::CustomerOptedOutError => e
+    Rails.logger.info("[#{self.class.name}] Skipping send for opted-out purchase: #{e.message}")
   end
 end

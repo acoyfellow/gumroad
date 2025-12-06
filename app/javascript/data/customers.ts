@@ -189,56 +189,10 @@ export const getPagedCustomers = ({
   };
 };
 
-export type MissedPost = {
-  id: string;
-  name: string;
-  url: string;
-  published_at: string;
-};
-export const getMissedPosts = (purchaseId: string, purchaseEmail: string, workflowId?: string) =>
-  request({
-    method: "GET",
-    accept: "json",
-    url: Routes.missed_posts_path(purchaseId, {
-      purchase_email: purchaseEmail,
-      workflow_id: workflowId,
-    }),
-  })
-    .then((res) => {
-      if (!res.ok) throw new ResponseError();
-      return res.json();
-    })
-    .then((json) => cast<MissedPost[]>(json));
-
-export type Workflow = {
-  id: string;
-  label: string;
-};
-export const getWorkflowsForPurchase = async (purchaseId: string) => {
-  const response = await request({
-    method: "GET",
-    accept: "json",
-    url: Routes.workflows_path({ purchase_id: purchaseId, format: "json" }),
-  });
-  if (!response.ok) throw new ResponseError();
-  return cast<Workflow[]>(await response.json());
-};
-
 export type CustomerEmail = { id: string; name: string; state: string; state_at: string } & (
   | { type: "receipt"; url: string }
   | { type: "post" }
 );
-export const getCustomerEmails = (purchaseId: string) =>
-  request({
-    method: "GET",
-    accept: "json",
-    url: Routes.customer_emails_path(purchaseId),
-  })
-    .then((res) => {
-      if (!res.ok) throw new ResponseError();
-      return res.json();
-    })
-    .then((json) => cast<CustomerEmail[]>(json));
 
 export const resendReceipt = (purchaseId: string) =>
   request({

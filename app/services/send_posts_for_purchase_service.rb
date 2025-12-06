@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class SendPostsForPurchaseService
+  class CustomerOptedOutError < StandardError; end
+
   class << self
     def find_missed_posts_for(purchase:, workflow_id: nil)
       result = Installment.missed_for_purchase(purchase)
@@ -16,9 +18,11 @@ class SendPostsForPurchaseService
     end
 
     def send_post(post:, purchase:)
+      raise SendPostsForPurchaseService::CustomerOptedOutError, "Purchase #{purchase.id} has opted out of receiving emails" unless purchase.can_contact?
+
       # Limit the number of emails sent per post to avoid abuse.
       Rails.cache.fetch("post_email:#{post.id}:#{purchase.id}", expires_in: 8.hours) do
-        CreatorContactingCustomersEmailInfo.where(purchase:, installment: post).destroy_all
+        CreatorContactingCustomersEmailInfo.destroy_by(purchase:, installment: post)
 
         PostEmailApi.process(
           post:,

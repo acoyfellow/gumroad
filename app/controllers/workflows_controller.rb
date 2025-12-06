@@ -14,17 +14,10 @@ class WorkflowsController < Sellers::BaseController
 
   def index
     authorize Workflow
-    workflows_presenter = WorkflowsPresenter.new(seller: current_seller)
+    create_user_event("workflows_view")
 
-    respond_to do |format|
-      format.html do
-        create_user_event("workflows_view")
-        render inertia: "Workflows/Index", props: workflows_presenter.workflows_props
-      end
-      format.json do
-        render json: workflows_presenter.workflow_options_by_purchase_props(purchase: current_seller.sales.find_by_external_id(params[:purchase_id]))
-      end
-    end
+    workflows_presenter = WorkflowsPresenter.new(seller: current_seller)
+    render inertia: "Workflows/Index", props: workflows_presenter.workflows_props
   end
 
   def new

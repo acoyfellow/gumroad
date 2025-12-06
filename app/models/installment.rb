@@ -130,8 +130,13 @@ class Installment < ApplicationRecord
   }
 
   scope :missed_for_purchase, -> (purchase) {
-    product_installment_ids = purchase.link.installments.where(seller_id: purchase.seller_id).alive.published.pluck(:id)
-    seller_installment_ids = purchase.seller.installments.alive.published.filter_map do |post|
+    regular_mails_or_seller_workflow_mails_or_same_product_workflow_mails = Installment.arel_table[:workflow_id].eq(nil)
+      .or(Workflow.arel_table[:link_id].eq(nil))
+      .or(Workflow.arel_table[:link_id].eq(purchase.link_id))
+
+    product_installment_ids = purchase.link.installments.where(seller_id: purchase.seller_id).alive.published.left_joins(:workflow).where(regular_mails_or_seller_workflow_mails_or_same_product_workflow_mails).pluck(:id)
+
+    seller_installment_ids = purchase.seller.installments.alive.published.left_joins(:workflow).where(regular_mails_or_seller_workflow_mails_or_same_product_workflow_mails).filter_map do |post|
       post.id if post.purchase_passes_filters(purchase)
     end
 

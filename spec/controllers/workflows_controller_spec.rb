@@ -24,33 +24,6 @@ describe WorkflowsController, type: :controller, inertia: true do
       expect(inertia.component).to eq("Workflows/Index")
       expect(inertia.props[:workflows]).to be_an(Array)
     end
-
-    context "with JSON format" do
-      let(:product) { create(:product, user: seller) }
-      let(:purchase) { create(:purchase, seller:, link: product) }
-      let!(:workflow1) { create(:workflow, seller:, link: product, name: "Beta Workflow", published_at: Time.current) }
-      let!(:workflow2) { create(:workflow, seller:, link: product, name: "Alpha Workflow", published_at: Time.current) }
-      let!(:installment1) { create(:installment, workflow: workflow1, published_at: Time.current) }
-      let!(:installment2) { create(:installment, workflow: workflow2, published_at: Time.current) }
-
-      it "returns with workflow options data sorted by name" do
-        get :index, format: :json, params: { purchase_id: purchase.external_id }
-
-        expect(response).to be_successful
-        expect(response.content_type).to match(%r{application/json})
-
-        expect(response.parsed_body).to eq([
-                                             {
-                                               "id" => workflow2.external_id,
-                                               "label" => "Alpha Workflow"
-                                             },
-                                             {
-                                               "id" => workflow1.external_id,
-                                               "label" => "Beta Workflow"
-                                             }
-                                           ])
-      end
-    end
   end
 
   describe "GET new" do

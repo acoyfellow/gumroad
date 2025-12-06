@@ -64,6 +64,17 @@ describe SendPostsForPurchaseService do
       expect(PostSendgridApi.mails.keys).to include(purchase.email)
     end
 
+    it "raises CustomerOptedOutError when purchase has opted out" do
+      purchase.update!(can_contact: false)
+
+      expect do
+        described_class.send_post(post:, purchase:)
+      end.to raise_error(SendPostsForPurchaseService::CustomerOptedOutError)
+
+      expect(PostSendgridApi.mails).to be_empty
+      expect(CreatorContactingCustomersEmailInfo.where(purchase:, installment: post)).to be_empty
+    end
+
     it "includes subscription for membership purchases" do
       membership_purchase = create(:membership_purchase, link: create(:membership_product, user: seller))
       membership_purchase.create_url_redirect!
@@ -136,6 +147,20 @@ describe SendPostsForPurchaseService do
       expect(PostSendgridApi.mails.keys).to include(purchase.email)
 
       expect(CreatorContactingCustomersEmailInfo.where(installment: sent_post, purchase:).count).to eq(1)
+    end
+
+    it "raises CustomerOptedOutError when purchase has opted out" do
+      purchase.update!(can_contact: false)
+      [missed_post1, missed_post2].each do |p|
+        Rails.cache.delete("post_email:#{p.id}:#{purchase.id}")
+      end
+
+      expect do
+        described_class.deliver_missed_posts_for(purchase:)
+      end.to raise_error(SendPostsForPurchaseService::CustomerOptedOutError)
+
+      expect(PostSendgridApi.mails).to be_empty
+      expect(CreatorContactingCustomersEmailInfo.where(purchase:).where(installment: [missed_post1, missed_post2])).to be_empty
     end
   end
 end

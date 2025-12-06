@@ -1,8 +1,10 @@
+import { router, usePage } from "@inertiajs/react";
 import { DirectUpload, Blob } from "@rails/activestorage";
 import cx from "classnames";
 import { lightFormat, subMonths } from "date-fns";
 import { format } from "date-fns-tz";
 import * as React from "react";
+import { cast } from "ts-safe-cast";
 
 import {
   Address,
@@ -10,17 +12,12 @@ import {
   CustomerEmail,
   Discount,
   License,
-  MissedPost,
-  Workflow,
   Query,
   Charge,
   SortKey,
   Tracking,
   cancelSubscription,
   changeCanContact,
-  getCustomerEmails,
-  getMissedPosts,
-  getWorkflowsForPurchase,
   getPagedCustomers,
   getProductPurchases,
   markShipped,
@@ -60,7 +57,6 @@ import { asyncVoid } from "$app/utils/promise";
 import { RecurrenceId, recurrenceLabels } from "$app/utils/recurringPricing";
 import { AbortError, assertResponseError } from "$app/utils/request";
 
-import EmptyState from "$app/components/Admin/EmptyState";
 import { Button, NavigationButton } from "$app/components/Button";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { DateInput } from "$app/components/DateInput";
@@ -79,8 +75,10 @@ import { ReviewVideoPlayer } from "$app/components/ReviewVideoPlayer";
 import { Select } from "$app/components/Select";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Toggle } from "$app/components/Toggle";
+import EmptyState from "$app/components/ui/EmptyState";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import Placeholder from "$app/components/ui/Placeholder";
+import { Row, RowActions, RowContent, Rows } from "$app/components/ui/Rows";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
@@ -93,6 +91,8 @@ import { WithTooltip } from "$app/components/WithTooltip";
 import placeholder from "$assets/images/placeholders/customers.png";
 
 type Product = { id: string; name: string; variants: { id: string; name: string }[] };
+type MissedPost = { id: string; name: string; url: string; published_at: string };
+type Workflow = { id: string; label: string };
 
 export type CustomerPageProps = {
   customers: Customer[];
@@ -104,6 +104,9 @@ export type CustomerPageProps = {
   countries: string[];
   can_ping: boolean;
   show_refund_fee_notice: boolean;
+  workflows?: Workflow[];
+  customer_emails?: CustomerEmail[];
+  missed_posts?: MissedPost[];
 };
 
 const year = new Date().getFullYear();
@@ -143,6 +146,7 @@ const CustomersPage = ({
       customers: prev.customers.map((customer) => (customer.id === id ? { ...customer, ...update } : customer)),
     }));
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoadingPurchaseData, setIsLoadingPurchaseData] = React.useState(false);
   const activeRequest = React.useRef<{ cancel: () => void } | null>(null);
 
   const uid = React.useId();
@@ -184,6 +188,18 @@ const CustomersPage = ({
 
   const [selectedCustomerId, setSelectedCustomerId] = React.useState<string | null>(null);
   const selectedCustomer = customers.find(({ id }) => id === selectedCustomerId);
+
+  const handleCustomerSelect = (customerId: string) => {
+    setSelectedCustomerId(customerId);
+    router.reload({
+      data: { purchase_id: customerId },
+      only: ["workflows", "customer_emails", "missed_posts"],
+      preserveUrl: true,
+      onStart: () => setIsLoadingPurchaseData(true),
+      onSuccess: () => setIsLoadingPurchaseData(false),
+      onError: () => setIsLoadingPurchaseData(false),
+    });
+  };
 
   const thProps = useSortingTableDriver<SortKey>(sort, (sort) => updateQuery({ sort }));
 
@@ -469,7 +485,7 @@ const CustomersPage = ({
                     <TableRow
                       key={customer.id}
                       selected={selectedCustomerId === customer.id}
-                      onClick={() => setSelectedCustomerId(customer.id)}
+                      onClick={() => handleCustomerSelect(customer.id)}
                     >
                       <TableCell>
                         {customer.shipping && !customer.shipping.tracking.shipped ? (
@@ -590,6 +606,7 @@ const CustomersPage = ({
             countries={countries}
             canPing={can_ping}
             showRefundFeeNotice={show_refund_fee_notice}
+            isLoadingPurchaseData={isLoadingPurchaseData}
           />
         ) : null}
       </section>
@@ -679,6 +696,7 @@ const CustomerDrawer = ({
   countries,
   canPing,
   showRefundFeeNotice,
+  isLoadingPurchaseData,
 }: {
   customer: Customer;
   onChange: (update: Partial<Customer>) => void;
@@ -687,47 +705,39 @@ const CustomerDrawer = ({
   countries: string[];
   canPing: boolean;
   showRefundFeeNotice: boolean;
+  isLoadingPurchaseData: boolean;
 }) => {
   const userAgentInfo = useUserAgentInfo();
 
   const [loadingId, setLoadingId] = React.useState<string | null>(null);
-  const [missedPosts, setMissedPosts] = React.useState<MissedPost[] | null>(null);
-  const [workflows, setWorkflows] = React.useState<Workflow[]>([]);
-  const [selectedWorkflowId, setSelectedWorkflowId] = React.useState<string | undefined>(undefined);
+  const [selectedWorkflowId, setSelectedWorkflowId] = React.useState<string>("");
   const [shownMissedPosts, setShownMissedPosts] = React.useState(PAGE_SIZE);
-  const [emails, setEmails] = React.useState<CustomerEmail[] | null>(null);
   const [shownEmails, setShownEmails] = React.useState(PAGE_SIZE);
   const sentEmailIds = React.useRef<Set<string>>(new Set());
-  useRunOnce(() => {
-    getCustomerEmails(customer.id).then(setEmails, (e: unknown) => {
-      assertResponseError(e);
-      showAlert(e.message, "error");
+
+  const {
+    workflows,
+    customer_emails: emails,
+    missed_posts: missedPosts,
+  } = cast<{ workflows?: Workflow[]; customer_emails?: CustomerEmail[]; missed_posts?: MissedPost[] }>(usePage().props);
+  const [isLoadingMissedPosts, setIsLoadingMissedPosts] = React.useState(false);
+
+  const workflowOptions = [{ id: "", label: "All missed emails" }, ...(workflows ?? [])];
+
+  const handleWorkflowChange = (workflowId: string) => {
+    setSelectedWorkflowId(workflowId);
+    router.reload({
+      data: {
+        purchase_id: customer.id,
+        workflow_id: workflowId,
+      },
+      only: ["missed_posts"],
+      preserveUrl: true,
+      onStart: () => setIsLoadingMissedPosts(true),
+      onSuccess: () => setIsLoadingMissedPosts(false),
+      onError: () => setIsLoadingMissedPosts(false),
     });
-
-    getWorkflowsForPurchase(customer.id).then(
-      (data) => {
-        setWorkflows(data);
-      },
-      (e: unknown) => {
-        assertResponseError(e);
-        showAlert(e.message, "error");
-      },
-    );
-  });
-
-  React.useEffect(() => {
-    setMissedPosts(null);
-    getMissedPosts(customer.id, customer.email, selectedWorkflowId).then(
-      (data) => {
-        setMissedPosts(data);
-      },
-      (e: unknown) => {
-        assertResponseError(e);
-        showAlert(e.message, "error");
-        setMissedPosts([]);
-      },
-    );
-  }, [selectedWorkflowId, customer.id, customer.email]);
+  };
 
   const onSend = async (id: string, type: "receipt" | "post") => {
     setLoadingId(id);
@@ -745,7 +755,7 @@ const CustomerDrawer = ({
   const handleResendAll = async () => {
     setLoadingId("all");
     try {
-      const response = await resendPosts(customer.id, selectedWorkflowId);
+      const response = await resendPosts(customer.id, selectedWorkflowId === "" ? undefined : selectedWorkflowId);
       missedPosts?.forEach((post) => {
         sentEmailIds.current.add(post.id);
       });
@@ -807,6 +817,7 @@ const CustomerDrawer = ({
         countries={countries}
         canPing={canPing}
         showRefundFeeNotice={showRefundFeeNotice}
+        isLoadingPurchaseData={isLoadingPurchaseData}
       />
     );
 
@@ -1054,11 +1065,11 @@ const CustomerDrawer = ({
                 {field.type === "text" ? (
                   field.value
                 ) : (
-                  <div role="tree" style={{ marginTop: "var(--spacer-2)" }}>
+                  <Rows role="list" className="mt-2">
                     {field.files.map((file) => (
                       <FileRow file={file} key={file.key} />
                     ))}
-                  </div>
+                  </Rows>
                 )}
               </section>
             );
@@ -1241,67 +1252,57 @@ const CustomerDrawer = ({
       <section className="stack" aria-label="Missed emails">
         <div>
           <Select
-            value={
-              selectedWorkflowId
-                ? (workflows.find((w) => w.id === selectedWorkflowId) ?? null)
-                : { id: "", label: "All missed emails" }
-            }
+            value={workflowOptions.find((w) => w.id === selectedWorkflowId) ?? null}
             onChange={(option) => {
               if (option && "id" in option) {
-                setSelectedWorkflowId(option.id);
-              } else {
-                setSelectedWorkflowId(undefined);
+                handleWorkflowChange(option.id);
               }
             }}
-            options={[{ id: "", label: "All missed emails" }, ...workflows]}
+            options={workflowOptions}
           />
         </div>
-        {missedPosts ? (
-          missedPosts.length > 0 ? (
-            <>
-              {missedPosts.slice(0, shownMissedPosts).map((post) => (
-                <section key={post.id}>
-                  <div>
-                    <h5>
-                      <a href={post.url} target="_blank" rel="noreferrer">
-                        {post.name}
-                      </a>
-                    </h5>
-                    <small>{`Originally sent on ${formatDateWithoutTime(new Date(post.published_at))}`}</small>
-                  </div>
-                  <Button
-                    color="primary"
-                    disabled={!!loadingId || sentEmailIds.current.has(post.id)}
-                    onClick={() => void onSend(post.id, "post")}
-                  >
-                    {sentEmailIds.current.has(post.id) ? "Sent" : loadingId === post.id ? "Resending..." : "Resend"}
-                  </Button>
-                </section>
-              ))}
-              {shownMissedPosts < missedPosts.length ? (
-                <section>
-                  <Button
-                    onClick={() => setShownMissedPosts((prevShownMissedPosts) => prevShownMissedPosts + PAGE_SIZE)}
-                  >
-                    Show more
-                  </Button>
-                </section>
-              ) : null}
-              <div>
-                <Button color="primary" disabled={!!loadingId} onClick={() => void handleResendAll()}>
-                  {loadingId === "all" ? "Resending all..." : "Resend all"}
-                </Button>
-              </div>
-            </>
-          ) : (
-            <EmptyState className="text-center" message="All caught up! No missed emails." />
-          )
-        ) : (
+        {isLoadingPurchaseData || isLoadingMissedPosts || missedPosts === undefined ? (
           <section>
             <div className="text-center">
               <LoadingSpinner className="size-8" />
             </div>
           </section>
+        ) : missedPosts.length > 0 ? (
+          <>
+            {missedPosts.slice(0, shownMissedPosts).map((post) => (
+              <section key={post.id}>
+                <div>
+                  <h5>
+                    <a href={post.url} target="_blank" rel="noreferrer">
+                      {post.name}
+                    </a>
+                  </h5>
+                  <small>{`Originally sent on ${formatDateWithoutTime(new Date(post.published_at))}`}</small>
+                </div>
+                <Button
+                  color="primary"
+                  disabled={!!loadingId || sentEmailIds.current.has(post.id)}
+                  onClick={() => void onSend(post.id, "post")}
+                >
+                  {sentEmailIds.current.has(post.id) ? "Sent" : loadingId === post.id ? "Resending..." : "Resend"}
+                </Button>
+              </section>
+            ))}
+            {shownMissedPosts < missedPosts.length ? (
+              <section>
+                <Button onClick={() => setShownMissedPosts((prevShownMissedPosts) => prevShownMissedPosts + PAGE_SIZE)}>
+                  Show more
+                </Button>
+              </section>
+            ) : null}
+            <div>
+              <Button color="primary" disabled={!!loadingId} onClick={() => void handleResendAll()}>
+                {loadingId === "all" ? "Resending all..." : "Resend all"}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <EmptyState className="text-center" message="All caught up! No missed emails." />
         )}
       </section>
       {emails?.length !== 0 ? (
@@ -1309,7 +1310,7 @@ const CustomerDrawer = ({
           <header>
             <h3>Emails received</h3>
           </header>
-          {emails ? (
+          {!isLoadingPurchaseData && emails ? (
             <>
               {emails.slice(0, shownEmails).map((email) => (
                 <section key={email.id}>
@@ -2504,8 +2505,8 @@ const CallSection = ({ call, onChange }: { call: Call; onChange: (call: Call) =>
 };
 
 const FileRow = ({ file, disabled, onDelete }: { file: File; disabled?: boolean; onDelete?: () => void }) => (
-  <div role="treeitem">
-    <div className="content">
+  <Row role="listitem">
+    <RowContent>
       <FileKindIcon extension={file.extension} />
       <div>
         <h4>{file.name}</h4>
@@ -2514,8 +2515,8 @@ const FileRow = ({ file, disabled, onDelete }: { file: File; disabled?: boolean;
           <li>{FileUtils.getFullFileSizeString(file.size)}</li>
         </ul>
       </div>
-    </div>
-    <div className="actions">
+    </RowContent>
+    <RowActions>
       {onDelete ? (
         <Button color="danger" onClick={onDelete} disabled={disabled} aria-label="Delete">
           <Icon name="trash2" />
@@ -2530,8 +2531,8 @@ const FileRow = ({ file, disabled, onDelete }: { file: File; disabled?: boolean;
       >
         <Icon name="download-fill" />
       </NavigationButton>
-    </div>
-  </div>
+    </RowActions>
+  </Row>
 );
 
 const CommissionSection = ({
@@ -2632,11 +2633,11 @@ const CommissionSection = ({
       <section>
         <section className="grid gap-2">
           {commission.files.length ? (
-            <div role="tree">
+            <Rows role="list">
               {commission.files.map((file) => (
                 <FileRow key={file.id} file={file} onDelete={() => void handleDelete(file.id)} disabled={isLoading} />
               ))}
-            </div>
+            </Rows>
           ) : null}
           <label className="button">
             <input type="file" onChange={handleFileChange} disabled={isLoading} multiple style={{ display: "none" }} />
