@@ -278,10 +278,6 @@ describe "InstallmentClassMethods"  do
       workflow_seller = create(:workflow, seller: @creator, link: nil, workflow_type: Workflow::SELLER_TYPE, published_at: Time.current)
       seller_workflow_post = create(:installment, seller: @creator, workflow: workflow_seller, published_at: Time.current)
 
-      variant_same_product = create(:variant, variant_category: create(:variant_category, link: @product))
-      variant_workflow_same_product = create(:variant_workflow, seller: @creator, base_variant: variant_same_product, link: @product, published_at: Time.current)
-      variant_workflow_post_same_product = create(:installment, link: @product, workflow: variant_workflow_same_product, seller: @creator, published_at: Time.current)
-
       post_with_bought_products_filter = create(:seller_installment, seller: @creator, bought_products: [@product.unique_permalink, create(:product, user: @creator).unique_permalink], published_at: 2.days.ago)
 
       missed_posts = Installment.missed_for_purchase(@purchase)
@@ -291,8 +287,29 @@ describe "InstallmentClassMethods"  do
                                    seller_post_to_all_customers,
                                    audience_post,
                                    seller_workflow_post,
-                                   variant_workflow_post_same_product,
                                    post_with_bought_products_filter
+                                 ])
+    end
+
+    it "includes variant workflow posts when purchase has the variant" do
+      regular_product_post = create(:installment, link: @product, seller: @creator, published_at: Time.current)
+
+      variant_a = create(:variant, variant_category: create(:variant_category, link: @product))
+      variant_b = create(:variant, variant_category: create(:variant_category, link: @product))
+
+      purchase_with_variant_a = create(:purchase, link: @product, variant_attributes: [variant_a], seller: @creator)
+
+      variant_a_workflow = create(:variant_workflow, seller: @creator, base_variant: variant_a, link: @product, published_at: Time.current)
+      variant_a_workflow_post = create(:installment, link: @product, workflow: variant_a_workflow, seller: @creator, published_at: Time.current)
+
+      variant_b_workflow = create(:variant_workflow, seller: @creator, base_variant: variant_b, link: @product, published_at: Time.current)
+      _variant_b_workflow_post = create(:installment, link: @product, workflow: variant_b_workflow, seller: @creator, published_at: Time.current)
+
+      missed_posts = Installment.missed_for_purchase(purchase_with_variant_a)
+
+      expect(missed_posts).to eq([
+                                   regular_product_post,
+                                   variant_a_workflow_post
                                  ])
     end
 
@@ -309,6 +326,11 @@ describe "InstallmentClassMethods"  do
     it "excludes already sent posts, posts from other sellers, posts from workflows for other products, and profile-only posts" do
       sent_installment = create(:installment, link: @product, seller: @creator, published_at: Time.current)
       create(:creator_contacting_customers_email_info, installment: sent_installment, purchase: @purchase)
+
+      same_product_variant = create(:variant, variant_category: create(:variant_category, link: @product))
+      same_product_variant_workflow = create(:variant_workflow, seller: @creator, base_variant: same_product_variant, link: @product, published_at: Time.current)
+      _same_product_variant_workflow_post = create(:installment, link: @product, workflow: same_product_variant_workflow, seller: @creator, published_at: Time.current)
+
 
       product_b = create(:product, user: @creator)
       workflow_product_b = create(:workflow, seller: @creator, link: product_b, published_at: Time.current)

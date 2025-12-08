@@ -54,10 +54,6 @@ describe CustomersController, :vcr, type: :controller, inertia: true do
       let(:product) { create(:product, user: seller) }
       let(:purchase) { create(:purchase, link: product, created_at: Time.current - 15.seconds) }
 
-      before do
-        index_model_records(Purchase)
-      end
-
       it "when customer is selected it loads customer_emails, missed_posts, and workflows together" do
         request.headers["X-Inertia-Partial-Data"] = "customer_emails,missed_posts,workflows"
         request.headers["X-Inertia-Partial-Component"] = "Customers/Index"
@@ -284,6 +280,24 @@ describe CustomersController, :vcr, type: :controller, inertia: true do
             expect(email_info[:state]).to eq "Opened"
             expect(email_info[:url]).to eq receipt_purchase_url(purchase.external_id, email: purchase.email)
           end
+        end
+      end
+
+      context "missed_posts" do
+        it "only returns installments, not receipts" do
+          post = create(:installment, link: product, seller:, published_at: Time.current)
+          create(:customer_email_info, purchase:)
+
+          request.headers["X-Inertia-Partial-Data"] = "missed_posts"
+          request.headers["X-Inertia-Partial-Component"] = "Customers/Index"
+          get :index, params: { purchase_id: purchase.external_id }
+
+          expect(response).to be_successful
+          expect(inertia.props[:missed_posts]).to be_an(Array)
+          expect(inertia.props[:missed_posts].length).to eq(1)
+          expect(inertia.props[:missed_posts].first[:id]).to eq(post.external_id)
+          expect(inertia.props[:missed_posts].first[:name]).to eq(post.name)
+          expect(inertia.props[:missed_posts]).not_to include(hash_including(type: "receipt"))
         end
       end
 

@@ -130,13 +130,17 @@ class Installment < ApplicationRecord
   }
 
   scope :missed_for_purchase, -> (purchase) {
-    regular_mails_or_seller_workflow_mails_or_same_product_workflow_mails = Installment.arel_table[:workflow_id].eq(nil)
+    purchase_variant_ids = purchase.variant_attributes.pluck(:id)
+    regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows = Installment.arel_table[:workflow_id].eq(nil)
       .or(Workflow.arel_table[:link_id].eq(nil))
-      .or(Workflow.arel_table[:link_id].eq(purchase.link_id))
+      .or(
+        Workflow.arel_table[:link_id].eq(purchase.link_id)
+          .and(Workflow.arel_table[:base_variant_id].eq(nil).or(Workflow.arel_table[:base_variant_id].in(purchase_variant_ids)))
+      )
 
-    product_installment_ids = purchase.link.installments.where(seller_id: purchase.seller_id).alive.published.left_joins(:workflow).where(regular_mails_or_seller_workflow_mails_or_same_product_workflow_mails).pluck(:id)
+    product_installment_ids = purchase.link.installments.where(seller_id: purchase.seller_id).alive.published.left_joins(:workflow).where(regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows).pluck(:id)
 
-    seller_installment_ids = purchase.seller.installments.alive.published.left_joins(:workflow).where(regular_mails_or_seller_workflow_mails_or_same_product_workflow_mails).filter_map do |post|
+    seller_installment_ids = purchase.seller.installments.alive.published.left_joins(:workflow).where(regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows).filter_map do |post|
       post.id if post.purchase_passes_filters(purchase)
     end
 
