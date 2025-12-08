@@ -96,6 +96,8 @@ type Workflow = { id: string; label: string };
 
 export type CustomerPageProps = {
   customers: Customer[];
+  customer_emails?: CustomerEmail[];
+  missed_posts?: MissedPost[];
   pagination: PaginationProps | null;
   product_id: string | null;
   products: Product[];
@@ -105,8 +107,6 @@ export type CustomerPageProps = {
   can_ping: boolean;
   show_refund_fee_notice: boolean;
   workflows?: Workflow[];
-  customer_emails?: CustomerEmail[];
-  missed_posts?: MissedPost[];
 };
 
 const year = new Date().getFullYear();
@@ -716,10 +716,10 @@ const CustomerDrawer = ({
   const sentEmailIds = React.useRef<Set<string>>(new Set());
 
   const {
-    workflows,
     customer_emails: emails,
     missed_posts: missedPosts,
-  } = cast<{ workflows?: Workflow[]; customer_emails?: CustomerEmail[]; missed_posts?: MissedPost[] }>(usePage().props);
+    workflows,
+  } = cast<{ customer_emails?: CustomerEmail[]; missed_posts?: MissedPost[]; workflows?: Workflow[] }>(usePage().props);
   const [isLoadingMissedPosts, setIsLoadingMissedPosts] = React.useState(false);
 
   const workflowOptions = [{ id: "", label: "All missed emails" }, ...(workflows ?? [])];
