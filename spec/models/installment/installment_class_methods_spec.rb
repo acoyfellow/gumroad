@@ -331,7 +331,6 @@ describe "InstallmentClassMethods"  do
       same_product_variant_workflow = create(:variant_workflow, seller: @creator, base_variant: same_product_variant, link: @product, published_at: Time.current)
       _same_product_variant_workflow_post = create(:installment, link: @product, workflow: same_product_variant_workflow, seller: @creator, published_at: Time.current)
 
-
       product_b = create(:product, user: @creator)
       workflow_product_b = create(:workflow, seller: @creator, link: product_b, published_at: Time.current)
       _other_product_workflow_post = create(:installment, link: product_b, workflow: workflow_product_b, seller: @creator, published_at: Time.current)

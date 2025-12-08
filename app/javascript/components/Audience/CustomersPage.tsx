@@ -714,6 +714,8 @@ const CustomerDrawer = ({
   const [shownMissedPosts, setShownMissedPosts] = React.useState(PAGE_SIZE);
   const [shownEmails, setShownEmails] = React.useState(PAGE_SIZE);
   const sentEmailIds = React.useRef<Set<string>>(new Set());
+  const pollIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollCancelRef = React.useRef<{ cancel: () => void } | null>(null);
 
   const {
     customer_emails: emails,
@@ -752,20 +754,55 @@ const CustomerDrawer = ({
     setLoadingId(null);
   };
 
+  const stopPolling = () => {
+    pollCancelRef.current?.cancel();
+    pollCancelRef.current = null;
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+    setLoadingId(null);
+  };
+
+  const trackPostsBeingSent = (purchaseId: string, workflowId: string | undefined) => {
+    stopPolling();
+    setLoadingId("all");
+    pollIntervalRef.current = setInterval(() => {
+      router.reload({
+        data: {
+          purchase_id: purchaseId,
+          workflow_id: workflowId,
+        },
+        only: ["customer_emails", "missed_posts"],
+        preserveUrl: true,
+        onCancelToken: (token) => {
+          pollCancelRef.current = token;
+        },
+        onSuccess: (page) => {
+          const { missed_posts } = cast<{ missed_posts?: MissedPost[] }>(page.props);
+          if (!missed_posts?.length) {
+            stopPolling();
+            showAlert("All missed emails were sent", "success");
+          }
+        },
+      });
+    }, 3500);
+  };
+
   const handleResendAll = async () => {
     setLoadingId("all");
     try {
       const response = await resendPosts(customer.id, selectedWorkflowId === "" ? undefined : selectedWorkflowId);
-      missedPosts?.forEach((post) => {
-        sentEmailIds.current.add(post.id);
-      });
+      trackPostsBeingSent(customer.id, selectedWorkflowId === "" ? undefined : selectedWorkflowId);
       showAlert(response.message, "success");
     } catch (e) {
       assertResponseError(e);
       showAlert(e.message, "error");
+      setLoadingId(null);
     }
-    setLoadingId(null);
   };
+
+  React.useEffect(() => () => stopPolling(), [customer.id, selectedWorkflowId]);
 
   const [productPurchases, setProductPurchases] = React.useState<Customer[]>([]);
   const [selectedProductPurchaseId, setSelectedProductPurchaseId] = React.useState<string | null>(null);
