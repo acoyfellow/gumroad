@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Button } from "$app/components/Button";
 import { createCast } from "ts-safe-cast";
 
 import { register } from "$app/utils/serverComponentUtil";
@@ -20,9 +21,9 @@ export const AdminAddCreditForm = ({ user_id }: { user_id: number }) => (
             <span className="pill">$</span>
             <input type="text" name="credit[credit_amount]" placeholder="10.25" inputMode="decimal" required />
           </div>
-          <button type="submit" className="button" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading}>
             {isLoading ? "Saving..." : "Add credits"}
-          </button>
+          </Button>
         </div>
         <small>Subtract credits by providing a negative value</small>
       </fieldset>

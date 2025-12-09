@@ -1,5 +1,7 @@
 import React from "react";
 
+import { Button } from "$app/components/Button";
+
 import { Membership, Product } from "$app/data/products";
 
 import { Icon } from "$app/components/Icons";
@@ -46,9 +48,9 @@ export const ArchivedProductsPage = ({
             aria-label="Toggle Search"
             trigger={
               <WithTooltip tip="Search" position="bottom">
-                <div className="button">
-                  <Icon name="solid-search" />
-                </div>
+                <Button asChild><div>
+                    <Icon name="solid-search" />
+                  </div></Button>
               </WithTooltip>
             }
           >

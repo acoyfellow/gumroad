@@ -91,9 +91,9 @@ export const CoverEditor = ({
                 disabled={!canAddPreview || isUploading}
                 aria-label="Add cover"
                 trigger={
-                  <div className="button">
-                    <Icon name="plus" />
-                  </div>
+                  <Button asChild><div>
+                      <Icon name="plus" />
+                    </div></Button>
                 }
                 open={isUploaderOpen}
                 onToggle={(value) => {

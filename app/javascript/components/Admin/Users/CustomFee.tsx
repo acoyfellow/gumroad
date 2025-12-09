@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { Button } from "$app/components/Button";
+
 import { Form } from "$app/components/Admin/Form";
 import type { User } from "$app/components/Admin/Users/User";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -40,9 +42,9 @@ const AdminUserCustomFee = ({ user }: AdminUserCustomFeeProps) => {
                   onChange={(e) => setCustomFee(e.target.value)}
                   placeholder="Enter a custom fee percentage between 0 and 100. Submit blank to clear existing custom fee."
                 />
-                <button type="submit" className="button" disabled={isLoading} id="update-custom-fee">
+                <Button type="submit" disabled={isLoading} id="update-custom-fee">
                   {isLoading ? "Submitting..." : "Submit"}
-                </button>
+                </Button>
               </div>
               <small>
                 Note: Updated custom fee will apply to new direct (non-discover) sales of the user, but not to future

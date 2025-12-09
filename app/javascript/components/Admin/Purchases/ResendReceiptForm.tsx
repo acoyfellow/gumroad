@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { Button } from "$app/components/Button";
+
 import { Form } from "$app/components/Admin/Form";
 import { showAlert } from "$app/components/server-components/Alert";
 
@@ -19,9 +21,9 @@ export const AdminResendReceiptForm = ({ purchase_id, email }: AdminResendReceip
       <fieldset>
         <div className="flex gap-2">
           <input type="email" className="flex-1" name="resend_receipt[email_address]" placeholder={email} />
-          <button type="submit" className="button" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading}>
             {isLoading ? "Sending..." : "Send"}
-          </button>
+          </Button>
         </div>
         <small>This will update the purchase email to this new one!</small>
       </fieldset>

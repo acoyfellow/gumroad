@@ -65,9 +65,9 @@ export const Layout = ({
                 aria-label="Toggle Search"
                 trigger={
                   <WithTooltip tip="Search" position="bottom">
-                    <div className="button">
-                      <Icon name="solid-search" />
-                    </div>
+                    <Button asChild><div>
+                        <Icon name="solid-search" />
+                      </div></Button>
                   </WithTooltip>
                 }
               >
@@ -122,9 +122,8 @@ export const NewEmailButton = ({ copyFrom }: { copyFrom?: string }) => {
 export const EditEmailButton = ({ id }: { id: string }) => {
   const { pathname: from } = useLocation();
   return (
-    <Link className="button" to={editEmailPath(id)} state={{ from }}>
-      Edit
-    </Link>
+    <Button asChild><Link to={editEmailPath(id)} state={{ from }}>Edit
+            </Link></Button>
   );
 };
 

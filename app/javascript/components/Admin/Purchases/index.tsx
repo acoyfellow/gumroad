@@ -1,4 +1,5 @@
 import { Link } from "@inertiajs/react";
+import { Button } from "$app/components/Button";
 import React from "react";
 
 import { formatPriceCentsWithCurrencySymbol } from "$app/utils/currency";
@@ -501,9 +502,9 @@ const GiftInfo = ({ purchaseId, gift }: { purchaseId: number; gift: Gift }) =>
           {(isLoading) => (
             <div className="flex gap-2">
               <input type="text" className="flex-1" name="giftee_email" placeholder="Enter new giftee email" required />
-              <button type="submit" className="button" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading}>
                 {isLoading ? "Updating..." : "Update"}
-              </button>
+              </Button>
             </div>
           )}
         </Form>
@@ -629,9 +630,11 @@ const ActionButtons = ({ purchase }: { purchase: Purchase }) => (
       />
     ) : null}
     {purchase.successful ? (
-      <Link href={Routes.receipt_purchase_path(purchase.external_id)} target="_blank" className="button small">
-        Go to Receipt
-      </Link>
+      <Button asChild><Link
+          href={Routes.receipt_purchase_path(purchase.external_id)}
+          target="_blank"
+          className="small">Go to Receipt
+                </Link></Button>
     ) : null}
   </div>
 );

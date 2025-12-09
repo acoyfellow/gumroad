@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { Button } from "$app/components/Button";
+
 import { Form } from "$app/components/Admin/Form";
 import type { User } from "$app/components/Admin/Users/User";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -25,9 +27,9 @@ const AdminUserMassTransferPurchases = ({ user }: AdminUserMassTransferPurchases
           <fieldset>
             <div className="grid grid-cols-[1fr_auto] gap-3">
               <input type="email" name="mass_transfer_purchases[new_email]" placeholder="New email" required />
-              <button type="submit" className="button" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading}>
                 {isLoading ? "Transferring..." : "Transfer"}
-              </button>
+              </Button>
             </div>
             <small>Are you sure you want to Mass Transfer purchases for this user?</small>
           </fieldset>

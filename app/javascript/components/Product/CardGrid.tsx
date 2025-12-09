@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { Button } from "$app/components/Button";
+
 import { getSearchResults, ProductFilter, SearchRequest, SearchResults } from "$app/data/search";
 import { SORT_KEYS, PROFILE_SORT_KEYS } from "$app/parsers/product";
 import { classNames } from "$app/utils/classNames";
@@ -368,9 +370,9 @@ export const CardGrid = ({
           {pagination === "button" &&
           !((state.results?.total ?? 0) < (state.offset ?? 1) + (state.results?.products.length ?? 0)) ? (
             <div className="mt-8 w-full text-center">
-              <button className="button" onClick={() => dispatchAction({ type: "load-more" })}>
+              <Button onClick={() => dispatchAction({ type: "load-more" })}>
                 Load more
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>

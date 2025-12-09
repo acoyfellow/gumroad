@@ -219,13 +219,11 @@ const SettingsPage = ({ creator_profile, profile_settings, settings_pages, ...pr
         </form>
         <PreviewSidebar
           previewLink={(props) => (
-            <a
-              {...props}
-              className="button"
-              href={Routes.root_url({ host: creatorProfile.subdomain })}
-              target="_blank"
-              rel="noreferrer"
-            />
+            <Button asChild><a
+                {...props}
+                href={Routes.root_url({ host: creatorProfile.subdomain })}
+                target="_blank"
+                rel="noreferrer"></Button>
           )}
         >
           <Preview

@@ -234,10 +234,9 @@ export const UtmLinkForm = () => {
       title={isEditing ? "Edit link" : "Create link"}
       actions={
         <>
-          <Link to="/dashboard/utm_links" className="button">
-            <Icon name="x-square" />
-            Cancel
-          </Link>
+          <Button asChild><Link to="/dashboard/utm_links">
+              <Icon name="x-square" />Cancel
+                        </Link></Button>
           <Button color="accent" onClick={submit} disabled={isSaving}>
             {isSaving ? "Saving..." : isEditing ? "Save changes" : "Add link"}
           </Button>

@@ -82,13 +82,10 @@ export const AffiliateSignupForm = () => {
       actions={
         <>
           <WithTooltip position="bottom" tip={data.affiliates_disabled_reason}>
-            <Link
-              to="/affiliates/new"
-              className="button"
-              inert={!loggedInUser?.policies.direct_affiliate.create || data.affiliates_disabled_reason !== null}
-            >
-              Add affiliate
-            </Link>
+            <Button asChild><Link
+                to="/affiliates/new"
+                inert={!loggedInUser?.policies.direct_affiliate.create || data.affiliates_disabled_reason !== null}>Add affiliate
+                            </Link></Button>
           </WithTooltip>
           <Button
             onClick={handleSaveChanges}

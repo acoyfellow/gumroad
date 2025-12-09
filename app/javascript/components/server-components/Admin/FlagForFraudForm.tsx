@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Button } from "$app/components/Button";
 import { createCast } from "ts-safe-cast";
 
 import { register } from "$app/utils/serverComponentUtil";
@@ -17,9 +18,9 @@ export const AdminFlagForFraudForm = ({ user_id }: { user_id: number }) => (
       <fieldset>
         <div className="input-with-button" style={{ alignItems: "start" }}>
           <textarea name="flag_for_fraud[flag_note]" rows={3} placeholder="Add flag note (optional)" />
-          <button type="submit" className="button" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading}>
             {isLoading ? "Submitting..." : "Submit"}
-          </button>
+          </Button>
         </div>
       </fieldset>
     )}

@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { Button } from "$app/components/Button";
+
 import { Form } from "$app/components/Admin/Form";
 
 const AdminPausePayoutsForm = ({ user_id, onSuccess }: { user_id: number; onSuccess: (reason: string) => void }) => {
@@ -30,9 +32,9 @@ const AdminPausePayoutsForm = ({ user_id, onSuccess }: { user_id: number; onSucc
               value={reason}
               onChange={onReasonChange}
             />
-            <button type="submit" className="button" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? "Pausing Payouts" : "Pause Payouts"}
-            </button>
+            </Button>
           </div>
         </fieldset>
       )}

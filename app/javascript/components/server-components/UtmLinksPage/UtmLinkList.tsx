@@ -145,9 +145,8 @@ const UtmLinkList = () => {
       actions={
         <>
           <SearchBoxPopover initialQuery={query} onSearch={onSearch} />
-          <Link to="/dashboard/utm_links/new" className="button accent">
-            Create link
-          </Link>
+          <Button asChild><Link to="/dashboard/utm_links/new" className="accent">Create link
+                        </Link></Button>
         </>
       }
     >
@@ -376,9 +375,9 @@ const SearchBoxPopover = ({ initialQuery, onSearch }: { initialQuery: string; on
       aria-label="Toggle Search"
       trigger={
         <WithTooltip tip="Search" position="bottom">
-          <div className="button">
-            <Icon name="solid-search" />
-          </div>
+          <Button asChild><div>
+              <Icon name="solid-search" />
+            </div></Button>
         </WithTooltip>
       }
     >
@@ -519,10 +518,9 @@ const UtmLinkDetails = ({
         </div>
       </section>
       <div style={{ display: "grid", gridAutoFlow: "column", gap: "var(--spacer-4)" }}>
-        <Link to={duplicateLinkPath(utmLink)} className="button">
-          {" "}
-          Duplicate
-        </Link>
+        <Button asChild><Link to={duplicateLinkPath(utmLink)}>
+            {" "}Duplicate
+                    </Link></Button>
         <NavigationButton href={editLinkPath(utmLink)}> Edit</NavigationButton>
         <Button color="danger" onClick={onDelete}>
           Delete

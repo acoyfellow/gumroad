@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { Button } from "$app/components/Button";
+
 import { Form } from "$app/components/Admin/Form";
 import type { User } from "$app/components/Admin/Users/User";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -29,9 +31,9 @@ const AdminUserAddCredit = ({ user }: AdminUserAddCreditProps) => (
                 <input type="text" name="credit[credit_amount]" placeholder="10.25" inputMode="decimal" required />
               </div>
 
-              <button type="submit" className="button" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading}>
                 {isLoading ? "Saving..." : "Add credits"}
-              </button>
+              </Button>
             </div>
 
             <small>Subtract credits by providing a negative value</small>

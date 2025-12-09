@@ -199,10 +199,9 @@ const CollaboratorForm = () => {
       title={isEditing ? formData.name : "New collaborator"}
       headerActions={
         <>
-          <Link to="/collaborators" className="button" inert={navigation.state !== "idle"}>
-            <Icon name="x-square" />
-            Cancel
-          </Link>
+          <Button asChild><Link to="/collaborators" inert={navigation.state !== "idle"}>
+              <Icon name="x-square" />Cancel
+                        </Link></Button>
           <WithTooltip position="bottom" tip={formData.collaborators_disabled_reason}>
             <Button
               color="accent"

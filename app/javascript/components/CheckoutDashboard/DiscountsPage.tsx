@@ -303,9 +303,9 @@ const DiscountsPage = ({
               onToggle={setIsSearchPopoverOpen}
               aria-label="Search"
               trigger={
-                <div className="button">
-                  <Icon name="solid-search" />
-                </div>
+                <Button asChild><div>
+                    <Icon name="solid-search" />
+                  </div></Button>
               }
             >
               <div className="input">

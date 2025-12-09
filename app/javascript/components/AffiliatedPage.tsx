@@ -193,9 +193,9 @@ const Search = ({ onSearch, value }: SearchProps) => {
       aria-label="Toggle Search"
       trigger={
         <WithTooltip tip="Search" position="bottom">
-          <div className="button">
-            <Icon name="solid-search" />
-          </div>
+          <Button asChild><div>
+              <Icon name="solid-search" />
+            </div></Button>
         </WithTooltip>
       }
     >

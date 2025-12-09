@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Button } from "$app/components/Button";
 import { createCast } from "ts-safe-cast";
 
 import { register } from "$app/utils/serverComponentUtil";
@@ -35,9 +36,9 @@ export const AdminSuspendForTosForm = ({
             </option>
           ))}
         </select>
-        <button type="submit" className="button" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading}>
           {isLoading ? "Suspending..." : "Submit"}
-        </button>
+        </Button>
       </>
     )}
   </Form>

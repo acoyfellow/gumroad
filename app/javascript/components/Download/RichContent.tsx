@@ -372,10 +372,9 @@ const FileGroupDownloadAllButton = ({ folderId, files }: { folderId: string; fil
     <Popover
       disabled={isDownloading}
       trigger={
-        <div className="button" contentEditable={false}>
-          Download all
-          <Icon name="outline-cheveron-down" />
-        </div>
+        <Button asChild><div contentEditable={false}>Download all
+                      <Icon name="outline-cheveron-down" />
+          </div></Button>
       }
     >
       <div className="grid gap-2">

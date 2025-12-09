@@ -1,4 +1,5 @@
 import { useForm, usePage } from "@inertiajs/react";
+import { Button } from "$app/components/Button";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
@@ -74,9 +75,9 @@ const AdminCommentableForm = ({ endpoint, onCommentAdded, commentableType }: Adm
             value={content}
             onChange={onContentChange}
           />
-          <button type="submit" className="button" disabled={processing}>
+          <Button type="submit" disabled={processing}>
             {processing ? "Saving..." : "Add comment"}
-          </button>
+          </Button>
         </div>
       </fieldset>
     </form>

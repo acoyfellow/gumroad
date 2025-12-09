@@ -92,14 +92,12 @@ const CollaboratorDetails = ({
           Collaborators won't receive their cut until they set up a payout account in their Gumroad settings.
         </div>
       ) : null}
-
       <section className="stack">
         <h3>Email</h3>
         <div>
           <span>{selectedCollaborator.email}</span>
         </div>
       </section>
-
       <section className="stack">
         <h3>Products</h3>
         {selectedCollaborator.products.map((product) => (
@@ -109,16 +107,13 @@ const CollaboratorDetails = ({
           </section>
         ))}
       </section>
-
       <section className="mt-auto flex gap-4">
-        <Link
-          to={`/collaborators/${selectedCollaborator.id}/edit`}
-          className="button flex-1"
-          aria-label="Edit"
-          inert={!loggedInUser?.policies.collaborator.update || navigation.state !== "idle"}
-        >
-          Edit
-        </Link>
+        <Button asChild><Link
+            to={`/collaborators/${selectedCollaborator.id}/edit`}
+            className="flex-1"
+            aria-label="Edit"
+            inert={!loggedInUser?.policies.collaborator.update || navigation.state !== "idle"}>Edit
+                    </Link></Button>
         <Button
           className="flex-1"
           color="danger"
@@ -161,17 +156,15 @@ const Collaborators = () => {
       showTabs={has_incoming_collaborators}
       headerActions={
         <WithTooltip position="bottom" tip={collaborators_disabled_reason}>
-          <Link
-            to="/collaborators/new"
-            className="button accent"
-            inert={
-              !loggedInUser?.policies.collaborator.create ||
-              navigation.state !== "idle" ||
-              collaborators_disabled_reason !== null
-            }
-          >
-            Add collaborator
-          </Link>
+          <Button asChild><Link
+              to="/collaborators/new"
+              className="accent"
+              inert={
+                !loggedInUser?.policies.collaborator.create ||
+                navigation.state !== "idle" ||
+                collaborators_disabled_reason !== null
+              }>Add collaborator
+                        </Link></Button>
         </WithTooltip>
       }
     >
@@ -228,14 +221,12 @@ const Collaborators = () => {
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <div className="flex flex-wrap gap-3 lg:justify-end">
-                        <Link
-                          to={`/collaborators/${collaborator.id}/edit`}
-                          className="button"
-                          aria-label="Edit"
-                          inert={!loggedInUser?.policies.collaborator.update || navigation.state !== "idle"}
-                        >
-                          <Icon name="pencil" />
-                        </Link>
+                        <Button asChild><Link
+                            to={`/collaborators/${collaborator.id}/edit`}
+                            aria-label="Edit"
+                            inert={!loggedInUser?.policies.collaborator.update || navigation.state !== "idle"}>
+                            <Icon name="pencil" />
+                          </Link></Button>
 
                         <Button
                           type="submit"
