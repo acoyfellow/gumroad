@@ -1,27 +1,23 @@
 # frozen_string_literal: true
 
 class SendPostsForPurchaseService
-  class CustomerOptedOutError < StandardError; end
+  class CustomerDNDEnabledError < StandardError; end
+  class PostNotSentError < StandardError; end
+  class SellerNotEligibleError < StandardError; end
+
+  POST_EMAIL_CACHE_EXPIRATION_TIME = 8.hours
 
   class << self
     def find_missed_posts_for(purchase:, workflow_id: nil)
-      result = Installment.missed_for_purchase(purchase)
-
-      if workflow_id.present?
-        workflow = purchase.seller.workflows.alive.published.find_by_external_id(workflow_id)
-        return Installment.none unless workflow&.applies_to_purchase?(purchase)
-
-        result = result.where(workflow_id: workflow.id)
-      end
-
-      result
+      Installment.missed_for_purchase(purchase, workflow_id:)
     end
 
-    def send_post(post:, purchase:)
-      raise SendPostsForPurchaseService::CustomerOptedOutError, "Purchase #{purchase.id} has opted out of receiving emails" unless purchase.can_contact?
+    def send_post!(post:, purchase:)
+      validate_email_sending_eligibility_for!(purchase.seller)
+      validate_customer_can_be_contacted_via_email_for!(purchase)
 
       # Limit the number of emails sent per post to avoid abuse.
-      Rails.cache.fetch("post_email:#{post.id}:#{purchase.id}", expires_in: 8.hours) do
+      Rails.cache.fetch("post_email:#{post.id}:#{purchase.id}", expires_in: POST_EMAIL_CACHE_EXPIRATION_TIME) do
         CreatorContactingCustomersEmailInfo.destroy_by(purchase:, installment: post)
 
         PostEmailApi.process(
@@ -37,14 +33,31 @@ class SendPostsForPurchaseService
       end
     end
 
-    def send_missed_posts_for(purchase:, workflow_id: nil)
+    def send_missed_posts_for!(purchase:, workflow_id: nil)
+      validate_email_sending_eligibility_for!(purchase.seller)
+      validate_customer_can_be_contacted_via_email_for!(purchase)
+
       SendMissedPostsJob.perform_async(purchase.id, workflow_id)
     end
 
-    def deliver_missed_posts_for(purchase:, workflow_id: nil)
+    def deliver_missed_posts_for!(purchase:, workflow_id: nil)
       find_missed_posts_for(purchase:, workflow_id:).find_each do |post|
-        send_post(post:, purchase:)
+        send_post!(post:, purchase:)
+      rescue CustomerDNDEnabledError, SellerNotEligibleError => e
+        raise e
+      rescue StandardError => e
+        raise PostNotSentError.new("Missed post #{post.id} could not be sent. Aborting batch sending for the remaining posts. Original message: #{e.message}"),
+              e.backtrace
       end
     end
+
+    private
+      def validate_email_sending_eligibility_for!(seller)
+        raise SellerNotEligibleError, "You are not eligible to resend this email." unless seller&.eligible_to_send_emails?
+      end
+
+      def validate_customer_can_be_contacted_via_email_for!(purchase)
+        raise CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails" unless purchase.can_contact?
+      end
   end
 end

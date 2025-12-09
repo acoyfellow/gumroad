@@ -19,9 +19,8 @@ class WorkflowsPresenter
       .merge(Installment.alive.published)
       .includes(:base_variant)
       .distinct
-      .select { |workflow| workflow.applies_to_purchase?(purchase) }
-      .sort_by(&:name)
-      .map { |workflow| WorkflowPresenter.new(seller:, workflow:).workflow_option_props }
+      .order(:name)
+      .filter_map { |workflow| workflow.applies_to_purchase?(purchase) && WorkflowPresenter.new(seller:, workflow:).workflow_option_props }
   end
 
   private

@@ -348,7 +348,7 @@ describe "Sales page", type: :system, js: true do
 
         row = find(:table_row, { "Email" => installment_plan_purchase.email })
         within row do
-          expect(page).to have_text("Awesome ProductInstallments")
+          expect(page).to have_text("Awesome Product Installments", normalize_ws: true)
           expect(page).to have_text("$10 a month")
         end
         row.click
@@ -524,7 +524,7 @@ describe "Sales page", type: :system, js: true do
             expect(page).to have_button("Resend all")
             click_on "Resend all"
             expect(page).to have_button("Resending all...", disabled: true)
-            expect(page).to have_button("Sent", disabled: true, count: 10)
+            expect(page).to have_button(text: /^Resend$/, disabled: true, count: 10)
           end
         end
         expect(page).to have_alert(text: "Missed emails are queued for delivery")

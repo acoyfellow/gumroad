@@ -8,27 +8,38 @@ describe SendPostsForPurchaseService do
   let(:purchase) { create(:purchase, seller:, link: product) }
 
   describe ".find_missed_posts_for" do
-    let!(:sent_post) { create(:installment, link: product, published_at: 2.days.ago) }
-    let!(:missed_post1) { create(:installment, link: product, published_at: 1.day.ago) }
-    let!(:missed_post2) { create(:installment, link: product, published_at: Time.current) }
+    let!(:sent_post) { create(:installment, link: product, seller:, published_at: 2.days.ago) }
+    let!(:missed_post1) { create(:installment, link: product, seller:, published_at: 1.day.ago) }
+    let!(:missed_post2) { create(:installment, link: product, seller:, published_at: Time.current) }
 
     before do
       create(:creator_contacting_customers_email_info, installment: sent_post, purchase:)
     end
 
     it "returns only posts that haven't been sent" do
+      expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: nil).and_call_original
+
       result = described_class.find_missed_posts_for(purchase:)
 
-      expect(result).to include(missed_post1, missed_post2)
-      expect(result).not_to include(sent_post)
+      expect(result).to contain_exactly(missed_post1, missed_post2)
+    end
+
+    it "passes workflow_id to scope when provided" do
+      workflow = create(:workflow, seller:, link: product, published_at: Time.current)
+
+      expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: workflow.external_id).and_call_original
+
+      described_class.find_missed_posts_for(purchase:, workflow_id: workflow.external_id)
     end
   end
 
-  describe ".send_post" do
+  describe ".send_post!" do
     let(:post) { create(:installment, link: product) }
 
     before do
       PostSendgridApi.mails.clear
+      create(:payment_completed, user: seller)
+      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
     end
 
     it "sends email and creates email record" do
@@ -46,7 +57,7 @@ describe SendPostsForPurchaseService do
       ).and_call_original
 
       expect do
-        result = described_class.send_post(post:, purchase:)
+        result = described_class.send_post!(post:, purchase:)
         expect(result).to be true
       end.to change { CreatorContactingCustomersEmailInfo.count }.by(1)
 
@@ -64,12 +75,23 @@ describe SendPostsForPurchaseService do
       expect(PostSendgridApi.mails.keys).to include(purchase.email)
     end
 
-    it "raises CustomerOptedOutError when purchase has opted out" do
+    it "raises SellerNotEligibleError when seller is not eligible to send emails" do
+      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE - 1)
+
+      expect do
+        described_class.send_post!(post:, purchase:)
+      end.to raise_error(SendPostsForPurchaseService::SellerNotEligibleError, "You are not eligible to resend this email.")
+
+      expect(PostSendgridApi.mails).to be_empty
+      expect(CreatorContactingCustomersEmailInfo.where(purchase:, installment: post)).to be_empty
+    end
+
+    it "raises CustomerDNDEnabledError when user can't be contacted for purchase" do
       purchase.update!(can_contact: false)
 
       expect do
-        described_class.send_post(post:, purchase:)
-      end.to raise_error(SendPostsForPurchaseService::CustomerOptedOutError)
+        described_class.send_post!(post:, purchase:)
+      end.to raise_error(SendPostsForPurchaseService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
 
       expect(PostSendgridApi.mails).to be_empty
       expect(CreatorContactingCustomersEmailInfo.where(purchase:, installment: post)).to be_empty
@@ -91,7 +113,7 @@ describe SendPostsForPurchaseService do
       ).and_call_original
 
       expect do
-        described_class.send_post(post:, purchase: membership_purchase)
+        described_class.send_post!(post:, purchase: membership_purchase)
       end.to change { CreatorContactingCustomersEmailInfo.count }.by(1)
 
       email_info = CreatorContactingCustomersEmailInfo.last
@@ -101,20 +123,47 @@ describe SendPostsForPurchaseService do
     end
   end
 
-  describe ".send_missed_posts_for" do
+  describe ".send_missed_posts_for!" do
+    before do
+      create(:payment_completed, user: seller)
+      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
+    end
+
     it "enqueues SendMissedPostsJob with purchase ID" do
-      described_class.send_missed_posts_for(purchase:)
+      described_class.send_missed_posts_for!(purchase:)
 
       expect(SendMissedPostsJob).to have_enqueued_sidekiq_job(purchase.id, nil).on("default")
     end
+
+    it "raises SellerNotEligibleError when seller is not eligible to send emails" do
+      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE - 1)
+
+      expect do
+        described_class.send_missed_posts_for!(purchase:)
+      end.to raise_error(SendPostsForPurchaseService::SellerNotEligibleError, "You are not eligible to resend this email.")
+
+      expect(SendMissedPostsJob.jobs).to be_empty
+    end
+
+    it "raises CustomerDNDEnabledError when user can't be contacted for purchase" do
+      purchase.update!(can_contact: false)
+
+      expect do
+        described_class.send_missed_posts_for!(purchase:)
+      end.to raise_error(SendPostsForPurchaseService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
+
+      expect(SendMissedPostsJob.jobs).to be_empty
+    end
   end
 
-  describe ".deliver_missed_posts_for" do
+  describe ".deliver_missed_posts_for!" do
     let!(:sent_post) { create(:installment, link: product, seller:, published_at: 2.days.ago) }
     let!(:missed_post1) { create(:installment, link: product, seller:, published_at: 1.day.ago) }
     let!(:missed_post2) { create(:installment, link: product, seller:, published_at: Time.current) }
 
     before do
+      create(:payment_completed, user: seller)
+      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
       purchase.create_url_redirect!
       PostSendgridApi.mails.clear
       create(:creator_contacting_customers_email_info, installment: sent_post, purchase:)
@@ -127,7 +176,7 @@ describe SendPostsForPurchaseService do
       end
 
       expect do
-        described_class.deliver_missed_posts_for(purchase:)
+        described_class.deliver_missed_posts_for!(purchase:)
       end.to change { CreatorContactingCustomersEmailInfo.count }.by(2)
 
       email_infos = CreatorContactingCustomersEmailInfo.where(purchase:).where("id > ?", initial_count).order(:id).last(2)
@@ -149,15 +198,29 @@ describe SendPostsForPurchaseService do
       expect(CreatorContactingCustomersEmailInfo.where(installment: sent_post, purchase:).count).to eq(1)
     end
 
-    it "raises CustomerOptedOutError when purchase has opted out" do
+    it "raises CustomerDNDEnabledError when user can't be contacted for purchase" do
       purchase.update!(can_contact: false)
       [missed_post1, missed_post2].each do |p|
         Rails.cache.delete("post_email:#{p.id}:#{purchase.id}")
       end
 
       expect do
-        described_class.deliver_missed_posts_for(purchase:)
-      end.to raise_error(SendPostsForPurchaseService::CustomerOptedOutError)
+        described_class.deliver_missed_posts_for!(purchase:)
+      end.to raise_error(SendPostsForPurchaseService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
+
+      expect(PostSendgridApi.mails).to be_empty
+      expect(CreatorContactingCustomersEmailInfo.where(purchase:).where(installment: [missed_post1, missed_post2])).to be_empty
+    end
+
+    it "raises SellerNotEligibleError when seller is not eligible to send emails" do
+      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE - 1)
+      [missed_post1, missed_post2].each do |p|
+        Rails.cache.delete("post_email:#{p.id}:#{purchase.id}")
+      end
+
+      expect do
+        described_class.deliver_missed_posts_for!(purchase:)
+      end.to raise_error(SendPostsForPurchaseService::SellerNotEligibleError, "You are not eligible to resend this email.")
 
       expect(PostSendgridApi.mails).to be_empty
       expect(CreatorContactingCustomersEmailInfo.where(purchase:).where(installment: [missed_post1, missed_post2])).to be_empty

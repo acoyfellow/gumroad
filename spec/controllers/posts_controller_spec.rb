@@ -49,12 +49,20 @@ describe PostsController do
         let(:request_params) { { id: @post.external_id, purchase_id: @purchase.external_id } }
       end
 
-      it "returns an error if seller is not eligible to send emails" do
+      it "returns 403 with user-friendly message when seller is not eligible to send emails" do
         allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE - 1)
 
         post :send_for_purchase, params: { id: @post.external_id, purchase_id: @purchase.external_id }
-        expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:forbidden)
         expect(response.parsed_body).to eq("message" => "You are not eligible to resend this email.")
+      end
+
+      it "returns 422 with user-friendly message when customer has opted out of receiving emails for a purchase" do
+        @purchase.update!(can_contact: false)
+
+        post :send_for_purchase, params: { id: @post.external_id, purchase_id: @purchase.external_id }
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body).to eq("message" => "This customer has opted out of receiving emails.")
       end
 
       it "returns 404 if no purchase" do
@@ -65,10 +73,10 @@ describe PostsController do
       end
 
       it "returns success" do
-        allow(SendPostsForPurchaseService).to receive(:send_post)
+        allow(SendPostsForPurchaseService).to receive(:send_post!)
 
         post :send_for_purchase, params: { id: @post.external_id, purchase_id: @purchase.external_id }
-        expect(SendPostsForPurchaseService).to have_received(:send_post).with(post: @post, purchase: @purchase)
+        expect(SendPostsForPurchaseService).to have_received(:send_post!).with(post: @post, purchase: @purchase)
         expect(response).to be_successful
         expect(response).to have_http_status(:no_content)
       end
@@ -99,20 +107,20 @@ describe PostsController do
         expect(response.parsed_body).to eq("message" => "Missed emails are queued for delivery")
       end
 
-      it "returns an error if seller is not eligible to send emails" do
+      it "returns 403 with user-friendly message when seller is not eligible to send emails" do
         allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE - 1)
 
         post :send_missed_posts, params: { purchase_id: @purchase.external_id }
-        expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:forbidden)
         expect(response.parsed_body).to eq("message" => "You are not eligible to resend this email.")
         expect(SendMissedPostsJob.jobs.size).to eq(0)
       end
 
-      it "returns an error if user has opted out of receiving emails" do
+      it "returns 422 with user-friendly message when customer has opted out of receiving emails for a purchase" do
         @purchase.update!(can_contact: false)
 
         post :send_missed_posts, params: { purchase_id: @purchase.external_id }
-        expect(response).to have_http_status(:forbidden)
+        expect(response).to have_http_status(:unprocessable_entity)
         expect(response.parsed_body).to eq("message" => "This customer has opted out of receiving emails.")
         expect(SendMissedPostsJob.jobs.size).to eq(0)
       end

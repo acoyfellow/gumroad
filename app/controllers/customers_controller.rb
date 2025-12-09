@@ -27,7 +27,7 @@ class CustomersController < Sellers::BaseController
     purchase = current_seller.sales.find_by_external_id!(params[:purchase_id]) if params[:purchase_id].present?
 
     render inertia: "Customers/Index", props: {
-      customers_presenter: (-> { customers_presenter.customers_props } if !request.inertia_partial?),
+      customers_presenter: -> { customers_presenter.customers_props },
       customer_emails: InertiaRails.optional { fetch_customer_emails(purchase) },
       missed_posts: InertiaRails.optional { CustomerPresenter.new(purchase:).missed_posts(workflow_id: params[:workflow_id]) },
       workflows: InertiaRails.optional { WorkflowsPresenter.new(seller: current_seller).workflow_options_by_purchase_props(purchase:) },

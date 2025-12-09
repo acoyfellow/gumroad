@@ -129,18 +129,37 @@ class Installment < ApplicationRecord
     end
   }
 
-  scope :missed_for_purchase, -> (purchase) {
+  scope :missed_for_purchase, -> (purchase, workflow_id: nil) {
+    if workflow_id.present?
+      workflow = purchase.seller.workflows
+        .alive
+        .published
+        .find_by_external_id(workflow_id)
+
+      return none unless workflow&.applies_to_purchase?(purchase)
+
+      workflow_id_filter = workflow.id
+    end
+
     purchase_variant_ids = purchase.variant_attributes.pluck(:id)
-    regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows = Installment.arel_table[:workflow_id].eq(nil)
-      .or(Workflow.arel_table[:link_id].eq(nil))
-      .or(
-        Workflow.arel_table[:link_id].eq(purchase.link_id)
-          .and(Workflow.arel_table[:base_variant_id].eq(nil).or(Workflow.arel_table[:base_variant_id].in(purchase_variant_ids)))
-      )
 
-    product_installment_ids = purchase.link.installments.where(seller_id: purchase.seller_id).alive.published.left_joins(:workflow).where(regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows).pluck(:id)
+    base_relation = left_joins(:workflow)
+    regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows =
+      if workflow_id_filter
+        base_relation.where(workflow_id: workflow_id_filter)
+      else
+        base_relation.where(workflow_id: nil)
+          .or(base_relation.where(workflows: { link_id: nil }))
+          .or(
+            base_relation
+              .where(workflows: { link_id: purchase.link_id })
+              .where(workflows: { base_variant_id: [nil, *purchase_variant_ids] })
+          )
+      end
 
-    seller_installment_ids = purchase.seller.installments.alive.published.left_joins(:workflow).where(regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows).filter_map do |post|
+    product_installment_ids = purchase.link.installments.where(seller_id: purchase.seller_id).alive.published.left_joins(:workflow).merge(regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows).pluck(:id)
+
+    seller_installment_ids = purchase.seller.installments.alive.published.left_joins(:workflow).merge(regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows).filter_map do |post|
       post.id if post.purchase_passes_filters(purchase)
     end
 

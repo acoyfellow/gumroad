@@ -5,17 +5,28 @@ class PostsController < ApplicationController
 
   before_action :authenticate_user!, only: %i[send_for_purchase send_missed_posts]
   after_action :verify_authorized, only: %i[send_for_purchase send_missed_posts]
-  before_action :fetch_post, only: %i[send_for_purchase]
+  before_action :fetch_post, only: %i[show send_for_purchase redirect_from_purchase_id increment_post_views]
   before_action :fetch_purchase, only: %i[send_for_purchase send_missed_posts]
-  before_action :ensure_seller_is_eligible_to_send_emails, only: %i[send_for_purchase send_missed_posts]
-  before_action :ensure_can_contact_for_purchase, only: %i[send_for_purchase send_missed_posts]
   before_action :set_user_and_custom_domain_config, only: %i[show]
   before_action :check_if_needs_redirect, only: %i[show]
 
-  def show
-    # Skip fetching post again if it's already fetched in check_if_needs_redirect
-    @post || fetch_post(false)
+  rescue_from SendPostsForPurchaseService::CustomerDNDEnabledError do |exception|
+    if action_name.in?(%w[send_for_purchase send_missed_posts])
+      render json: { message: "This customer has opted out of receiving emails." }, status: :unprocessable_entity
+    else
+      raise exception
+    end
+  end
 
+  rescue_from SendPostsForPurchaseService::SellerNotEligibleError do |exception|
+    if action_name.in?(%w[send_for_purchase send_missed_posts])
+      render json: { message: "You are not eligible to resend this email." }, status: :forbidden
+    else
+      raise exception
+    end
+  end
+
+  def show
     @title = "#{@post.name} - #{@post.user.name_or_username}"
     @hide_layouts = true
     @show_user_favicon = true
@@ -49,14 +60,13 @@ class PostsController < ApplicationController
 
     # redirects legacy installment paths like /library/purchase/:purchase_id
     # to the new path /:username/p/:slug
-    fetch_post(false)
     redirect_to build_view_post_route(post: @post, purchase_id: params[:purchase_id])
   end
 
   def send_for_purchase
     authorize @post
 
-    SendPostsForPurchaseService.send_post(post: @post, purchase: @purchase)
+    SendPostsForPurchaseService.send_post!(post: @post, purchase: @purchase)
 
     head :no_content
   end
@@ -64,14 +74,12 @@ class PostsController < ApplicationController
   def send_missed_posts
     authorize [:audience, @purchase], :send_missed_posts?
 
-    SendPostsForPurchaseService.send_missed_posts_for(purchase: @purchase, workflow_id: params[:workflow_id])
+    SendPostsForPurchaseService.send_missed_posts_for!(purchase: @purchase, workflow_id: params[:workflow_id])
 
     render json: { message: "Missed emails are queued for delivery" }, status: :ok
   end
 
   def increment_post_views
-    fetch_post(false)
-
     skip = is_bot?
     skip |= logged_in_user.present? && (@post.seller_id == current_seller.id || logged_in_user.is_team_member?)
     skip |= impersonating_user&.id
@@ -82,7 +90,9 @@ class PostsController < ApplicationController
   end
 
   private
-    def fetch_post(viewed_by_seller = true)
+    def fetch_post
+      return if @post.present?
+
       if params[:slug]
         @post = Installment.find_by_slug(params[:slug])
       elsif params[:id]
@@ -91,21 +101,9 @@ class PostsController < ApplicationController
         e404
       end
       e404 if @post.blank?
-
-      if @post.seller_id?
-        @seller = @post.seller
-      else
-        @seller = @post.link.seller
-      end
-
-      if viewed_by_seller
-        e404 if @seller != current_seller
-      end
     end
 
     def check_if_needs_redirect
-      fetch_post(false)
-
       if !@is_user_custom_domain && @user.subdomain_with_protocol.present?
         redirect_to custom_domain_view_post_url(slug: @post.slug, host: @user.subdomain_with_protocol,
                                                 params: request.query_parameters),
@@ -115,20 +113,6 @@ class PostsController < ApplicationController
 
     def fetch_purchase
       @purchase = current_seller.sales.find_by_external_id(params[:purchase_id])
-      return e404_json if @purchase.blank?
-
-      @seller = @purchase.seller
-    end
-
-    def ensure_seller_is_eligible_to_send_emails
-      unless @seller&.eligible_to_send_emails?
-        render json: { message: "You are not eligible to resend this email." }, status: :unauthorized
-      end
-    end
-
-    def ensure_can_contact_for_purchase
-      unless @purchase.can_contact?
-        render json: { message: "This customer has opted out of receiving emails." }, status: :forbidden
-      end
+      e404_json if @purchase.blank?
     end
 end
