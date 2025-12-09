@@ -502,6 +502,8 @@ class Api::Internal::Helper::PurchasesController < Api::Internal::Helper::BaseCo
     target_user = User.find_by(email: to_email)
 
     count = 0
+    reassigned_purchase_ids = []
+
     purchases.each do |purchase|
       purchase.email = to_email
 
@@ -526,13 +528,24 @@ class Api::Internal::Helper::PurchasesController < Api::Internal::Helper::BaseCo
         end
       end
 
-      count += 1 if purchase.save
+      if purchase.save
+        count += 1
+        reassigned_purchase_ids << purchase.id
+      end
+    end
+
+    if reassigned_purchase_ids.any?
+      CustomerMailer.grouped_receipt(reassigned_purchase_ids).deliver_later(queue: "critical")
+    end
+
+    if target_user
+      Purchase.where(email: to_email, purchaser_id: nil).update_all(purchaser_id: target_user.id)
     end
 
     render json: {
       success: true,
-      message: "Successfully reassigned #{count} purchases from #{from_email} to #{to_email}",
-      count:
+      message: "Successfully reassigned #{count} purchases from #{from_email} to #{to_email}. Receipt sent to #{to_email}.",
+      count: count
     }
   end
 

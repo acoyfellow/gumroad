@@ -54,6 +54,19 @@ describe Api::Internal::Helper::PurchasesController, :vcr do
         expect(subscription.user).to eq(target_user)
       end
 
+      it "sends grouped receipt to new email and refreshes library" do
+        expect(CustomerMailer).to receive(:grouped_receipt).with([purchase1.id, purchase2.id, purchase3.id]).and_call_original
+
+        post :reassign_purchases, params: { from: from_email, to: to_email }
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body["success"]).to eq(true)
+        expect(response.parsed_body["message"]).to include("Receipt sent to #{to_email}")
+
+        purchase3.reload
+        expect(purchase3.purchaser_id).to eq(target_user.id)
+      end
+
       it "updates original_purchase email for subscription purchases" do
         subscription = create(:subscription, user: buyer)
         original_purchase = create(:purchase, email: "old_original_purchase@example.com", purchaser: buyer, is_original_subscription_purchase: true, subscription: subscription)
