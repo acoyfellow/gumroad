@@ -471,7 +471,7 @@ describe "Sales page", type: :system, js: true do
         create(:purchase, seller:, link: product1, merchant_account: stripe_connect_account)
 
         workflow = create(:workflow, seller:, link: product1, name: "Test Workflow", published_at: Time.current)
-        create(:installment, workflow:, published_at: Time.current)
+        create(:workflow_installment, workflow:, seller:, published_at: Time.current)
 
         post = posts.last
         visit customers_path

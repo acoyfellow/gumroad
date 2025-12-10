@@ -245,18 +245,6 @@ export const changeCanContact = (purchaseId: string, canContact: boolean) =>
     if (!response.ok) throw new ResponseError();
   });
 
-export const getProductPurchases = (purchaseId: string) =>
-  request({
-    method: "GET",
-    accept: "json",
-    url: Routes.product_purchases_path(purchaseId),
-  })
-    .then((res) => {
-      if (!res.ok) throw new ResponseError();
-      return res.json();
-    })
-    .then((json) => cast<Customer[]>(json));
-
 export const updateLicense = (licenseId: string, enabled: boolean) =>
   request({ method: "PUT", accept: "json", url: Routes.license_path(licenseId, { enabled }) }).then((response) => {
     if (!response.ok) throw new ResponseError();

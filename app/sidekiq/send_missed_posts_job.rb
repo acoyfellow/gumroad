@@ -6,10 +6,10 @@ class SendMissedPostsJob
 
   sidekiq_retry_in do |count, exception|
     case exception
-    when SendPostsForPurchaseService::CustomerDNDEnabledError
+    when Purchase::PostsService::CustomerDNDEnabledError
       Rails.logger.info("[#{self.name}] Discarding job on #{(count + 1).ordinalize} attempt for purchase with DND enabled: #{exception.message}")
       :discard
-    when SendPostsForPurchaseService::SellerNotEligibleError
+    when Purchase::PostsService::SellerNotEligibleError
       Rails.logger.info("[#{self.name}] Discarding job on #{(count + 1).ordinalize} attempt for ineligible seller: #{exception.message}")
       :discard
     end
@@ -18,6 +18,6 @@ class SendMissedPostsJob
   def perform(purchase_id, workflow_id = nil)
     purchase = Purchase.find(purchase_id)
 
-    SendPostsForPurchaseService.deliver_missed_posts_for!(purchase:, workflow_id:)
+    Purchase::PostsService.deliver_missed_posts_for!(purchase:, workflow_id:)
   end
 end

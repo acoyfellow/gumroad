@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe SendPostsForPurchaseService do
+describe Purchase::PostsService do
   let(:seller) { create(:named_seller) }
   let(:product) { create(:product, user: seller) }
   let(:purchase) { create(:purchase, seller:, link: product) }
@@ -80,7 +80,7 @@ describe SendPostsForPurchaseService do
 
       expect do
         described_class.send_post!(post:, purchase:)
-      end.to raise_error(SendPostsForPurchaseService::SellerNotEligibleError, "You are not eligible to resend this email.")
+      end.to raise_error(Purchase::PostsService::SellerNotEligibleError, "You are not eligible to resend this email.")
 
       expect(PostSendgridApi.mails).to be_empty
       expect(CreatorContactingCustomersEmailInfo.where(purchase:, installment: post)).to be_empty
@@ -91,7 +91,7 @@ describe SendPostsForPurchaseService do
 
       expect do
         described_class.send_post!(post:, purchase:)
-      end.to raise_error(SendPostsForPurchaseService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
+      end.to raise_error(Purchase::PostsService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
 
       expect(PostSendgridApi.mails).to be_empty
       expect(CreatorContactingCustomersEmailInfo.where(purchase:, installment: post)).to be_empty
@@ -140,7 +140,7 @@ describe SendPostsForPurchaseService do
 
       expect do
         described_class.send_missed_posts_for!(purchase:)
-      end.to raise_error(SendPostsForPurchaseService::SellerNotEligibleError, "You are not eligible to resend this email.")
+      end.to raise_error(Purchase::PostsService::SellerNotEligibleError, "You are not eligible to resend this email.")
 
       expect(SendMissedPostsJob.jobs).to be_empty
     end
@@ -150,7 +150,7 @@ describe SendPostsForPurchaseService do
 
       expect do
         described_class.send_missed_posts_for!(purchase:)
-      end.to raise_error(SendPostsForPurchaseService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
+      end.to raise_error(Purchase::PostsService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
 
       expect(SendMissedPostsJob.jobs).to be_empty
     end
@@ -206,7 +206,7 @@ describe SendPostsForPurchaseService do
 
       expect do
         described_class.deliver_missed_posts_for!(purchase:)
-      end.to raise_error(SendPostsForPurchaseService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
+      end.to raise_error(Purchase::PostsService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
 
       expect(PostSendgridApi.mails).to be_empty
       expect(CreatorContactingCustomersEmailInfo.where(purchase:).where(installment: [missed_post1, missed_post2])).to be_empty
@@ -220,10 +220,90 @@ describe SendPostsForPurchaseService do
 
       expect do
         described_class.deliver_missed_posts_for!(purchase:)
-      end.to raise_error(SendPostsForPurchaseService::SellerNotEligibleError, "You are not eligible to resend this email.")
+      end.to raise_error(Purchase::PostsService::SellerNotEligibleError, "You are not eligible to resend this email.")
 
       expect(PostSendgridApi.mails).to be_empty
       expect(CreatorContactingCustomersEmailInfo.where(purchase:).where(installment: [missed_post1, missed_post2])).to be_empty
+    end
+  end
+
+  describe ".sent_posts_for" do
+    context "for normal purchases" do
+      let(:other_product) { create(:product, user: seller) }
+
+      it "returns only sent posts for the purchase's product, excludes other product posts" do
+        product_post = create(:installment, link: product, seller:, published_at: 2.days.ago)
+        other_product_post = create(:installment, link: other_product, seller:, published_at: 1.day.ago)
+
+        product_email = create(:creator_contacting_customers_email_info, installment: product_post, purchase:)
+        other_product_email = create(:creator_contacting_customers_email_info, installment: other_product_post, purchase:)
+
+        result = described_class.sent_posts_for(purchase)
+
+        expect(result).to contain_exactly(product_email)
+        expect(result).not_to include(other_product_email)
+      end
+
+      it "returns only the latest email per installment when multiple emails exist" do
+        post1 = create(:installment, link: product, seller:, published_at: 2.days.ago)
+        post2 = create(:installment, link: product, seller:, published_at: 1.day.ago)
+
+        old_email1 = create(:creator_contacting_customers_email_info, installment: post1, purchase:, sent_at: 2.days.ago)
+        latest_email1 = create(:creator_contacting_customers_email_info, installment: post1, purchase:, sent_at: 1.day.ago)
+
+        email2 = create(:creator_contacting_customers_email_info, installment: post2, purchase:, sent_at: 1.day.ago)
+
+        result = described_class.sent_posts_for(purchase)
+
+        expect(result).to contain_exactly(latest_email1, email2)
+        expect(result).not_to include(old_email1)
+      end
+    end
+
+    context "for bundle purchases" do
+      let(:product_a) { create(:product, user: seller) }
+      let(:product_b) { create(:product, user: seller) }
+      let(:bundle) { create(:product, :bundle, user: seller) }
+      let(:bundle_purchase) { create(:purchase, link: bundle, seller:) }
+
+      let!(:bundle_product_a) { create(:bundle_product, bundle: bundle, product: product_a) }
+      let!(:bundle_product_b) { create(:bundle_product, bundle: bundle, product: product_b) }
+
+      before { bundle_purchase.create_artifacts_and_send_receipt! }
+
+      it "returns only sent posts for bundle purchase, excludes product posts" do
+        bundle_post = create(:installment, link: bundle, seller:, published_at: 2.days.ago)
+        product_a_post = create(:installment, link: product_a, seller:, published_at: 1.day.ago)
+        product_b_post = create(:installment, link: product_b, seller:, published_at: 1.day.ago)
+
+        bundle_email = create(:creator_contacting_customers_email_info, installment: bundle_post, purchase: bundle_purchase)
+        product_a_email = create(:creator_contacting_customers_email_info, installment: product_a_post, purchase: bundle_purchase)
+        product_b_email = create(:creator_contacting_customers_email_info, installment: product_b_post, purchase: bundle_purchase)
+
+        result = described_class.sent_posts_for(bundle_purchase)
+
+        expect(result).to contain_exactly(bundle_email)
+        expect(result).not_to include(product_a_email, product_b_email)
+      end
+
+      context "bundle product purchase" do
+        it "returns only sent posts for that product, excludes bundle and other product posts" do
+          product_a_purchase = bundle_purchase.product_purchases.find_by(link: product_a)
+
+          bundle_post = create(:installment, link: bundle, seller:, published_at: 2.days.ago)
+          product_a_post = create(:installment, link: product_a, seller:, published_at: 1.day.ago)
+          product_b_post = create(:installment, link: product_b, seller:, published_at: 1.day.ago)
+
+          bundle_email = create(:creator_contacting_customers_email_info, installment: bundle_post, purchase: product_a_purchase)
+          product_a_email = create(:creator_contacting_customers_email_info, installment: product_a_post, purchase: product_a_purchase)
+          product_b_email = create(:creator_contacting_customers_email_info, installment: product_b_post, purchase: product_a_purchase)
+
+          result = described_class.sent_posts_for(product_a_purchase)
+
+          expect(result).to contain_exactly(product_a_email)
+          expect(result).not_to include(bundle_email, product_b_email)
+        end
+      end
     end
   end
 end

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class SendPostsForPurchaseService
+class Purchase::PostsService
   class CustomerDNDEnabledError < StandardError; end
   class PostNotSentError < StandardError; end
   class SellerNotEligibleError < StandardError; end
@@ -9,7 +9,7 @@ class SendPostsForPurchaseService
 
   class << self
     def find_missed_posts_for(purchase:, workflow_id: nil)
-      Installment.missed_for_purchase(purchase, workflow_id:)
+      purchase.seller.installments.missed_for_purchase(purchase, workflow_id:)
     end
 
     def send_post!(post:, purchase:)
@@ -49,6 +49,20 @@ class SendPostsForPurchaseService
         raise PostNotSentError.new("Missed post #{post.id} could not be sent. Aborting batch sending for the remaining posts. Original message: #{e.message}"),
               e.backtrace
       end
+    end
+
+    def sent_posts_for(purchase)
+      installment_ids = purchase.seller.installments.alive.seller_or_product_or_variant_type_for_purchase(purchase).pluck(:id)
+
+      latest_email_ids = CreatorContactingCustomersEmailInfo
+      .where(purchase:, installment_id: installment_ids)
+      .group(:installment_id)
+      .maximum(:id)
+      .values
+
+      CreatorContactingCustomersEmailInfo
+        .where(id: latest_email_ids)
+        .order(sent_at: :desc)
     end
 
     private

@@ -28,9 +28,10 @@ class CustomersController < Sellers::BaseController
 
     render inertia: "Customers/Index", props: {
       customers_presenter: -> { customers_presenter.customers_props },
-      customer_emails: InertiaRails.optional { fetch_customer_emails(purchase) },
+      customer_emails: InertiaRails.optional { CustomerPresenter.new(purchase:).customer_emails },
       missed_posts: InertiaRails.optional { CustomerPresenter.new(purchase:).missed_posts(workflow_id: params[:workflow_id]) },
       workflows: InertiaRails.optional { WorkflowsPresenter.new(seller: current_seller).workflow_options_by_purchase_props(purchase:) },
+      product_purchases: (purchase&.is_bundle_purchase? ? InertiaRails.optional { purchase.product_purchases.map { CustomerPresenter.new(purchase: _1).customer(pundit_user:) } } : nil),
     }.compact
   end
 
@@ -70,12 +71,6 @@ class CustomersController < Sellers::BaseController
     end
 
     render json: []
-  end
-
-  def product_purchases
-    purchase = current_seller.sales.find_by_external_id!(params[:purchase_id]) if params[:purchase_id].present?
-
-    render json: purchase.product_purchases.map { CustomerPresenter.new(purchase: _1).customer(pundit_user:) }
   end
 
   private
@@ -149,46 +144,5 @@ class CustomersController < Sellers::BaseController
 
     def authorize
       super([:audience, Purchase], :index?)
-    end
-
-    def fetch_customer_emails(original_purchase)
-      all_purchases = if original_purchase.subscription.present?
-        original_purchase.subscription.purchases.all_success_states_except_preorder_auth_and_gift.preload(:receipt_email_info_from_purchase)
-      else
-        [original_purchase]
-      end
-
-      receipts = all_purchases.map do |purchase|
-        receipt_email_info = purchase.receipt_email_info
-        {
-          type: "receipt",
-          name: receipt_email_info&.email_name&.humanize || "Receipt",
-          id: purchase.external_id,
-          state: receipt_email_info&.state&.humanize || "Delivered",
-          state_at: receipt_email_info.present? ? receipt_email_info.most_recent_state_at.in_time_zone(current_seller.timezone) : purchase.created_at.in_time_zone(current_seller.timezone),
-          url: receipt_purchase_url(purchase.external_id, email: purchase.email),
-          date: purchase.created_at
-        }
-      end
-
-      posts = original_purchase.installments.alive.where(seller_id: original_purchase.seller_id).map do |post|
-        email_info = CreatorContactingCustomersEmailInfo.where(purchase: original_purchase, installment: post).last
-        {
-          type: "post",
-          name: post.name,
-          id: post.external_id,
-          state: email_info.state.humanize,
-          state_at: email_info.most_recent_state_at.in_time_zone(current_seller.timezone),
-          date: post.published_at
-        }
-      end
-
-      unpublished_posts = posts.select { |post| post[:date].nil? }
-      published_posts = posts - unpublished_posts
-      emails = published_posts
-      emails = emails.sort_by { |e| -e[:date].to_i } + unpublished_posts
-      emails = receipts + emails unless original_purchase.is_bundle_product_purchase?
-
-      emails
     end
 end

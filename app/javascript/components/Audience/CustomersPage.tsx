@@ -19,7 +19,6 @@ import {
   cancelSubscription,
   changeCanContact,
   getPagedCustomers,
-  getProductPurchases,
   markShipped,
   resendPing,
   refund,
@@ -102,6 +101,7 @@ export type CustomerPageProps = {
   pagination: PaginationProps | null;
   product_id: string | null;
   products: Product[];
+  product_purchases?: Customer[];
   count: number;
   currency_type: CurrencyCode;
   countries: string[];
@@ -193,7 +193,7 @@ const CustomersPage = ({
   const fetchAndDisplayCustomerDrawerData = (customerId: string) => {
     router.reload({
       data: { purchase_id: customerId },
-      only: ["workflows", "customer_emails", "missed_posts"],
+      only: ["workflows", "customer_emails", "missed_posts", "product_purchases"],
       preserveUrl: true,
       onStart: () => setIsLoadingPurchaseData(true),
       onFinish: () => setIsLoadingPurchaseData(false),
@@ -721,7 +721,10 @@ const CustomerDrawer = ({
     customer_emails: emails,
     missed_posts: missedPosts,
     workflows,
-  } = cast<{ customer_emails?: CustomerEmail[]; missed_posts?: MissedPost[]; workflows?: Workflow[] }>(usePage().props);
+    product_purchases: productPurchasesFromProps,
+  } = cast<Pick<CustomerPageProps, "customer_emails" | "missed_posts" | "workflows" | "product_purchases">>(
+    usePage().props,
+  );
   const [isLoadingMissedPosts, setIsLoadingMissedPosts] = React.useState(false);
 
   const workflowOptions = [{ id: "", label: "All missed emails" }, ...(workflows ?? [])];
@@ -772,7 +775,7 @@ const CustomerDrawer = ({
           purchase_id: purchaseId,
           workflow_id: workflowId,
         },
-        only: ["customer_emails", "missed_posts"],
+        only: ["customer_emails", "missed_posts", "product_purchases"],
         preserveUrl: true,
         onCancelToken: (token) => {
           pollCancelRef.current = token;
@@ -803,16 +806,27 @@ const CustomerDrawer = ({
 
   React.useEffect(() => () => stopPolling(), [customer.id, selectedWorkflowId]);
 
-  const [productPurchases, setProductPurchases] = React.useState<Customer[]>([]);
   const [selectedProductPurchaseId, setSelectedProductPurchaseId] = React.useState<string | null>(null);
+  const [productPurchases, setProductPurchases] = React.useState<Customer[]>(() =>
+    customer.is_bundle_purchase ? (productPurchasesFromProps ?? []) : [],
+  );
   const selectedProductPurchase = productPurchases.find(({ id }) => id === selectedProductPurchaseId);
-  useRunOnce(() => {
-    if (customer.is_bundle_purchase)
-      void getProductPurchases(customer.id).then(setProductPurchases, (e: unknown) => {
-        assertResponseError(e);
-        showAlert(e.message, "error");
-      });
-  });
+
+  const loadBundlePurchaseDrawerData = (purchaseId: string) => {
+    router.reload({
+      data: { purchase_id: purchaseId },
+      only: ["workflows", "customer_emails", "missed_posts", "product_purchases"],
+      preserveUrl: true,
+    });
+  };
+
+  React.useEffect(() => {
+    if (customer.is_bundle_purchase && productPurchasesFromProps) {
+      setProductPurchases(productPurchasesFromProps);
+    } else if (!customer.is_bundle_purchase) {
+      setProductPurchases([]);
+    }
+  }, [customer.is_bundle_purchase, productPurchasesFromProps]);
 
   const { subscription, commission, license, shipping } = customer;
 
@@ -842,14 +856,18 @@ const CustomerDrawer = ({
     return (
       <CustomerDrawer
         customer={selectedProductPurchase}
-        onChange={(update) =>
-          setProductPurchases((prev) => [
-            ...prev.filter(({ id }) => id !== selectedProductPurchase.id),
-            { ...selectedProductPurchase, ...update },
-          ])
-        }
+        onChange={(update) => {
+          setProductPurchases((prev) =>
+            prev.map((purchase) =>
+              purchase.id === selectedProductPurchase.id ? { ...purchase, ...update } : purchase,
+            ),
+          );
+        }}
         onClose={onClose}
-        onBack={() => setSelectedProductPurchaseId(null)}
+        onBack={() => {
+          setSelectedProductPurchaseId(null);
+          loadBundlePurchaseDrawerData(customer.id);
+        }}
         countries={countries}
         canPing={canPing}
         showRefundFeeNotice={showRefundFeeNotice}
@@ -930,10 +948,6 @@ const CustomerDrawer = ({
                   () => {
                     showAlert("Email updated successfully.", "success");
                     onChange({ email });
-                    if (productPurchases.length)
-                      setProductPurchases((prevProductPurchases) =>
-                        prevProductPurchases.map((productPurchase) => ({ ...productPurchase, email })),
-                      );
                   },
                   (e: unknown) => {
                     assertResponseError(e);
@@ -1136,7 +1150,14 @@ const CustomerDrawer = ({
             productPurchases.map((customer) => (
               <section key={customer.id}>
                 <h5>{customer.product.name}</h5>
-                <Button onClick={() => setSelectedProductPurchaseId(customer.id)}>Manage</Button>
+                <Button
+                  onClick={() => {
+                    setSelectedProductPurchaseId(customer.id);
+                    loadBundlePurchaseDrawerData(customer.id);
+                  }}
+                >
+                  Manage
+                </Button>
               </section>
             ))
           ) : (

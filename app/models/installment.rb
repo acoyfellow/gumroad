@@ -129,6 +129,15 @@ class Installment < ApplicationRecord
     end
   }
 
+  scope :seller_or_product_or_variant_type_for_purchase, -> (purchase) {
+    where(
+      "(installment_type IN (?) AND (installments.link_id = ? OR installments.workflow_id IS NOT NULL)) OR installment_type = ?",
+      [PRODUCT_TYPE, VARIANT_TYPE],
+      purchase.link_id,
+      SELLER_TYPE
+    )
+  }
+
   scope :missed_for_purchase, -> (purchase, workflow_id: nil) {
     if workflow_id.present?
       workflow = purchase.seller.workflows
@@ -138,29 +147,41 @@ class Installment < ApplicationRecord
 
       return none unless workflow&.applies_to_purchase?(purchase)
 
-      workflow_id_filter = workflow.id
+      workflow_id = workflow.id
     end
 
-    purchase_variant_ids = purchase.variant_attributes.pluck(:id)
+    product_link_id = purchase.link.id
 
-    base_relation = left_joins(:workflow)
-    regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows =
-      if workflow_id_filter
-        base_relation.where(workflow_id: workflow_id_filter)
-      else
-        base_relation.where(workflow_id: nil)
-          .or(base_relation.where(workflows: { link_id: nil }))
-          .or(
-            base_relation
-              .where(workflows: { link_id: purchase.link_id })
-              .where(workflows: { base_variant_id: [nil, *purchase_variant_ids] })
+    installments_to_check = Installment
+      .where(seller_id: purchase.seller_id)
+      .alive
+      .published
+      .seller_or_product_or_variant_type_for_purchase(purchase)
+      .left_joins(:workflow)
+      .then do |scope|
+        if workflow_id
+          scope.where(workflow_id:)
+        elsif purchase.variant_attributes.present?
+          scope.where(
+            "(installments.workflow_id IS NULL OR workflows.link_id IS NULL OR " \
+            "(workflows.link_id = ? AND (workflows.base_variant_id IS NULL OR workflows.base_variant_id IN (?))))",
+            product_link_id,
+            purchase.variant_attributes.pluck(:id)
           )
+        else
+          scope.where(
+            "(installments.workflow_id IS NULL OR workflows.link_id IS NULL OR " \
+            "(workflows.link_id = ? AND workflows.base_variant_id IS NULL))",
+            product_link_id
+          )
+        end
       end
 
-    product_installment_ids = purchase.link.installments.where(seller_id: purchase.seller_id).alive.published.left_joins(:workflow).merge(regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows).pluck(:id)
-
-    seller_installment_ids = purchase.seller.installments.alive.published.left_joins(:workflow).merge(regular_posts_or_seller_workflows_or_same_product_workflows_or_matching_variant_workflows).filter_map do |post|
-      post.id if post.purchase_passes_filters(purchase)
+    product_or_variant_ids = installments_to_check
+      .where("installments.installment_type IN (?)", [PRODUCT_TYPE, VARIANT_TYPE])
+      .pluck(:id)
+    seller_installment_ids = installments_to_check.seller_type.select(:id, :json_data, :link_id).find_each(batch_size: 100).filter_map do |installment|
+      installment.id if installment.purchase_passes_filters(purchase)
     end
 
     purchase_ids_with_same_email = Purchase.where(email: purchase.email, seller_id: purchase.seller_id)
@@ -180,7 +201,7 @@ class Installment < ApplicationRecord
     SQL
 
     send_emails.
-      where(id: product_installment_ids + seller_installment_ids).
+      where(id: product_or_variant_ids + seller_installment_ids).
       where(where_sent_sql)
   }
 
