@@ -1,4 +1,4 @@
-import { createInertiaApp, router } from "@inertiajs/react";
+import { createInertiaApp } from "@inertiajs/react";
 import React, { createElement } from "react";
 import { createRoot } from "react-dom/client";
 
