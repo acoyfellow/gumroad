@@ -50,7 +50,7 @@ const AdminNavFooter = () => {
 
   return (
     <DashboardNavProfilePopover user={loggedInUser}>
-      <div role="menu" className="shadow-none!">
+      <div role="menu" className="border-0! shadow-none! dark:border!">
         {current_user.impersonated_user ? (
           <>
             <a role="menuitem" href={Routes.root_url()}>

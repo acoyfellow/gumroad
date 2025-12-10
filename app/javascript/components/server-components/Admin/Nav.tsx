@@ -36,7 +36,7 @@ export const Nav = ({ title, current_user }: Props) => {
       title={title}
       footer={
         <DashboardNavProfilePopover user={loggedInUser}>
-          <div role="menu">
+          <div role="menu" className="border-0! shadow-none! dark:border!">
             {current_user.impersonated_user ? (
               <>
                 <a role="menuitem" href={Routes.root_url()}>
