@@ -1,5 +1,7 @@
 import { is } from "ts-safe-cast";
 
+import logoUrl from "../../assets/images/logo.svg";
+
 import { HeightMessage, isValidHost, onLoad, parseProductURL } from "./utils";
 
 type TranslationsMessage = { type: "translations"; translations: Record<string, string> };
@@ -17,7 +19,8 @@ overlay.appendChild(content);
 
 const overlayCloseButton = document.createElement("button");
 overlayCloseButton.className = "button filled fixed right-3 top-3";
-overlayCloseButton.innerHTML = '<span class="icon icon-x"></span>';
+overlayCloseButton.innerHTML =
+  "<span class=\"inline-block min-h-[max(1lh,1em)] w-[1em] shrink-0 bg-current [mask-size:120%] [mask-position:center] [mask-repeat:no-repeat] after:content-['\\00a0'] mask-[url(~images/icons/x.svg)]\"></span>";
 overlay.appendChild(overlayCloseButton);
 
 const overlayIframe = document.createElement("iframe");
@@ -50,7 +53,15 @@ const registerButton = (button: HTMLAnchorElement) => {
   }
 
   const logo = document.createElement("span");
-  logo.className = "logo-full";
+  logo.style.display = "inline-block";
+  logo.style.minHeight = "max(1lh, 1em)";
+  logo.style.width = "calc(157/22*1em)";
+  logo.style.flexShrink = "0";
+  logo.style.backgroundColor = "currentColor";
+  logo.style.maskSize = "contain";
+  logo.style.maskPosition = "center";
+  logo.style.maskRepeat = "no-repeat";
+  logo.style.maskImage = `url(${logoUrl})`;
   button.appendChild(logo);
 };
 
