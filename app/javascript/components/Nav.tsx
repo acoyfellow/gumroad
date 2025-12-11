@@ -8,6 +8,7 @@ import { assertResponseError, request, ResponseError } from "$app/utils/request"
 
 import { Icon, IconName } from "$app/components/Icons";
 import { TeamMembership } from "$app/components/LoggedInUser";
+import { Logo } from "$app/components/Logo";
 import { showAlert } from "$app/components/server-components/Alert";
 import { useOriginalLocation } from "$app/components/useOriginalLocation";
 
@@ -130,7 +131,7 @@ export const Nav = ({ title, children, footer }: Props) => {
       >
         <div className="override grid grid-cols-[auto_1fr_auto] items-center gap-3 p-4 text-lg leading-6 lg:hidden">
           <a href={Routes.root_url()} className="no-underline">
-            <span className="logo-g" />
+            <span className="block size-[1.25em] bg-[url(~images/logo-g.svg)] bg-contain bg-no-repeat" />
           </a>
           <h1 className="w-full truncate text-center text-base">{title}</h1>
           <button aria-label="Toggle navigation" onClick={toggle}>
@@ -140,7 +141,7 @@ export const Nav = ({ title, children, footer }: Props) => {
         <header className="hidden p-6 lg:grid">
           <a href={Routes.root_url()} aria-label="Dashboard" className="no-underline">
             {/* This custom text and line height size is required so the header's bottom border aligns with the main page header’s bottom border */}
-            <span className="logo-full w-full text-[2.5rem] leading-[1.2]" />
+            <Logo className="text-[2.5rem] leading-[1.2]" />
           </a>
         </header>
         {children}

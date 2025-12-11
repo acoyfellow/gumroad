@@ -10,6 +10,7 @@ import { Nav } from "$app/components/Discover/Nav";
 import { Search } from "$app/components/Discover/Search";
 import { useDomains } from "$app/components/DomainSettings";
 import { Icon } from "$app/components/Icons";
+import { Logo } from "$app/components/Logo";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
 
 const UserActionButtons: React.FC = () => {
@@ -138,9 +139,11 @@ export const Layout: React.FC<{
   const logoLink = (
     <a
       href={Routes.discover_url({ host: discoverDomain })}
-      className="logo-full flex aspect-157/22 w-[245px]! shrink-0 items-center"
+      className="flex aspect-157/22 w-[245px]! shrink-0 items-center"
       aria-label="Gumroad"
-    />
+    >
+      <Logo className="h-full w-full" />
+    </a>
   );
   const searchBar = (
     <div className="min-w-0 grow">

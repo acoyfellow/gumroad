@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import { useDomains } from "$app/components/DomainSettings";
+import { Logo } from "$app/components/Logo";
 
 export const Layout = ({ heading, children }: { heading: string; children: React.ReactNode }) => {
   const { rootDomain } = useDomains();
@@ -20,7 +21,9 @@ export const Layout = ({ heading, children }: { heading: string; children: React
         }}
       >
         Powered by&ensp;
-        <a href={Routes.root_url({ host: rootDomain })} className="logo-full" aria-label="Gumroad" />
+        <a href={Routes.root_url({ host: rootDomain })} aria-label="Gumroad">
+          <Logo />
+        </a>
       </footer>
     </>
   );
