@@ -915,9 +915,6 @@ Rails.application.routes.draw do
             resources :invitation_declines, only: [:create]
           end
         end
-        namespace :collaborators do
-          resources :incomings, only: [:index]
-        end
 
         resources :installments, only: [:index, :new, :edit, :create, :update, :destroy] do
           member do
