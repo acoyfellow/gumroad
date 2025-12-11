@@ -1,4 +1,4 @@
-import { router, usePage } from "@inertiajs/react";
+import { router, useForm, usePage } from "@inertiajs/react";
 import React from "react";
 import { cast } from "ts-safe-cast";
 
@@ -37,19 +37,13 @@ export default function WishlistsPage() {
 
   const [wishlists, setWishlists] = React.useState<Wishlist[]>(preloadedWishlists);
   const [deletingWishlist, setConfirmingDeleteWishlist] = React.useState<Wishlist | null>(null);
-  const [isDeleting, setIsDeleting] = React.useState(false);
 
-  const destroy = async (id: string) => {
-    setIsDeleting(true);
-
-    router.delete(Routes.wishlist_path(id), {
+  const deleteForm = useForm({});
+  const destroy = (id: string) => {
+    deleteForm.delete(Routes.wishlist_path(id), {
       preserveScroll: true,
-      onSuccess: () => {
-        setWishlists(wishlists.filter((wishlist) => wishlist.id !== id));
-        setConfirmingDeleteWishlist(null);
-      },
+      onSuccess: () => setConfirmingDeleteWishlist(null),
       onError: () => showAlert("Sorry, something went wrong. Please try again.", "error"),
-      onFinish: () => setIsDeleting(false),
     });
   };
 
@@ -159,8 +153,8 @@ export default function WishlistsPage() {
             footer={
               <>
                 <Button onClick={() => setConfirmingDeleteWishlist(null)}>No, cancel</Button>
-                <Button color="danger" disabled={isDeleting} onClick={() => void destroy(deletingWishlist.id)}>
-                  {isDeleting ? "Deleting..." : "Yes, delete"}
+                <Button color="danger" disabled={deleteForm.processing} onClick={() => destroy(deletingWishlist.id)}>
+                  {deleteForm.processing ? "Deleting..." : "Yes, delete"}
                 </Button>
               </>
             }
