@@ -6,6 +6,7 @@ import { register } from "$app/utils/serverComponentUtil";
 
 import { Form } from "$app/components/server-components/Admin/Form";
 import { showAlert } from "$app/components/server-components/Alert";
+import { Pill } from "$app/components/ui/Pill";
 
 export const AdminAddCreditForm = ({ user_id }: { user_id: number }) => (
   <Form
@@ -18,7 +19,7 @@ export const AdminAddCreditForm = ({ user_id }: { user_id: number }) => (
       <fieldset>
         <div className="input-with-button">
           <div className="input">
-            <span className="pill">$</span>
+            <Pill className="-ml-2 shrink-0">$</Pill>
             <input type="text" name="credit[credit_amount]" placeholder="10.25" inputMode="decimal" required />
           </div>
           <Button type="submit" disabled={isLoading}>
