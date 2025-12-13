@@ -40,9 +40,10 @@ export const PublishButton = ({
     <Popover
       disabled={isDisabled}
       trigger={
-        <Button asChild><div color="accent">Publish
-                      <Icon name="outline-cheveron-down" />
-          </div></Button>
+        <Button>
+          Publish
+          <Icon name="outline-cheveron-down" />
+        </Button>
       }
       open={popoverOpen}
       onToggle={setPopoverOpen}

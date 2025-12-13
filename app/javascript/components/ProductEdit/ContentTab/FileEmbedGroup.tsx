@@ -176,9 +176,10 @@ const FileEmbedGroupNodeView = ({
               {showDownloadButton ? (
                 <Popover
                   trigger={
-                    <Button asChild><div>Download all
-                                              <Icon name="outline-cheveron-down" />
-                      </div></Button>
+                    <Button>
+                      Download all
+                      <Icon name="outline-cheveron-down" />
+                    </Button>
                   }
                 >
                   <div className="grid gap-2">

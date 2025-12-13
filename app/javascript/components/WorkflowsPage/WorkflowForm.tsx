@@ -283,9 +283,12 @@ const WorkflowForm = ({ context, workflow }: WorkflowFormProps) => {
       navigation={workflow ? <EditPageNavigation workflowExternalId={workflow.external_id} /> : null}
       actions={
         <>
-          <Button asChild><Link href={Routes.workflows_path()} inert={form.processing || undefined}>
-              <Icon name="x-square" />Cancel
-                        </Link></Button>
+          <Button asChild>
+            <Link href={Routes.workflows_path()} inert={form.processing || undefined}>
+              <Icon name="x-square" />
+              Cancel
+            </Link>
+          </Button>
           <Button color="primary" onClick={() => handleSave()} disabled={form.processing}>
             {workflow ? "Save changes" : "Save and continue"}
           </Button>

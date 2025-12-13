@@ -48,9 +48,9 @@ export const ArchivedProductsPage = ({
             aria-label="Toggle Search"
             trigger={
               <WithTooltip tip="Search" position="bottom">
-                <Button asChild><div>
-                    <Icon name="solid-search" />
-                  </div></Button>
+                <Button>
+                  <Icon name="solid-search" />
+                </Button>
               </WithTooltip>
             }
           >

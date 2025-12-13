@@ -130,9 +130,9 @@ export const FollowersPage = ({ followers: initialFollowers, per_page, total }: 
               aria-label="Search"
               trigger={
                 <WithTooltip tip="Search" position="bottom">
-                  <Button asChild><div>
-                      <Icon name="solid-search" />
-                    </div></Button>
+                  <Button>
+                    <Icon name="solid-search" />
+                  </Button>
                 </WithTooltip>
               }
             >

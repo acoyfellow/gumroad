@@ -265,8 +265,11 @@ const WithContent = ({
             <DiscordButton purchaseId={props.purchase.id} connected={content.discord.connected} />
           ) : null}
           {content.community_chat_url ? (
-            <Button asChild><a className="accent" href={content.community_chat_url}>Community
-                            </a></Button>
+            <Button asChild>
+              <a className="accent" href={content.community_chat_url}>
+                Community
+              </a>
+            </Button>
           ) : null}
           <OpenInAppButton iosAppUrl={content.ios_app_url} androidAppUrl={content.android_app_url} />
           {content.download_all_button ? (
@@ -339,9 +342,11 @@ const WithContent = ({
               aria-label="Table of Contents"
               position="bottom"
               trigger={
-                <Button asChild><div>
+                <Button asChild>
+                  <div>
                     <Icon name="unordered-list" />
-                  </div></Button>
+                  </div>
+                </Button>
               }
             >
               {(close) => (

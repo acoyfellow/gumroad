@@ -370,9 +370,7 @@ export const CardGrid = ({
           {pagination === "button" &&
           !((state.results?.total ?? 0) < (state.offset ?? 1) + (state.results?.products.length ?? 0)) ? (
             <div className="mt-8 w-full text-center">
-              <Button onClick={() => dispatchAction({ type: "load-more" })}>
-                Load more
-              </Button>
+              <Button onClick={() => dispatchAction({ type: "load-more" })}>Load more</Button>
             </div>
           ) : null}
         </div>

@@ -664,9 +664,12 @@ export const EmailForm = () => {
                 Preview
               </Button>
             )}
-            <Button asChild><Link to={cancelPath} inert={isBusy}>
-                <Icon name="x-square" />Cancel
-                            </Link></Button>
+            <Button asChild>
+              <Link to={cancelPath} inert={isBusy}>
+                <Icon name="x-square" />
+                Cancel
+              </Link>
+            </Button>
             <Popover
               trigger={
                 <Button disabled={isBusy}>

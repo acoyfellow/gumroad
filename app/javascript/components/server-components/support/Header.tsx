@@ -46,9 +46,11 @@ export function SupportHeader({
         title="Help Center"
         actions={
           isHelpArticle ? (
-            <Button asChild><a href={Routes.help_center_root_path()} aria-label="Search" title="Search">
+            <Button asChild>
+              <a href={Routes.help_center_root_path()} aria-label="Search" title="Search">
                 <Icon name="solid-search" />
-              </a></Button>
+              </a>
+            </Button>
           ) : isAnonymousUserOnHelpCenter ? (
             <>
               <NavigationButton

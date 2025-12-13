@@ -8,7 +8,17 @@ import { classNames } from "$app/utils/classNames";
 
 import { ButtonColor, buttonColors } from "$app/components/design";
 
-export type BrandName = "paypal" | "discord" | "stripe" | "facebook" | "twitter" | "apple" | "android" | "kindle" | "zoom" | "google";
+export type BrandName =
+  | "paypal"
+  | "discord"
+  | "stripe"
+  | "facebook"
+  | "twitter"
+  | "apple"
+  | "android"
+  | "kindle"
+  | "zoom"
+  | "google";
 
 export const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 cursor-pointer border border-border rounded bg-transparent font-inherit no-underline transition-transform hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[0.25rem_0.25rem_0_currentColor] active:translate-x-0 active:translate-y-0 active:shadow-none disabled:opacity-30 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none",
@@ -91,7 +101,7 @@ export const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 // Legacy props for backward compatibility
@@ -137,13 +147,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button";
 
     return (
-      <Comp
-        className={classes}
-        ref={ref}
-        disabled={disabled}
-        type={asChild ? undefined : "button"}
-        {...props}
-      >
+      <Comp className={classes} ref={ref} disabled={disabled} type={asChild ? undefined : "button"} {...props}>
         {icon}
         {children}
       </Comp>

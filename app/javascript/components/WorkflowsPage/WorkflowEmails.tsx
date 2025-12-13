@@ -265,7 +265,8 @@ const WorkflowEmails = ({ context, workflow }: WorkflowEmailsProps) => {
           navigation={<EditPageNavigation workflowExternalId={workflow.external_id} />}
           actions={
             <>
-              <Button asChild><Link href={Routes.workflows_path()} inert={isBusy || undefined}>
+              <Button asChild>
+                <Link href={Routes.workflows_path()} inert={isBusy || undefined}>
                   {workflow.published ? (
                     <>
                       <Icon name="x-square" />
@@ -277,7 +278,8 @@ const WorkflowEmails = ({ context, workflow }: WorkflowEmailsProps) => {
                       Back
                     </>
                   )}
-                </Link></Button>
+                </Link>
+              </Button>
               <Button color="primary" disabled={isBusy} onClick={() => handleSave()}>
                 Save changes
               </Button>

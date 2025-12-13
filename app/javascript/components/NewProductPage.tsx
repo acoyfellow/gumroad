@@ -222,10 +222,12 @@ const NewProductPage = ({
         title={show_orientation_text ? "Publish your first product" : "What are you creating?"}
         actions={
           <>
-            <Button asChild><Link href={Routes.products_path()}>
+            <Button asChild>
+              <Link href={Routes.products_path()}>
                 <Icon name="x-square" />
                 <span>Cancel</span>
-              </Link></Button>
+              </Link>
+            </Button>
             {ai_generation_enabled ? (
               <Popover
                 open={aiPopoverOpen}

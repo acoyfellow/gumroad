@@ -150,9 +150,9 @@ const SearchBoxPopover = ({ initialQuery, onSearch }: { initialQuery: string; on
       aria-label="Toggle Search"
       trigger={
         <WithTooltip tip="Search" position="bottom">
-          <Button asChild><div>
-              <Icon name="solid-search" />
-            </div></Button>
+          <Button>
+            <Icon name="solid-search" />
+          </Button>
         </WithTooltip>
       }
     >
@@ -447,7 +447,8 @@ const AffiliatesTab = () => {
         <>
           <SearchBoxPopover onSearch={onSearch} initialQuery={searchQuery} />
           <WithTooltip position="bottom" tip={data.affiliates_disabled_reason}>
-            <Button asChild><Link
+            <Button asChild>
+              <Link
                 to="/affiliates/new"
                 className="accent"
                 inert={!loggedInUser?.policies.direct_affiliate.create}
@@ -455,8 +456,11 @@ const AffiliatesTab = () => {
                   data.affiliates_disabled_reason !== null
                     ? { pointerEvents: "none", cursor: "not-allowed", opacity: 0.3 }
                     : undefined
-                }>Add affiliate
-                            </Link></Button>
+                }
+              >
+                Add affiliate
+              </Link>
+            </Button>
           </WithTooltip>
         </>
       }
@@ -484,12 +488,11 @@ const AffiliatesTab = () => {
                         Affiliates
                         <div className="text-base">
                           <WithTooltip tip="Export" position="top">
-                            <Button asChild><a
-                                href={Routes.export_affiliates_path()}
-                                className="primary"
-                                aria-label="Export">
+                            <Button asChild>
+                              <a href={Routes.export_affiliates_path()} className="primary" aria-label="Export">
                                 <Icon name="download" />
-                              </a></Button>
+                              </a>
+                            </Button>
                           </WithTooltip>
                         </div>
                       </div>
@@ -543,12 +546,17 @@ const AffiliatesTab = () => {
                                   <Button>Copy link</Button>
                                 </CopyToClipboard>
 
-                                <Button asChild><Link
+                                <Button asChild>
+                                  <Link
                                     to={`/affiliates/${affiliate.id}/edit`}
                                     aria-label="Edit"
-                                    inert={!loggedInUser?.policies.direct_affiliate.update || navigation.state !== "idle"}>
+                                    inert={
+                                      !loggedInUser?.policies.direct_affiliate.update || navigation.state !== "idle"
+                                    }
+                                  >
                                     <Icon name="pencil" />
-                                  </Link></Button>
+                                  </Link>
+                                </Button>
 
                                 <Button
                                   type="submit"
@@ -642,11 +650,15 @@ const AffiliateDetails = ({
         );
       })}
       <section style={{ display: "grid", gap: "var(--spacer-4)", gridAutoFlow: "column", gridAutoColumns: "1fr" }}>
-        <Button asChild><Link
+        <Button asChild>
+          <Link
             to={`/affiliates/${selectedAffiliate.id}/edit`}
             aria-label="Edit"
-            inert={!loggedInUser?.policies.direct_affiliate.update || navigation.state !== "idle"}>Edit
-                    </Link></Button>
+            inert={!loggedInUser?.policies.direct_affiliate.update || navigation.state !== "idle"}
+          >
+            Edit
+          </Link>
+        </Button>
         <Button
           color="danger"
           aria-label="Delete"
@@ -793,9 +805,12 @@ const Form = ({ title, headerLabel, submitLabel }: FormProps) => {
       title={title}
       actions={
         <>
-          <Button asChild><Link to="/affiliates" inert={navigation.state !== "idle"}>
-              <Icon name="x-square" />Cancel
-                        </Link></Button>
+          <Button asChild>
+            <Link to="/affiliates" inert={navigation.state !== "idle"}>
+              <Icon name="x-square" />
+              Cancel
+            </Link>
+          </Button>
           <Button color="accent" onClick={handleSubmit} disabled={navigation.state !== "idle" || !canSave}>
             {submitLabel}
           </Button>

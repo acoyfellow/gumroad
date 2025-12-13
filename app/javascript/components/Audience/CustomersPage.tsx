@@ -260,9 +260,9 @@ const CustomersPage = ({
               onToggle={() => searchInputRef.current?.focus()}
               trigger={
                 <WithTooltip tip="Search">
-                  <Button asChild><div>
-                      <Icon name="solid-search" />
-                    </div></Button>
+                  <Button>
+                    <Icon name="solid-search" />
+                  </Button>
                 </WithTooltip>
               }
             >
@@ -282,9 +282,9 @@ const CustomersPage = ({
               aria-label="Filter"
               trigger={
                 <WithTooltip tip="Filter">
-                  <Button asChild><div>
-                      <Icon name="filter" />
-                    </div></Button>
+                  <Button>
+                    <Icon name="filter" />
+                  </Button>
                 </WithTooltip>
               }
             >
@@ -404,9 +404,9 @@ const CustomersPage = ({
               aria-label="Export"
               trigger={
                 <WithTooltip tip="Export">
-                  <Button asChild><div>
-                      <Icon name="download" />
-                    </div></Button>
+                  <Button>
+                    <Icon name="download" />
+                  </Button>
                 </WithTooltip>
               }
             >
@@ -2577,10 +2577,18 @@ const CommissionSection = ({
               ))}
             </Rows>
           ) : null}
-          <Button asChild><label>
-            <input type="file" onChange={handleFileChange} disabled={isLoading} multiple style={{ display: "none" }} />
-            <Icon name="paperclip" /> Upload files
-          </label></Button>
+          <Button asChild>
+            <label>
+              <input
+                type="file"
+                onChange={handleFileChange}
+                disabled={isLoading}
+                multiple
+                style={{ display: "none" }}
+              />
+              <Icon name="paperclip" /> Upload files
+            </label>
+          </Button>
           {commission.status === "in_progress" ? (
             <Button color="primary" disabled={isLoading} onClick={() => void handleCompletion()}>
               Submit and mark as complete

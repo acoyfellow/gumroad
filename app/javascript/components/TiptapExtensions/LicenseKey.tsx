@@ -88,7 +88,9 @@ const LicenseKeyNodeView = ({ editor, selected }: NodeViewProps) => {
                   <div className="flex gap-2">
                     <input id={`product_id-${uid}`} type="text" value={productId} className="flex-1" readOnly />
                     <CopyToClipboard text={productId} tooltipPosition="bottom">
-                      <Button asChild><a>Copy</a></Button>
+                      <Button asChild>
+                        <a>Copy</a>
+                      </Button>
                     </CopyToClipboard>
                   </div>
                 </fieldset>

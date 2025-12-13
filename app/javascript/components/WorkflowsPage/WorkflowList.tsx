@@ -23,11 +23,11 @@ const WorkflowList = ({ workflows }: WorkflowListProps) => {
   const loggedInUser = useLoggedInUser();
   const canManageWorkflow = !!loggedInUser?.policies.workflow.create;
   const newWorkflowButton = (
-    <Button asChild><Link
-        href={Routes.new_workflow_path()}
-        className="accent"
-        inert={!canManageWorkflow || undefined}>New workflow
-            </Link></Button>
+    <Button asChild>
+      <Link href={Routes.new_workflow_path()} className="accent" inert={!canManageWorkflow || undefined}>
+        New workflow
+      </Link>
+    </Button>
   );
   const [deletingWorkflow, setDeletingWorkflow] = React.useState<{
     id: string;
@@ -129,12 +129,15 @@ const WorkflowRow = ({
       <div style={{ display: "flex", gap: "var(--spacer-4)", alignItems: "center" }}>
         {workflow.published ? <small>Published</small> : <small>Unpublished</small>}
         <div className="flex flex-wrap gap-2">
-          <Button asChild><Link
+          <Button asChild>
+            <Link
               href={Routes.edit_workflow_path(workflow.external_id)}
               aria-label="Edit workflow"
-              inert={!canManageWorkflow || undefined}>
+              inert={!canManageWorkflow || undefined}
+            >
               <Icon name="pencil" />
-            </Link></Button>
+            </Link>
+          </Button>
           <Button color="danger" outline aria-label="Delete workflow" disabled={!canManageWorkflow} onClick={onDelete}>
             <Icon name="trash2" />
           </Button>

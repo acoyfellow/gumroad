@@ -9,9 +9,10 @@ type Props = { zip_path: string; files: { url: string; filename: string | null }
 export const DownloadAllButton = ({ zip_path, files }: Props) => (
   <Popover
     trigger={
-      <Button asChild><div>Download all
-                  <Icon name="outline-cheveron-down" />
-        </div></Button>
+      <Button>
+        Download all
+        <Icon name="outline-cheveron-down" />
+      </Button>
     }
   >
     <div className="grid gap-2">

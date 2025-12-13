@@ -630,11 +630,11 @@ const ActionButtons = ({ purchase }: { purchase: Purchase }) => (
       />
     ) : null}
     {purchase.successful ? (
-      <Button asChild><Link
-          href={Routes.receipt_purchase_path(purchase.external_id)}
-          target="_blank"
-          className="small">Go to Receipt
-                </Link></Button>
+      <Button asChild>
+        <Link href={Routes.receipt_purchase_path(purchase.external_id)} target="_blank" className="small">
+          Go to Receipt
+        </Link>
+      </Button>
     ) : null}
   </div>
 );
