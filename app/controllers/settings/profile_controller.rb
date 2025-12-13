@@ -13,12 +13,22 @@ class Settings::ProfileController < Settings::BaseController
   end
 
   def update
-    return redirect_to settings_profile_path, alert: "You have to confirm your email address before you can do that." unless current_seller.confirmed?
+    is_inertia_request = request.headers["X-Inertia"].present?
+
+    unless current_seller.confirmed?
+      if is_inertia_request
+        return redirect_to settings_profile_path, alert: "You have to confirm your email address before you can do that."
+      end
+      return render json: { success: false, error_message: "You have to confirm your email address before you can do that." }
+    end
 
     if permitted_params[:profile_picture_blob_id].present?
       if ActiveStorage::Blob.find_signed(permitted_params[:profile_picture_blob_id]).nil?
-        return redirect_to settings_profile_path,
-                           alert: "The logo is already removed. Please refresh the page and try again."
+        if is_inertia_request
+          return redirect_to settings_profile_path,
+                            alert: "The logo is already removed. Please refresh the page and try again."
+        end
+        return render json: { success: false, error_message: "The logo is already removed. Please refresh the page and try again." }
       end
       current_seller.avatar.attach permitted_params[:profile_picture_blob_id]
     elsif permitted_params.has_key?(:profile_picture_blob_id) && current_seller.avatar.attached?
@@ -42,11 +52,18 @@ class Settings::ProfileController < Settings::BaseController
         current_seller.update!(permitted_params[:user]) if permitted_params[:user]
 
         current_seller.clear_products_cache if permitted_params[:profile_picture_blob_id].present?
-        redirect_to settings_profile_path, status: :see_other, notice: "Changes saved!"
       end
     rescue ActiveRecord::RecordInvalid => e
-      redirect_to settings_profile_path, alert: e.record.errors.full_messages.to_sentence
+      if is_inertia_request
+        return redirect_to settings_profile_path, alert: e.record.errors.full_messages.to_sentence
+      end
+      return render json: { success: false, error_message: e.record.errors.full_messages.to_sentence }
     end
+
+    if is_inertia_request
+      return redirect_to settings_profile_path, status: :see_other, notice: "Changes saved!"
+    end
+    return render json: { success: true }
   end
 
   private
