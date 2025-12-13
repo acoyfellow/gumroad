@@ -34,6 +34,7 @@ describe Settings::ProfileController, :vcr, type: :controller, inertia: true do
   describe "PUT update" do
     before do
       sign_in seller
+      request.headers["X-Inertia"] = "true"
     end
 
     it "submits the form successfully" do
@@ -106,7 +107,7 @@ describe Settings::ProfileController, :vcr, type: :controller, inertia: true do
 
       put :update, params: { user: { name: "New name" }, profile_picture_blob_id: signed_id }
       expect(response).to redirect_to(settings_profile_path)
-      expect(response).to have_http_status :see_other
+      expect(response).to have_http_status :found
       expect(flash[:alert]).to eq("The logo is already removed. Please refresh the page and try again.")
     end
 
