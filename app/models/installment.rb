@@ -178,7 +178,7 @@ class Installment < ApplicationRecord
       end
 
     product_or_variant_ids = installments_to_check
-      .where("installments.installment_type IN (?)", [PRODUCT_TYPE, VARIANT_TYPE])
+      .product_or_variant_type
       .pluck(:id)
     seller_installment_ids = installments_to_check.seller_type.select(:id, :json_data, :link_id).find_each(batch_size: 100).filter_map do |installment|
       installment.id if installment.purchase_passes_filters(purchase)

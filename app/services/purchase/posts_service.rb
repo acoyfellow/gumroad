@@ -9,7 +9,7 @@ class Purchase::PostsService
 
   class << self
     def find_missed_posts_for(purchase:, workflow_id: nil)
-      purchase.seller.installments.missed_for_purchase(purchase, workflow_id:)
+      Installment.missed_for_purchase(purchase, workflow_id:)
     end
 
     def send_post!(post:, purchase:)
@@ -37,7 +37,7 @@ class Purchase::PostsService
       validate_email_sending_eligibility_for!(purchase.seller)
       validate_customer_can_be_contacted_via_email_for!(purchase)
 
-      SendMissedPostsJob.perform_async(purchase.id, workflow_id)
+      SendMissedPostsJob.perform_async(purchase.external_id, workflow_id)
     end
 
     def deliver_missed_posts_for!(purchase:, workflow_id: nil)

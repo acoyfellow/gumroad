@@ -102,7 +102,7 @@ describe PostsController do
       it "returns success" do
         post :send_missed_posts, params: { purchase_id: @purchase.external_id }
 
-        expect(SendMissedPostsJob).to have_enqueued_sidekiq_job(@purchase.id, nil).on("default")
+        expect(SendMissedPostsJob).to have_enqueued_sidekiq_job(@purchase.external_id, nil).on("default")
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body).to eq("message" => "Missed emails are queued for delivery")
       end

@@ -4,20 +4,45 @@ class SendMissedPostsJob
   include Sidekiq::Job
   sidekiq_options retry: 5, queue: :default, lock: :until_executed
 
-  sidekiq_retry_in do |count, exception|
+  def perform(purchase_id, workflow_id = nil)
+    purchase = Purchase.find_by_external_id!(purchase_id)
+
+    sleep 3 if Rails.env.development?
+    Purchase::PostsService.deliver_missed_posts_for!(purchase:, workflow_id:)
+
+    CustomersChannel.broadcast_missed_posts_message!(
+      purchase.external_id,
+      workflow_id,
+      CustomersChannel::MISSED_POSTS_JOB_COMPLETE_TYPE
+    )
+  end
+
+  RetryHandler = ->(count, exception, msg) do
     case exception
     when Purchase::PostsService::CustomerDNDEnabledError
-      Rails.logger.info("[#{self.name}] Discarding job on #{(count + 1).ordinalize} attempt for purchase with DND enabled: #{exception.message}")
+      Rails.logger.info("[SendMissedPostsJob] Discarding job on #{(count + 1).ordinalize} attempt for purchase with DND enabled: #{exception.message}")
       :discard
     when Purchase::PostsService::SellerNotEligibleError
-      Rails.logger.info("[#{self.name}] Discarding job on #{(count + 1).ordinalize} attempt for ineligible seller: #{exception.message}")
+      Rails.logger.info("[SendMissedPostsJob] Discarding job on #{(count + 1).ordinalize} attempt for ineligible seller: #{exception.message}")
       :discard
     end
   end
 
-  def perform(purchase_id, workflow_id = nil)
-    purchase = Purchase.find(purchase_id)
+  FailureHandler = ->(job, exception) do
+    purchase_id, workflow_id = job["args"]
 
-    Purchase::PostsService.deliver_missed_posts_for!(purchase:, workflow_id:)
+    CustomersChannel.broadcast_missed_posts_message!(
+      purchase_id,
+      workflow_id,
+      CustomersChannel::MISSED_POSTS_JOB_FAILED_TYPE
+    )
+  rescue => e
+    Rails.logger.error("Error broadcasting message to customers channel: #{e.message}")
+    Bugsnag.notify(e)
+    raise e
   end
+
+  sidekiq_retry_in(&RetryHandler)
+
+  sidekiq_retries_exhausted(&FailureHandler)
 end

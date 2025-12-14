@@ -129,10 +129,10 @@ describe Purchase::PostsService do
       allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
     end
 
-    it "enqueues SendMissedPostsJob with purchase ID" do
+    it "enqueues SendMissedPostsJob with purchase external ID" do
       described_class.send_missed_posts_for!(purchase:)
 
-      expect(SendMissedPostsJob).to have_enqueued_sidekiq_job(purchase.id, nil).on("default")
+      expect(SendMissedPostsJob).to have_enqueued_sidekiq_job(purchase.external_id, nil).on("default")
     end
 
     it "raises SellerNotEligibleError when seller is not eligible to send emails" do

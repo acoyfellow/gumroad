@@ -95,10 +95,12 @@ import placeholder from "$assets/images/placeholders/customers.png";
 type Product = { id: string; name: string; variants: { id: string; name: string }[] };
 type MissedPost = { id: string; name: string; url: string; published_at: string };
 type Workflow = { id: string; label: string };
-type IncomingPurchaseChannelMessage = {
-  type: "missed_posts_complete";
+
+type IncomingCustomersChannelMessage = {
+  type: "missed_posts_job_complete" | "missed_posts_job_failed";
   purchase_id: string;
-  workflow_id: string | null;
+  workflow_id?: string;
+  message: string;
 };
 
 export type CustomerPageProps = {
@@ -196,6 +198,16 @@ const CustomersPage = ({
 
   const [selectedCustomerId, setSelectedCustomerId] = React.useState<string | null>(null);
   const selectedCustomer = customers.find(({ id }) => id === selectedCustomerId);
+  const customersChannelRef = React.useRef<Channel | null>(null);
+  const missedPostsJobsInProcessRef = React.useRef<Set<string>>(new Set());
+
+  React.useEffect(
+    () => () => {
+      customersChannelRef.current?.disconnect();
+      customersChannelRef.current = null;
+    },
+    [],
+  );
 
   const fetchAndDisplayCustomerDrawerData = (customerId: string) => {
     router.reload({
@@ -614,6 +626,8 @@ const CustomersPage = ({
             canPing={can_ping}
             showRefundFeeNotice={show_refund_fee_notice}
             isLoadingPurchaseData={isLoadingPurchaseData}
+            customersChannelRef={customersChannelRef}
+            missedPostsJobsInProcessRef={missedPostsJobsInProcessRef}
           />
         ) : null}
       </section>
@@ -704,6 +718,8 @@ const CustomerDrawer = ({
   canPing,
   showRefundFeeNotice,
   isLoadingPurchaseData,
+  customersChannelRef,
+  missedPostsJobsInProcessRef,
 }: {
   customer: Customer;
   onChange: (update: Partial<Customer>) => void;
@@ -713,6 +729,8 @@ const CustomerDrawer = ({
   canPing: boolean;
   showRefundFeeNotice: boolean;
   isLoadingPurchaseData: boolean;
+  customersChannelRef: React.MutableRefObject<Channel | null>;
+  missedPostsJobsInProcessRef: React.MutableRefObject<Set<string>>;
 }) => {
   const userAgentInfo = useUserAgentInfo();
 
@@ -721,8 +739,6 @@ const CustomerDrawer = ({
   const [shownMissedPosts, setShownMissedPosts] = React.useState(PAGE_SIZE);
   const [shownEmails, setShownEmails] = React.useState(PAGE_SIZE);
   const sentEmailIds = React.useRef<Set<string>>(new Set());
-  const channelRef = React.useRef<Channel | null>(null);
-  const subscribedPurchaseIdRef = React.useRef<string | null>(null);
 
   const {
     customer_emails: emails,
@@ -736,11 +752,35 @@ const CustomerDrawer = ({
 
   const workflowOptions = [{ id: "", label: "All missed emails" }, ...(workflows ?? [])];
 
+  const currentCustomerIdRef = React.useRef(customer.id);
+  const currentWorkflowIdRef = React.useRef(selectedWorkflowId);
+  currentCustomerIdRef.current = customer.id;
+  currentWorkflowIdRef.current = selectedWorkflowId;
+
+  const workflowIdForQuery = (workflowId: string | undefined) => (workflowId === "" ? undefined : workflowId);
+
+  const isProcessingAllOrSpecificJob = (customerId: string, workflowId?: string) => {
+    if (workflowId === undefined) {
+      return Array.from(missedPostsJobsInProcessRef.current).some((jobKey) => {
+        const job = cast<{ customerId: string; workflowId?: string }>(JSON.parse(jobKey));
+        return job.customerId === customerId;
+      });
+    }
+
+    return (
+      missedPostsJobsInProcessRef.current.has(JSON.stringify({ customerId, workflowId })) ||
+      missedPostsJobsInProcessRef.current.has(JSON.stringify({ customerId }))
+    );
+  };
+
+  const [processingAllOrSpecificJob, setIsProcessingAllOrSpecificJob] = React.useState(
+    isProcessingAllOrSpecificJob(customer.id, workflowIdForQuery(selectedWorkflowId)),
+  );
   const fetchAndDisplayMissedPostsByWorkflowId = (workflowId: string) => {
     router.reload({
       data: {
         purchase_id: customer.id,
-        workflow_id: workflowId === "" ? undefined : workflowId,
+        workflow_id: workflowIdForQuery(workflowId),
       },
       only: ["missed_posts"],
       preserveUrl: true,
@@ -748,6 +788,65 @@ const CustomerDrawer = ({
       onFinish: () => setIsLoadingMissedPosts(false),
     });
     setSelectedWorkflowId(workflowId);
+    setIsProcessingAllOrSpecificJob(isProcessingAllOrSpecificJob(customer.id, workflowIdForQuery(workflowId)));
+  };
+
+  const handleResendAll = async () => {
+    if (!cable) return;
+
+    const workflowId = workflowIdForQuery(selectedWorkflowId);
+
+    const jobKey = JSON.stringify({ customerId: customer.id, workflowId });
+    missedPostsJobsInProcessRef.current.add(jobKey);
+
+    if (!customersChannelRef.current) {
+      customersChannelRef.current = cable.subscribeTo("CustomersChannel", { purchase_id: customer.id });
+
+      customersChannelRef.current.on("message", (packet) => {
+        if (!is<IncomingCustomersChannelMessage>(packet)) return;
+        if (packet.purchase_id !== currentCustomerIdRef.current) return;
+
+        const jobKey = JSON.stringify({ customerId: packet.purchase_id, workflowId: packet.workflow_id });
+
+        if (!missedPostsJobsInProcessRef.current.has(jobKey)) return;
+
+        missedPostsJobsInProcessRef.current.delete(jobKey);
+
+        // const currentWorkflowId = workflowIdForQuery(currentWorkflowIdRef.current);
+        const messageWorkflowId = workflowIdForQuery(packet.workflow_id);
+
+        switch (packet.type) {
+          case "missed_posts_job_complete":
+            if (currentCustomerIdRef.current === packet.purchase_id) {
+              router.reload({
+                data: {
+                  purchase_id: packet.purchase_id,
+                  workflow_id: messageWorkflowId,
+                },
+                only: ["customer_emails", "missed_posts", "product_purchases"],
+                preserveUrl: true,
+              });
+            }
+            showAlert(packet.message, "success");
+            break;
+          case "missed_posts_job_failed":
+            showAlert(packet.message, "error");
+            break;
+        }
+        setIsProcessingAllOrSpecificJob(false);
+      });
+    }
+
+    try {
+      setIsProcessingAllOrSpecificJob(true);
+      const response = await resendPosts(customer.id, workflowId);
+      showAlert(response.message, "success");
+    } catch (e) {
+      assertResponseError(e);
+      showAlert(e.message, "error");
+      missedPostsJobsInProcessRef.current.delete(jobKey);
+      setIsProcessingAllOrSpecificJob(false);
+    }
   };
 
   const onSend = async (id: string, type: "receipt" | "post") => {
@@ -762,61 +861,6 @@ const CustomerDrawer = ({
     }
     setLoadingId(null);
   };
-
-  const reloadMissedPosts = (workflowId?: string | null) => {
-    router.reload({
-      data: {
-        purchase_id: customer.id,
-        workflow_id: workflowId === "" || workflowId === null ? undefined : workflowId,
-      },
-      only: ["customer_emails", "missed_posts", "product_purchases"],
-      preserveUrl: true,
-    });
-  };
-
-  const disconnectChannel = () => {
-    if (channelRef.current) {
-      if (channelRef.current.state !== "disconnected" && channelRef.current.state !== "closed") {
-        channelRef.current.disconnect();
-      }
-      channelRef.current = null;
-      subscribedPurchaseIdRef.current = null;
-    }
-  };
-
-  const handleResendAll = async () => {
-    setLoadingId("all");
-    try {
-      const response = await resendPosts(customer.id, selectedWorkflowId === "" ? undefined : selectedWorkflowId);
-      showAlert(response.message, "success");
-    } catch (e) {
-      assertResponseError(e);
-      showAlert(e.message, "error");
-      setLoadingId(null);
-      // disconnectChannel();
-    }
-  };
-
-  React.useEffect(() => {
-    if (!cable) return;
-
-    disconnectChannel();
-
-    const channel = cable.subscribeTo("PurchaseChannel", { purchase_id: customer.id });
-    channelRef.current = channel;
-    subscribedPurchaseIdRef.current = customer.id;
-
-    channel.on("message", (msg) => {
-      if (is<IncomingPurchaseChannelMessage>(msg) && msg.purchase_id === customer.id) {
-        reloadMissedPosts(msg.workflow_id ?? null);
-        setLoadingId(null);
-        showAlert("All missed emails were sent", "success");
-        // disconnectChannel();
-      }
-    });
-
-    return () => disconnectChannel();
-  }, [customer.id]);
 
   const [selectedProductPurchaseId, setSelectedProductPurchaseId] = React.useState<string | null>(null);
   const [productPurchases, setProductPurchases] = React.useState<Customer[]>(() =>
@@ -884,6 +928,8 @@ const CustomerDrawer = ({
         canPing={canPing}
         showRefundFeeNotice={showRefundFeeNotice}
         isLoadingPurchaseData={isLoadingPurchaseData}
+        customersChannelRef={customersChannelRef}
+        missedPostsJobsInProcessRef={missedPostsJobsInProcessRef}
       />
     );
 
@@ -1353,7 +1399,7 @@ const CustomerDrawer = ({
                 </div>
                 <Button
                   color="primary"
-                  disabled={!!loadingId || sentEmailIds.current.has(post.id)}
+                  disabled={!!loadingId || sentEmailIds.current.has(post.id) || processingAllOrSpecificJob}
                   onClick={() => void onSend(post.id, "post")}
                 >
                   {sentEmailIds.current.has(post.id) ? "Sent" : loadingId === post.id ? "Resending..." : "Resend"}
@@ -1368,8 +1414,12 @@ const CustomerDrawer = ({
               </section>
             ) : null}
             <div>
-              <Button color="primary" disabled={!!loadingId} onClick={() => void handleResendAll()}>
-                {loadingId === "all" ? "Resending all..." : "Resend all"}
+              <Button
+                color="primary"
+                disabled={!!loadingId || processingAllOrSpecificJob}
+                onClick={() => void handleResendAll()}
+              >
+                {processingAllOrSpecificJob ? "Resending all..." : "Resend all"}
               </Button>
             </div>
           </>
@@ -1402,7 +1452,7 @@ const CustomerDrawer = ({
                     <Button
                       color="primary"
                       onClick={() => void onSend(email.id, "receipt")}
-                      disabled={!!loadingId || sentEmailIds.current.has(email.id)}
+                      disabled={!!loadingId || sentEmailIds.current.has(email.id) || processingAllOrSpecificJob}
                     >
                       {sentEmailIds.current.has(email.id)
                         ? "Receipt resent"
@@ -1414,7 +1464,7 @@ const CustomerDrawer = ({
                     <Button
                       color="primary"
                       onClick={() => void onSend(email.id, "post")}
-                      disabled={!!loadingId || sentEmailIds.current.has(email.id)}
+                      disabled={!!loadingId || sentEmailIds.current.has(email.id) || processingAllOrSpecificJob}
                     >
                       {sentEmailIds.current.has(email.id)
                         ? "Sent"
