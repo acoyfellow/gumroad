@@ -1,11 +1,13 @@
+import { Channel } from "@anycable/web";
 import { router, usePage } from "@inertiajs/react";
 import { DirectUpload, Blob } from "@rails/activestorage";
 import cx from "classnames";
 import { lightFormat, subMonths } from "date-fns";
 import { format } from "date-fns-tz";
 import * as React from "react";
-import { cast } from "ts-safe-cast";
+import { cast, is } from "ts-safe-cast";
 
+import cable from "$app/channels/consumer";
 import {
   Address,
   Customer,
@@ -93,6 +95,11 @@ import placeholder from "$assets/images/placeholders/customers.png";
 type Product = { id: string; name: string; variants: { id: string; name: string }[] };
 type MissedPost = { id: string; name: string; url: string; published_at: string };
 type Workflow = { id: string; label: string };
+type IncomingPurchaseChannelMessage = {
+  type: "missed_posts_complete";
+  purchase_id: string;
+  workflow_id: string | null;
+};
 
 export type CustomerPageProps = {
   customers: Customer[];
@@ -714,8 +721,8 @@ const CustomerDrawer = ({
   const [shownMissedPosts, setShownMissedPosts] = React.useState(PAGE_SIZE);
   const [shownEmails, setShownEmails] = React.useState(PAGE_SIZE);
   const sentEmailIds = React.useRef<Set<string>>(new Set());
-  const pollIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
-  const pollCancelRef = React.useRef<{ cancel: () => void } | null>(null);
+  const channelRef = React.useRef<Channel | null>(null);
+  const subscribedPurchaseIdRef = React.useRef<string | null>(null);
 
   const {
     customer_emails: emails,
@@ -756,55 +763,60 @@ const CustomerDrawer = ({
     setLoadingId(null);
   };
 
-  const stopPolling = () => {
-    pollCancelRef.current?.cancel();
-    pollCancelRef.current = null;
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current);
-      pollIntervalRef.current = null;
-    }
-    setLoadingId(null);
+  const reloadMissedPosts = (workflowId?: string | null) => {
+    router.reload({
+      data: {
+        purchase_id: customer.id,
+        workflow_id: workflowId === "" || workflowId === null ? undefined : workflowId,
+      },
+      only: ["customer_emails", "missed_posts", "product_purchases"],
+      preserveUrl: true,
+    });
   };
 
-  const trackPostsBeingSent = (purchaseId: string, workflowId: string | undefined) => {
-    stopPolling();
-    setLoadingId("all");
-    pollIntervalRef.current = setInterval(() => {
-      router.reload({
-        data: {
-          purchase_id: purchaseId,
-          workflow_id: workflowId,
-        },
-        only: ["customer_emails", "missed_posts", "product_purchases"],
-        preserveUrl: true,
-        onCancelToken: (token) => {
-          pollCancelRef.current = token;
-        },
-        onSuccess: (page) => {
-          const { missed_posts } = cast<{ missed_posts?: MissedPost[] }>(page.props);
-          if (!missed_posts?.length) {
-            stopPolling();
-            showAlert("All missed emails were sent", "success");
-          }
-        },
-      });
-    }, 3500);
+  const disconnectChannel = () => {
+    if (channelRef.current) {
+      if (channelRef.current.state !== "disconnected" && channelRef.current.state !== "closed") {
+        channelRef.current.disconnect();
+      }
+      channelRef.current = null;
+      subscribedPurchaseIdRef.current = null;
+    }
   };
 
   const handleResendAll = async () => {
     setLoadingId("all");
     try {
       const response = await resendPosts(customer.id, selectedWorkflowId === "" ? undefined : selectedWorkflowId);
-      trackPostsBeingSent(customer.id, selectedWorkflowId === "" ? undefined : selectedWorkflowId);
       showAlert(response.message, "success");
     } catch (e) {
       assertResponseError(e);
       showAlert(e.message, "error");
       setLoadingId(null);
+      // disconnectChannel();
     }
   };
 
-  React.useEffect(() => () => stopPolling(), [customer.id, selectedWorkflowId]);
+  React.useEffect(() => {
+    if (!cable) return;
+
+    disconnectChannel();
+
+    const channel = cable.subscribeTo("PurchaseChannel", { purchase_id: customer.id });
+    channelRef.current = channel;
+    subscribedPurchaseIdRef.current = customer.id;
+
+    channel.on("message", (msg) => {
+      if (is<IncomingPurchaseChannelMessage>(msg) && msg.purchase_id === customer.id) {
+        reloadMissedPosts(msg.workflow_id ?? null);
+        setLoadingId(null);
+        showAlert("All missed emails were sent", "success");
+        // disconnectChannel();
+      }
+    });
+
+    return () => disconnectChannel();
+  }, [customer.id]);
 
   const [selectedProductPurchaseId, setSelectedProductPurchaseId] = React.useState<string | null>(null);
   const [productPurchases, setProductPurchases] = React.useState<Customer[]>(() =>
