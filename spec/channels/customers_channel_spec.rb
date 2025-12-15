@@ -43,4 +43,93 @@ RSpec.describe CustomersChannel do
       end
     end
   end
+
+  describe ".broadcast_missed_posts_message!" do
+    let(:workflow) { create(:workflow, seller:, link: product, name: "Test Workflow", published_at: Time.current) }
+
+    it "broadcasts complete message with workflow name when workflow_id is provided" do
+      expect(described_class).to receive(:broadcast_to).with(
+        "user_#{seller.external_id}",
+        {
+          type: described_class::MISSED_POSTS_JOB_COMPLETE_TYPE,
+          purchase_id: purchase.external_id,
+          workflow_id: workflow.external_id,
+          message: "Missed emails for workflow \"Test Workflow\" were sent to #{purchase.email}"
+        }
+      )
+
+      described_class.broadcast_missed_posts_message!(
+        purchase.external_id,
+        workflow.external_id,
+        described_class::MISSED_POSTS_JOB_COMPLETE_TYPE
+      )
+    end
+
+    it "broadcasts complete message with default workflow name when workflow_id is nil" do
+      expect(described_class).to receive(:broadcast_to).with(
+        "user_#{seller.external_id}",
+        {
+          type: described_class::MISSED_POSTS_JOB_COMPLETE_TYPE,
+          purchase_id: purchase.external_id,
+          message: "Missed emails for workflow \"All missed emails\" were sent to #{purchase.email}"
+        }
+      )
+
+      described_class.broadcast_missed_posts_message!(
+        purchase.external_id,
+        nil,
+        described_class::MISSED_POSTS_JOB_COMPLETE_TYPE
+      )
+    end
+
+    it "broadcasts failure message with workflow name when workflow_id is provided" do
+      expect(described_class).to receive(:broadcast_to).with(
+        "user_#{seller.external_id}",
+        {
+          type: described_class::MISSED_POSTS_JOB_FAILED_TYPE,
+          purchase_id: purchase.external_id,
+          workflow_id: workflow.external_id,
+          message: "Failed to send missed emails for workflow \"Test Workflow\" to #{purchase.email}. Please try again in some time."
+        }
+      )
+
+      described_class.broadcast_missed_posts_message!(
+        purchase.external_id,
+        workflow.external_id,
+        described_class::MISSED_POSTS_JOB_FAILED_TYPE
+      )
+    end
+
+    it "broadcasts failure message with default workflow name when workflow_id is nil" do
+      expect(described_class).to receive(:broadcast_to).with(
+        "user_#{seller.external_id}",
+        {
+          type: described_class::MISSED_POSTS_JOB_FAILED_TYPE,
+          purchase_id: purchase.external_id,
+          message: "Failed to send missed emails for workflow \"All missed emails\" to #{purchase.email}. Please try again in some time."
+        }
+      )
+
+      described_class.broadcast_missed_posts_message!(
+        purchase.external_id,
+        nil,
+        described_class::MISSED_POSTS_JOB_FAILED_TYPE
+      )
+    end
+
+    it "logs error, notifies Bugsnag, and raises when broadcast_to fails" do
+      error = StandardError.new("Redis connection failed")
+
+      allow(described_class).to receive(:broadcast_to).and_raise(error)
+      allow(Rails.logger).to receive(:error)
+      allow(Bugsnag).to receive(:notify)
+
+      expect do
+        described_class.broadcast_missed_posts_message!(purchase.external_id, workflow.external_id, described_class::MISSED_POSTS_JOB_COMPLETE_TYPE)
+      end.to raise_error(StandardError, "Redis connection failed")
+
+      expect(Rails.logger).to have_received(:error).with("Failed to broadcast message to customers channel: Redis connection failed")
+      expect(Bugsnag).to have_received(:notify).with(error)
+    end
+  end
 end

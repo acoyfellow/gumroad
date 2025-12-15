@@ -8,7 +8,7 @@ class CustomerPresenter
   end
 
   def missed_posts(workflow_id: nil)
-    posts = Purchase::PostsService.find_missed_posts_for(purchase:, workflow_id:).order(published_at: :desc)
+    posts = CustomersService.find_missed_posts_for(purchase:, workflow_id:).order(published_at: :desc)
 
     posts.map do |post|
       {
@@ -193,7 +193,7 @@ class CustomerPresenter
       }
     end
 
-    published_posts, unpublished_posts = Purchase::PostsService.sent_posts_for(purchase).partition do |sent_email|
+    published_posts, unpublished_posts = CustomersService.find_sent_posts_for(purchase).partition do |sent_email|
       sent_email.installment.published_at.present?
     end
 

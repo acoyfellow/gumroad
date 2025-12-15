@@ -11,7 +11,7 @@ describe SendMissedPostsJob do
 
   describe "#perform" do
     it "finds purchase by external ID and calls service" do
-      expect(Purchase::PostsService).to receive(:deliver_missed_posts_for!).with(purchase:, workflow_id: nil)
+      expect(CustomersService).to receive(:deliver_missed_posts_for!).with(purchase:, workflow_id: nil)
 
       described_class.new.perform(purchase.external_id)
     end
@@ -30,7 +30,7 @@ describe SendMissedPostsJob do
 
       expect do
         described_class.new.perform(purchase.external_id)
-      end.to raise_error(Purchase::PostsService::CustomerDNDEnabledError, customer_dnd_enabled_error_message)
+      end.to raise_error(CustomersService::CustomerDNDEnabledError, customer_dnd_enabled_error_message)
     end
 
     it "raises SellerNotEligibleError when perform is called directly" do
@@ -39,13 +39,13 @@ describe SendMissedPostsJob do
 
       expect do
         described_class.new.perform(purchase.external_id)
-      end.to raise_error(Purchase::PostsService::SellerNotEligibleError, seller_not_eligible_error_message)
+      end.to raise_error(CustomersService::SellerNotEligibleError, seller_not_eligible_error_message)
     end
   end
 
   describe "sidekiq_retry_in" do
     it "returns :discard and logs for CustomerDNDEnabledError" do
-      exception = Purchase::PostsService::CustomerDNDEnabledError.new(customer_dnd_enabled_error_message)
+      exception = CustomersService::CustomerDNDEnabledError.new(customer_dnd_enabled_error_message)
 
       expect(Rails.logger).to receive(:info)
         .with("[SendMissedPostsJob] Discarding job on 1st attempt for purchase with DND enabled: #{customer_dnd_enabled_error_message}")
@@ -55,7 +55,7 @@ describe SendMissedPostsJob do
     end
 
     it "returns :discard and logs for SellerNotEligibleError" do
-      exception = Purchase::PostsService::SellerNotEligibleError.new(seller_not_eligible_error_message)
+      exception = CustomersService::SellerNotEligibleError.new(seller_not_eligible_error_message)
 
       expect(Rails.logger).to receive(:info)
         .with("[SendMissedPostsJob] Discarding job on 1st attempt for ineligible seller: #{seller_not_eligible_error_message}")

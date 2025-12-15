@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Purchase::PostsService
+class CustomersService
   class CustomerDNDEnabledError < StandardError; end
   class PostNotSentError < StandardError; end
   class SellerNotEligibleError < StandardError; end
@@ -10,6 +10,32 @@ class Purchase::PostsService
   class << self
     def find_missed_posts_for(purchase:, workflow_id: nil)
       Installment.missed_for_purchase(purchase, workflow_id:)
+    end
+
+    def find_sent_posts_for(purchase)
+      latest_email_ids = CreatorContactingCustomersEmailInfo
+      .where(purchase:, installment_id: purchase.seller.installments.alive.seller_or_product_or_variant_type_for_purchase(purchase).pluck(:id))
+      .group(:installment_id)
+      .maximum(:id)
+      .values
+
+      CreatorContactingCustomersEmailInfo
+        .where(id: latest_email_ids)
+        .order(sent_at: :desc)
+    end
+
+    def find_workflow_options_for(purchase)
+      seller = purchase.seller
+
+      seller.workflows.alive.published
+      .joins(:installments)
+      .merge(
+        seller.installments.alive.published
+          .seller_or_product_or_variant_type_for_purchase(purchase)
+      )
+      .distinct
+      .order(:name)
+      .filter { |workflow| workflow.applies_to_purchase?(purchase) }
     end
 
     def send_post!(post:, purchase:)
@@ -46,23 +72,8 @@ class Purchase::PostsService
       rescue CustomerDNDEnabledError, SellerNotEligibleError => e
         raise e
       rescue StandardError => e
-        raise PostNotSentError.new("Missed post #{post.id} could not be sent. Aborting batch sending for the remaining posts. Original message: #{e.message}"),
-              e.backtrace
+        raise PostNotSentError, "Missed post #{post.id} could not be sent. Aborting batch sending for the remaining posts. Original message: #{e.message}", e.backtrace
       end
-    end
-
-    def sent_posts_for(purchase)
-      installment_ids = purchase.seller.installments.alive.seller_or_product_or_variant_type_for_purchase(purchase).pluck(:id)
-
-      latest_email_ids = CreatorContactingCustomersEmailInfo
-      .where(purchase:, installment_id: installment_ids)
-      .group(:installment_id)
-      .maximum(:id)
-      .values
-
-      CreatorContactingCustomersEmailInfo
-        .where(id: latest_email_ids)
-        .order(sent_at: :desc)
     end
 
     private

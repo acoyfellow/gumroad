@@ -10,7 +10,7 @@ class PostsController < ApplicationController
   before_action :set_user_and_custom_domain_config, only: %i[show]
   before_action :check_if_needs_redirect, only: %i[show]
 
-  rescue_from Purchase::PostsService::CustomerDNDEnabledError do |exception|
+  rescue_from CustomersService::CustomerDNDEnabledError do |exception|
     if action_name.in?(%w[send_for_purchase send_missed_posts])
       render json: { message: "This customer has opted out of receiving emails." }, status: :unprocessable_entity
     else
@@ -18,7 +18,7 @@ class PostsController < ApplicationController
     end
   end
 
-  rescue_from Purchase::PostsService::SellerNotEligibleError do |exception|
+  rescue_from CustomersService::SellerNotEligibleError do |exception|
     if action_name.in?(%w[send_for_purchase send_missed_posts])
       render json: { message: "You are not eligible to resend this email." }, status: :forbidden
     else
@@ -66,7 +66,7 @@ class PostsController < ApplicationController
   def send_for_purchase
     authorize @post
 
-    Purchase::PostsService.send_post!(post: @post, purchase: @purchase)
+    CustomersService.send_post!(post: @post, purchase: @purchase)
 
     head :no_content
   end
@@ -74,7 +74,7 @@ class PostsController < ApplicationController
   def send_missed_posts
     authorize [:audience, @purchase], :send_missed_posts?
 
-    Purchase::PostsService.send_missed_posts_for!(purchase: @purchase, workflow_id: params[:workflow_id])
+    CustomersService.send_missed_posts_for!(purchase: @purchase, workflow_id: params[:workflow_id])
 
     render json: { message: "Missed emails are queued for delivery" }, status: :ok
   end

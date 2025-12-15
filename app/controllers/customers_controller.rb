@@ -30,7 +30,7 @@ class CustomersController < Sellers::BaseController
       customers_presenter: -> { customers_presenter.customers_props },
       customer_emails: InertiaRails.optional { CustomerPresenter.new(purchase:).customer_emails },
       missed_posts: InertiaRails.optional { CustomerPresenter.new(purchase:).missed_posts(workflow_id: params[:workflow_id]) },
-      workflows: InertiaRails.optional { WorkflowsPresenter.new(seller: current_seller).workflow_options_by_purchase_props(purchase:) },
+      workflows: InertiaRails.optional { WorkflowsPresenter.new(seller: current_seller).workflow_options_by_purchase_props(purchase) },
       product_purchases: (purchase&.is_bundle_purchase? ? InertiaRails.optional { purchase.product_purchases.map { CustomerPresenter.new(purchase: _1).customer(pundit_user:) } } : nil),
     }.compact
   end

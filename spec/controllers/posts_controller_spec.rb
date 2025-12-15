@@ -73,10 +73,10 @@ describe PostsController do
       end
 
       it "returns success" do
-        allow(Purchase::PostsService).to receive(:send_post!)
+        allow(CustomersService).to receive(:send_post!)
 
         post :send_for_purchase, params: { id: @post.external_id, purchase_id: @purchase.external_id }
-        expect(Purchase::PostsService).to have_received(:send_post!).with(post: @post, purchase: @purchase)
+        expect(CustomersService).to have_received(:send_post!).with(post: @post, purchase: @purchase)
         expect(response).to be_successful
         expect(response).to have_http_status(:no_content)
       end

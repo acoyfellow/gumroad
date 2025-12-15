@@ -8,7 +8,7 @@ class SendMissedPostsJob
     purchase = Purchase.find_by_external_id!(purchase_id)
 
     sleep 3 if Rails.env.development?
-    Purchase::PostsService.deliver_missed_posts_for!(purchase:, workflow_id:)
+    CustomersService.deliver_missed_posts_for!(purchase:, workflow_id:)
 
     CustomersChannel.broadcast_missed_posts_message!(
       purchase.external_id,
@@ -19,10 +19,10 @@ class SendMissedPostsJob
 
   RetryHandler = ->(count, exception, msg) do
     case exception
-    when Purchase::PostsService::CustomerDNDEnabledError
+    when CustomersService::CustomerDNDEnabledError
       Rails.logger.info("[SendMissedPostsJob] Discarding job on #{(count + 1).ordinalize} attempt for purchase with DND enabled: #{exception.message}")
       :discard
-    when Purchase::PostsService::SellerNotEligibleError
+    when CustomersService::SellerNotEligibleError
       Rails.logger.info("[SendMissedPostsJob] Discarding job on #{(count + 1).ordinalize} attempt for ineligible seller: #{exception.message}")
       :discard
     end
@@ -36,10 +36,6 @@ class SendMissedPostsJob
       workflow_id,
       CustomersChannel::MISSED_POSTS_JOB_FAILED_TYPE
     )
-  rescue => e
-    Rails.logger.error("Error broadcasting message to customers channel: #{e.message}")
-    Bugsnag.notify(e)
-    raise e
   end
 
   sidekiq_retry_in(&RetryHandler)

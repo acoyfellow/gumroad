@@ -16,7 +16,7 @@ describe CustomerPresenter do
     end
 
     it "returns the correct props" do
-      expect(Purchase::PostsService).to receive(:find_missed_posts_for).with(purchase:, workflow_id: nil).and_call_original
+      expect(CustomersService).to receive(:find_missed_posts_for).with(purchase:, workflow_id: nil).and_call_original
 
       expect(described_class.new(purchase:).missed_posts).to eq(
         [
@@ -38,7 +38,7 @@ describe CustomerPresenter do
 
     it "passes workflow_id to service when provided" do
       workflow_id = "workflow-123"
-      expect(Purchase::PostsService).to receive(:find_missed_posts_for).with(purchase:, workflow_id:).and_call_original
+      expect(CustomersService).to receive(:find_missed_posts_for).with(purchase:, workflow_id:).and_call_original
 
       described_class.new(purchase:).missed_posts(workflow_id:)
     end
