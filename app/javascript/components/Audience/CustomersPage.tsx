@@ -756,12 +756,15 @@ const CustomerDrawer = ({
 
   const workflowIdForQuery = (workflowId: string | undefined) => (workflowId === "" ? undefined : workflowId);
 
+  const isProcessingMissedPostsJobForCustomer = (customerId: string) =>
+    Array.from(missedPostsJobsInProcessRef.current).some((jobKey) => {
+      const job = cast<{ customerId: string; workflowId?: string }>(JSON.parse(jobKey));
+      return job.customerId === customerId;
+    });
+
   const isProcessingAllOrSpecificJob = (customerId: string, workflowId?: string) => {
     if (workflowId === undefined) {
-      return Array.from(missedPostsJobsInProcessRef.current).some((jobKey) => {
-        const job = cast<{ customerId: string; workflowId?: string }>(JSON.parse(jobKey));
-        return job.customerId === customerId;
-      });
+      return isProcessingMissedPostsJobForCustomer(customerId);
     }
 
     return (
@@ -789,7 +792,7 @@ const CustomerDrawer = ({
     setIsProcessingAllOrSpecificJob(isProcessingAllOrSpecificJob(customer.id, workflowIdForQuery(workflowId)));
   };
 
-  const handleResendAll = async () => {
+  const resendAllMissedPosts = async () => {
     if (!cable) return;
 
     const resendJobWorkflowId = workflowIdForQuery(selectedWorkflowId);
@@ -856,9 +859,9 @@ const CustomerDrawer = ({
   );
   const selectedProductPurchase = productPurchases.find(({ id }) => id === selectedProductPurchaseId);
 
-  const loadBundlePurchaseDrawerData = (purchaseId: string) => {
+  const loadBundlePurchaseDrawerData = (purchaseId: string, workflowId?: string) => {
     router.reload({
-      data: { purchase_id: purchaseId },
+      data: { purchase_id: purchaseId, workflow_id: workflowIdForQuery(workflowId) },
       only: ["workflows", "customer_emails", "missed_posts", "product_purchases"],
       preserveUrl: true,
     });
@@ -895,9 +898,9 @@ const CustomerDrawer = ({
   }, [commission?.status]);
 
   React.useEffect(() => {
-    if (!customersChannelRef.current || !processingAllOrSpecificJob) return;
+    if (!customersChannelRef.current || !isProcessingMissedPostsJobForCustomer(customer.id)) return;
 
-    const localUnsubscribe = customersChannelRef.current.on("message", (packet) => {
+    const localChannelUnsubscribe = customersChannelRef.current.on("message", (packet) => {
       if (!is<IncomingCustomersChannelMessage>(packet)) return;
       if (packet.purchase_id !== customer.id) return;
 
@@ -916,9 +919,9 @@ const CustomerDrawer = ({
     });
 
     return () => {
-      localUnsubscribe();
+      localChannelUnsubscribe();
     };
-  }, [customer.id, selectedWorkflowId, selectedProductPurchase, processingAllOrSpecificJob]);
+  }, [customer.id, selectedWorkflowId, selectedProductPurchase, isProcessingAllOrSpecificJob]);
 
   const isCoffee = customer.product.native_type === "coffee";
 
@@ -936,7 +939,7 @@ const CustomerDrawer = ({
         onClose={onClose}
         onBack={() => {
           setSelectedProductPurchaseId(null);
-          loadBundlePurchaseDrawerData(customer.id);
+          loadBundlePurchaseDrawerData(customer.id, selectedWorkflowId);
         }}
         countries={countries}
         canPing={canPing}
@@ -1431,7 +1434,7 @@ const CustomerDrawer = ({
               <Button
                 color="primary"
                 disabled={!!loadingId || processingAllOrSpecificJob}
-                onClick={() => void handleResendAll()}
+                onClick={() => void resendAllMissedPosts()}
               >
                 {processingAllOrSpecificJob ? "Resending all..." : "Resend all"}
               </Button>
