@@ -121,6 +121,8 @@ export type CustomerPageProps = {
 
 const year = new Date().getFullYear();
 
+const CUSTOMERS_CHANNEL_NAME = "CustomersChannel";
+
 const formatPrice = (priceCents: number, currencyType: CurrencyCode, recurrence?: RecurrenceId | null) =>
   `${formatPriceCentsWithCurrencySymbol(currencyType, priceCents, { symbolFormat: "long" })}${
     recurrence ? ` ${recurrenceLabels[recurrence]}` : ""
@@ -752,11 +754,6 @@ const CustomerDrawer = ({
 
   const workflowOptions = [{ id: "", label: "All missed emails" }, ...(workflows ?? [])];
 
-  const currentCustomerIdRef = React.useRef(customer.id);
-  const currentWorkflowIdRef = React.useRef(selectedWorkflowId);
-  currentCustomerIdRef.current = customer.id;
-  currentWorkflowIdRef.current = selectedWorkflowId;
-
   const workflowIdForQuery = (workflowId: string | undefined) => (workflowId === "" ? undefined : workflowId);
 
   const isProcessingAllOrSpecificJob = (customerId: string, workflowId?: string) => {
@@ -776,6 +773,7 @@ const CustomerDrawer = ({
   const [processingAllOrSpecificJob, setIsProcessingAllOrSpecificJob] = React.useState(
     isProcessingAllOrSpecificJob(customer.id, workflowIdForQuery(selectedWorkflowId)),
   );
+
   const fetchAndDisplayMissedPostsByWorkflowId = (workflowId: string) => {
     router.reload({
       data: {
@@ -794,57 +792,47 @@ const CustomerDrawer = ({
   const handleResendAll = async () => {
     if (!cable) return;
 
-    const workflowId = workflowIdForQuery(selectedWorkflowId);
+    const resendJobWorkflowId = workflowIdForQuery(selectedWorkflowId);
+    const resendJobKeyLocal = JSON.stringify({ customerId: customer.id, workflowId: resendJobWorkflowId });
 
-    const jobKey = JSON.stringify({ customerId: customer.id, workflowId });
-    missedPostsJobsInProcessRef.current.add(jobKey);
+    try {
+      if (!customersChannelRef.current) {
+        customersChannelRef.current = cable.subscribeTo(CUSTOMERS_CHANNEL_NAME, { purchase_id: customer.id });
 
-    if (!customersChannelRef.current) {
-      customersChannelRef.current = cable.subscribeTo("CustomersChannel", { purchase_id: customer.id });
+        customersChannelRef.current.on("message", (packet) => {
+          if (!is<IncomingCustomersChannelMessage>(packet)) return;
+          const resendJobKeyFromPacket = JSON.stringify({
+            customerId: packet.purchase_id,
+            workflowId: packet.workflow_id,
+          });
 
-      customersChannelRef.current.on("message", (packet) => {
-        if (!is<IncomingCustomersChannelMessage>(packet)) return;
-        if (packet.purchase_id !== currentCustomerIdRef.current) return;
+          if (!missedPostsJobsInProcessRef.current.has(resendJobKeyFromPacket)) return;
 
-        const jobKey = JSON.stringify({ customerId: packet.purchase_id, workflowId: packet.workflow_id });
+          missedPostsJobsInProcessRef.current.delete(resendJobKeyFromPacket);
 
-        if (!missedPostsJobsInProcessRef.current.has(jobKey)) return;
+          switch (packet.type) {
+            case "missed_posts_job_complete":
+              showAlert(packet.message, "success");
+              break;
+            case "missed_posts_job_failed":
+              showAlert(packet.message, "error");
+              break;
+          }
+        });
+      }
 
-        missedPostsJobsInProcessRef.current.delete(jobKey);
-
-        // const currentWorkflowId = workflowIdForQuery(currentWorkflowIdRef.current);
-        const messageWorkflowId = workflowIdForQuery(packet.workflow_id);
-
-        switch (packet.type) {
-          case "missed_posts_job_complete":
-            if (currentCustomerIdRef.current === packet.purchase_id) {
-              router.reload({
-                data: {
-                  purchase_id: packet.purchase_id,
-                  workflow_id: messageWorkflowId,
-                },
-                only: ["customer_emails", "missed_posts", "product_purchases"],
-                preserveUrl: true,
-              });
-            }
-            showAlert(packet.message, "success");
-            break;
-          case "missed_posts_job_failed":
-            showAlert(packet.message, "error");
-            break;
-        }
-        setIsProcessingAllOrSpecificJob(false);
-      });
-    }
+      await customersChannelRef.current.ensureSubscribed();
+    } catch {}
 
     try {
       setIsProcessingAllOrSpecificJob(true);
-      const response = await resendPosts(customer.id, workflowId);
+      missedPostsJobsInProcessRef.current.add(resendJobKeyLocal);
+      const response = await resendPosts(customer.id, resendJobWorkflowId);
       showAlert(response.message, "success");
     } catch (e) {
       assertResponseError(e);
       showAlert(e.message, "error");
-      missedPostsJobsInProcessRef.current.delete(jobKey);
+      missedPostsJobsInProcessRef.current.delete(resendJobKeyLocal);
       setIsProcessingAllOrSpecificJob(false);
     }
   };
@@ -905,6 +893,32 @@ const CustomerDrawer = ({
         });
     }
   }, [commission?.status]);
+
+  React.useEffect(() => {
+    if (!customersChannelRef.current || !processingAllOrSpecificJob) return;
+
+    const localUnsubscribe = customersChannelRef.current.on("message", (packet) => {
+      if (!is<IncomingCustomersChannelMessage>(packet)) return;
+      if (packet.purchase_id !== customer.id) return;
+
+      setIsProcessingAllOrSpecificJob(false);
+
+      if (packet.type === "missed_posts_job_complete" && !selectedProductPurchase) {
+        router.reload({
+          data: {
+            purchase_id: packet.purchase_id,
+            workflow_id: workflowIdForQuery(selectedWorkflowId),
+          },
+          only: ["customer_emails", "missed_posts", "product_purchases"],
+          preserveUrl: true,
+        });
+      }
+    });
+
+    return () => {
+      localUnsubscribe();
+    };
+  }, [customer.id, selectedWorkflowId, selectedProductPurchase, processingAllOrSpecificJob]);
 
   const isCoffee = customer.product.native_type === "coffee";
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "shared_examples/customers_service_context"
 
 describe "InstallmentClassMethods"  do
   before do
@@ -327,12 +328,7 @@ describe "InstallmentClassMethods"  do
       end
 
       context "bundle purchases" do
-        let(:product_a) { create(:product, user: @creator) }
-        let(:product_b) { create(:product, user: @creator) }
-        let(:bundle) { create(:product, :bundle, user: @creator) }
-        let!(:bundle_product_a) { create(:bundle_product, bundle: bundle, product: product_a) }
-        let!(:bundle_product_b) { create(:bundle_product, bundle: bundle, product: product_b) }
-        let(:bundle_purchase) { create(:purchase, link: bundle, seller: @creator) }
+        include_context "with bundle purchase setup", seller_variable: :@creator
 
         let!(:other_product) { create(:product, user: @creator) }
         let!(:other_product_post) { create(:installment, link: other_product, seller: @creator, published_at: base_time) }
@@ -347,8 +343,6 @@ describe "InstallmentClassMethods"  do
         let!(:product_a_workflow_post) { create(:workflow_installment, link: product_a, workflow: product_a_workflow, seller: @creator, published_at: base_time, created_at: base_time + 5.seconds) }
         let!(:product_b_workflow) { create(:workflow, seller: @creator, link: product_b, published_at: base_time) }
         let!(:product_b_workflow_post) { create(:workflow_installment, link: product_b, workflow: product_b_workflow, seller: @creator, published_at: base_time, created_at: base_time + 6.seconds) }
-
-        before { bundle_purchase.create_artifacts_and_send_receipt! }
 
 
         it "includes all missed posts for bundle purchase, excluding posts related to bundle product purchases" do
@@ -516,13 +510,14 @@ describe "InstallmentClassMethods"  do
       expect(result).to eq([product_installment_matching, workflow_product_installment_with_link_id, workflow_product_installment_without_link_id, workflow_variant_installment_with_link_id, workflow_variant_installment_without_link_id, workflow_product_installment_with_non_matching_link_id, workflow_variant_installment_with_non_matching_link_id, seller_installment].sort_by(&:id))
     end
 
-    it "excludes product and variant installments with non-matching link_id, follower, affiliate, and abandoned_cart type installments" do
+    it "excludes product and variant installments with non-matching link_id, follower, audience, affiliate, and abandoned_cart type installments" do
       result = Installment.seller_or_product_or_variant_type_for_purchase(purchase).to_a
       expect(result).not_to include(product_installment_non_matching)
       expect(result).not_to include(variant_installment_matching)
       expect(result).not_to include(variant_installment_non_matching)
       expect(result).not_to include(follower_installment)
       expect(result).not_to include(affiliate_installment)
+      expect(result).not_to include(audience_installment)
       expect(result).not_to include(abandoned_cart_installment)
     end
   end

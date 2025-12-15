@@ -7,7 +7,6 @@ class SendMissedPostsJob
   def perform(purchase_id, workflow_id = nil)
     purchase = Purchase.find_by_external_id!(purchase_id)
 
-    sleep 3 if Rails.env.development?
     CustomersService.deliver_missed_posts_for!(purchase:, workflow_id:)
 
     CustomersChannel.broadcast_missed_posts_message!(

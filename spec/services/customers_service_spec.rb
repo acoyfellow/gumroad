@@ -1,13 +1,22 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "shared_examples/customers_service_context"
 
 describe CustomersService do
   let(:seller) { create(:named_seller) }
   let(:product) { create(:product, user: seller) }
   let(:purchase) { create(:purchase, seller:, link: product) }
 
-  describe ".find_missed_posts_for" do
+  RSpec.shared_context "with seller eligible to send emails" do
+    before do
+      create(:payment_completed, user: seller)
+      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
+      PostSendgridApi.mails.clear
+    end
+  end
+
+  RSpec.shared_context "with missed posts setup" do |seller_variable: :seller, product_variable: :product, purchase_variable: :purchase|
     let!(:sent_post) { create(:installment, link: product, seller:, published_at: 2.days.ago) }
     let!(:missed_post1) { create(:installment, link: product, seller:, published_at: 1.day.ago) }
     let!(:missed_post2) { create(:installment, link: product, seller:, published_at: Time.current) }
@@ -15,17 +24,19 @@ describe CustomersService do
     before do
       create(:creator_contacting_customers_email_info, installment: sent_post, purchase:)
     end
+  end
 
-    it "returns only posts that haven't been sent" do
+  describe ".find_missed_posts_for" do
+    include_context "with missed posts setup"
+
+    it "delegates to missed_for_purchase with correct workflow_id and returns missed posts" do
+      workflow = create(:workflow, seller:, link: product, published_at: Time.current)
+
       expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: nil).and_call_original
 
-      result = described_class.find_missed_posts_for(purchase:)
+      missed_posts = described_class.find_missed_posts_for(purchase:)
 
-      expect(result).to contain_exactly(missed_post1, missed_post2)
-    end
-
-    it "passes workflow_id to scope when provided" do
-      workflow = create(:workflow, seller:, link: product, published_at: Time.current)
+      expect(missed_posts).to contain_exactly(missed_post1, missed_post2)
 
       expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: workflow.external_id).and_call_original
 
@@ -33,14 +44,127 @@ describe CustomersService do
     end
   end
 
-  describe ".send_post!" do
-    let(:post) { create(:installment, link: product) }
+  describe ".find_sent_posts_for" do
+    context "for normal purchases" do
+      let(:other_product) { create(:product, user: seller) }
+      let(:product_post) { create(:installment, link: product, seller:, published_at: 2.days.ago) }
+      let(:other_product_post) { create(:installment, link: other_product, seller:, published_at: 1.day.ago) }
+      let!(:product_email) { create(:creator_contacting_customers_email_info, installment: product_post, purchase:) }
+      let!(:other_product_email) { create(:creator_contacting_customers_email_info, installment: other_product_post, purchase:) }
 
-    before do
-      PostSendgridApi.mails.clear
-      create(:payment_completed, user: seller)
-      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
+      it "returns only sent posts for the purchase's product, excludes other product posts" do
+        sent_posts = described_class.find_sent_posts_for(purchase)
+
+        expect(sent_posts).to contain_exactly(product_email)
+        expect(sent_posts).not_to include(other_product_email)
+      end
+
+      it "returns only the latest email per installment when multiple emails exist" do
+        product_post_2 = create(:installment, link: product, seller:, published_at: 1.day.ago)
+
+        latest_email_product_post_1 = create(:creator_contacting_customers_email_info, installment: product_post, purchase:, sent_at: 1.day.ago)
+        latest_email_product_post_2 = create(:creator_contacting_customers_email_info, installment: product_post_2, purchase:, sent_at: 1.day.ago)
+
+        sent_posts = described_class.find_sent_posts_for(purchase)
+
+        expect(sent_posts).to contain_exactly(latest_email_product_post_1, latest_email_product_post_2)
+        expect(sent_posts).not_to include(product_email)
+      end
     end
+
+    context "when purchase is a bundle" do
+      include_context "with bundle purchase setup"
+
+      let(:bundle_post)   { create(:installment, link: bundle, seller:, published_at: 2.days.ago) }
+      let(:product_a_post) { create(:installment, link: product_a, seller:, published_at: 1.day.ago) }
+      let(:product_b_post) { create(:installment, link: product_b, seller:, published_at: 1.day.ago) }
+
+      let(:product_a_purchase) { bundle_purchase.product_purchases.find_by(link: product_a) }
+      let(:product_b_purchase) { bundle_purchase.product_purchases.find_by(link: product_b) }
+
+      let!(:bundle_email) { create(:creator_contacting_customers_email_info, installment: bundle_post, purchase: bundle_purchase) }
+      let!(:product_a_email) { create(:creator_contacting_customers_email_info, installment: product_a_post, purchase: product_a_purchase) }
+      let!(:product_b_email) { create(:creator_contacting_customers_email_info, installment: product_b_post, purchase: product_b_purchase) }
+
+      it "returns only sent posts for bundle purchase, excludes product posts" do
+        result = described_class.find_sent_posts_for(bundle_purchase)
+
+        expect(result).to contain_exactly(bundle_email)
+        expect(result).not_to include(product_a_email, product_b_email)
+      end
+
+      context "bundle product purchase" do
+        it "returns only sent posts for that product, excludes bundle and other product posts" do
+          result = described_class.find_sent_posts_for(product_a_purchase)
+
+          expect(result).to contain_exactly(product_a_email)
+          expect(result).not_to include(bundle_email, product_b_email)
+        end
+      end
+    end
+  end
+
+  describe ".find_workflow_options_for" do
+    let!(:follower_workflow) { create(:workflow, link: product, seller:, workflow_type: Workflow::FOLLOWER_TYPE, created_at: 1.day.ago, published_at: 1.day.ago) }
+    let!(:_deleted_seller_workflow) { create(:workflow, link: nil, seller:, workflow_type: Workflow::SELLER_TYPE, deleted_at: DateTime.current) }
+    let!(:product_workflow) { create(:workflow, link: product, seller:, name: "Alpha Workflow", published_at: 1.day.ago) }
+    let!(:seller_workflow) { create(:workflow, link: nil, seller:, workflow_type: Workflow::SELLER_TYPE, name: "Beta Workflow", published_at: 1.day.ago) }
+    let!(:seller_workflow_installment) { create(:workflow_installment, workflow: seller_workflow, seller:, published_at: Time.current) }
+
+    let!(:other_seller) { create(:named_seller, username: "othseller#{SecureRandom.alphanumeric(8).downcase}", email: "other_seller_#{SecureRandom.hex(4)}@example.com") }
+    let!(:other_seller_workflow) { create(:workflow, link: nil, seller: other_seller, workflow_type: Workflow::SELLER_TYPE, published_at: Time.current) }
+    let!(:other_seller_installment) { create(:workflow_installment, workflow: other_seller_workflow, seller: other_seller, published_at: Time.current) }
+
+    it "returns alive and published workflows sorted by name" do
+      _follower_post = create(:workflow_installment, workflow: follower_workflow, seller:, published_at: Time.current)
+      create(:workflow_installment, workflow: product_workflow, seller:, published_at: Time.current)
+
+      workflow_options = described_class.find_workflow_options_for(purchase)
+
+      expect(workflow_options).to eq([product_workflow, seller_workflow])
+    end
+
+    context "bundle purchase" do
+      include_context "with bundle purchase setup", with_variants: true
+
+      let!(:bundle_workflow) { create(:workflow, seller:, link: bundle, name: "Gamma Workflow", published_at: Time.current) }
+      let!(:product_a_workflow) { create(:workflow, seller:, link: product_a, name: "Delta Workflow", published_at: Time.current) }
+      let!(:product_b_workflow) { create(:workflow, seller:, link: product_b, published_at: Time.current) }
+      let!(:other_product_workflow) { create(:workflow, seller:, link: product, published_at: Time.current) }
+
+      let!(:bundle_installment) { create(:workflow_installment, workflow: bundle_workflow, seller:, published_at: Time.current) }
+      let!(:product_a_installment) { create(:workflow_installment, workflow: product_a_workflow, seller:, published_at: Time.current) }
+      let!(:product_a_variant_installment) { create(:workflow_installment, workflow: product_a_variant_workflow, seller:, published_at: Time.current) }
+      let!(:_product_b_installment) { create(:workflow_installment, workflow: product_b_workflow, seller:, published_at: Time.current) }
+      let!(:_other_product_installment) { create(:workflow_installment, workflow: other_product_workflow, seller:, published_at: Time.current) }
+
+      it "includes workflows for bundle and it's underlying products" do
+        workflow_options = described_class.find_workflow_options_for(bundle_purchase)
+
+        expect(workflow_options).to eq([seller_workflow, bundle_workflow])
+      end
+
+      context "specific product under a bundle purchase" do
+        it "includes workflows for the product and its variants" do
+          product_a_purchase = bundle_purchase.product_purchases.find_by(link: product_a)
+
+          workflow_options_for_bundle_purchase_product_a = described_class.find_workflow_options_for(product_a_purchase)
+
+          expect(workflow_options_for_bundle_purchase_product_a).to eq([seller_workflow, product_a_workflow])
+
+          product_a_purchase.update!(variant_attributes: [product_a_variant])
+          workflow_options_for_bundle_purchase_product_a_variant = described_class.find_workflow_options_for(product_a_purchase)
+
+          expect(workflow_options_for_bundle_purchase_product_a_variant).to eq([seller_workflow, product_a_workflow, product_a_variant_workflow])
+        end
+      end
+    end
+  end
+
+  describe ".send_post!" do
+    include_context "with seller eligible to send emails"
+
+    let(:post) { create(:installment, link: product) }
 
     it "sends email and creates email record" do
       purchase.create_url_redirect!
@@ -124,10 +248,7 @@ describe CustomersService do
   end
 
   describe ".send_missed_posts_for!" do
-    before do
-      create(:payment_completed, user: seller)
-      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
-    end
+    include_context "with seller eligible to send emails"
 
     it "passes correct arguments to SendMissedPostsJob" do
       described_class.send_missed_posts_for!(purchase:)
@@ -160,23 +281,18 @@ describe CustomersService do
   end
 
   describe ".deliver_missed_posts_for!" do
-    let!(:sent_post) { create(:installment, link: product, seller:, published_at: 2.days.ago) }
-    let!(:missed_post1) { create(:installment, link: product, seller:, published_at: 1.day.ago) }
-    let!(:missed_post2) { create(:installment, link: product, seller:, published_at: Time.current) }
+    include_context "with missed posts setup"
+    include_context "with seller eligible to send emails"
 
     before do
-      create(:payment_completed, user: seller)
-      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
       purchase.create_url_redirect!
-      PostSendgridApi.mails.clear
-      create(:creator_contacting_customers_email_info, installment: sent_post, purchase:)
+      [missed_post1, missed_post2].each do |p|
+        Rails.cache.delete("post_email:#{p.id}:#{purchase.id}")
+      end
     end
 
     it "sends emails for missed posts" do
       initial_count = CreatorContactingCustomersEmailInfo.count
-      [missed_post1, missed_post2].each do |p|
-        Rails.cache.delete("post_email:#{p.id}:#{purchase.id}")
-      end
 
       expect do
         described_class.deliver_missed_posts_for!(purchase:)
@@ -203,9 +319,6 @@ describe CustomersService do
 
     it "passes workflow_id to find_missed_posts_for when provided" do
       workflow = create(:workflow, seller:, link: product, published_at: Time.current)
-      [missed_post1, missed_post2].each do |p|
-        Rails.cache.delete("post_email:#{p.id}:#{purchase.id}")
-      end
 
       expect(described_class).to receive(:find_missed_posts_for).with(purchase:, workflow_id: workflow.external_id).and_call_original
 
@@ -214,9 +327,6 @@ describe CustomersService do
 
     it "raises CustomerDNDEnabledError when user can't be contacted for purchase" do
       purchase.update!(can_contact: false)
-      [missed_post1, missed_post2].each do |p|
-        Rails.cache.delete("post_email:#{p.id}:#{purchase.id}")
-      end
 
       expect do
         described_class.deliver_missed_posts_for!(purchase:)
@@ -228,9 +338,6 @@ describe CustomersService do
 
     it "raises SellerNotEligibleError when seller is not eligible to send emails" do
       allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE - 1)
-      [missed_post1, missed_post2].each do |p|
-        Rails.cache.delete("post_email:#{p.id}:#{purchase.id}")
-      end
 
       expect do
         described_class.deliver_missed_posts_for!(purchase:)
@@ -241,10 +348,6 @@ describe CustomersService do
     end
 
     it "raises PostNotSentError and aborts batch sending when send_post! raises a StandardError" do
-      [missed_post1, missed_post2].each do |p|
-        Rails.cache.delete("post_email:#{p.id}:#{purchase.id}")
-      end
-
       error_message = "Network error occurred"
       allow(described_class).to receive(:send_post!).and_call_original
       allow(described_class).to receive(:send_post!).with(post: missed_post1, purchase:).and_raise(StandardError.new(error_message))
@@ -259,157 +362,6 @@ describe CustomersService do
 
       expect(PostSendgridApi.mails).to be_empty
       expect(CreatorContactingCustomersEmailInfo.where(purchase:).where(installment: [missed_post1, missed_post2])).to be_empty
-    end
-  end
-
-  describe ".find_sent_posts_for" do
-    context "for normal purchases" do
-      let(:other_product) { create(:product, user: seller) }
-
-      it "returns only sent posts for the purchase's product, excludes other product posts" do
-        product_post = create(:installment, link: product, seller:, published_at: 2.days.ago)
-        other_product_post = create(:installment, link: other_product, seller:, published_at: 1.day.ago)
-
-        product_email = create(:creator_contacting_customers_email_info, installment: product_post, purchase:)
-        other_product_email = create(:creator_contacting_customers_email_info, installment: other_product_post, purchase:)
-
-        result = described_class.find_sent_posts_for(purchase)
-
-        expect(result).to contain_exactly(product_email)
-        expect(result).not_to include(other_product_email)
-      end
-
-      it "returns only the latest email per installment when multiple emails exist" do
-        post1 = create(:installment, link: product, seller:, published_at: 2.days.ago)
-        post2 = create(:installment, link: product, seller:, published_at: 1.day.ago)
-
-        old_email1 = create(:creator_contacting_customers_email_info, installment: post1, purchase:, sent_at: 2.days.ago)
-        latest_email1 = create(:creator_contacting_customers_email_info, installment: post1, purchase:, sent_at: 1.day.ago)
-
-        email2 = create(:creator_contacting_customers_email_info, installment: post2, purchase:, sent_at: 1.day.ago)
-
-        result = described_class.find_sent_posts_for(purchase)
-
-        expect(result).to contain_exactly(latest_email1, email2)
-        expect(result).not_to include(old_email1)
-      end
-    end
-
-    context "for bundle purchases" do
-      let(:product_a) { create(:product, user: seller) }
-      let(:product_b) { create(:product, user: seller) }
-      let(:bundle) { create(:product, :bundle, user: seller) }
-      let(:bundle_purchase) { create(:purchase, link: bundle, seller:) }
-
-      let!(:bundle_product_a) { create(:bundle_product, bundle: bundle, product: product_a) }
-      let!(:bundle_product_b) { create(:bundle_product, bundle: bundle, product: product_b) }
-
-      before { bundle_purchase.create_artifacts_and_send_receipt! }
-
-      it "returns only sent posts for bundle purchase, excludes product posts" do
-        bundle_post = create(:installment, link: bundle, seller:, published_at: 2.days.ago)
-        product_a_post = create(:installment, link: product_a, seller:, published_at: 1.day.ago)
-        product_b_post = create(:installment, link: product_b, seller:, published_at: 1.day.ago)
-
-        bundle_email = create(:creator_contacting_customers_email_info, installment: bundle_post, purchase: bundle_purchase)
-        product_a_email = create(:creator_contacting_customers_email_info, installment: product_a_post, purchase: bundle_purchase)
-        product_b_email = create(:creator_contacting_customers_email_info, installment: product_b_post, purchase: bundle_purchase)
-
-        result = described_class.find_sent_posts_for(bundle_purchase)
-
-        expect(result).to contain_exactly(bundle_email)
-        expect(result).not_to include(product_a_email, product_b_email)
-      end
-
-      context "bundle product purchase" do
-        it "returns only sent posts for that product, excludes bundle and other product posts" do
-          product_a_purchase = bundle_purchase.product_purchases.find_by(link: product_a)
-
-          bundle_post = create(:installment, link: bundle, seller:, published_at: 2.days.ago)
-          product_a_post = create(:installment, link: product_a, seller:, published_at: 1.day.ago)
-          product_b_post = create(:installment, link: product_b, seller:, published_at: 1.day.ago)
-
-          bundle_email = create(:creator_contacting_customers_email_info, installment: bundle_post, purchase: product_a_purchase)
-          product_a_email = create(:creator_contacting_customers_email_info, installment: product_a_post, purchase: product_a_purchase)
-          product_b_email = create(:creator_contacting_customers_email_info, installment: product_b_post, purchase: product_a_purchase)
-
-          result = described_class.find_sent_posts_for(product_a_purchase)
-
-          expect(result).to contain_exactly(product_a_email)
-          expect(result).not_to include(bundle_email, product_b_email)
-        end
-      end
-    end
-  end
-
-  describe ".find_workflow_options_for" do
-    let!(:follower_workflow) { create(:workflow, link: product, seller:, workflow_type: Workflow::FOLLOWER_TYPE, created_at: 1.day.ago, published_at: 1.day.ago) }
-    let!(:_deleted_seller_workflow) { create(:workflow, link: nil, seller:, workflow_type: Workflow::SELLER_TYPE, deleted_at: DateTime.current) }
-    let!(:product_workflow) { create(:workflow, link: product, seller:, name: "Alpha Workflow", published_at: 1.day.ago) }
-    let!(:seller_workflow) { create(:workflow, link: nil, seller:, workflow_type: Workflow::SELLER_TYPE, name: "Beta Workflow", published_at: 1.day.ago) }
-    let!(:seller_workflow_installment) { create(:workflow_installment, workflow: seller_workflow, seller:, published_at: Time.current) }
-
-    let!(:other_seller) { create(:named_seller, username: "othseller#{SecureRandom.alphanumeric(8).downcase}", email: "other_seller_#{SecureRandom.hex(4)}@example.com") }
-    let!(:other_seller_workflow) { create(:workflow, link: nil, seller: other_seller, workflow_type: Workflow::SELLER_TYPE, published_at: Time.current) }
-    let!(:other_seller_installment) { create(:workflow_installment, workflow: other_seller_workflow, seller: other_seller, published_at: Time.current) }
-
-    it "returns alive and published workflows sorted by name" do
-      _follower_post = create(:workflow_installment, workflow: follower_workflow, seller:, published_at: Time.current)
-      create(:workflow_installment, workflow: product_workflow, seller:, published_at: Time.current)
-
-      result = described_class.find_workflow_options_for(purchase)
-
-      expect(result).to eq([product_workflow, seller_workflow])
-      expect(result.map(&:name)).to eq(["Alpha Workflow", "Beta Workflow"])
-    end
-
-    context "bundle purchase" do
-      let(:product_a) { create(:product, user: seller) }
-      let(:product_b) { create(:product, user: seller) }
-      let(:bundle) { create(:product, :bundle, user: seller) }
-      let(:bundle_purchase) { create(:purchase, link: bundle, seller:) }
-
-      let!(:bundle_product_a) { create(:bundle_product, bundle: bundle, product: product_a) }
-      let!(:bundle_product_b) { create(:bundle_product, bundle: bundle, product: product_b) }
-
-      let!(:bundle_workflow) { create(:workflow, seller:, link: bundle, name: "Gamma Workflow", published_at: Time.current) }
-      let!(:product_a_workflow) { create(:workflow, seller:, link: product_a, name: "Delta Workflow", published_at: Time.current) }
-      let!(:product_b_workflow) { create(:workflow, seller:, link: product_b, published_at: Time.current) }
-      let!(:other_product_workflow) { create(:workflow, seller:, link: product, published_at: Time.current) }
-
-      let!(:product_a_variant_category) { create(:variant_category, link: product_a) }
-      let!(:product_a_variant) { create(:variant, variant_category: product_a_variant_category) }
-      let!(:product_a_variant_workflow) { create(:variant_workflow, seller:, base_variant: product_a_variant, link: product_a, name: "Zeta Workflow", published_at: Time.current) }
-
-      before { bundle_purchase.create_artifacts_and_send_receipt! }
-
-      let!(:bundle_installment) { create(:workflow_installment, workflow: bundle_workflow, seller:, published_at: Time.current) }
-      let!(:product_a_installment) { create(:workflow_installment, workflow: product_a_workflow, seller:, published_at: Time.current) }
-      let!(:product_a_variant_installment) { create(:workflow_installment, workflow: product_a_variant_workflow, seller:, published_at: Time.current) }
-      let!(:_product_b_installment) { create(:workflow_installment, workflow: product_b_workflow, seller:, published_at: Time.current) }
-      let!(:_other_product_installment) { create(:workflow_installment, workflow: other_product_workflow, seller:, published_at: Time.current) }
-
-      it "includes workflows for bundle and it's underlying products" do
-        result = described_class.find_workflow_options_for(bundle_purchase)
-
-        expect(result).to eq([seller_workflow, bundle_workflow])
-      end
-
-      context "specific product under a bundle purchase" do
-        it "includes workflows for the product and its variants" do
-          product_a_purchase = bundle_purchase.product_purchases.find_by(link: product_a)
-
-          options_for_product_a = described_class.find_workflow_options_for(product_a_purchase)
-
-          expect(options_for_product_a).to eq([seller_workflow, product_a_workflow])
-
-          product_a_purchase.update!(variant_attributes: [product_a_variant])
-
-          options_for_bundle_purchase_with_product_a_variant = described_class.find_workflow_options_for(product_a_purchase)
-
-          expect(options_for_bundle_purchase_with_product_a_variant).to eq([seller_workflow, product_a_workflow, product_a_variant_workflow])
-        end
-      end
     end
   end
 end
