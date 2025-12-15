@@ -49,7 +49,8 @@ describe SignupController do
         it "signs in as user" do
           post "create", params: { user: { email: @user.email, password: "password" } }
 
-          expect(response.parsed_body["success"]).to eq true
+          expect(response).to have_http_status(:conflict)
+          expect(response.headers["X-Inertia-Location"]).to eq(dashboard_path)
           expect(controller.user_signed_in?).to eq true
         end
       end
@@ -64,8 +65,8 @@ describe SignupController do
           post "create", params: { user: { email: @user.email, password: "password" } }
 
           expect(session[:verify_two_factor_auth_for]).to eq @user.id
-          expect(response.parsed_body["redirect_location"]).to eq two_factor_authentication_path(next: dashboard_path)
-          expect(response.parsed_body["success"]).to eq true
+          expect(response).to have_http_status(:conflict)
+          expect(response.headers["X-Inertia-Location"]).to eq(two_factor_authentication_path(next: dashboard_path))
           expect(controller.user_signed_in?).to eq false
         end
       end
@@ -75,7 +76,8 @@ describe SignupController do
       user = build(:user, password: "password")
       post "create", params: { user: { email: user.email, password: "password" } }
 
-      expect(response.parsed_body["redirect_location"]).to eq dashboard_path
+      expect(response).to have_http_status(:conflict)
+      expect(response.headers["X-Inertia-Location"]).to eq(dashboard_path)
 
       last_user = User.last
       expect(last_user.email).to eq user.email
@@ -90,7 +92,8 @@ describe SignupController do
       user = build(:user, password: "password")
       post :create, params: { user: { email: user.email, password: "password" } }
 
-      expect(response).to be_successful
+      expect(response).to have_http_status(:conflict)
+      expect(response.headers["X-Inertia-Location"]).to eq(dashboard_path)
     end
 
     describe "Sign up and connect to OAuth app" do
@@ -103,8 +106,8 @@ describe SignupController do
       it "redirects to the OAuth authorization path after successful login" do
         post "create", params: { user: { email: @user.email, password: "password" }, next: @next_url }
 
-        expect(response.parsed_body["redirect_location"]).to eq(CGI.unescape(@next_url))
-        expect(response.parsed_body["success"]).to be(true)
+        expect(response).to have_http_status(:conflict)
+        expect(response.headers["X-Inertia-Location"]).to eq(CGI.unescape(@next_url))
       end
     end
 
@@ -170,7 +173,8 @@ describe SignupController do
 
     it "does not create user if user payload is not given" do
       post "create"
-      expect(response.parsed_body["success"]).to eq false
+      expect(response).to redirect_to(signup_path)
+      expect(flash[:warning]).to eq "Please provide a valid email address."
     end
 
     it "turns notifications off the user if the user is from Canada" do
@@ -206,9 +210,9 @@ describe SignupController do
       referrer_url = [request.protocol, "badguy.com", referrer_path].join
       request.headers["HTTP_REFERER"] = referrer_url
       expect do
-        post :create, params: { format: :json, user:
+        post :create, params: { user:
           { email: purchase.email, add_purchase_to_existing_account: false, buyer_signup: true, password: "password", purchase_id: purchase.external_id } }
-        expect(response.parsed_body["redirect_location"]).to eq(Addressable::URI.escape(referrer_path))
+        expect(response).to redirect_to(Addressable::URI.escape(referrer_path))
       end.to change { User.count }.by(1)
     end
 
