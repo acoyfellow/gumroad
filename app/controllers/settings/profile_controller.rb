@@ -40,12 +40,11 @@ class Settings::ProfileController < Settings::BaseController
         seller_profile.save!
         current_seller.update!(permitted_params[:user]) if permitted_params[:user]
         current_seller.clear_products_cache if permitted_params[:profile_picture_blob_id].present?
+        return respond_success
       end
     rescue ActiveRecord::RecordInvalid => e
       return respond_error(e.record.errors.full_messages.to_sentence)
     end
-
-    respond_success
   end
 
   private
