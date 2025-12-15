@@ -25,6 +25,13 @@ class PreviewPurchase
   validates :orderable, presence: true
   validate :validate_custom_fields
 
+  # The receipt template uses a lot of fields of `purchase`
+  # in different pieces of business logic that are not relevant to our preview need.
+  # For them it's fine to return `nil` instead of trying to add fields
+  # to mock all those irrelevant pieces of business logic.
+  #
+  # Meanwhile the fields that are needed for previews are defined in `attr_accessor`
+  # and we have validations for them.
   def method_missing(name)
     nil
   end
