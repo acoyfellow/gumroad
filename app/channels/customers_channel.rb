@@ -9,14 +9,26 @@ class CustomersChannel < ApplicationCable::Channel
     MISSED_POSTS_JOB_FAILED_TYPE => "Failed to send missed emails for workflow \"%{workflow_name}\" to %{email}. Please try again in some time."
   }.freeze
 
+  def subscribed
+    return reject unless params[:purchase_id].present?
+    return reject unless current_user.present?
+
+    purchase = Purchase.find_by_external_id(params[:purchase_id])
+    return reject unless purchase.present?
+
+    return reject unless Audience::PurchasePolicy.new(
+      SellerContext.new(user: current_user, seller: purchase.seller),
+      purchase
+    ).send_missed_posts?
+
+    stream_for "user_#{current_user.external_id}"
+  end
+
   def self.broadcast_missed_posts_message!(purchase_id, workflow_id, type)
     purchase = Purchase.find_by_external_id!(purchase_id)
 
-    workflow = workflow_id.present? ? purchase.seller.workflows.find_by_external_id(workflow_id) : nil
-    workflow_name = workflow&.name || "All missed emails"
-
     message = MESSAGE_TEMPLATES[type] % {
-      workflow_name: workflow_name,
+      workflow_name: workflow_id.present? ? purchase.seller.workflows.alive.published.find_by_external_id!(workflow_id).name : "All missed emails",
       email: purchase.email
     }
 
@@ -35,19 +47,5 @@ class CustomersChannel < ApplicationCable::Channel
       Bugsnag.notify(e)
       raise e
     end
-  end
-
-  def subscribed
-    return reject unless params[:purchase_id].present?
-    return reject unless current_user.present?
-
-    purchase = Purchase.find_by_external_id(params[:purchase_id])
-    return reject unless purchase.present?
-    return reject unless Audience::PurchasePolicy.new(
-      SellerContext.new(user: current_user, seller: purchase.seller),
-      purchase
-    ).send_missed_posts?
-
-    stream_for "user_#{current_user.external_id}"
   end
 end

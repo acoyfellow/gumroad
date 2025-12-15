@@ -272,16 +272,15 @@ describe "InstallmentClassMethods"  do
     end
 
     context "inclusion cases" do
-      let(:base_time) { 1.day.ago }
-      let!(:seller_workflow) { create(:workflow, seller: @creator, link: nil, workflow_type: Workflow::SELLER_TYPE, published_at: base_time) }
-      let!(:seller_workflow_post) { create(:workflow_installment, seller: @creator, workflow: seller_workflow, link_id: nil, published_at: base_time, created_at: base_time + 1.seconds) }
+      let!(:seller_workflow) { create(:workflow, seller: @creator, link: nil, workflow_type: Workflow::SELLER_TYPE, published_at: Time.current) }
+      let!(:seller_workflow_post) { create(:workflow_installment, seller: @creator, workflow: seller_workflow, link_id: nil, published_at: Time.current) }
 
       context "with comprehensive posts and workflows setup" do
-        let!(:regular_product_post) { create(:installment, link: @product, seller: @creator, published_at: base_time + 1.second) }
-        let!(:seller_post_to_all_customers) { create(:seller_installment, seller: @creator, published_at: base_time + 2.seconds) }
-        let!(:product_workflow) { create(:workflow, seller: @creator, link: @product, published_at: base_time + 3.seconds) }
-        let!(:product_workflow_post) { create(:workflow_installment, link: @product, workflow: product_workflow, seller: @creator, published_at: base_time + 4.seconds) }
-        let!(:post_with_bought_products_filter) { create(:seller_installment, seller: @creator, bought_products: [@product.unique_permalink, create(:product, user: @creator).unique_permalink], published_at: base_time + 5.seconds) }
+        let!(:regular_product_post) { create(:installment, link: @product, seller: @creator, published_at: Time.current) }
+        let!(:seller_post_to_all_customers) { create(:seller_installment, seller: @creator, published_at: Time.current) }
+        let!(:product_workflow) { create(:workflow, seller: @creator, link: @product, published_at: Time.current) }
+        let!(:product_workflow_post) { create(:workflow_installment, link: @product, workflow: product_workflow, seller: @creator, published_at: Time.current) }
+        let!(:post_with_bought_products_filter) { create(:seller_installment, seller: @creator, bought_products: [@product.unique_permalink, create(:product, user: @creator).unique_permalink], published_at: Time.current) }
 
         it "includes regular product posts, seller posts, seller workflow posts, product workflow posts, and post with bought products filter" do
           missed_posts = Installment.missed_for_purchase(@purchase)
@@ -331,18 +330,18 @@ describe "InstallmentClassMethods"  do
         include_context "with bundle purchase setup", seller_variable: :@creator
 
         let!(:other_product) { create(:product, user: @creator) }
-        let!(:other_product_post) { create(:installment, link: other_product, seller: @creator, published_at: base_time) }
+        let!(:other_product_post) { create(:installment, link: other_product, seller: @creator, published_at: Time.current) }
 
-        let!(:bundle_post) { create(:installment, link: bundle, seller: @creator, published_at: base_time, created_at: base_time) }
-        let!(:product_a_post) { create(:installment, link: product_a, seller: @creator, published_at: base_time, created_at: base_time + 2.seconds) }
-        let!(:product_b_post) { create(:installment, link: product_b, seller: @creator, published_at: base_time, created_at: base_time + 3.seconds) }
+        let!(:bundle_post) { create(:installment, link: bundle, seller: @creator, published_at: Time.current) }
+        let!(:product_a_post) { create(:installment, link: product_a, seller: @creator, published_at: Time.current) }
+        let!(:product_b_post) { create(:installment, link: product_b, seller: @creator, published_at: Time.current) }
 
-        let!(:bundle_workflow) { create(:workflow, seller: @creator, link: bundle, published_at: base_time) }
-        let!(:bundle_workflow_post) { create(:workflow_installment, link: bundle, workflow: bundle_workflow, seller: @creator, published_at: base_time, created_at: base_time + 4.seconds) }
-        let!(:product_a_workflow) { create(:workflow, seller: @creator, link: product_a, published_at: base_time) }
-        let!(:product_a_workflow_post) { create(:workflow_installment, link: product_a, workflow: product_a_workflow, seller: @creator, published_at: base_time, created_at: base_time + 5.seconds) }
-        let!(:product_b_workflow) { create(:workflow, seller: @creator, link: product_b, published_at: base_time) }
-        let!(:product_b_workflow_post) { create(:workflow_installment, link: product_b, workflow: product_b_workflow, seller: @creator, published_at: base_time, created_at: base_time + 6.seconds) }
+        let!(:bundle_workflow) { create(:workflow, seller: @creator, link: bundle, published_at: Time.current) }
+        let!(:bundle_workflow_post) { create(:workflow_installment, link: bundle, workflow: bundle_workflow, seller: @creator, published_at: Time.current) }
+        let!(:product_a_workflow) { create(:workflow, seller: @creator, link: product_a, published_at: Time.current) }
+        let!(:product_a_workflow_post) { create(:workflow_installment, link: product_a, workflow: product_a_workflow, seller: @creator, published_at: Time.current) }
+        let!(:product_b_workflow) { create(:workflow, seller: @creator, link: product_b, published_at: Time.current) }
+        let!(:product_b_workflow_post) { create(:workflow_installment, link: product_b, workflow: product_b_workflow, seller: @creator, published_at: Time.current) }
 
 
         it "includes all missed posts for bundle purchase, excluding posts related to bundle product purchases" do
@@ -445,15 +444,15 @@ describe "InstallmentClassMethods"  do
     let(:purchase) { create(:purchase, link: product1, seller:) }
 
     let!(:product_installment_matching) { create(:product_installment, link: product1, seller:) }
-    let!(:product_installment_non_matching) { create(:product_installment, link: product3, seller:) }
+    let!(:other_product_installment) { create(:product_installment, link: product3, seller:) }
 
     let!(:variant_installment_matching) do
-      variant_category = create(:variant_category, link: product2)
+      variant_category = create(:variant_category, link: product1)
       variant = create(:variant, variant_category: variant_category)
-      create(:variant_installment, base_variant: variant, link: product2, seller:)
+      create(:variant_installment, base_variant: variant, link: product1, seller:)
     end
 
-    let!(:variant_installment_non_matching) do
+    let!(:other_product_variant_installment) do
       variant_category = create(:variant_category, link: product3)
       variant = create(:variant, variant_category: variant_category)
       create(:variant_installment, base_variant: variant, link: product3, seller:)
@@ -507,14 +506,13 @@ describe "InstallmentClassMethods"  do
 
     it "returns product installments with matching link_id or workflow_id, variant installments with matching link_id or workflow_id, and all seller type installments" do
       result = Installment.seller_or_product_or_variant_type_for_purchase(purchase).order(:id).to_a
-      expect(result).to eq([product_installment_matching, workflow_product_installment_with_link_id, workflow_product_installment_without_link_id, workflow_variant_installment_with_link_id, workflow_variant_installment_without_link_id, workflow_product_installment_with_non_matching_link_id, workflow_variant_installment_with_non_matching_link_id, seller_installment].sort_by(&:id))
+      expect(result).to eq([product_installment_matching, variant_installment_matching, workflow_product_installment_with_link_id, workflow_product_installment_without_link_id, workflow_variant_installment_with_link_id, workflow_variant_installment_without_link_id, workflow_product_installment_with_non_matching_link_id, workflow_variant_installment_with_non_matching_link_id, seller_installment].sort_by(&:id))
     end
 
     it "excludes product and variant installments with non-matching link_id, follower, audience, affiliate, and abandoned_cart type installments" do
       result = Installment.seller_or_product_or_variant_type_for_purchase(purchase).to_a
-      expect(result).not_to include(product_installment_non_matching)
-      expect(result).not_to include(variant_installment_matching)
-      expect(result).not_to include(variant_installment_non_matching)
+      expect(result).not_to include(other_product_installment)
+      expect(result).not_to include(other_product_variant_installment)
       expect(result).not_to include(follower_installment)
       expect(result).not_to include(affiliate_installment)
       expect(result).not_to include(audience_installment)

@@ -29,7 +29,7 @@ describe CustomersService do
   describe ".find_missed_posts_for" do
     include_context "with missed posts setup"
 
-    it "delegates to missed_for_purchase with correct workflow_id and returns missed posts" do
+    it "returns missed posts" do
       workflow = create(:workflow, seller:, link: product, published_at: Time.current)
 
       expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: nil).and_call_original
@@ -72,7 +72,7 @@ describe CustomersService do
       end
     end
 
-    context "when purchase is a bundle" do
+    context "for bundle purchase" do
       include_context "with bundle purchase setup"
 
       let(:bundle_post)   { create(:installment, link: bundle, seller:, published_at: 2.days.ago) }
@@ -93,7 +93,7 @@ describe CustomersService do
         expect(result).not_to include(product_a_email, product_b_email)
       end
 
-      context "bundle product purchase" do
+      context "bundle product purchases" do
         it "returns only sent posts for that product, excludes bundle and other product posts" do
           result = described_class.find_sent_posts_for(product_a_purchase)
 
@@ -107,6 +107,7 @@ describe CustomersService do
   describe ".find_workflow_options_for" do
     let!(:follower_workflow) { create(:workflow, link: product, seller:, workflow_type: Workflow::FOLLOWER_TYPE, created_at: 1.day.ago, published_at: 1.day.ago) }
     let!(:_deleted_seller_workflow) { create(:workflow, link: nil, seller:, workflow_type: Workflow::SELLER_TYPE, deleted_at: DateTime.current) }
+    let!(:_audience_workflow) { create(:workflow, link: product, seller:, workflow_type: Workflow::AUDIENCE_TYPE, published_at: 1.day.ago) }
     let!(:product_workflow) { create(:workflow, link: product, seller:, name: "Alpha Workflow", published_at: 1.day.ago) }
     let!(:seller_workflow) { create(:workflow, link: nil, seller:, workflow_type: Workflow::SELLER_TYPE, name: "Beta Workflow", published_at: 1.day.ago) }
     let!(:seller_workflow_installment) { create(:workflow_installment, workflow: seller_workflow, seller:, published_at: Time.current) }
@@ -124,7 +125,7 @@ describe CustomersService do
       expect(workflow_options).to eq([product_workflow, seller_workflow])
     end
 
-    context "bundle purchase" do
+    context "for bundle purchase" do
       include_context "with bundle purchase setup", with_variants: true
 
       let!(:bundle_workflow) { create(:workflow, seller:, link: bundle, name: "Gamma Workflow", published_at: Time.current) }

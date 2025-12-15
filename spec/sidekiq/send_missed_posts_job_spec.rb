@@ -22,7 +22,7 @@ describe SendMissedPostsJob do
       end.to raise_error(ActiveRecord::RecordNotFound)
     end
 
-    it "raises CustomerDNDEnabledError when perform is called directly" do
+    it "raises CustomerDNDEnabledError" do
       create(:payment_completed, user: seller)
       allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
       create(:installment, link: product, seller:, published_at: 1.day.ago)
@@ -33,7 +33,7 @@ describe SendMissedPostsJob do
       end.to raise_error(CustomersService::CustomerDNDEnabledError, customer_dnd_enabled_error_message)
     end
 
-    it "raises SellerNotEligibleError when perform is called directly" do
+    it "raises SellerNotEligibleError" do
       create(:installment, link: product, seller:, published_at: 1.day.ago)
       allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE - 1)
 

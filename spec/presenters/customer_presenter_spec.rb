@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "shared_examples/customers_service_context"
+
 describe CustomerPresenter do
   let(:seller) { create(:named_seller) }
 
@@ -587,69 +589,34 @@ describe CustomerPresenter do
       end
     end
 
-    context "with bundle purchase" do
-      let(:product_a) { create(:product, user: seller) }
-      let(:product_b) { create(:product, user: seller) }
-      let(:bundle) { create(:product, :bundle, user: seller) }
-      let(:bundle_purchase) { create(:purchase, link: bundle, seller:) }
+    context "for bundle purchase" do
+      include_context "with bundle purchase setup"
 
-      let!(:bundle_product_a) { create(:bundle_product, bundle: bundle, product: product_a) }
-      let!(:bundle_product_b) { create(:bundle_product, bundle: bundle, product: product_b) }
+      it "returns receipt only for bundle purchase, excludes product posts" do
+        expect(CustomersService).to receive(:find_sent_posts_for).with(bundle_purchase).and_call_original
+        emails_for_bundle_purchase = described_class.new(purchase: bundle_purchase).customer_emails
 
-      before { bundle_purchase.create_artifacts_and_send_receipt! }
+        expect(emails_for_bundle_purchase.count).to eq 1
 
-      it "returns only bundle posts and seller/audience posts, excludes product posts" do
-        bundle_post = create(:installment, link: bundle, seller:, published_at: 2.days.ago)
-        product_a_post = create(:installment, link: product_a, seller:, published_at: 1.day.ago)
-        product_b_post = create(:installment, link: product_b, seller:, published_at: 1.day.ago)
-
-        create(:customer_email_info_opened, purchase: bundle_purchase)
-        create(:creator_contacting_customers_email_info_delivered, installment: bundle_post, purchase: bundle_purchase)
-        create(:creator_contacting_customers_email_info_delivered, installment: product_a_post, purchase: bundle_purchase)
-        create(:creator_contacting_customers_email_info_delivered, installment: product_b_post, purchase: bundle_purchase)
-
-        result = described_class.new(purchase: bundle_purchase).customer_emails
-
-        expect(result.count).to eq 2
-
-        expect(result[0][:type]).to eq("receipt")
-        expect(result[0][:id]).to eq bundle_purchase.external_id
-
-        expect(result[1][:type]).to eq("post")
-        expect(result[1][:id]).to eq bundle_post.external_id
-        expect(result.map { |r| r[:id] }).not_to include(product_a_post.external_id, product_b_post.external_id)
+        expect(emails_for_bundle_purchase[0][:type]).to eq("receipt")
+        expect(emails_for_bundle_purchase[0][:id]).to eq bundle_purchase.external_id
       end
-    end
 
-    context "with bundle product purchase" do
-      let(:product_a) { create(:product, user: seller) }
-      let(:product_b) { create(:product, user: seller) }
-      let(:bundle) { create(:product, :bundle, user: seller) }
-      let(:bundle_purchase) { create(:purchase, link: bundle, seller:) }
+      context "bundle product purchases" do
+        it "doesn't return receipt for bundle product purchases" do
+          product_a_purchase = bundle_purchase.product_purchases.find_by(link: product_a)
+          product_b_purchase = bundle_purchase.product_purchases.find_by(link: product_b)
 
-      let!(:bundle_product_a) { create(:bundle_product, bundle: bundle, product: product_a) }
-      let!(:bundle_product_b) { create(:bundle_product, bundle: bundle, product: product_b) }
+          expect(CustomersService).to receive(:find_sent_posts_for).with(product_a_purchase).and_call_original
+          emails_for_product_a_purchase = described_class.new(purchase: product_a_purchase).customer_emails
 
-      before { bundle_purchase.create_artifacts_and_send_receipt! }
+          expect(emails_for_product_a_purchase.count).to eq 0
 
-      it "returns only that product's posts, excludes bundle and other product posts" do
-        product_a_purchase = bundle_purchase.product_purchases.find_by(link: product_a)
+          expect(CustomersService).to receive(:find_sent_posts_for).with(product_b_purchase).and_call_original
+          emails_for_product_b_purchase = described_class.new(purchase: product_b_purchase).customer_emails
 
-        bundle_post = create(:installment, link: bundle, seller:, published_at: 2.days.ago)
-        product_a_post = create(:installment, link: product_a, seller:, published_at: 1.day.ago)
-        product_b_post = create(:installment, link: product_b, seller:, published_at: 1.day.ago)
-
-        create(:creator_contacting_customers_email_info_delivered, installment: bundle_post, purchase: product_a_purchase)
-        create(:creator_contacting_customers_email_info_delivered, installment: product_a_post, purchase: product_a_purchase)
-        create(:creator_contacting_customers_email_info_delivered, installment: product_b_post, purchase: product_a_purchase)
-
-        result = described_class.new(purchase: product_a_purchase).customer_emails
-
-        expect(result.count).to eq 1
-
-        expect(result[0][:type]).to eq("post")
-        expect(result[0][:id]).to eq product_a_post.external_id
-        expect(result.map { |r| r[:id] }).not_to include(bundle_post.external_id, product_b_post.external_id)
+          expect(emails_for_product_b_purchase.count).to eq 0
+        end
       end
     end
   end

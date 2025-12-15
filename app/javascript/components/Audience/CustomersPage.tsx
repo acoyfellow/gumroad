@@ -93,7 +93,9 @@ import { WithTooltip } from "$app/components/WithTooltip";
 import placeholder from "$assets/images/placeholders/customers.png";
 
 type Product = { id: string; name: string; variants: { id: string; name: string }[] };
+
 type MissedPost = { id: string; name: string; url: string; published_at: string };
+
 type Workflow = { id: string; label: string };
 
 type IncomingCustomersChannelMessage = {
@@ -120,7 +122,6 @@ export type CustomerPageProps = {
 };
 
 const year = new Date().getFullYear();
-
 const CUSTOMERS_CHANNEL_NAME = "CustomersChannel";
 
 const formatPrice = (priceCents: number, currencyType: CurrencyCode, recurrence?: RecurrenceId | null) =>
@@ -745,35 +746,36 @@ const CustomerDrawer = ({
   const {
     customer_emails: emails,
     missed_posts: missedPosts,
-    workflows,
     product_purchases: productPurchasesFromProps,
+    workflows,
   } = cast<Pick<CustomerPageProps, "customer_emails" | "missed_posts" | "workflows" | "product_purchases">>(
     usePage().props,
   );
-  const [isLoadingMissedPosts, setIsLoadingMissedPosts] = React.useState(false);
 
   const workflowOptions = [{ id: "", label: "All missed emails" }, ...(workflows ?? [])];
 
+  const [isLoadingMissedPosts, setIsLoadingMissedPosts] = React.useState(false);
+
   const workflowIdForQuery = (workflowId: string | undefined) => (workflowId === "" ? undefined : workflowId);
 
-  const isProcessingMissedPostsJobForCustomer = (customerId: string) =>
+  const isProcessingMissedPostsJobForPurchase = (purchaseExternalId: string) =>
     Array.from(missedPostsJobsInProcessRef.current).some((jobKey) => {
       const job = cast<{ customerId: string; workflowId?: string }>(JSON.parse(jobKey));
-      return job.customerId === customerId;
+      return job.customerId === purchaseExternalId;
     });
 
-  const isProcessingAllOrSpecificJob = (customerId: string, workflowId?: string) => {
+  const isProcessingAllOrSpecificJob = (purchaseExternalId: string, workflowId?: string) => {
     if (workflowId === undefined) {
-      return isProcessingMissedPostsJobForCustomer(customerId);
+      return isProcessingMissedPostsJobForPurchase(purchaseExternalId);
     }
 
     return (
-      missedPostsJobsInProcessRef.current.has(JSON.stringify({ customerId, workflowId })) ||
-      missedPostsJobsInProcessRef.current.has(JSON.stringify({ customerId }))
+      missedPostsJobsInProcessRef.current.has(JSON.stringify({ customerId: purchaseExternalId, workflowId })) ||
+      missedPostsJobsInProcessRef.current.has(JSON.stringify({ customerId: purchaseExternalId }))
     );
   };
 
-  const [processingAllOrSpecificJob, setIsProcessingAllOrSpecificJob] = React.useState(
+  const [processingJobForWorkflow, setProcessingJobForWorkflow] = React.useState(
     isProcessingAllOrSpecificJob(customer.id, workflowIdForQuery(selectedWorkflowId)),
   );
 
@@ -789,7 +791,7 @@ const CustomerDrawer = ({
       onFinish: () => setIsLoadingMissedPosts(false),
     });
     setSelectedWorkflowId(workflowId);
-    setIsProcessingAllOrSpecificJob(isProcessingAllOrSpecificJob(customer.id, workflowIdForQuery(workflowId)));
+    setProcessingJobForWorkflow(isProcessingAllOrSpecificJob(customer.id, workflowIdForQuery(workflowId)));
   };
 
   const resendAllMissedPosts = async () => {
@@ -797,6 +799,8 @@ const CustomerDrawer = ({
 
     const resendJobWorkflowId = workflowIdForQuery(selectedWorkflowId);
     const resendJobKeyLocal = JSON.stringify({ customerId: customer.id, workflowId: resendJobWorkflowId });
+
+    let failedToSubscribeToCustomersChannel = false;
 
     try {
       if (!customersChannelRef.current) {
@@ -825,18 +829,27 @@ const CustomerDrawer = ({
       }
 
       await customersChannelRef.current.ensureSubscribed();
-    } catch {}
+    } catch {
+      failedToSubscribeToCustomersChannel = true;
+    }
 
     try {
-      setIsProcessingAllOrSpecificJob(true);
+      setProcessingJobForWorkflow(true);
       missedPostsJobsInProcessRef.current.add(resendJobKeyLocal);
       const response = await resendPosts(customer.id, resendJobWorkflowId);
-      showAlert(response.message, "success");
+      if (failedToSubscribeToCustomersChannel) {
+        showAlert(
+          `${response.message} but we faced an issue subscribing to the delivery channel. Revisit in some time to check on the delivery status.`,
+          "warning",
+        );
+      } else {
+        showAlert(response.message, "success");
+      }
     } catch (e) {
       assertResponseError(e);
       showAlert(e.message, "error");
       missedPostsJobsInProcessRef.current.delete(resendJobKeyLocal);
-      setIsProcessingAllOrSpecificJob(false);
+      setProcessingJobForWorkflow(false);
     }
   };
 
@@ -853,10 +866,10 @@ const CustomerDrawer = ({
     setLoadingId(null);
   };
 
-  const [selectedProductPurchaseId, setSelectedProductPurchaseId] = React.useState<string | null>(null);
   const [productPurchases, setProductPurchases] = React.useState<Customer[]>(() =>
     customer.is_bundle_purchase ? (productPurchasesFromProps ?? []) : [],
   );
+  const [selectedProductPurchaseId, setSelectedProductPurchaseId] = React.useState<string | null>(null);
   const selectedProductPurchase = productPurchases.find(({ id }) => id === selectedProductPurchaseId);
 
   const loadBundlePurchaseDrawerData = (purchaseId: string, workflowId?: string) => {
@@ -898,14 +911,16 @@ const CustomerDrawer = ({
   }, [commission?.status]);
 
   React.useEffect(() => {
-    if (!customersChannelRef.current || !isProcessingMissedPostsJobForCustomer(customer.id)) return;
+    if (!customersChannelRef.current || !isProcessingMissedPostsJobForPurchase(customer.id)) return;
 
     const localChannelUnsubscribe = customersChannelRef.current.on("message", (packet) => {
       if (!is<IncomingCustomersChannelMessage>(packet)) return;
       if (packet.purchase_id !== customer.id) return;
 
-      setIsProcessingAllOrSpecificJob(false);
+      setProcessingJobForWorkflow(false);
 
+      // Ignore reloading bundle purchase when a product purchase is selected
+      // as it will be handled by the parent CustomerDrawer on back navigation
       if (packet.type === "missed_posts_job_complete" && !selectedProductPurchase) {
         router.reload({
           data: {
@@ -1416,7 +1431,7 @@ const CustomerDrawer = ({
                 </div>
                 <Button
                   color="primary"
-                  disabled={!!loadingId || sentEmailIds.current.has(post.id) || processingAllOrSpecificJob}
+                  disabled={!!loadingId || sentEmailIds.current.has(post.id) || processingJobForWorkflow}
                   onClick={() => void onSend(post.id, "post")}
                 >
                   {sentEmailIds.current.has(post.id) ? "Sent" : loadingId === post.id ? "Resending..." : "Resend"}
@@ -1433,10 +1448,10 @@ const CustomerDrawer = ({
             <div>
               <Button
                 color="primary"
-                disabled={!!loadingId || processingAllOrSpecificJob}
+                disabled={!!loadingId || processingJobForWorkflow}
                 onClick={() => void resendAllMissedPosts()}
               >
-                {processingAllOrSpecificJob ? "Resending all..." : "Resend all"}
+                {processingJobForWorkflow ? "Resending all..." : "Resend all"}
               </Button>
             </div>
           </>
@@ -1469,7 +1484,7 @@ const CustomerDrawer = ({
                     <Button
                       color="primary"
                       onClick={() => void onSend(email.id, "receipt")}
-                      disabled={!!loadingId || sentEmailIds.current.has(email.id) || processingAllOrSpecificJob}
+                      disabled={!!loadingId || sentEmailIds.current.has(email.id) || processingJobForWorkflow}
                     >
                       {sentEmailIds.current.has(email.id)
                         ? "Receipt resent"
@@ -1481,7 +1496,7 @@ const CustomerDrawer = ({
                     <Button
                       color="primary"
                       onClick={() => void onSend(email.id, "post")}
-                      disabled={!!loadingId || sentEmailIds.current.has(email.id) || processingAllOrSpecificJob}
+                      disabled={!!loadingId || sentEmailIds.current.has(email.id) || processingJobForWorkflow}
                     >
                       {sentEmailIds.current.has(email.id)
                         ? "Sent"

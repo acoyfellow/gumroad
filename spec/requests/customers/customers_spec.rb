@@ -508,6 +508,7 @@ describe "Sales page", type: :system, js: true do
             end
           end
         end
+
         expect(page).to have_alert(text: "Sent")
         within_section("Post 10") { expect(page).to have_button("Sent", disabled: true) }
       end
@@ -587,7 +588,7 @@ describe "Sales page", type: :system, js: true do
         expect(EmailInfo.last.installment).to be_nil
       end
 
-      it "does not allow re-sending customer has opted out of receiving emails" do
+      it "does not allow re-sending emails if the customer has opted out of receiving emails" do
         allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
         create(:payment_completed, user: seller)
         purchase1.update!(can_contact: false)
