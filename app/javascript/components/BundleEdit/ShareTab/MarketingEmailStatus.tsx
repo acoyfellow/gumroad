@@ -5,7 +5,7 @@ import { paramsToQueryString } from "$app/utils/url";
 
 import { computeStandalonePrice, useBundleEditContext } from "$app/components/BundleEdit/state";
 import { NavigationButton } from "$app/components/Button";
-import { newEmailPath } from "$app/components/EmailsPage";
+import { newEmailPath } from "$app/components/EmailsPage/Layout";
 
 export const MarketingEmailStatus = () => {
   const { bundle, uniquePermalink, currencyType } = useBundleEditContext();

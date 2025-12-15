@@ -11,7 +11,7 @@ import { Button } from "$app/components/Button";
 import { TrackClick } from "$app/components/Download/Interactions";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { newEmailPath } from "$app/components/EmailsPage";
+import { newEmailPath } from "$app/components/EmailsPage/Layout";
 import { Drawer } from "$app/components/SortableList";
 import { NodeActionsMenu } from "$app/components/TiptapExtensions/NodeActionsMenu";
 import { createInsertCommand } from "$app/components/TiptapExtensions/utils";

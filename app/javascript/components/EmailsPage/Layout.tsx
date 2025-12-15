@@ -10,6 +10,11 @@ import { WithTooltip } from "$app/components/WithTooltip";
 const TABS = ["published", "scheduled", "drafts", "subscribers"] as const;
 export type EmailTab = (typeof TABS)[number];
 
+// Path helpers
+export const emailTabPath = (tab: (typeof TABS)[number]) => `/emails/${tab}`;
+export const newEmailPath = "/emails/new";
+export const editEmailPath = (id: string) => `/emails/${id}/edit`;
+
 type LayoutProps = {
   selectedTab: EmailTab;
   children: React.ReactNode;

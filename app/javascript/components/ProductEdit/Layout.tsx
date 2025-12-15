@@ -17,7 +17,7 @@ import { Preview } from "$app/components/Preview";
 import { PreviewSidebar, WithPreviewSidebar } from "$app/components/PreviewSidebar";
 import { useImageUploadSettings } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
-import { newEmailPath } from "$app/components/EmailsPage";
+import { newEmailPath } from "$app/components/EmailsPage/Layout";
 import { SubtitleFile } from "$app/components/SubtitleList/Row";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tabs, Tab } from "$app/components/ui/Tabs";

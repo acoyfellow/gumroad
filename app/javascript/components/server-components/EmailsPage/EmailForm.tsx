@@ -41,7 +41,7 @@ import { ImageUploadSettingsContext, RichTextEditor } from "$app/components/Rich
 import { S3UploadConfigProvider } from "$app/components/S3UploadConfig";
 import { Separator } from "$app/components/Separator";
 import { showAlert } from "$app/components/server-components/Alert";
-import { editEmailPath, emailTabPath, newEmailPath } from "$app/components/EmailsPage";
+import { editEmailPath, emailTabPath, newEmailPath } from "$app/components/EmailsPage/Layout";
 import { InvalidNameForEmailDeliveryWarning } from "$app/components/server-components/InvalidNameForEmailDeliveryWarning";
 import { TagInput } from "$app/components/TagInput";
 import { UpsellCard } from "$app/components/TiptapExtensions/UpsellCard";
