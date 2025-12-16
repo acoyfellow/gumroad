@@ -76,7 +76,7 @@ class WishlistPresenter
 
     if layout == Product::Layout::PROFILE
       props[:creator_profile] = ProfilePresenter.new(pundit_user:, seller: wishlist.user).creator_profile
-    elsif taxonomies_for_nav
+    elsif layout == Product::Layout::DISCOVER && taxonomies_for_nav
       props[:taxonomies_for_nav] = taxonomies_for_nav
     end
 

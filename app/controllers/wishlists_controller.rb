@@ -51,7 +51,7 @@ class WishlistsController < ApplicationController
       pundit_user:,
       recommended_by: params[:recommended_by],
       layout:,
-      taxonomies_for_nav: layout == Product::Layout::DISCOVER ? taxonomies_for_nav : nil,
+      taxonomies_for_nav:
     )
 
     render inertia: "Wishlists/Show", props:
