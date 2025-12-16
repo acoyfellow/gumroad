@@ -166,7 +166,7 @@ class Rack::Attack
                             throttle_params: Proc.new { |req| req.params["seller_id"] }
 
   # Initial: 10rpm, Max: 60 requests/3 days (per user)
-  throttle_by_params path: "/two-factor.json",
+  throttle_by_params path: "/two-factor",
                      requests: 10,
                      method: :post,
                      period: 60.seconds,
@@ -180,7 +180,7 @@ class Rack::Attack
                      throttle_params: Proc.new { |req| req.params["user_id"] }
 
   # Initial: 10rpm, Max: 60 requests/3 days (per user)
-  throttle_by_params path: "/two-factor/verify.html",
+  throttle_by_params path: "/two-factor/verify",
                      requests: 10,
                      period: 60.seconds,
                      throttle_params: Proc.new { |req| req.params["user_id"] }
