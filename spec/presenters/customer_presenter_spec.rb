@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "shared_examples/customers_service_context"
+require "shared_examples/customer_drawer_missed_posts_context"
 
 describe CustomerPresenter do
   let(:seller) { create(:named_seller) }
@@ -590,9 +590,10 @@ describe CustomerPresenter do
     end
 
     context "for bundle purchase" do
+      include_context "customer drawer missed posts setup"
       include_context "with bundle purchase setup"
 
-      it "returns receipt only for bundle purchase, excludes product posts" do
+      it "returns receipt only for bundle purchase" do
         expect(CustomersService).to receive(:find_sent_posts_for).with(bundle_purchase).and_call_original
         emails_for_bundle_purchase = described_class.new(purchase: bundle_purchase).customer_emails
 
@@ -602,21 +603,19 @@ describe CustomerPresenter do
         expect(emails_for_bundle_purchase[0][:id]).to eq bundle_purchase.external_id
       end
 
-      context "bundle product purchases" do
-        it "doesn't return receipt for bundle product purchases" do
-          product_a_purchase = bundle_purchase.product_purchases.find_by(link: product_a)
-          product_b_purchase = bundle_purchase.product_purchases.find_by(link: product_b)
+      it "doesn't return receipt for bundle product purchase" do
+        product_a_purchase = bundle_purchase.product_purchases.find_by(link: product_a)
+        product_b_purchase = bundle_purchase.product_purchases.find_by(link: product_b)
 
-          expect(CustomersService).to receive(:find_sent_posts_for).with(product_a_purchase).and_call_original
-          emails_for_product_a_purchase = described_class.new(purchase: product_a_purchase).customer_emails
+        expect(CustomersService).to receive(:find_sent_posts_for).with(product_a_purchase).and_call_original
+        emails_for_product_a_purchase = described_class.new(purchase: product_a_purchase).customer_emails
 
-          expect(emails_for_product_a_purchase.count).to eq 0
+        expect(emails_for_product_a_purchase.count).to eq 0
 
-          expect(CustomersService).to receive(:find_sent_posts_for).with(product_b_purchase).and_call_original
-          emails_for_product_b_purchase = described_class.new(purchase: product_b_purchase).customer_emails
+        expect(CustomersService).to receive(:find_sent_posts_for).with(product_b_purchase).and_call_original
+        emails_for_product_b_purchase = described_class.new(purchase: product_b_purchase).customer_emails
 
-          expect(emails_for_product_b_purchase.count).to eq 0
-        end
+        expect(emails_for_product_b_purchase.count).to eq 0
       end
     end
   end

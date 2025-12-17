@@ -61,7 +61,7 @@ describe CustomersController, :vcr, type: :controller, inertia: true do
       it "when customer is selected it loads customer_emails, missed_posts, and workflows together" do
         create(:installment, link: product, seller: seller, published_at: 1.day.ago)
         workflow = create(:workflow, link: product, seller: seller, published_at: 1.day.ago)
-        create(:workflow_installment, workflow: workflow, seller: seller, published_at: 1.day.ago)
+        create(:workflow_installment, workflow: workflow, seller: seller, published_at: 1.day.ago, link_id: workflow.link_id)
         request.headers["X-Inertia-Partial-Data"] = "customer_emails,missed_posts,workflows"
         get :index, params: { purchase_id: purchase.external_id }
 

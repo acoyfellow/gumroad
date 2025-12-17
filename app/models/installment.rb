@@ -130,8 +130,9 @@ class Installment < ApplicationRecord
   }
 
   scope :seller_or_product_or_variant_type_for_purchase, -> (purchase) {
-    where(
-      "(installment_type IN (?) AND (installments.link_id = ? OR installments.workflow_id IS NOT NULL)) OR installment_type = ?",
+    where(seller_id: purchase.seller_id)
+    .where(
+      "(installment_type IN (?) AND installments.link_id = ?) OR installment_type = ?",
       [PRODUCT_TYPE, VARIANT_TYPE],
       purchase.link_id,
       SELLER_TYPE
@@ -153,33 +154,34 @@ class Installment < ApplicationRecord
     product_link_id = purchase.link.id
 
     installments_to_check = Installment
-      .where(seller_id: purchase.seller_id)
+      .seller_or_product_or_variant_type_for_purchase(purchase)
       .alive
       .published
-      .seller_or_product_or_variant_type_for_purchase(purchase)
       .left_joins(:workflow)
       .then do |scope|
         if workflow_id
           scope.where(workflow_id:)
         elsif purchase.variant_attributes.present?
           scope.where(
-            "(installments.workflow_id IS NULL OR workflows.link_id IS NULL OR " \
+            "(workflows.link_id IS NULL OR " \
             "(workflows.link_id = ? AND (workflows.base_variant_id IS NULL OR workflows.base_variant_id IN (?))))",
             product_link_id,
             purchase.variant_attributes.pluck(:id)
           )
         else
           scope.where(
-            "(installments.workflow_id IS NULL OR workflows.link_id IS NULL OR " \
+            "(workflows.link_id IS NULL OR " \
             "(workflows.link_id = ? AND workflows.base_variant_id IS NULL))",
             product_link_id
           )
         end
       end
 
-    product_or_variant_ids = installments_to_check
-      .product_or_variant_type
-      .pluck(:id)
+    product_or_variant_ids = if purchase.variant_attributes.present?
+      installments_to_check.product_or_variant_type.pluck(:id)
+    else
+      installments_to_check.product_type.pluck(:id)
+    end
     seller_installment_ids = installments_to_check.seller_type.select(:id, :json_data, :link_id).find_each(batch_size: 100).filter_map do |installment|
       installment.id if installment.purchase_passes_filters(purchase)
     end
