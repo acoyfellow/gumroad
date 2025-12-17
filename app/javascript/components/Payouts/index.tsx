@@ -1,10 +1,9 @@
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 import classNames from "classnames";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
 import { exportPayouts } from "$app/data/balance";
-import { createInstantPayout } from "$app/data/payout";
 import { formatPriceCentsWithCurrencySymbol, formatPriceCentsWithoutCurrencySymbol } from "$app/utils/currency";
 import { asyncVoid } from "$app/utils/promise";
 import { assertResponseError, request } from "$app/utils/request";
@@ -692,22 +691,27 @@ const Payouts = ({
   const instantPayoutFee = instant_payout
     ? instantPayoutAmountCents - Math.floor(instantPayoutAmountCents / (1 + INSTANT_PAYOUT_FEE_PERCENTAGE))
     : 0;
-  const onRequestInstantPayout = async () => {
+  const onRequestInstantPayout = () => {
     if (!instant_payout) return;
-    setIsLoading(true);
-    try {
-      await createInstantPayout(
-        instant_payout.payable_balances.find((balance) => balance.id === instantPayoutId)?.date ??
-          new Date().toISOString(),
-      );
-      window.location.reload();
-    } catch (error) {
-      assertResponseError(error);
-      showAlert(error.message, "error");
-    } finally {
-      setIsInstantPayoutModalOpen(false);
-      setIsLoading(false);
-    }
+
+    const selectedDate =
+      instant_payout.payable_balances.find((balance) => balance.id === instantPayoutId)?.date ??
+      new Date().toISOString();
+
+    router.post(
+      Routes.instant_payouts_path(),
+      { date: selectedDate },
+      {
+        onStart: () => {
+          setIsInstantPayoutModalOpen(false);
+          setIsLoading(true);
+        },
+        onFinish: () => setIsLoading(false),
+        onError: () => {
+          showAlert("Failed to initiate instant payout. Please try again.", "error");
+        },
+      },
+    );
   };
 
   if (!loggedInUser) return null;
