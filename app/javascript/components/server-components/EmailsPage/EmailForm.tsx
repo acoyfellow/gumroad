@@ -603,7 +603,7 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
       },
     };
 
-    form.setData(payload as any);
+    form.transform(() => payload);
     if (installment?.external_id) {
       form.put(Routes.email_path(installment.external_id), formOptions);
     } else {
