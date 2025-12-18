@@ -162,10 +162,29 @@ export default function PaymentsPage() {
 
   const [debitCard, setDebitCard] = React.useState<PayoutDebitCardData | null>(null);
   const [showNewBankAccount, setShowNewBankAccount] = React.useState(!props.bank_account_details.account_number_visual);
+  const previousCountryRef = React.useRef<string | null>(
+    props.compliance_info.is_business ? props.compliance_info.business_country : props.compliance_info.country,
+  );
 
-  // Sync form data when compliance_info changes (e.g., after country change redirect)
+  // Reset form data when country changes
   React.useEffect(() => {
-    form.setData("user", props.compliance_info);
+    const currentCountry = props.compliance_info.is_business
+      ? props.compliance_info.business_country
+      : props.compliance_info.country;
+
+    if (previousCountryRef.current !== currentCountry) {
+      form.setData({
+        user: props.compliance_info,
+        payouts_paused_by_user: props.payouts_paused_by_user,
+        payout_threshold_cents: props.payout_threshold_cents,
+        payout_frequency: props.payout_frequency,
+        bank_account: props.bank_account_details.bank_account,
+        payment_address: props.paypal_address,
+      });
+      setErrorFieldNames(new Set());
+      setClientErrorMessage(null);
+      previousCountryRef.current = currentCountry;
+    }
   }, [props.compliance_info]);
 
   // Sync showNewBankAccount when bank account details change (e.g., after successful save or country change)
