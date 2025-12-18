@@ -87,12 +87,10 @@ class EmailsController < Sellers::BaseController
         else
           redirect_to emails_path, notice: "Email saved successfully.", status: :see_other
         end
+      elsif @installment
+        redirect_to edit_email_path(@installment.external_id), alert: service.error
       else
-        if @installment
-          redirect_to edit_email_path(@installment.external_id), alert: service.error
-        else
-          redirect_to new_email_path, alert: service.error
-        end
+        redirect_to new_email_path, alert: service.error
       end
     end
 end

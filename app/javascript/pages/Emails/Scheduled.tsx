@@ -8,24 +8,23 @@ import {
   getScheduledInstallments,
   Pagination,
   ScheduledInstallment,
-  previewInstallment,
-  SavedInstallment,
 } from "$app/data/installments";
 import { assertDefined } from "$app/utils/assert";
 import { classNames } from "$app/utils/classNames";
+import { formatStatNumber } from "$app/utils/formatStatNumber";
 import { asyncVoid } from "$app/utils/promise";
 import { AbortError, assertResponseError } from "$app/utils/request";
-import { formatStatNumber } from "$app/utils/formatStatNumber";
 
 import { Button, NavigationButton } from "$app/components/Button";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
+import { EmptyStatePlaceholder } from "$app/components/EmailsPage/EmptyStatePlaceholder";
 import { EditEmailButton, EmailsLayout, NewEmailButton } from "$app/components/EmailsPage/Layout";
+import { ViewEmailButton } from "$app/components/EmailsPage/ViewEmailButton";
 import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
-import Placeholder from "$app/components/ui/Placeholder";
 import { useUserAgentInfo } from "$app/components/UserAgent";
 
 import scheduledPlaceholder from "$assets/images/placeholders/scheduled_posts.png";
@@ -48,9 +47,11 @@ type PageProps = {
 };
 
 export default function EmailsScheduled() {
-  const { installments: initialInstallments, pagination: initialPagination, has_posts } = cast<PageProps>(
-    usePage().props,
-  );
+  const {
+    installments: initialInstallments,
+    pagination: initialPagination,
+    has_posts,
+  } = cast<PageProps>(usePage().props);
   const [installments, setInstallments] = React.useState<ScheduledInstallment[]>(initialInstallments);
   const [pagination, setPagination] = React.useState<Pagination>(initialPagination);
   const currentSeller = assertDefined(useCurrentSeller(), "currentSeller is required");
@@ -281,52 +282,3 @@ export default function EmailsScheduled() {
     </EmailsLayout>
   );
 }
-
-const ViewEmailButton = (props: { installment: SavedInstallment }) => {
-  const [sendingPreviewEmail, setSendingPreviewEmail] = React.useState(false);
-
-  return (
-    <Button
-      disabled={sendingPreviewEmail}
-      onClick={asyncVoid(async () => {
-        setSendingPreviewEmail(true);
-        try {
-          await previewInstallment(props.installment.external_id);
-          showAlert("A preview has been sent to your email.", "success");
-        } catch (error) {
-          assertResponseError(error);
-          showAlert(error.message, "error");
-        } finally {
-          setSendingPreviewEmail(false);
-        }
-      })}
-    >
-      <Icon name="envelope-fill"></Icon>
-      {sendingPreviewEmail ? "Sending..." : "View email"}
-    </Button>
-  );
-};
-
-const EmptyStatePlaceholder = ({
-  title,
-  description,
-  placeholderImage,
-}: {
-  title: string;
-  description: string;
-  placeholderImage: string;
-}) => (
-  <Placeholder>
-    <figure>
-      <img src={placeholderImage} />
-    </figure>
-    <h2>{title}</h2>
-    <p>{description}</p>
-    <NewEmailButton />
-    <p>
-      <a href="/help/article/169-how-to-send-an-update" target="_blank" rel="noreferrer">
-        Learn more about emails
-      </a>
-    </p>
-  </Placeholder>
-);

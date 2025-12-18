@@ -1,4 +1,4 @@
-import { Link, useForm } from "@inertiajs/react";
+import { Link, router, useForm } from "@inertiajs/react";
 import { DirectUpload } from "@rails/activestorage";
 import { Content, Editor, JSONContent } from "@tiptap/core";
 import cx from "classnames";
@@ -204,7 +204,7 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
       window.open(installment.full_url, "_blank");
       urlParams.delete("preview_post");
       const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : "");
-      window.history.replaceState({}, "", newUrl);
+      router.visit(newUrl, { replace: true, preserveState: true, preserveScroll: true });
     }
   }, [installment]);
   const [bought, setBought] = React.useState<string[]>(() => {
