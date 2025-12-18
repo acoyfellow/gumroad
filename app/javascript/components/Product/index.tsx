@@ -302,7 +302,7 @@ export const Product = ({
           symbolFormat: "short",
         });
         configurationSelectorRef?.current?.focusRequiredInput();
-        showAlert(`Minimum price for this product is ${formattedMinPrice}`, "error");
+        showAlert(`Minimum price for this product is ${formattedMinPrice}.`, "error");
       }
       return false;
     }
