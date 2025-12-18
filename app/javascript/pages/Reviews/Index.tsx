@@ -1,14 +1,13 @@
-import { usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
 import { ProductNativeType } from "$app/parsers/product";
 
 import { Button, NavigationButton } from "$app/components/Button";
+import { CartItem, CartItemMain, CartItemMedia, CartItemTitle, CartItemList } from "$app/components/CartItemList";
 import { useDiscoverUrl } from "$app/components/DomainSettings";
 import { Icon } from "$app/components/Icons";
 import { Layout } from "$app/components/Library/Layout";
-import { CartItem, CartItemList, CartItemMain, CartItemMedia, CartItemTitle } from "$app/components/CartItemList";
 import { Popover } from "$app/components/Popover";
 import { Thumbnail } from "$app/components/Product/Thumbnail";
 import { ProductIconCell } from "$app/components/ProductsPage/ProductIconCell";
@@ -34,7 +33,7 @@ type Product = {
   };
 };
 
-export type Review = {
+type Review = {
   id: string;
   rating: number;
   message: string | null;
@@ -47,13 +46,13 @@ export type Review = {
   } | null;
 };
 
-let newReviewId = 0;
-
-type Props = {
+interface Props {
   reviews: Review[];
   purchases: { id: string; email_digest: string; product: Product }[];
   following_wishlists_enabled: boolean;
-};
+}
+
+let newReviewId = 0;
 
 const Row = ({ review, onChange }: { review: Review; onChange: (review: Review) => void }) => {
   const [isEditing, setIsEditing] = React.useState(false);
@@ -110,13 +109,11 @@ const Row = ({ review, onChange }: { review: Review; onChange: (review: Review) 
   );
 };
 
-export default function ReviewsPage() {
-  const {
-    reviews: initialReviews,
-    purchases: initialPurchases,
-    following_wishlists_enabled,
-  } = cast<Props>(usePage().props);
-
+export default function ReviewsIndex({
+  reviews: initialReviews,
+  purchases: initialPurchases,
+  following_wishlists_enabled,
+}: Props) {
   const discoverUrl = useDiscoverUrl();
 
   const [reviews, setReviews] = React.useState(initialReviews);
@@ -217,11 +214,9 @@ export default function ReviewsPage() {
                 <Row
                   key={review.id}
                   review={review}
-                  onChange={(updatedReview) =>
+                  onChange={(review) =>
                     setReviews((prevReviews) =>
-                      prevReviews.map((prevReview) =>
-                        updatedReview.id === prevReview.id ? updatedReview : prevReview,
-                      ),
+                      prevReviews.map((prevReview) => (review.id === prevReview.id ? review : prevReview)),
                     )
                   }
                 />
