@@ -666,7 +666,7 @@ const Payouts = ({
       const response = await request({
         method: "GET",
         accept: "json",
-        url: Routes.payments_paged_path({ page: pagination.page + 1 }),
+        url: Routes.balance_path({ page: pagination.page + 1 }),
       })
         .then((res) => res.json())
         .then((json) => cast<{ payouts: PayoutPeriodData[]; pagination: PaginationProps }>(json));
