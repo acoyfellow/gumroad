@@ -1,4 +1,4 @@
-import { usePage } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import { produce } from "immer";
 import * as React from "react";
 import { cast, is } from "ts-safe-cast";
@@ -28,7 +28,6 @@ import { useAddThirdPartyAnalytics } from "$app/components/useAddThirdPartyAnaly
 import { useGlobalEventListener } from "$app/components/useGlobalEventListener";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
 import { useOriginalLocation } from "$app/components/useOriginalLocation";
-import { useRunOnce } from "$app/components/useRunOnce";
 
 import placeholder from "$assets/images/placeholders/library.png";
 
@@ -303,27 +302,28 @@ export default function LibraryPage() {
 
   const url = new URL(useOriginalLocation());
   const addThirdPartyAnalytics = useAddThirdPartyAnalytics();
-  useRunOnce(() => {
+  React.useEffect(() => {
     const purchaseIds = url.searchParams.getAll("purchase_id");
+    if (purchaseIds.length === 0) return;
+
     url.searchParams.delete("purchase_id");
-    window.history.replaceState(window.history.state, "", url.toString());
-    if (purchaseIds.length > 0) {
-      const email = results.find(({ purchase }) => purchase.id === purchaseIds[0])?.purchase.email;
-      if (email) showAlert(`Your purchase was successful! We sent a receipt to ${email}.`, "success");
+    router.replace({ url: url.pathname + url.search, preserveState: true, preserveScroll: true });
 
-      for (const purchaseId of purchaseIds) {
-        const product = results.find(({ purchase }) => purchase.id === purchaseId)?.product;
-        if (!product) continue;
+    const email = results.find(({ purchase }) => purchase.id === purchaseIds[0])?.purchase.email;
+    if (email) showAlert(`Your purchase was successful! We sent a receipt to ${email}.`, "success");
 
-        if (product.has_third_party_analytics)
-          addThirdPartyAnalytics({
-            permalink: product.permalink,
-            location: "receipt",
-            purchaseId,
-          });
-      }
+    for (const purchaseId of purchaseIds) {
+      const product = results.find(({ purchase }) => purchase.id === purchaseId)?.product;
+      if (!product) continue;
+
+      if (product.has_third_party_analytics)
+        addThirdPartyAnalytics({
+          permalink: product.permalink,
+          location: "receipt",
+          purchaseId,
+        });
     }
-  });
+  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEnteredQuery(e.target.value);
