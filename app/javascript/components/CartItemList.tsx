@@ -19,26 +19,44 @@ export const CartItem = ({
   children,
   extra,
   asChild = false,
+  isBundleItem,
   ...props
-}: BaseProps & { asChild?: boolean; extra?: React.ReactNode }) => {
+}: BaseProps & { asChild?: boolean; extra?: React.ReactNode; isBundleItem?: boolean }) => {
   const Comp = asChild ? Slot : "div";
+  const paddingClasses = isBundleItem ? "p-0" : "px-3 py-4 sm:p-5";
+  const rowGapClasses = isBundleItem ? "gap-0" : "gap-3 sm:gap-5";
+
   return (
     <Comp role="listitem" className={classNames("border-border not-first:border-t", className)} {...props}>
       <>
-        <section className="flex flex-row gap-3 px-3 py-4 sm:gap-5 sm:p-5">{children}</section>
-        {extra ? <section className="flex flex-col gap-4 border-border p-4 not-first:border-t">{extra}</section> : null}
+        <section className={classNames("flex flex-row", rowGapClasses, paddingClasses)}>{children}</section>
+        {extra ? <section className="flex flex-col gap-4 border-border p-4 pt-0">{extra}</section> : null}
       </>
     </Comp>
   );
 };
 
-export const CartItemMedia = ({ className, children, ...props }: BaseProps) => (
-  <figure className={classNames("tailwind-override relative h-16 w-16 sm:h-30 sm:w-30", className)} {...props}>
-    <div className="aspect-square h-full w-full overflow-hidden rounded-sm border border-border bg-(image:--product-cover-placeholder) bg-cover bg-center">
-      {children}
-    </div>
-  </figure>
-);
+export const CartItemMedia = ({
+  className,
+  children,
+  isBundleItem,
+  ...props
+}: BaseProps & { isBundleItem?: boolean }) => {
+  const sizeClasses = isBundleItem ? "h-20 w-20" : "h-16 w-16 sm:h-30 sm:w-30";
+  const borderClasses = isBundleItem ? "" : "rounded-sm border border-border";
+  return (
+    <figure className={classNames("tailwind-override relative", sizeClasses, className)} {...props}>
+      <div
+        className={classNames(
+          "h-full w-full overflow-hidden bg-(image:--product-cover-placeholder) bg-cover bg-center",
+          borderClasses,
+        )}
+      >
+        {children}
+      </div>
+    </figure>
+  );
+};
 
 export const CartItemQuantity = ({ className, children, ...props }: BaseProps & { label?: string }) => (
   <div
@@ -67,14 +85,14 @@ export const CartItemTitle = ({
 }: BaseProps & { asChild?: boolean }) => {
   const Comp = asChild ? Slot : "h4";
   return (
-    <Comp className={classNames("line-clamp-2 text-base font-medium no-underline sm:text-lg", className)} {...props}>
+    <Comp className={classNames("text-base font-medium no-underline sm:text-lg", className)} {...props}>
       {children}
     </Comp>
   );
 };
 
 export const CartItemFooter = ({ className, children, ...props }: BaseProps) => (
-  <footer className={classNames("mt-auto flex flex-col gap-x-4 gap-y-1 sm:flex-wrap", className)} {...props}>
+  <footer className={classNames("mt-auto flex flex-col gap-x-4 gap-y-1 text-sm sm:flex-wrap", className)} {...props}>
     {children}
   </footer>
 );

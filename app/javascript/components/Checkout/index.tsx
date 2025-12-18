@@ -479,31 +479,31 @@ const CartItemComponent = ({
     <CartItem
       extra={
         item.product.bundle_products.length > 0 ? (
-          <>
+          <div className="flex flex-col gap-3">
             <h4>This bundle contains...</h4>
-            <CartItemList>
+            <CartItemList className="overflow-hidden">
               {item.product.bundle_products.map((bundleProduct) => (
-                <CartItem key={bundleProduct.product_id}>
-                  <CartItemMedia>
+                <CartItem key={bundleProduct.product_id} isBundleItem>
+                  <CartItemMedia isBundleItem>
                     <a href={item.product.url}>
                       <Thumbnail url={item.product.thumbnail_url} nativeType={item.product.native_type} />
                     </a>
-                    <CartItemQuantity>{bundleProduct.quantity || item.quantity}</CartItemQuantity>
+                    <CartItemQuantity className="sr-only">{bundleProduct.quantity || item.quantity}</CartItemQuantity>
                   </CartItemMedia>
-                  <CartItemMain>
-                    <CartItemTitle>{bundleProduct.name}</CartItemTitle>
-                    <CartItemFooter>
-                      {bundleProduct.variant ? (
+                  <CartItemMain className="h-20 justify-center self-stretch border-l border-border p-4">
+                    <CartItemTitle className="line-clamp-1">{bundleProduct.name}</CartItemTitle>
+                    {bundleProduct.variant ? (
+                      <CartItemFooter className="line-clamp-1">
                         <span>
                           <strong>{variantLabel(bundleProduct.native_type)}:</strong> {bundleProduct.variant.name}
                         </span>
-                      ) : null}
-                    </CartItemFooter>
+                      </CartItemFooter>
+                    ) : null}
                   </CartItemMain>
                 </CartItem>
               ))}
             </CartItemList>
-          </>
+          </div>
         ) : null
       }
     >
