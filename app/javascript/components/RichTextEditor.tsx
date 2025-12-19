@@ -481,25 +481,19 @@ export const RichTextEditorToolbar = ({
                               </div>
                             </PopoverClose>
                           ) : (
-                            <PopoverClose asChild>
-                              <div>{item.config.submenu?.item(editor)}</div>
-                            </PopoverClose>
+                            item.config.submenu?.item(editor)
                           )}
                         </React.Fragment>
                       ))}
-                      <PopoverClose asChild>
-                        <div role="menuitem" onClick={() => setIsUpsellModalOpen(true)}>
-                          <Icon name="cart-plus" />
-                          <span>Upsell</span>
-                        </div>
-                      </PopoverClose>
+                      <div role="menuitem" onClick={() => setIsUpsellModalOpen(true)}>
+                        <Icon name="cart-plus" />
+                        <span>Upsell</span>
+                      </div>
                       {productId ? (
-                        <PopoverClose asChild>
-                          <div role="menuitem" onClick={() => setIsReviewModalOpen(true)}>
-                            <Icon name="solid-star" />
-                            <span>Reviews</span>
-                          </div>
-                        </PopoverClose>
+                        <div role="menuitem" onClick={() => setIsReviewModalOpen(true)}>
+                          <Icon name="solid-star" />
+                          <span>Reviews</span>
+                        </div>
                       ) : null}
                     </div>
                   </PopoverContent>

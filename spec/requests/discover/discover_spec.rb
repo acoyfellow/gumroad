@@ -115,7 +115,7 @@ describe("Discover", js: true, type: :system) do
         expect(page).to have_product_card(count: 5)
 
         within "[role=menubar]" do
-          click_link "Design"
+          click_on "Design"
         end
 
         # test multi word term
@@ -563,8 +563,8 @@ describe("Discover", js: true, type: :system) do
 
         within "[role=menubar]" do
           find("[role=menuitem]", text: "More").hover
-          click_link "Software Development"
-          click_link "All Software Development"
+          click_on "Software Development"
+          click_on "All Software Development"
         end
 
         within_section "Featured products", section_element: :section do
@@ -590,7 +590,7 @@ describe("Discover", js: true, type: :system) do
         visit "#{discover_host}/software-development"
 
         within "[role=menubar]" do
-          click_link "Business & Money"
+          click_on "Business & Money"
         end
 
         expect(page).to have_selector("[aria-label='Breadcrumbs']", text: "Business & Money")

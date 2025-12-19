@@ -30,12 +30,13 @@ describe "Coffee", type: :system, js: true do
 
       within_cart_item "Buy me a coffee!" do
         expect(page).to have_text("US$1")
-        find("[aria-label='Configure']").click
-        fill_in "Price", with: ""
-        click_on "Save changes"
-        expect(page).to have_selector("[aria-invalid='true']")
-        fill_in "Price", with: "2"
-        click_on "Save changes"
+        select_disclosure "Configure" do
+          fill_in "Price", with: ""
+          click_on "Save changes"
+          expect(find_field("Price")["aria-invalid"]).to eq("true")
+          fill_in "Price", with: "2"
+          click_on "Save changes"
+        end
         expect(page).to have_text("US$2")
       end
 

@@ -50,7 +50,7 @@ describe("Black Friday 2025", js: true, type: :system) do
       expect(page).to have_text("AVERAGE DISCOUNT")
 
       # When visiting a taxonomy page, the CTA should be the taxonomy page with the offer code
-      click_link("Films")
+      click_on("Films")
       expect(page).to have_link("Get Black Friday deals", href: discover_taxonomy_path(taxonomy: "films", offer_code: SearchProducts::BLACK_FRIDAY_CODE))
     end
 

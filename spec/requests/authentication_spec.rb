@@ -91,9 +91,8 @@ describe("Authentication Scenario", type: :system, js: true) do
     end
 
     it("logs me out") do
-      within("nav[aria-label='Main']") do
-        find_and_click("[aria-expanded]")
-      end
+      expect(page).to have_disclosure @user.reload.display_name
+      toggle_disclosure @user.display_name
       click_on "Logout"
       expect(page).to(have_content("Log in"))
     end

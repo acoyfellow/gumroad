@@ -490,13 +490,14 @@ describe "Products Page Scenario", type: :system, js: true do
       product = create(:product, user: seller, name: "Chicken", unique_permalink: "chicken")
       visit(products_path)
 
-      expect(page).to have_selector("[aria-label='Toggle Search']")
+      expect(page).to have_field("Search products", visible: false)
       table = find(:table, "Products").find("tbody")
       expect(table).to have_selector(:table_row, count: 2)
       expect(page).to have_selector("[aria-label='Pagination']")
 
-      find("[aria-label='Toggle Search']").click
-      expect(page).to have_field("Search products")
+      select_disclosure "Toggle Search" do
+        expect(page).to have_field("Search products")
+      end
       fill_in "Search products", with: "Chicken"
       find_product_row product
       expect(table).to have_selector(:table_row, count: 1)
@@ -508,14 +509,16 @@ describe "Products Page Scenario", type: :system, js: true do
       stub_const("LinksController::PER_PAGE", 1)
       visit(products_path)
 
-      find("[aria-label='Toggle Search']").click
-      fill_in "Search products", with: "product"
+      select_disclosure "Toggle Search" do
+        fill_in "Search products", with: "product"
+      end
       expect(page).to have_link(product.long_url, href: product.long_url)
 
       within find_product_row product do
-        find("[aria-label='Open product action menu']").click
+        select_disclosure "Open product action menu" do
+          click_on "Duplicate"
+        end
       end
-      click_on "Duplicate"
       expect(page).to have_alert(text: "Duplicating the product. You will be notified once it's ready.")
     end
 
@@ -524,14 +527,16 @@ describe "Products Page Scenario", type: :system, js: true do
       stub_const("LinksController::PER_PAGE", 1)
       visit(products_path)
 
-      find("[aria-label='Toggle Search']").click
-      fill_in "Search products", with: "membership"
+      select_disclosure "Toggle Search" do
+        fill_in "Search products", with: "membership"
+      end
       expect(page).to have_link(membership.long_url, href: membership.long_url)
 
       within find_product_row membership do
-        find("[aria-label='Open product action menu']").click
+        select_disclosure "Open product action menu" do
+          click_on "Duplicate"
+        end
       end
-      click_on "Duplicate"
       expect(page).to have_alert(text: "Duplicating the product. You will be notified once it's ready.")
     end
 
@@ -540,15 +545,17 @@ describe "Products Page Scenario", type: :system, js: true do
       stub_const("LinksController::PER_PAGE", 1)
       visit(products_path)
 
-      find("[aria-label='Toggle Search']").click
-      fill_in "Search products", with: "product"
+      select_disclosure "Toggle Search" do
+        fill_in "Search products", with: "product"
+      end
       expect(page).to have_link(product.long_url, href: product.long_url)
 
       within find_product_row product do
-        find("[aria-label='Open product action menu']").click
+        select_disclosure "Open product action menu" do
+          click_on "Delete"
+        end
+        click_on "Confirm"
       end
-      click_on "Delete"
-      click_on "Confirm"
       expect(page).to have_alert(text: "Product deleted!")
     end
 
@@ -557,15 +564,17 @@ describe "Products Page Scenario", type: :system, js: true do
       stub_const("LinksController::PER_PAGE", 1)
       visit(products_path)
 
-      find("[aria-label='Toggle Search']").click
-      fill_in "Search products", with: "membership"
+      select_disclosure "Toggle Search" do
+        fill_in "Search products", with: "membership"
+      end
       expect(page).to have_link(membership.long_url, href: membership.long_url)
 
       within find_product_row membership do
-        find("[aria-label='Open product action menu']").click
+        select_disclosure "Open product action menu" do
+          click_on "Delete"
+        end
+        click_on "Confirm"
       end
-      click_on "Delete"
-      click_on "Confirm"
       expect(page).to have_alert(text: "Product deleted!")
     end
   end

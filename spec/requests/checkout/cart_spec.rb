@@ -32,9 +32,10 @@ describe "Checkout cart", :js, type: :system do
         expect(page).to have_link(@versioned_product.name, href: @versioned_product.long_url)
         expect(page).to have_selector("a[href='#{@versioned_product.long_url}'] > img[src='#{@versioned_product.thumbnail.url}']")
         expect(page).to have_text("US$1")
-        find("[aria-label='Configure']").click
-        choose @variant2.name
-        click_on "Save changes"
+        select_disclosure "Configure" do
+          choose @variant2.name
+          click_on "Save changes"
+        end
       end
       within_cart_item(@versioned_product.name) do
         expect(page).to have_link(@versioned_product.name, href: @versioned_product.long_url)
@@ -104,12 +105,13 @@ describe "Checkout cart", :js, type: :system do
         expect(page).to have_link(@pwyw_product.name, href: @pwyw_product.long_url)
         expect(page).to have_selector("a[href='#{@pwyw_product.long_url}'] > img[src='#{@pwyw_product.thumbnail.url}']")
         expect(page).to have_text("US$10")
-        find("[aria-label='Configure']").click
-        fill_in "Name a fair price", with: "5"
-        click_on "Save changes"
-        expect(page).to have_selector("[aria-invalid='true']")
-        fill_in "Name a fair price", with: "20"
-        click_on "Save changes"
+        select_disclosure "Configure" do
+          fill_in "Name a fair price", with: "5"
+          click_on "Save changes"
+          expect(find_field("Name a fair price")["aria-invalid"]).to eq("true")
+          fill_in "Name a fair price", with: "20"
+          click_on "Save changes"
+        end
       end
       within_cart_item(@pwyw_product.name) do
         expect(page).to have_link(@pwyw_product.name, href: @pwyw_product.long_url)

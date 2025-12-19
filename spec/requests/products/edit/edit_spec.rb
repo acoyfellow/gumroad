@@ -138,10 +138,8 @@ describe("Product Edit Scenario", type: :system, js: true) do
 
     set_rich_text_editor_input(find("[aria-label='Description']"), to_text: "Hi there!")
 
-    within("fieldset", text: "Description") do
-      select_disclosure "Insert" do
-        click_on "Upsell"
-      end
+    select_disclosure "Insert" do
+      click_on "Upsell"
     end
     select_combo_box_option search: "Sample product", from: "Product"
     check "Add a discount to the offered product"

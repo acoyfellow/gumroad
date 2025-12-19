@@ -413,7 +413,7 @@ describe("Discover - Filtering scenarios", js: true, type: :system) do
       visit discover_url(host: discover_host, tags: "never", rating: "4", min_price: "9999", max_price: "99999", sort: "most_reviewed", filetypes: "ftx")
 
       within "[role=menubar]" do
-        click_link "Audio"
+        click_on "Audio"
       end
 
       fill_in "Search products", with: "product"
