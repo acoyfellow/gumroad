@@ -12,7 +12,6 @@ class LoginsController < Devise::SessionsController
   layout "inertia", only: [:new]
 
   def new
-    @load_recaptcha = true
     return redirect_to login_path(next: request.referrer) if params[:next].blank? && request_referrer_is_a_valid_after_login_path?
 
     auth_presenter = AuthPresenter.new(params:, application: @application)
