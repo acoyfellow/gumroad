@@ -397,8 +397,6 @@ Rails.application.routes.draw do
     get "/collaborators/*other", to: "collaborators#index"
 
     get "/affiliates/*other", to: "affiliates#index" # route handled by react-router
-    # TODO: Remove this catch-all once drafts, new, edit email pages are migrated to Inertia
-    get "/emails/*other", to: "emails#index" # route handled by react-router
     get "/dashboard/utm_links/*other", to: "utm_links#index" # route handled by react-router
     get "/communities/*other", to: "communities#index" # route handled by react-router
 
@@ -809,6 +807,8 @@ Rails.application.routes.draw do
         get :scheduled
       end
     end
+    # TODO: Remove this catch-all once drafts, new, edit email pages are migrated to Inertia
+    get "/emails/*other", to: "emails#index" # route handled by react-router
     get "/posts", to: redirect("/emails")
 
     # workflows

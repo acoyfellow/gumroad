@@ -24,11 +24,11 @@ import { Modal } from "$app/components/Modal";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
-import Placeholder from "$app/components/ui/Placeholder";
 import { useUserAgentInfo } from "$app/components/UserAgent";
 import { WithTooltip } from "$app/components/WithTooltip";
 
 import publishedPlaceholder from "$assets/images/placeholders/published_posts.png";
+import { EmptyStatePlaceholder } from "$app/components/EmailsPage/EmptyStatePlaceholder";
 
 type PageProps = {
   installments: PublishedInstallment[];
@@ -320,27 +320,3 @@ const ViewEmailButton = (props: { installment: SavedInstallment }) => {
     </Button>
   );
 };
-
-const EmptyStatePlaceholder = ({
-  title,
-  description,
-  placeholderImage,
-}: {
-  title: string;
-  description: string;
-  placeholderImage: string;
-}) => (
-  <Placeholder>
-    <figure>
-      <img src={placeholderImage} />
-    </figure>
-    <h2>{title}</h2>
-    <p>{description}</p>
-    <NewEmailButton />
-    <p>
-      <a href="/help/article/169-how-to-send-an-update" target="_blank" rel="noreferrer">
-        Learn more about emails
-      </a>
-    </p>
-  </Placeholder>
-);

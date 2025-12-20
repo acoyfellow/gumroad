@@ -7,8 +7,6 @@ import {
   getDraftInstallments,
   getEditInstallment,
   getNewInstallment,
-  getPublishedInstallments,
-  getScheduledInstallments,
   previewInstallment,
   SavedInstallment,
 } from "$app/data/installments";
@@ -24,8 +22,6 @@ import { Popover } from "$app/components/Popover";
 import { showAlert } from "$app/components/server-components/Alert";
 import { DraftsTab } from "$app/components/server-components/EmailsPage/DraftsTab";
 import { EmailForm } from "$app/components/server-components/EmailsPage/EmailForm";
-import { PublishedTab } from "$app/components/server-components/EmailsPage/PublishedTab";
-import { ScheduledTab } from "$app/components/server-components/EmailsPage/ScheduledTab";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import Placeholder from "$app/components/ui/Placeholder";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
@@ -88,17 +84,20 @@ export const Layout = ({
         }
       >
         <Tabs>
-          {TABS.map((tab) =>
-            tab === "subscribers" ? (
-              <Tab href={Routes.followers_path()} isSelected={false} key={tab}>
-                Subscribers
-              </Tab>
-            ) : (
-              <Tab href={emailTabPath(tab)} isSelected={selectedTab === tab} key={tab}>
-                {tab === "published" ? "Published" : tab === "scheduled" ? "Scheduled" : "Drafts"}
-              </Tab>
-            ),
-          )}
+          {/* Inertia pages - use Rails routes to trigger full page load */}
+          <Tab href={Routes.published_emails_path()} isSelected={selectedTab === "published"}>
+            Published
+          </Tab>
+          <Tab href={Routes.scheduled_emails_path()} isSelected={selectedTab === "scheduled"}>
+            Scheduled
+          </Tab>
+          {/* Legacy react-router pages */}
+          <Tab href={emailTabPath("drafts")} isSelected={selectedTab === "drafts"}>
+            Drafts
+          </Tab>
+          <Tab href={Routes.followers_path()} isSelected={selectedTab === "subscribers"}>
+            Subscribers
+          </Tab>
         </Tabs>
       </PageHeader>
       {children}
@@ -187,17 +186,9 @@ export const audienceCountValue = (audienceCounts: AudienceCounts, installmentId
       : formatStatNumber({ value: count });
 };
 
+// NOTE: published and scheduled routes are now handled by Inertia (see app/javascript/pages/Emails/)
+// Only drafts, new, and edit routes remain on react-router
 const routes: RouteObject[] = [
-  {
-    path: emailTabPath("published"),
-    element: <PublishedTab />,
-    loader: async () => json(await getPublishedInstallments({ page: 1, query: "" }).response, { status: 200 }),
-  },
-  {
-    path: emailTabPath("scheduled"),
-    element: <ScheduledTab />,
-    loader: async () => json(await getScheduledInstallments({ page: 1, query: "" }).response, { status: 200 }),
-  },
   {
     path: emailTabPath("drafts"),
     element: <DraftsTab />,
