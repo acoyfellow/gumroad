@@ -44,7 +44,7 @@ const ToastAlert = ({ initial }: { initial: AlertPayload | null }) => {
   return (
     <div
       className={classNames(
-        "fixed top-4 left-1/2 z-100 w-max max-w-[calc(100vw-2rem)] bg-background md:max-w-sm",
+        "fixed top-4 left-1/2 z-100 w-max max-w-[calc(100vw-2rem)] rounded bg-background md:max-w-sm",
         isVisible ? "visible" : "invisible",
       )}
       style={{
