@@ -23,7 +23,7 @@ class EmailsController < Sellers::BaseController
     create_user_event("emails_view")
 
     @title = "Published Emails"
-    presenter = PaginatedInstallmentsPresenter.new(seller: current_seller, type: Installment::PUBLISHED, page: 1)
+    presenter = PaginatedInstallmentsPresenter.new(seller: current_seller, type: Installment::PUBLISHED, page: params[:page], query: params[:query])
     render inertia: "Emails/Published", props: presenter.props
   end
 
@@ -32,7 +32,7 @@ class EmailsController < Sellers::BaseController
     create_user_event("emails_view")
 
     @title = "Scheduled Emails"
-    presenter = PaginatedInstallmentsPresenter.new(seller: current_seller, type: Installment::SCHEDULED, page: 1)
+    presenter = PaginatedInstallmentsPresenter.new(seller: current_seller, type: Installment::SCHEDULED, page: params[:page], query: params[:query])
     render inertia: "Emails/Scheduled", props: presenter.props
   end
 
@@ -41,9 +41,9 @@ class EmailsController < Sellers::BaseController
 
     if @installment.mark_deleted
       @installment.installment_rule&.mark_deleted!
-      redirect_back fallback_location: published_emails_path, notice: "Email deleted!"
+      redirect_to emails_path: published_emails_path, notice: "Email deleted!" , status: :see_other
     else
-      redirect_back fallback_location: published_emails_path, alert: "Sorry, something went wrong. Please try again."
+      redirect_to emails_path: published_emails_path, alert: "Sorry, something went wrong. Please try again.", status: :see_other
     end
   end
 
