@@ -182,6 +182,7 @@ class Installment < ApplicationRecord
     else
       installments_to_check.product_type.pluck(:id)
     end
+
     seller_installment_ids = installments_to_check.seller_type.select(:id, :json_data, :link_id).find_each(batch_size: 100).filter_map do |installment|
       installment.id if installment.purchase_passes_filters(purchase)
     end
