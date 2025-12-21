@@ -9,11 +9,6 @@ import { showAlert } from "$app/components/server-components/Alert";
 import AdminProductPurchasesContent from "./Content";
 import { type ProductPurchase } from "./Purchase";
 
-type MassRefundResponse = {
-  success: boolean;
-  message?: string | null;
-};
-
 type AdminProductPurchasesProps = {
   productId: number;
   isAffiliateUser?: boolean;
@@ -96,7 +91,7 @@ const AdminProductPurchases = ({ productId, isAffiliateUser = false, userId }: A
         },
       });
 
-      const body = cast<MassRefundResponse>(await response.json());
+      const body = cast<{ success: boolean; message?: string | null }>(await response.json());
       if (!response.ok || !body.success) {
         throw new ResponseError(body.message ?? "Something went wrong.");
       }
@@ -125,9 +120,7 @@ const AdminProductPurchases = ({ productId, isAffiliateUser = false, userId }: A
           onLoadMore={() => void fetchNextPage()}
           selectedPurchaseExternalIds={selectedPurchaseExternalIds}
           onToggleSelection={togglePurchaseSelection}
-          onMassRefund={() => {
-            void handleMassRefund();
-          }}
+          onMassRefund={() => void handleMassRefund()}
           onClearSelection={clearSelection}
           onSelectAll={selectAll}
           isMassRefunding={isMassRefunding}

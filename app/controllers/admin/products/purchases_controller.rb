@@ -44,14 +44,6 @@ class Admin::Products::PurchasesController < Admin::Products::BaseController
 
   private
     def mass_refund_for_fraud_external_ids
-      raw_ids = params[:purchase_ids]
-      values =
-        case raw_ids
-        when String
-          raw_ids.split(",")
-        else
-          Array(raw_ids)
-        end
-      values.map(&:to_s).reject(&:blank?).uniq
+      Array(params[:purchase_ids]).map(&:to_s).reject(&:blank?).uniq
     end
 end

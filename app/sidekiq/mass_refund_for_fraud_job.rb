@@ -21,7 +21,13 @@ class MassRefundForFraudJob
       rescue StandardError => e
         results[:failed] += 1
         results[:errors][external_id] = e.message
-        Rails.logger.error("Mass fraud refund failed for purchase #{external_id}: #{e.class}: #{e.message}")
+        Bugsnag.notify(e) do |event|
+          event.add_metadata(:mass_refund, {
+                               product_id: product_id,
+                               purchase_external_id: external_id,
+                               admin_user_id: admin_user_id
+                             })
+        end
       end
     end
 

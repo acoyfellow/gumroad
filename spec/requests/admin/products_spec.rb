@@ -3,10 +3,11 @@
 require "spec_helper"
 
 describe "Admin::LinksController Scenario", type: :system, js: true do
+  let(:admin_user) { create(:admin_user) }
   let(:product) { create(:product) }
 
   before do
-    login_as(create(:admin_user))
+    login_as(admin_user)
   end
 
   it "renders the product page", :sidekiq_inline, :elasticsearch_wait_for_refresh do
@@ -196,6 +197,11 @@ describe "Admin::LinksController Scenario", type: :system, js: true do
       wait_for_ajax
 
       expect(page).to have_alert(text: "Processing 2 fraud refunds")
+      expect(MassRefundForFraudJob).to have_enqueued_sidekiq_job(
+        product.id,
+        array_including(purchase1.external_id, purchase2.external_id),
+        admin_user.id
+      ).on("default")
     end
   end
 end

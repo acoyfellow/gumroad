@@ -17,13 +17,15 @@ export type ProductPurchase = {
   gumroad_responsible_for_tax: boolean;
 };
 
-type AdminProductPurchaseProps = {
+const AdminProductPurchase = ({
+  purchase,
+  isSelected,
+  onToggleSelection,
+}: {
   purchase: ProductPurchase;
   isSelected: boolean;
   onToggleSelection: (purchaseId: string, selected: boolean) => void;
-};
-
-const AdminProductPurchase = ({ purchase, isSelected, onToggleSelection }: AdminProductPurchaseProps) => {
+}) => {
   const {
     external_id,
     displayed_price,
@@ -44,7 +46,7 @@ const AdminProductPurchase = ({ purchase, isSelected, onToggleSelection }: Admin
 
   return (
     <div>
-      <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start" }}>
+      <div className="flex items-start gap-2">
         <input
           type="checkbox"
           aria-label={`Select purchase ${external_id}`}
@@ -81,7 +83,7 @@ const AdminProductPurchase = ({ purchase, isSelected, onToggleSelection }: Admin
           </small>
         </div>
       </div>
-      <div style={{ textAlign: "right" }}>
+      <div className="text-right">
         <a href={Routes.admin_search_purchases_path({ query: email })}>{email}</a>
         <small>{created}</small>
       </div>
