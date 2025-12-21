@@ -10,7 +10,7 @@ type PingParameter = {
 };
 
 const Code = ({ children }: { children: React.ReactNode }) => (
-  <code className="rounded border border-border bg-active-bg px-2 py-1 text-xs">{children}</code>
+  <code className="rounded border border-border bg-active-bg px-2 py-1 text-xs align-middle">{children}</code>
 );
 
 const PING_PARAMETERS: PingParameter[] = [
