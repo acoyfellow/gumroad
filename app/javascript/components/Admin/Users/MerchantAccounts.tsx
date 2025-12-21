@@ -8,6 +8,7 @@ import AdminActionButton from "$app/components/Admin/ActionButton";
 import { BooleanIcon } from "$app/components/Admin/Icons";
 import type { User } from "$app/components/Admin/Users/User";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
+import { Alert } from "$app/components/ui/Alert";
 import { useIsIntersecting } from "$app/components/useIsIntersecting";
 
 type AdminUserMerchantAccountsProps = {
@@ -46,7 +47,7 @@ const AdminUserMerchantAccounts = ({ user }: AdminUserMerchantAccountsProps) => 
       setIsLoading(true);
       const response = await request({
         method: "GET",
-        url: Routes.admin_user_merchant_accounts_path(user.external_id),
+        url: Routes.admin_user_merchant_accounts_path(user.id),
         accept: "json",
       });
       setData(cast<AdminUserMerchantAccountsData>(await response.json()));
@@ -69,17 +70,17 @@ const AdminUserMerchantAccounts = ({ user }: AdminUserMerchantAccountsProps) => 
           ))}
         </ul>
       ) : (
-        <div className="info" role="status">
+        <Alert role="status" variant="info">
           No merchant accounts.
-        </div>
+        </Alert>
       )}
 
       {!data?.has_stripe_account && (
         <div className="mt-2 flex flex-wrap gap-2">
           <AdminActionButton
             label="Create Managed Account"
-            url={Routes.create_stripe_managed_account_admin_user_path(user.external_id)}
-            confirm_message={`Are you sure you want to create a Stripe Managed Account for user ${user.external_id}?`}
+            url={Routes.create_stripe_managed_account_admin_user_path(user.id)}
+            confirm_message={`Are you sure you want to create a Stripe Managed Account for user ${user.id}?`}
             class="button-stripe"
           />
         </div>

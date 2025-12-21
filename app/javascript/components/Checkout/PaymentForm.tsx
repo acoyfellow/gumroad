@@ -55,6 +55,7 @@ import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { PriceInput } from "$app/components/PriceInput";
 import { showAlert } from "$app/components/server-components/Alert";
+import { Alert } from "$app/components/ui/Alert";
 import { Tab, Tabs } from "$app/components/ui/Tabs";
 import { useIsDarkTheme } from "$app/components/useIsDarkTheme";
 import { useOnChangeSync } from "$app/components/useOnChange";
@@ -253,7 +254,7 @@ const EmailAddress = () => {
   );
 };
 
-const SharedInputs = () => {
+const SharedInputs = ({ showCustomFields }: { showCustomFields: boolean }) => {
   const uid = React.useId();
   const [state, dispatch] = useState();
   const errors = getErrors(state);
@@ -401,7 +402,7 @@ const SharedInputs = () => {
           </div>
         </div>
       ) : null}
-      <CustomFields />
+      {showCustomFields ? <CustomFields /> : null}
     </>
   );
 };
@@ -437,7 +438,7 @@ const useFail = () => {
   };
 };
 
-const CustomerDetails = () => {
+const CustomerDetails = ({ showCustomFields }: { showCustomFields: boolean }) => {
   const isLoggedIn = !!useLoggedInUser();
   const [state, dispatch] = useState();
   const uid = React.useId();
@@ -484,7 +485,7 @@ const CustomerDetails = () => {
 
   return (
     <>
-      <SharedInputs />
+      <SharedInputs showCustomFields={showCustomFields} />
       {hasShipping(state) ? (
         <div>
           <div className="flex flex-col gap-4">
@@ -592,9 +593,9 @@ const CustomerDetails = () => {
       ) : null}
       {state.warning ? (
         <div>
-          <div role="status" className="warning">
+          <Alert role="status" variant="warning">
             {state.warning}
-          </div>
+          </Alert>
         </div>
       ) : null}
       {isTippingEnabled(state) ? <TipSelector /> : null}
@@ -1172,7 +1173,8 @@ const StripePaymentRequest = () => {
 export const PaymentForm = ({
   className,
   notice,
-}: React.HTMLAttributes<HTMLDivElement> & { notice?: string | null }) => {
+  showCustomFields = true,
+}: React.HTMLAttributes<HTMLDivElement> & { notice?: string | null; showCustomFields?: boolean }) => {
   const [state, dispatch] = useState();
   const loggedInUser = useLoggedInUser();
   const isTestPurchase = loggedInUser && state.products.find((product) => product.testPurchase);
@@ -1212,10 +1214,10 @@ export const PaymentForm = ({
     <div ref={paymentFormRef} className={cx("stack", className)} aria-label="Payment form">
       {isTestPurchase ? (
         <div>
-          <div role="alert" className="info">
+          <Alert variant="info">
             This will be a test purchase as you are the creator of at least one of the products. Your payment method
             will not be charged.
-          </div>
+          </Alert>
         </div>
       ) : null}
       <EmailAddress />
@@ -1235,15 +1237,13 @@ export const PaymentForm = ({
           </div>
           {notice ? (
             <div>
-              <div role="alert" className="info">
-                {notice}
-              </div>
+              <Alert variant="info">{notice}</Alert>
             </div>
           ) : null}
           <CreditCard />
         </>
       ) : null}
-      <CustomerDetails />
+      <CustomerDetails showCustomFields={showCustomFields} />
       {!isFreePurchase ? (
         <>
           <PayPal />

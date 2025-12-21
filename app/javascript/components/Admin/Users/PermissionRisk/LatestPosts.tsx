@@ -5,13 +5,14 @@ import { request } from "$app/utils/request";
 
 import type { User } from "$app/components/Admin/Users/User";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
+import { Alert } from "$app/components/ui/Alert";
 
 type LatestPostsProps = {
   user: User;
 };
 
 export type PostProps = {
-  external_id: string;
+  id: number;
   name: string;
   created_at: string;
 };
@@ -28,15 +29,15 @@ const LatestPostsContent = ({ posts, isLoading }: { posts: PostProps[]; isLoadin
   if (posts.length > 0)
     return (
       <div className="stack">
-        {posts.map(({ external_id, name, created_at }) => (
-          <Post key={external_id} external_id={external_id} name={name} created_at={created_at} />
+        {posts.map(({ id, name, created_at }) => (
+          <Post key={id} id={id} name={name} created_at={created_at} />
         ))}
       </div>
     );
   return (
-    <div className="info" role="status">
+    <Alert role="status" variant="info">
       No posts created.
-    </div>
+    </Alert>
   );
 };
 
@@ -49,7 +50,7 @@ const LastestPosts = ({ user }: LatestPostsProps) => {
     setIsLoading(true);
     const response = await request({
       method: "GET",
-      url: Routes.admin_user_latest_posts_path(user.external_id),
+      url: Routes.admin_user_latest_posts_path(user.id),
       accept: "json",
     });
     setPosts(cast<PostProps[]>(await response.json()));
