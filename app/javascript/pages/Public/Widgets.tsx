@@ -8,7 +8,6 @@ import { WidgetsPage, type WidgetsPageProps } from "$app/components/server-compo
 function PublicWidgets() {
   const props = usePage<WidgetsPageProps>().props;
 
-  // Dynamically load widget scripts for Inertia navigation support
   useExternalScripts(["/js/gumroad.js", "/js/gumroad-embed.js"]);
 
   return <WidgetsPage {...props} />;
