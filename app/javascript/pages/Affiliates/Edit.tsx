@@ -1,5 +1,4 @@
 import { useForm, usePage } from "@inertiajs/react";
-import cx from "classnames";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
@@ -9,19 +8,10 @@ import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { NavigationButtonInertia } from "$app/components/NavigationButton";
-import { NumberInput } from "$app/components/NumberInput";
 import { showAlert } from "$app/components/server-components/Alert";
 import { PageHeader } from "$app/components/ui/PageHeader";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 
-type AffiliateProduct = {
-  id: number;
-  name: string;
-  enabled: boolean;
-  fee_percent: number | null;
-  destination_url: string | null;
-  referral_url: string;
-};
+import { AffiliateForm, AffiliateProduct } from "./Form";
 
 type AffiliateData = {
   id: string;
@@ -149,150 +139,37 @@ export default function AffiliatesEdit() {
         }
       />
       <form onSubmit={handleSubmit}>
-        <section className="p-4! md:p-8!">
-          <header
-            dangerouslySetInnerHTML={{
-              __html:
-                "The process of editing is almost identical to adding them. You can change their affiliate fee, the products they are assigned. Their affiliate link will not change. <a href='/help/article/333-affiliates-on-gumroad' target='_blank' rel='noreferrer'>Learn more</a>",
-            }}
-          />
-          <fieldset>
-            <legend>
-              <label htmlFor={`${uid}email`}>Email</label>
-            </legend>
-            <input type="email" id={`${uid}email`} value={props.affiliate.email} disabled />
-          </fieldset>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Enable</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead>Commission</TableHead>
-                <TableHead>
-                  <a href="/help/article/333-affiliates-on-gumroad" target="_blank" rel="noreferrer">
-                    Destination URL (optional)
-                  </a>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell>
-                  <input
-                    id={`${uid}enableAllProducts`}
-                    type="checkbox"
-                    role="switch"
-                    checked={applyToAllProducts}
-                    onChange={(e) => toggleAllProducts(e.target.checked)}
-                    aria-label="Enable all products"
-                  />
-                </TableCell>
-                <TableCell>
-                  <label htmlFor={`${uid}enableAllProducts`}>All products</label>
-                </TableCell>
-                <TableCell>
-                  <fieldset className={cx({ danger: errors["affiliate.fee_percent"] })}>
-                    <NumberInput
-                      onChange={(value) => {
-                        setData("affiliate", {
-                          ...data.affiliate,
-                          fee_percent: value,
-                          products: data.affiliate.products.map((p) => ({ ...p, fee_percent: value })),
-                        });
-                      }}
-                      value={data.affiliate.fee_percent}
-                    >
-                      {(inputProps) => (
-                        <div className={cx("input", { disabled: processing || !applyToAllProducts })}>
-                          <input
-                            type="text"
-                            autoComplete="off"
-                            placeholder="Commission"
-                            disabled={processing || !applyToAllProducts}
-                            {...inputProps}
-                          />
-                          <div className="pill">%</div>
-                        </div>
-                      )}
-                    </NumberInput>
-                  </fieldset>
-                </TableCell>
-                <TableCell>
-                  <fieldset className={cx({ danger: errors["affiliate.destination_url"] })}>
-                    <input
-                      type="url"
-                      value={data.affiliate.destination_url || ""}
-                      placeholder="https://link.com"
-                      onChange={(e) => setData("affiliate.destination_url", e.target.value)}
-                      disabled={processing || !applyToAllProducts}
-                    />
-                  </fieldset>
-                </TableCell>
-              </TableRow>
-              {data.affiliate.products.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>
-                    <input
-                      type="checkbox"
-                      role="switch"
-                      checked={product.enabled}
-                      onChange={(e) =>
-                        setData(
-                          "affiliate.products",
-                          data.affiliate.products.map((p) =>
-                            p.id === product.id ? { ...p, enabled: e.target.checked } : p,
-                          ),
-                        )
-                      }
-                      disabled={processing}
-                    />
-                  </TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>
-                    <NumberInput
-                      onChange={(value) =>
-                        setData(
-                          "affiliate.products",
-                          data.affiliate.products.map((p) => (p.id === product.id ? { ...p, fee_percent: value } : p)),
-                        )
-                      }
-                      value={product.fee_percent}
-                    >
-                      {(inputProps) => (
-                        <div className={cx("input", { disabled: processing || !product.enabled })}>
-                          <input
-                            type="text"
-                            autoComplete="off"
-                            placeholder="Commission"
-                            disabled={processing || !product.enabled}
-                            {...inputProps}
-                          />
-                          <div className="pill">%</div>
-                        </div>
-                      )}
-                    </NumberInput>
-                  </TableCell>
-                  <TableCell>
-                    <input
-                      type="text"
-                      placeholder="https://link.com"
-                      value={product.destination_url || ""}
-                      onChange={(e) =>
-                        setData(
-                          "affiliate.products",
-                          data.affiliate.products.map((p) =>
-                            p.id === product.id ? { ...p, destination_url: e.target.value } : p,
-                          ),
-                        )
-                      }
-                      disabled={processing || !product.enabled}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </section>
+        <AffiliateForm
+          data={data.affiliate}
+          errors={errors}
+          processing={processing}
+          applyToAllProducts={applyToAllProducts}
+          uid={uid}
+          headerText="The process of editing is almost identical to adding them. You can change their affiliate fee, the products they are assigned. Their affiliate link will not change."
+          emailField={
+            <fieldset>
+              <legend>
+                <label htmlFor={`${uid}email`}>Email</label>
+              </legend>
+              <input type="email" id={`${uid}email`} value={props.affiliate.email} disabled />
+            </fieldset>
+          }
+          onToggleAllProducts={toggleAllProducts}
+          onUpdateFeePercent={(value) => {
+            setData("affiliate", {
+              ...data.affiliate,
+              fee_percent: value,
+              products: data.affiliate.products.map((p) => ({ ...p, fee_percent: value })),
+            });
+          }}
+          onUpdateDestinationUrl={(value) => setData("affiliate.destination_url", value)}
+          onUpdateProduct={(productId, updates) => {
+            setData(
+              "affiliate.products",
+              data.affiliate.products.map((p) => (p.id === productId ? { ...p, ...updates } : p)),
+            );
+          }}
+        />
       </form>
     </div>
   );
