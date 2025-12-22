@@ -349,6 +349,17 @@ describe "InstallmentClassMethods"  do
           expect(missed_posts_after_sending_email).to be_empty
         end
 
+        it "does not include post sent to customers of multiple products if it is already sent to the purchase email" do
+          purchase.update!(email: "bot@gum.co")
+          purchase_2 = create(:purchase, link: product_b, seller:, email: "bot@gum.co")
+          post_to_multiple_products = create(:seller_installment, :published, seller:, bought_products: [product_a.unique_permalink, product_b.unique_permalink])
+          create(:creator_contacting_customers_email_info, installment: post_to_multiple_products, purchase:)
+
+          missed_posts = Installment.missed_for_purchase(purchase_2)
+
+          expect(missed_posts).not_to include(post_to_multiple_products)
+        end
+
         context "when workflow_id is provided" do
           it "returns empty results when workflow doesn't exist, doesn't apply to purchase, is not published, or is deleted" do
             other_product = create(:product, user: seller)
