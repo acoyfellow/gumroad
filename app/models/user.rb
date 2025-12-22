@@ -810,18 +810,10 @@ class User < ApplicationRecord
   # Returns the user's UTC offset, formatted (e.g. "-08:00")
   # Useful to resolve inconsistencies between Rails, Elasticsearch and MySQL which may all have
   # different TZ databases: https://github.com/gumroad/web/pull/25208
-  #
-  # This method is DST-aware: it returns the correct offset based on whether Daylight Saving Time
-  # is active at the given time. For example, Pacific Time returns "-07:00" during PDT (summer)
-  # and "-08:00" during PST (winter).
-  #
-  # Note: For Elasticsearch queries, prefer using timezone_id directly as it handles DST
-  # automatically across date ranges that span DST transitions.
-  #
-  # @param at [Time, Date, nil] Optional time to calculate the offset for. Defaults to Time.current.
-  def timezone_formatted_offset(at: nil)
-    time = at ? at.in_time_zone(timezone) : Time.current.in_time_zone(timezone)
-    time.formatted_offset
+  # Note that it doesn't acknowledge DST by nature: it is just the difference between the timezone's
+  # Standard time and UTC, so the returned value does not change depending on when the method is called.
+  def timezone_formatted_offset
+    ActiveSupport::TimeZone.new(timezone_id).formatted_offset
   end
 
   def supports_card?(card)
