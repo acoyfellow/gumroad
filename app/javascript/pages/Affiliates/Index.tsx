@@ -57,7 +57,6 @@ const AffiliatesNavigation = () => (
 const SearchBoxPopover = ({ initialQuery, onSearch }: { initialQuery: string; onSearch: (query: string) => void }) => {
   const [searchBoxOpen, setSearchBoxOpen] = React.useState(false);
   const searchInputRef = React.useRef<HTMLInputElement | null>(null);
-  const [searchQuery, setSearchQuery] = React.useState(initialQuery);
 
   React.useEffect(() => {
     if (searchBoxOpen) searchInputRef.current?.focus();
@@ -80,15 +79,11 @@ const SearchBoxPopover = ({ initialQuery, onSearch }: { initialQuery: string; on
         <Icon name="solid-search" />
         <input
           ref={searchInputRef}
-          value={searchQuery}
+          value={initialQuery}
           autoFocus
           type="text"
           placeholder="Search"
-          onChange={(evt) => {
-            const newQuery = evt.target.value;
-            setSearchQuery(newQuery);
-            onSearch(newQuery);
-          }}
+          onChange={(evt) => onSearch(evt.target.value)}
         />
       </div>
     </Popover>

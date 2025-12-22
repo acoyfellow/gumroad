@@ -70,19 +70,19 @@ export default function AffiliatesEdit() {
 
   const toggleAllProducts = (checked: boolean) => {
     if (checked) {
-      setData("affiliate", {
-        ...data.affiliate,
-        products: data.affiliate.products.map((p) => ({
+      setData(
+        "affiliate.products",
+        data.affiliate.products.map((p) => ({
           ...p,
           enabled: true,
           fee_percent: data.affiliate.fee_percent,
         })),
-      });
+      );
     } else {
-      setData("affiliate", {
-        ...data.affiliate,
-        products: data.affiliate.products.map((p) => ({ ...p, enabled: false })),
-      });
+      setData(
+        "affiliate.products",
+        data.affiliate.products.map((p) => ({ ...p, enabled: false })),
+      );
     }
   };
 
@@ -237,12 +237,12 @@ export default function AffiliatesEdit() {
                       role="switch"
                       checked={product.enabled}
                       onChange={(e) =>
-                        setData("affiliate", {
-                          ...data.affiliate,
-                          products: data.affiliate.products.map((p) =>
+                        setData(
+                          "affiliate.products",
+                          data.affiliate.products.map((p) =>
                             p.id === product.id ? { ...p, enabled: e.target.checked } : p,
                           ),
-                        })
+                        )
                       }
                       disabled={processing}
                     />
@@ -251,12 +251,10 @@ export default function AffiliatesEdit() {
                   <TableCell>
                     <NumberInput
                       onChange={(value) =>
-                        setData("affiliate", {
-                          ...data.affiliate,
-                          products: data.affiliate.products.map((p) =>
-                            p.id === product.id ? { ...p, fee_percent: value } : p,
-                          ),
-                        })
+                        setData(
+                          "affiliate.products",
+                          data.affiliate.products.map((p) => (p.id === product.id ? { ...p, fee_percent: value } : p)),
+                        )
                       }
                       value={product.fee_percent}
                     >
@@ -280,12 +278,12 @@ export default function AffiliatesEdit() {
                       placeholder="https://link.com"
                       value={product.destination_url || ""}
                       onChange={(e) =>
-                        setData("affiliate", {
-                          ...data.affiliate,
-                          products: data.affiliate.products.map((p) =>
+                        setData(
+                          "affiliate.products",
+                          data.affiliate.products.map((p) =>
                             p.id === product.id ? { ...p, destination_url: e.target.value } : p,
                           ),
-                        })
+                        )
                       }
                       disabled={processing || !product.enabled}
                     />
