@@ -7,9 +7,9 @@ describe CustomerPresenter do
 
   describe "#missed_posts" do
     let(:product) { create(:product, user: seller) }
-    let!(:post1) { create(:installment, link: product, published_at: Time.current, name: "Post 1") }
-    let!(:post2) { create(:installment, link: product, published_at: Time.current, name: "Post 2") }
-    let!(:post3) { create(:installment, link: product, published_at: Time.current, name: "Post 3") }
+    let!(:post1) { create(:installment, :published, link: product, name: "Post 1") }
+    let!(:post2) { create(:installment, :published, link: product, name: "Post 2") }
+    let!(:post3) { create(:installment, :published, link: product, name: "Post 3") }
     let!(:post4) { create(:installment, link: product, name: "Post 4") }
     let(:purchase) { create(:purchase, link: product) }
 

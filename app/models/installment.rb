@@ -129,13 +129,13 @@ class Installment < ApplicationRecord
     end
   }
 
-  scope :seller_or_product_or_variant_type_for_purchase, -> (purchase) {
+  scope :seller_or_audience_or_product_or_variant_type_for_purchase, -> (purchase) {
     where(seller_id: purchase.seller_id)
     .where(
-      "(installment_type IN (?) AND installments.link_id = ?) OR installment_type = ?",
+      "(installment_type IN (?) AND installments.link_id = ?) OR installment_type in (?)",
       [PRODUCT_TYPE, VARIANT_TYPE],
       purchase.link_id,
-      SELLER_TYPE
+      [SELLER_TYPE, AUDIENCE_TYPE]
     )
   }
 
@@ -154,7 +154,7 @@ class Installment < ApplicationRecord
     product_link_id = purchase.link.id
 
     installments_to_check = Installment
-      .seller_or_product_or_variant_type_for_purchase(purchase)
+      .seller_or_audience_or_product_or_variant_type_for_purchase(purchase)
       .alive
       .published
       .left_joins(:workflow)
@@ -183,7 +183,7 @@ class Installment < ApplicationRecord
       installments_to_check.product_type.pluck(:id)
     end
 
-    seller_installment_ids = installments_to_check.seller_type.select(:id, :json_data, :link_id).find_each(batch_size: 100).filter_map do |installment|
+    seller_or_audience_installment_ids = installments_to_check.seller_or_audience_type.select(:id, :json_data, :link_id, :seller_id).find_each(batch_size: 100).filter_map do |installment|
       installment.id if installment.purchase_passes_filters(purchase)
     end
 
@@ -204,7 +204,7 @@ class Installment < ApplicationRecord
     SQL
 
     send_emails.
-      where(id: product_or_variant_ids + seller_installment_ids).
+      where(id: product_or_variant_ids + seller_or_audience_installment_ids).
       where(where_sent_sql)
   }
 

@@ -14,7 +14,7 @@ class CustomersService
 
     def find_sent_posts_for(purchase)
       latest_email_ids = CreatorContactingCustomersEmailInfo
-      .where(purchase:, installment_id: Installment.seller_or_product_or_variant_type_for_purchase(purchase).alive.published.pluck(:id))
+      .where(purchase:, installment_id: Installment.seller_or_audience_or_product_or_variant_type_for_purchase(purchase).alive.published.pluck(:id))
       .group(:installment_id)
       .maximum(:id)
       .values
@@ -28,7 +28,7 @@ class CustomersService
       purchase.seller.workflows.alive.published
       .joins(:installments)
       .merge(
-        Installment.seller_or_product_or_variant_type_for_purchase(purchase).alive.published
+        Installment.seller_or_audience_or_product_or_variant_type_for_purchase(purchase).alive.published
       )
       .distinct
       .order(:name)

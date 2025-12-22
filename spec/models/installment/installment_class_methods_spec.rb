@@ -268,101 +268,103 @@ describe "InstallmentClassMethods"  do
     context "customer drawer missed posts" do
       include_context "customer drawer missed posts setup"
 
-      context "for regular purchase" do
-        context "includes" do
-          it "seller posts, seller workflow posts, regular product posts, product workflow posts, and post with bought products filters" do
-            missed_posts_for_purchase = Installment.missed_for_purchase(purchase)
+      context "includes" do
+        it "audience posts, seller posts, seller workflow posts, regular product posts, product workflow posts, and post with bought products filters" do
+          missed_posts_for_purchase = Installment.missed_for_purchase(purchase)
 
-            expect(missed_posts_for_purchase).to eq([
-                                                      seller_post_to_all_customers,
-                                                      seller_workflow_post_to_all_customers,
-                                                      seller_post_with_bought_products_filter_product_a_and_c,
-                                                      regular_post_product_a,
-                                                      workflow_post_product_a
-                                                    ])
-          end
-
-          it "variant workflow posts when purchase has the variant" do
-            purchase_with_product_a_variant = create(:purchase, link: product_a, variant_attributes: [product_a_variant], seller: seller)
-
-            variant_2_product_a = create(:variant, variant_category: create(:variant_category, link: product_a))
-            variant_2_product_a_workflow = create(:variant_workflow, seller: seller, base_variant: variant_2_product_a, link: product_a, published_at: Time.current)
-            _variant_2_product_a_workflow_post = create(:installment, link: product_a, workflow: variant_2_product_a_workflow, seller: seller, published_at: Time.current)
-
-            missed_posts_for_variant_purchase = Installment.missed_for_purchase(purchase_with_product_a_variant)
-
-            expect(missed_posts_for_variant_purchase).to eq([
-                                                              seller_post_to_all_customers,
-                                                              seller_workflow_post_to_all_customers,
-                                                              seller_post_with_bought_products_filter_product_a_and_c,
-                                                              seller_post_with_bought_variants_filter_product_a_and_c_variant,
-                                                              regular_post_product_a,
-                                                              regular_post_product_a_variant,
-                                                              workflow_post_product_a,
-                                                              workflow_post_product_a_variant
-                                                            ])
-          end
-
-          context "when workflow_id is provided" do
-            it "only posts from the specified workflow" do
-              missed_posts_by_workflow = Installment.missed_for_purchase(purchase, workflow_id: workflow_post_product_a.workflow.external_id)
-
-              expect(missed_posts_by_workflow).to eq([workflow_post_product_a])
-            end
-          end
+          expect(missed_posts_for_purchase).to eq([
+                                                    audience_post,
+                                                    seller_post_to_all_customers,
+                                                    seller_workflow_post_to_all_customers,
+                                                    seller_post_with_bought_products_filter_product_a_and_c,
+                                                    regular_post_product_a,
+                                                    workflow_post_product_a
+                                                  ])
         end
 
-        context "excludes" do
-          it "already sent posts, posts from other sellers, posts from workflows for other products, and profile-only posts" do
-            other_seller = create(:user)
-            _post_from_other_seller = create(:seller_installment, seller: other_seller, published_at: Time.current)
-            purchased_product_c = create(:purchase, link: product_c, seller:, variant_attributes: [product_c_variant])
+        it "variant workflow posts when purchase has the variant" do
+          purchase_with_product_a_variant = create(:purchase, link: product_a, variant_attributes: [product_a_variant], seller:)
 
-            missed_posts_before_sending_email = Installment.missed_for_purchase(purchased_product_c)
+          variant_2_product_a = create(:variant, variant_category: create(:variant_category, link: product_a))
+          variant_2_product_a_workflow = create(:variant_workflow, :published, seller:, base_variant: variant_2_product_a, link: product_a)
+          _variant_2_product_a_workflow_post = create(:installment, :published, link: product_a, workflow: variant_2_product_a_workflow, seller:)
 
-            expect(missed_posts_before_sending_email).to eq([
-                                                              seller_post_to_all_customers,
-                                                              seller_workflow_post_to_all_customers,
-                                                              seller_post_with_bought_products_filter_product_a_and_c,
-                                                              seller_post_with_bought_variants_filter_product_a_and_c_variant,
-                                                            ])
+          missed_posts_for_variant_purchase = Installment.missed_for_purchase(purchase_with_product_a_variant)
 
-            create(:creator_contacting_customers_email_info, installment: seller_post_to_all_customers, purchase: purchased_product_c)
-            create(:creator_contacting_customers_email_info, installment: seller_workflow_post_to_all_customers, purchase: purchased_product_c)
-            create(:creator_contacting_customers_email_info, installment: seller_post_with_bought_products_filter_product_a_and_c, purchase: purchased_product_c)
-            create(:creator_contacting_customers_email_info, installment: seller_post_with_bought_variants_filter_product_a_and_c_variant, purchase: purchased_product_c)
+          expect(missed_posts_for_variant_purchase).to eq([
+                                                            audience_post,
+                                                            seller_post_to_all_customers,
+                                                            seller_workflow_post_to_all_customers,
+                                                            seller_post_with_bought_products_filter_product_a_and_c,
+                                                            seller_post_with_bought_variants_filter_product_a_and_c_variant,
+                                                            regular_post_product_a,
+                                                            regular_post_product_a_variant,
+                                                            workflow_post_product_a,
+                                                            workflow_post_product_a_variant
+                                                          ])
+        end
 
-            profile_only_product_post = create(:installment, link: product_c, seller: seller, published_at: 3.days.ago)
-            profile_only_product_post.send_emails = false
-            profile_only_product_post.shown_on_profile = true
-            profile_only_product_post.save!
-            profile_only_seller_post = create(:seller_installment, seller: seller, bought_variants: [product_c_variant.external_id], published_at: 2.days.ago)
-            profile_only_seller_post.send_emails = false
-            profile_only_seller_post.shown_on_profile = true
-            profile_only_seller_post.save!
+        context "when workflow_id is provided" do
+          it "only posts from the specified workflow" do
+            missed_posts_by_workflow = Installment.missed_for_purchase(purchase, workflow_id: workflow_post_product_a.workflow.external_id)
 
-            missed_posts_after_sending_email = Installment.missed_for_purchase(purchased_product_c)
-
-            expect(missed_posts_after_sending_email).to be_empty
+            expect(missed_posts_by_workflow).to eq([workflow_post_product_a])
           end
+        end
+      end
 
-          context "when workflow_id is provided" do
-            it "returns empty results when workflow doesn't exist, doesn't apply to purchase, is not published, or is deleted" do
-              other_product = create(:product, user: seller)
-              workflow_for_other_product = create(:workflow, seller: seller, link: other_product, published_at: Time.current)
-              unpublished_workflow = create(:workflow, seller: seller, link: product_a, published_at: nil)
-              deleted_workflow = create(:workflow, seller: seller, link: product_a, published_at: Time.current, deleted_at: Time.current)
+      context "excludes" do
+        it "already sent posts, posts from other sellers, posts from workflows for other products, and profile-only posts" do
+          other_seller = create(:user)
+          _post_from_other_seller = create(:seller_installment, seller: other_seller, published_at: Time.current)
+          purchased_product_c = create(:purchase, link: product_c, seller:, variant_attributes: [product_c_variant])
 
-              nonexistent_workflow_posts = Installment.missed_for_purchase(purchase, workflow_id: "nonexistent")
-              other_product_workflow_posts = Installment.missed_for_purchase(purchase, workflow_id: workflow_for_other_product.external_id)
-              unpublished_workflow_posts = Installment.missed_for_purchase(purchase, workflow_id: unpublished_workflow.external_id)
-              deleted_workflow_posts = Installment.missed_for_purchase(purchase, workflow_id: deleted_workflow.external_id)
+          missed_posts_before_sending_email = Installment.missed_for_purchase(purchased_product_c)
 
-              expect(nonexistent_workflow_posts).to be_empty
-              expect(other_product_workflow_posts).to be_empty
-              expect(unpublished_workflow_posts).to be_empty
-              expect(deleted_workflow_posts).to be_empty
-            end
+          expect(missed_posts_before_sending_email).to eq([
+                                                            audience_post,
+                                                            seller_post_to_all_customers,
+                                                            seller_workflow_post_to_all_customers,
+                                                            seller_post_with_bought_products_filter_product_a_and_c,
+                                                            seller_post_with_bought_variants_filter_product_a_and_c_variant,
+                                                          ])
+
+          create(:creator_contacting_customers_email_info, installment: audience_post, purchase: purchased_product_c)
+          create(:creator_contacting_customers_email_info, installment: seller_post_to_all_customers, purchase: purchased_product_c)
+          create(:creator_contacting_customers_email_info, installment: seller_workflow_post_to_all_customers, purchase: purchased_product_c)
+          create(:creator_contacting_customers_email_info, installment: seller_post_with_bought_products_filter_product_a_and_c, purchase: purchased_product_c)
+          create(:creator_contacting_customers_email_info, installment: seller_post_with_bought_variants_filter_product_a_and_c_variant, purchase: purchased_product_c)
+
+          profile_only_product_post = create(:installment, link: product_c, seller:, published_at: 3.days.ago)
+          profile_only_product_post.send_emails = false
+          profile_only_product_post.shown_on_profile = true
+          profile_only_product_post.save!
+          profile_only_seller_post = create(:seller_installment, seller:, bought_variants: [product_c_variant.external_id], published_at: 2.days.ago)
+          profile_only_seller_post.send_emails = false
+          profile_only_seller_post.shown_on_profile = true
+          profile_only_seller_post.save!
+
+          missed_posts_after_sending_email = Installment.missed_for_purchase(purchased_product_c)
+
+          expect(missed_posts_after_sending_email).to be_empty
+        end
+
+        context "when workflow_id is provided" do
+          it "returns empty results when workflow doesn't exist, doesn't apply to purchase, is not published, or is deleted" do
+            other_product = create(:product, user: seller)
+            workflow_for_other_product = create(:workflow, :published, seller:, link: other_product)
+            unpublished_workflow = create(:workflow, seller:, link: product_a, published_at: nil)
+            deleted_workflow = create(:workflow, :published, seller:, link: product_a, deleted_at: Time.current)
+
+            nonexistent_workflow_posts = Installment.missed_for_purchase(purchase, workflow_id: "nonexistent")
+            other_product_workflow_posts = Installment.missed_for_purchase(purchase, workflow_id: workflow_for_other_product.external_id)
+            unpublished_workflow_posts = Installment.missed_for_purchase(purchase, workflow_id: unpublished_workflow.external_id)
+            deleted_workflow_posts = Installment.missed_for_purchase(purchase, workflow_id: deleted_workflow.external_id)
+
+            expect(nonexistent_workflow_posts).to be_empty
+            expect(other_product_workflow_posts).to be_empty
+            expect(unpublished_workflow_posts).to be_empty
+            expect(deleted_workflow_posts).to be_empty
           end
         end
       end
@@ -375,6 +377,7 @@ describe "InstallmentClassMethods"  do
             missed_posts_bundle_purchase = Installment.missed_for_purchase(bundle_purchase)
 
             expect(missed_posts_bundle_purchase).to eq([
+                                                         audience_post,
                                                          seller_post_to_all_customers,
                                                          seller_workflow_post_to_all_customers,
                                                          bundle_post,
@@ -388,6 +391,7 @@ describe "InstallmentClassMethods"  do
             missed_posts_bundle_purchase_product_a = Installment.missed_for_purchase(bundle_purchase_product_a)
 
             expect(missed_posts_bundle_purchase_product_a).to eq([
+                                                                   audience_post,
                                                                    seller_post_to_all_customers,
                                                                    seller_workflow_post_to_all_customers,
                                                                    seller_post_with_bought_products_filter_product_a_and_c,
@@ -419,14 +423,15 @@ describe "InstallmentClassMethods"  do
     end
   end
 
-  describe ".seller_or_product_or_variant_type_for_purchase" do
+  describe ".seller_or_audience_or_product_or_variant_type_for_purchase" do
     context "customer drawer missed posts" do
       include_context "customer drawer missed posts setup"
 
-      it "returns product installments, variant installments and all seller type installments" do
-        installments_for_purchase = Installment.seller_or_product_or_variant_type_for_purchase(purchase)
+      it "returns audience posts, seller posts, product posts and variant posts" do
+        installments_for_purchase = Installment.seller_or_audience_or_product_or_variant_type_for_purchase(purchase)
 
         expect(installments_for_purchase).to eq([
+                                                  audience_post,
                                                   seller_post_to_all_customers,
                                                   seller_workflow_post_to_all_customers,
                                                   seller_post_with_bought_products_filter_product_a_and_c,
@@ -438,10 +443,9 @@ describe "InstallmentClassMethods"  do
                                                 ])
 
         expect(installments_for_purchase).not_to include(
-          abandoned_cart_installment,
-          affiliate_installment,
-          audience_installment,
-          follower_installment,
+          abandoned_cart_workflow.installments.first,
+          affiliate_post,
+          follower_post,
           regular_post_product_b,
           regular_post_product_b_variant,
           workflow_post_product_b,

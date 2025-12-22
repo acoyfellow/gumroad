@@ -90,7 +90,7 @@ describe SendMissedPostsJob do
     end
 
     it "includes workflow name in failure message when workflow_id is provided" do
-      workflow = create(:workflow, seller: seller, name: "My Workflow")
+      workflow = create(:workflow, seller:, name: "My Workflow")
       job_info = { "class" => "SendMissedPostsJob", "args" => [purchase.external_id, workflow.external_id] }
 
       expect(CustomersChannel).to receive(:broadcast_missed_posts_message!).with(

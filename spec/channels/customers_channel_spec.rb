@@ -35,7 +35,7 @@ RSpec.describe CustomersChannel do
   end
 
   describe ".broadcast_missed_posts_message!" do
-    let(:workflow) { create(:workflow, seller:, link: product, name: "Test Workflow", published_at: Time.current) }
+    let(:workflow) { create(:workflow, :published, seller:, link: product, name: "Test Workflow") }
 
     before do
       stub_connection current_user: seller

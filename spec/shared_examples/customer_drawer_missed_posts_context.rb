@@ -9,10 +9,10 @@ RSpec.shared_context "customer drawer missed posts setup" do
   let(:product_c) { create(:product, user: seller) }
   let(:purchase) { create(:purchase, link: product_a, seller:) }
 
-  let!(:audience_installment) { create(:audience_installment, seller:) }
-  let!(:follower_installment) { create(:follower_post, seller:) }
-  let!(:affiliate_installment) { create(:affiliate_installment, seller:) }
-  let!(:abandoned_cart_installment) { create(:abandoned_cart_workflow, seller:) }
+  let!(:audience_post) { create(:audience_installment, :published, seller:) }
+  let!(:follower_post) { create(:follower_post, :published, seller:) }
+  let!(:affiliate_post) { create(:affiliate_post, :published, seller:) }
+  let!(:abandoned_cart_workflow) { create(:abandoned_cart_workflow, :published, seller:) }
 
   let!(:product_a_variant_category) { create(:variant_category, link: product_a) }
   let!(:product_a_variant) { create(:variant, variant_category: product_a_variant_category) }
@@ -21,21 +21,21 @@ RSpec.shared_context "customer drawer missed posts setup" do
   let!(:product_c_variant_category) { create(:variant_category, link: product_c) }
   let!(:product_c_variant) { create(:variant, variant_category: product_c_variant_category) }
 
-  let!(:seller_post_to_all_customers) { create(:seller_installment, seller:, published_at: Time.current) }
-  let!(:seller_workflow) { create(:seller_workflow, seller:, published_at: Time.current) }
-  let!(:seller_workflow_post_to_all_customers) { create(:seller_installment, seller:, workflow: seller_workflow, published_at: Time.current) }
-  let!(:seller_post_with_bought_products_filter_product_a_and_c) { create(:seller_installment, seller:, bought_products: [product_a.unique_permalink, product_c.unique_permalink], published_at: Time.current) }
-  let!(:seller_post_with_bought_variants_filter_product_a_and_c_variant) { create(:seller_installment, seller:, bought_variants: [product_a_variant.external_id, product_c_variant.external_id], published_at: Time.current) }
+  let!(:seller_post_to_all_customers) { create(:seller_installment, :published, seller:) }
+  let!(:seller_workflow) { create(:seller_workflow, :published, seller:) }
+  let!(:seller_workflow_post_to_all_customers) { create(:seller_installment, :published, seller:, workflow: seller_workflow) }
+  let!(:seller_post_with_bought_products_filter_product_a_and_c) { create(:seller_installment, :published, seller:, bought_products: [product_a.unique_permalink, product_c.unique_permalink]) }
+  let!(:seller_post_with_bought_variants_filter_product_a_and_c_variant) { create(:seller_installment, :published, seller:, bought_variants: [product_a_variant.external_id, product_c_variant.external_id]) }
 
-  let!(:regular_post_product_a) { create(:product_installment, link: product_a, seller:, published_at: Time.current) }
-  let!(:regular_post_product_a_variant) { create(:variant_installment, base_variant: product_a_variant, link: product_a, seller:, published_at: Time.current) }
-  let!(:workflow_post_product_a) { create(:workflow_installment, link: product_a, seller:, workflow: create(:workflow, seller:, link: product_a, published_at: Time.current), published_at: Time.current) }
-  let!(:workflow_post_product_a_variant) { create(:workflow_installment, link: product_a, seller:, workflow: create(:variant_workflow, seller:, link: product_a, base_variant: product_a_variant, published_at: Time.current), published_at: Time.current) }
+  let!(:regular_post_product_a) { create(:product_installment, :published, link: product_a, seller:) }
+  let!(:regular_post_product_a_variant) { create(:variant_installment, :published, base_variant: product_a_variant, link: product_a, seller:) }
+  let!(:workflow_post_product_a) { create(:workflow_installment, :published, link: product_a, seller:, workflow: create(:workflow, :published, seller:, link: product_a)) }
+  let!(:workflow_post_product_a_variant) { create(:workflow_installment, :published, link: product_a, seller:, workflow: create(:variant_workflow, :published, seller:, link: product_a, base_variant: product_a_variant)) }
 
   let!(:regular_post_product_b) { create(:product_installment, link: product_b, seller:) }
   let!(:regular_post_product_b_variant) { create(:variant_installment, base_variant: product_b_variant, link: product_b, seller:) }
   let!(:workflow_post_product_b) { create(:workflow_installment, link: product_b, seller:) }
-  let!(:workflow_post_product_b_variant) { create(:workflow_installment, link: product_b, seller:, workflow: create(:variant_workflow, seller:, link: product_b, base_variant: product_b_variant, published_at: Time.current), published_at: Time.current) }
+  let!(:workflow_post_product_b_variant) { create(:workflow_installment, :published, link: product_b, seller:, workflow: create(:variant_workflow, :published, seller:, link: product_b, base_variant: product_b_variant)) }
 end
 
 RSpec.shared_context "with bundle purchase setup" do |with_posts: false|
@@ -53,14 +53,14 @@ RSpec.shared_context "with bundle purchase setup" do |with_posts: false|
   let(:bundle) { create(:product, :bundle, user: seller) }
   let(:bundle_purchase) { create(:purchase, link: bundle, seller:) }
 
-  let!(:bundle_product_a) { create(:bundle_product, bundle: bundle, product: product_a, variant: product_a_variant) }
-  let!(:bundle_product_b) { create(:bundle_product, bundle: bundle, product: product_b, variant: product_b_variant) }
+  let!(:bundle_product_a) { create(:bundle_product, bundle:, product: product_a, variant: product_a_variant) }
+  let!(:bundle_product_b) { create(:bundle_product, bundle:, product: product_b, variant: product_b_variant) }
 
   before { bundle_purchase.create_artifacts_and_send_receipt! }
 
   if with_posts
-    let!(:bundle_post) { create(:installment, link: bundle, seller: seller, published_at: Time.current) }
-    let!(:bundle_workflow) { create(:workflow, seller: seller, link: bundle, published_at: Time.current) }
-    let!(:bundle_workflow_post) { create(:workflow_installment, link: bundle, workflow: bundle_workflow, seller: seller, published_at: Time.current) }
+    let!(:bundle_post) { create(:installment, :published, link: bundle, seller:) }
+    let!(:bundle_workflow) { create(:workflow, :published, seller:, link: bundle) }
+    let!(:bundle_workflow_post) { create(:workflow_installment, :published, link: bundle, workflow: bundle_workflow, seller:) }
   end
 end

@@ -19,6 +19,7 @@ describe CustomersService do
       expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: nil).and_call_original
       missed_posts = described_class.find_missed_posts_for(purchase:)
       expect(missed_posts).to eq([
+                                   audience_post,
                                    seller_post_to_all_customers,
                                    seller_workflow_post_to_all_customers,
                                    seller_post_with_bought_products_filter_product_a_and_c,
@@ -32,26 +33,24 @@ describe CustomersService do
   end
 
   describe ".find_sent_posts_for" do
-    context "for regular purchase" do
-      let!(:regular_post_product_a_email) { create(:creator_contacting_customers_email_info, installment: regular_post_product_a, purchase:) }
-      let!(:other_product_email) { create(:creator_contacting_customers_email_info, installment: regular_post_product_b, purchase:) }
+    let!(:regular_post_product_a_email) { create(:creator_contacting_customers_email_info, installment: regular_post_product_a, purchase:) }
+    let!(:other_product_email) { create(:creator_contacting_customers_email_info, installment: regular_post_product_b, purchase:) }
 
-      it "returns only sent posts for the purchase's product, excludes other product posts" do
-        sent_posts = described_class.find_sent_posts_for(purchase)
+    it "returns only sent posts for the purchase's product, excludes other product posts" do
+      sent_posts = described_class.find_sent_posts_for(purchase)
 
-        expect(sent_posts).to eq([regular_post_product_a_email])
-        expect(sent_posts).not_to include(other_product_email)
-      end
+      expect(sent_posts).to eq([regular_post_product_a_email])
+      expect(sent_posts).not_to include(other_product_email)
+    end
 
-      it "returns only the latest email per installment when multiple emails exist" do
-        latest_email_regular_post_product_a = create(:creator_contacting_customers_email_info, installment: regular_post_product_a, purchase:, sent_at: 1.day.ago)
-        latest_email_workflow_post_product_a = create(:creator_contacting_customers_email_info, installment: workflow_post_product_a, purchase:, sent_at: 1.day.ago)
+    it "returns only the latest email per installment when multiple emails exist" do
+      latest_email_regular_post_product_a = create(:creator_contacting_customers_email_info, installment: regular_post_product_a, purchase:, sent_at: 1.day.ago)
+      latest_email_workflow_post_product_a = create(:creator_contacting_customers_email_info, installment: workflow_post_product_a, purchase:, sent_at: 1.day.ago)
 
-        sent_posts = described_class.find_sent_posts_for(purchase)
+      sent_posts = described_class.find_sent_posts_for(purchase)
 
-        expect(sent_posts).to eq([latest_email_regular_post_product_a, latest_email_workflow_post_product_a])
-        expect(sent_posts).not_to include(regular_post_product_a_email)
-      end
+      expect(sent_posts).to eq([latest_email_regular_post_product_a, latest_email_workflow_post_product_a])
+      expect(sent_posts).not_to include(regular_post_product_a_email)
     end
 
     context "for bundle purchase" do
@@ -78,24 +77,23 @@ describe CustomersService do
   end
 
   describe ".find_workflow_options_for" do
-    let!(:_follower_workflow_post) { create(:follower_installment, workflow: create(:follower_workflow, seller:, published_at: 1.day.ago), seller:, published_at: Time.current) }
+    let!(:_follower_workflow_post) { create(:follower_installment, published_at: Time.current, workflow: create(:follower_workflow, :published, seller:), seller:) }
     let!(:_deleted_seller_workflow_post) { create(:seller_installment, workflow: create(:seller_workflow, seller:, deleted_at: DateTime.current), seller:, deleted_at: DateTime.current) }
-    let!(:_audience_workflow_post) { create(:audience_installment, workflow: create(:audience_workflow, seller:, published_at: 1.day.ago), seller:, published_at: Time.current) }
+    let!(:audience_workflow_post) { create(:audience_installment, :published, workflow: create(:audience_workflow, :published, seller:), seller:) }
 
     let!(:other_seller) { create(:named_seller, username: "othseller#{SecureRandom.alphanumeric(8).downcase}", email: "other_seller_#{SecureRandom.hex(4)}@example.com") }
-    let!(:other_seller_installment) { create(:seller_installment, workflow: create(:seller_workflow, seller: other_seller, published_at: Time.current), seller: other_seller, published_at: Time.current) }
+    let!(:other_seller_installment) { create(:seller_installment, :published, workflow: create(:seller_workflow, :published, seller: other_seller), seller: other_seller) }
 
     before do
       workflow_post_product_a.workflow.update!(name: "Alpha Workflow")
       seller_workflow.update!(name: "Beta Workflow")
+      audience_workflow_post.workflow.update!(name: "Omega Workflow")
     end
 
-    context "for regular purchase" do
-      it "returns alive and published workflows sorted by name" do
-        workflow_options = described_class.find_workflow_options_for(purchase)
+    it "returns alive and published workflows sorted by name" do
+      workflow_options = described_class.find_workflow_options_for(purchase)
 
-        expect(workflow_options).to eq([workflow_post_product_a.workflow, seller_workflow])
-      end
+      expect(workflow_options).to eq([workflow_post_product_a.workflow, seller_workflow, audience_workflow_post.workflow])
     end
 
     context "for bundle purchase" do
@@ -106,18 +104,18 @@ describe CustomersService do
         workflow_post_product_a_variant.workflow.update!(name: "Delta Workflow")
       end
 
-      let!(:_workflow_installment_product_c) { create(:workflow_installment, workflow: create(:workflow, seller:, link: product_c, published_at: Time.current), seller:, link: product_c, published_at: Time.current,) }
+      let!(:_workflow_installment_product_c) { create(:workflow_installment, :published, workflow: create(:workflow, :published, seller:, link: product_c), seller:, link: product_c) }
 
       it "includes workflows for bundle" do
         workflow_options = described_class.find_workflow_options_for(bundle_purchase)
 
-        expect(workflow_options).to eq([seller_workflow, bundle_workflow])
+        expect(workflow_options).to eq([seller_workflow, bundle_workflow, audience_workflow_post.workflow])
       end
 
       it "includes workflows for bundle purchase product" do
         workflow_options = described_class.find_workflow_options_for(bundle_purchase.product_purchases.find_by(link: product_a))
 
-        expect(workflow_options).to eq([workflow_post_product_a.workflow, seller_workflow, workflow_post_product_a_variant.workflow])
+        expect(workflow_options).to eq([workflow_post_product_a.workflow, seller_workflow, workflow_post_product_a_variant.workflow, audience_workflow_post.workflow])
       end
     end
   end
@@ -259,10 +257,11 @@ describe CustomersService do
 
       expect do
         described_class.deliver_missed_posts_for!(purchase:)
-      end.to change { CreatorContactingCustomersEmailInfo.count }.by(4)
+      end.to change { CreatorContactingCustomersEmailInfo.count }.by(5)
 
-      email_infos = CreatorContactingCustomersEmailInfo.where(purchase:).where("id > ?", initial_count).order(:id).last(4)
+      email_infos = CreatorContactingCustomersEmailInfo.where(purchase:).where("id > ?", initial_count).order(:id).last(5)
       expect(email_infos.map(&:installment_id)).to contain_exactly(
+        audience_post.id,
         seller_post_to_all_customers.id,
         seller_workflow_post_to_all_customers.id,
         seller_post_with_bought_products_filter_product_a_and_c.id,
@@ -300,6 +299,7 @@ describe CustomersService do
 
       expect(PostSendgridApi.mails).to be_empty
       expect(CreatorContactingCustomersEmailInfo.where(purchase:).where(installment: [
+                                                                          audience_post,
                                                                           seller_post_to_all_customers,
                                                                           seller_workflow_post_to_all_customers,
                                                                           seller_post_with_bought_products_filter_product_a_and_c,
@@ -316,6 +316,7 @@ describe CustomersService do
 
       expect(PostSendgridApi.mails).to be_empty
       expect(CreatorContactingCustomersEmailInfo.where(purchase:).where(installment: [
+                                                                          audience_post,
                                                                           seller_post_to_all_customers,
                                                                           seller_workflow_post_to_all_customers,
                                                                           seller_post_with_bought_products_filter_product_a_and_c,
@@ -326,18 +327,19 @@ describe CustomersService do
     it "raises PostNotSentError and aborts batch sending when send_post! raises a StandardError" do
       error_message = "Network error occurred"
       allow(described_class).to receive(:send_post!).and_call_original
-      allow(described_class).to receive(:send_post!).with(post: seller_post_to_all_customers, purchase:).and_raise(StandardError.new(error_message))
+      allow(described_class).to receive(:send_post!).with(post: audience_post, purchase:).and_raise(StandardError.new(error_message))
 
       expect do
         described_class.deliver_missed_posts_for!(purchase:)
       end.to raise_error(CustomersService::PostNotSentError) do |error|
-        expect(error.message).to eq("Missed post #{seller_post_to_all_customers.id} could not be sent. Aborting batch sending for the remaining posts. Original message: #{error_message}")
+        expect(error.message).to eq("Missed post #{audience_post.id} could not be sent. Aborting batch sending for the remaining posts. Original message: #{error_message}")
         expect(error.backtrace).to be_an(Array)
         expect(error.backtrace).not_to be_empty
       end
 
       expect(PostSendgridApi.mails).to be_empty
       expect(CreatorContactingCustomersEmailInfo.where(purchase:).where(installment: [
+                                                                          audience_post,
                                                                           seller_post_to_all_customers,
                                                                           seller_workflow_post_to_all_customers,
                                                                           seller_post_with_bought_products_filter_product_a_and_c,
