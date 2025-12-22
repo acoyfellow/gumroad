@@ -75,7 +75,7 @@ class CustomersService
 
     private
       def validate_email_sending_eligibility_for!(seller)
-        raise SellerNotEligibleError, "You are not eligible to resend this email." unless seller&.eligible_to_send_emails?
+        raise SellerNotEligibleError, "You are not eligible to resend this email." unless seller.eligible_to_send_emails?
       end
 
       def validate_customer_can_be_contacted_via_email_for!(purchase)
