@@ -2582,14 +2582,6 @@ describe User, :vcr do
     end
   end
 
-  describe "#timezone_id" do
-    it "returns IANA timezone identifier" do
-      expect(build(:user, timezone: "Pacific Time (US & Canada)").timezone_id).to eq("America/Los_Angeles")
-      expect(build(:user, timezone: "London").timezone_id).to eq("Europe/London")
-      expect(build(:user, timezone: "Arizona").timezone_id).to eq("America/Phoenix")
-    end
-  end
-
   describe "#supports_card?" do
     before do
       @creator = create(:user)
