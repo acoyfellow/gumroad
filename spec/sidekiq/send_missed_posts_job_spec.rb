@@ -12,6 +12,11 @@ describe SendMissedPostsJob do
   describe "#perform" do
     it "finds purchase by external ID and calls service" do
       expect(CustomersService).to receive(:deliver_missed_posts_for!).with(purchase:, workflow_id: nil)
+      expect(CustomersChannel).to receive(:broadcast_missed_posts_message!).with(
+        purchase.external_id,
+        nil,
+        CustomersChannel::MISSED_POSTS_JOB_COMPLETE_TYPE
+      )
 
       described_class.new.perform(purchase.external_id)
     end
