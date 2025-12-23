@@ -108,7 +108,7 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
         expect(page).to have_table_row({ "Subject" => "Email 3 (sent)", "Emailed" => "--", "Opened" => "--", "Clicks" => "0", "Views" => "1" })
       end
 
-      it "loads more emails" do
+      it "loads more emails with infinite scroll" do
         stub_const("PaginatedInstallmentsPresenter::PER_PAGE", 2)
 
         visit "#{emails_path}/published"
@@ -117,8 +117,6 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
         expect(page).to have_table_row({ "Subject" => "Email 1 (sent)" })
         expect(page).to have_table_row({ "Subject" => "Email 3 (sent)" })
 
-        expect(page).to_not have_button("Load more")
-
         create(:installment, name: "Hello world!", seller:, link: product, published_at: 10.days.ago)
         refresh
 
@@ -126,14 +124,12 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
         expect(page).to have_table_row({ "Subject" => "Email 3 (sent)" })
         expect(page).to_not have_table_row({ "Subject" => "Hello world!" })
 
-        click_on "Load more"
+        first("main").scroll_to :bottom
         wait_for_ajax
 
         expect(page).to have_table_row({ "Subject" => "Email 1 (sent)" })
         expect(page).to have_table_row({ "Subject" => "Email 3 (sent)" })
         expect(page).to have_table_row({ "Subject" => "Hello world!" })
-
-        expect(page).to_not have_button("Load more")
       end
 
       it "deletes an email" do
@@ -213,7 +209,7 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
         expect(page).to_not have_table_row({ "Subject" => "Email 6 (scheduled)" })
       end
 
-      it "paginates emails ordered by recently updated first" do
+      it "paginates emails ordered by recently updated first with infinite scroll" do
         stub_const("PaginatedInstallmentsPresenter::PER_PAGE", 2)
 
         visit "#{emails_path}/drafts"
@@ -222,8 +218,6 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
         expect(page).to have_table_row({ "Subject" => "Email 2 (draft)" })
         expect(page).to have_table_row({ "Subject" => "Email 4 (draft)" })
 
-        expect(page).to_not have_button("Load more")
-
         create(:installment, name: "Hello world!", seller:, link: product)
         refresh
 
@@ -231,14 +225,12 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
         expect(page).to have_table_row({ "Subject" => "Email 2 (draft)" })
         expect(page).to_not have_table_row({ "Subject" => "Email 4 (draft)" })
 
-        click_on "Load more"
+        first("main").scroll_to :bottom
         wait_for_ajax
 
         expect(page).to have_table_row({ "Subject" => "Hello world!" })
         expect(page).to have_table_row({ "Subject" => "Email 2 (draft)" })
         expect(page).to have_table_row({ "Subject" => "Email 4 (draft)" })
-
-        expect(page).to_not have_button("Load more")
       end
 
       it "deletes an email" do
@@ -264,9 +256,7 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
     end
 
     describe "search" do
-      it "displays filtered and paginated emails for the search query" do
-        stub_const("PaginatedInstallmentsPresenter::PER_PAGE", 1)
-
+      it "displays filtered emails for the search query" do
         create(:installment, name: "Hello world", seller:, link: product, published_at: 10.days.ago) # does not match 'name' or 'message'
         create(:installment, name: "Thank you!", message: "Thank you email", seller:, link: product, published_at: 1.month.ago) # matches the 'message'
         create(:installment, name: "Email 7 (sent)", published_at: 10.days.ago) # another seller's email, so won't match
@@ -279,46 +269,18 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
         end
         wait_for_ajax
 
-        expect(page).to have_table_row({ "Subject" => "Thank you!" })
-
-        expect(page).to_not have_table_row({ "Subject" => "Email 1 (sent)" })
-        expect(page).to_not have_table_row({ "Subject" => "Email 2 (draft)" })
-        expect(page).to_not have_table_row({ "Subject" => "Email 3 (sent)" })
-        expect(page).to_not have_table_row({ "Subject" => "Email 4 (draft)" })
-        expect(page).to_not have_table_row({ "Subject" => "Email 5 (scheduled)" })
-        expect(page).to_not have_table_row({ "Subject" => "Email 6 (scheduled)" })
-        expect(page).to_not have_table_row({ "Subject" => "Email 7 (sent)" })
-        expect(page).to_not have_table_row({ "Subject" => "Hello world" })
-
-        click_on "Load more"
-        wait_for_ajax
-
-        expect(page).to have_table_row({ "Subject" => "Thank you!" })
-        expect(page).to have_table_row({ "Subject" => "Email 3 (sent)" })
-
-        expect(page).to_not have_table_row({ "Subject" => "Email 1 (sent)" })
-        expect(page).to_not have_table_row({ "Subject" => "Email 2 (draft)" })
-        expect(page).to_not have_table_row({ "Subject" => "Email 4 (draft)" })
-        expect(page).to_not have_table_row({ "Subject" => "Email 5 (scheduled)" })
-        expect(page).to_not have_table_row({ "Subject" => "Email 6 (scheduled)" })
-        expect(page).to_not have_table_row({ "Subject" => "Email 7 (sent)" })
-        expect(page).to_not have_table_row({ "Subject" => "Hello world" })
-
-        click_on "Load more"
-        wait_for_ajax
-
+        # All 3 matching emails should be visible (Email 1, Email 3, Thank you! all contain "email" in name or message)
         expect(page).to have_table_row({ "Subject" => "Thank you!" })
         expect(page).to have_table_row({ "Subject" => "Email 3 (sent)" })
         expect(page).to have_table_row({ "Subject" => "Email 1 (sent)" })
 
+        # These should not appear
         expect(page).to_not have_table_row({ "Subject" => "Email 2 (draft)" })
         expect(page).to_not have_table_row({ "Subject" => "Email 4 (draft)" })
         expect(page).to_not have_table_row({ "Subject" => "Email 5 (scheduled)" })
         expect(page).to_not have_table_row({ "Subject" => "Email 6 (scheduled)" })
         expect(page).to_not have_table_row({ "Subject" => "Email 7 (sent)" })
         expect(page).to_not have_table_row({ "Subject" => "Hello world" })
-
-        expect(page).to_not have_button("Load more")
       end
 
       it "searches emails for the corresponding tab" do

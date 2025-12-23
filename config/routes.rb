@@ -927,7 +927,7 @@ Rails.application.routes.draw do
           resources :incomings, only: [:index]
         end
 
-        resources :installments, only: [:index, :new, :edit, :create, :update] do
+        resources :installments, only: [:new, :edit, :create, :update] do
           member do
             resource :audience_count, only: [:show], controller: "installments/audience_counts", as: :installment_audience_count
             resource :preview_email, only: [:create], controller: "installments/preview_emails", as: :installment_preview_email

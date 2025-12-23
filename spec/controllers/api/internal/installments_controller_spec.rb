@@ -14,61 +14,6 @@ describe Api::Internal::InstallmentsController do
     allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
   end
 
-  describe "GET index" do
-    let!(:published_installment) { create(:installment, seller:, published_at: 1.day.ago) }
-    let(:scheduled_installment) { create(:installment, seller:, ready_to_publish: true) }
-    let!(:scheduled_installment_rule) { create(:installment_rule, installment: scheduled_installment, delayed_delivery_time: 1.day) }
-    let!(:draft_installment) { create(:installment, seller:) }
-
-    it_behaves_like "authentication required for action", :get, :index
-
-    it_behaves_like "authorize called for action", :get, :index do
-      let(:record) { Installment }
-    end
-
-    it "returns seller's paginated published installments" do
-      get :index, params: { page: 1, type: "published" }, format: :json
-
-      expect(response).to be_successful
-      expect(response.parsed_body[:pagination]).to eq({ page: 1, count: 1, next: nil }.as_json)
-      expect(response.parsed_body[:installments]).to eq([InstallmentPresenter.new(seller:, installment: published_installment).props.as_json])
-    end
-
-    it "returns seller's paginated scheduled installments" do
-      get :index, params: { page: 1, type: "scheduled" }, format: :json
-
-      expect(response).to be_successful
-      expect(response.parsed_body[:pagination]).to eq({ page: 1, count: 1, next: nil }.as_json)
-      expect(response.parsed_body[:installments]).to eq([InstallmentPresenter.new(seller:, installment: scheduled_installment).props.as_json])
-    end
-
-    it "returns seller's paginated draft installments" do
-      get :index, params: { page: 1, type: "draft" }, format: :json
-
-      expect(response).to be_successful
-      expect(response.parsed_body[:pagination]).to eq({ page: 1, count: 1, next: nil }.as_json)
-      expect(response.parsed_body[:installments]).to eq([InstallmentPresenter.new(seller:, installment: draft_installment).props.as_json])
-    end
-
-    it "returns seller's paginated installments for the specified query" do
-      another_installment = create(:installment, seller:, name: "Don't miss!", published_at: 1.day.ago)
-
-      index_model_records(Installment)
-
-      get :index, params: { page: 1, type: "published", query: "miss" }, format: :json
-
-      expect(response).to be_successful
-      expect(response.parsed_body[:pagination]).to eq({ page: 1, count: 1, next: nil }.as_json)
-      expect(response.parsed_body[:installments]).to eq([InstallmentPresenter.new(seller:, installment: another_installment).props.as_json])
-    end
-
-    it "raises an error for invalid type" do
-      expect do
-        get :index, params: { page: 1, type: "invalid" }, format: :json
-      end.to raise_error(ArgumentError, "Invalid type")
-    end
-  end
-
   describe "GET new" do
     it_behaves_like "authentication required for action", :get, :new
 
