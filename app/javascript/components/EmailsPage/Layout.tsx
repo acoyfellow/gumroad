@@ -99,7 +99,6 @@ export const EmailsLayout = ({ selectedTab, children, hasPosts, query, onQueryCh
   );
 };
 
-// Auto-detect current path for 'from' query param so the form can redirect back after cancel
 export const NewEmailButton = ({ copyFrom }: { copyFrom?: string } = {}) => {
   const params = new URLSearchParams();
   if (copyFrom) params.set("copy_from", copyFrom);
@@ -114,7 +113,9 @@ export const NewEmailButton = ({ copyFrom }: { copyFrom?: string } = {}) => {
 };
 
 export const EditEmailButton = ({ id }: { id: string }) => {
-  const href = `/emails/${id}/edit?from=${encodeURIComponent(window.location.pathname)}`;
+  const params = new URLSearchParams();
+  params.set("from", window.location.pathname);
+  const href = `/emails/${id}/edit?${params.toString()}`;
   return (
     <a className="button" href={href}>
       Edit

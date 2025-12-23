@@ -607,7 +607,6 @@ export const EmailForm = () => {
                 : "Email created!",
           "success",
         );
-        // Preserve the 'from' query param in the URL so cancel navigation works correctly
         const fromParam = searchParams.get("from");
         const editUrl = fromParam
           ? `${editEmailPath(response.installment_id)}?from=${encodeURIComponent(fromParam)}`
