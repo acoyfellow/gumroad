@@ -114,7 +114,7 @@ export default function AffiliatesEdit() {
       return;
     }
 
-    patch(Routes.affiliate_path(props.affiliate.id), {
+    patch(cast<string>(Routes.affiliate_path(props.affiliate.id)), {
       onError: (errors: Record<string, string | string[]>) => {
         const message = errors.base
           ? Array.isArray(errors.base)

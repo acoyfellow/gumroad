@@ -13,7 +13,7 @@ class AffiliateRequests::OnboardingFormController < Sellers::BaseController
     if disabling_all_products_while_having_pending_requests?(user_product_params)
       message = "You need to have at least one product enabled since there are some pending affiliate requests"
       if request.inertia?
-        return redirect_back(fallback_location: root_path, alert: message)
+        return redirect_to onboarding_affiliates_path, alert: message
       else
         return render json: { success: false, error: message }
       end
@@ -24,20 +24,20 @@ class AffiliateRequests::OnboardingFormController < Sellers::BaseController
     current_seller.update!(disable_global_affiliate: permitted_params[:disable_global_affiliate])
 
     if request.inertia?
-      redirect_back(fallback_location: root_path, notice: "Changes saved!")
+      redirect_to onboarding_affiliates_path, notice: "Changes saved!"
     else
       render json: { success: true }
     end
   rescue ActiveRecord::RecordInvalid => e
     if request.inertia?
-      redirect_back(fallback_location: root_path, alert: e.message)
+      redirect_to onboarding_affiliates_path, alert: e.message
     else
       render json: { success: false, error: e.message }
     end
   rescue => e
     logger.error e.full_message
     if request.inertia?
-      redirect_back(fallback_location: root_path, alert: "Something went wrong")
+      redirect_to onboarding_affiliates_path, alert: "Something went wrong"
     else
       render json: { success: false }
     end
