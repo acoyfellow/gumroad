@@ -15,9 +15,9 @@ class CollaboratorsPresenter
     }
   end
 
-  def incomings_index_props
+  def incomings_index_props(incoming_collaborators)
     {
-      collaborators: incoming_collaborators_props,
+      collaborators: incoming_collaborators_props(incoming_collaborators),
       collaborators_disabled_reason:,
     }
   end
@@ -29,8 +29,8 @@ class CollaboratorsPresenter
       seller.has_brazilian_stripe_connect_account? ? "Collaborators with Brazilian Stripe accounts are not supported." : nil
     end
 
-    def incoming_collaborators_props
-      scoped_incoming_collaborators.map do |collaborator|
+    def incoming_collaborators_props(incoming_collaborators)
+      incoming_collaborators.map do |collaborator|
         {
           id: collaborator.external_id,
           seller_email: collaborator.seller.email,
@@ -51,16 +51,5 @@ class CollaboratorsPresenter
           end
         }
       end
-    end
-
-    def scoped_incoming_collaborators
-      Collaborator
-        .alive
-        .where(affiliate_user: seller)
-        .includes(
-          :collaborator_invitation,
-          :seller,
-          product_affiliates: :product
-        )
     end
 end

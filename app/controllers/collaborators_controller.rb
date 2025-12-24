@@ -17,9 +17,7 @@ class CollaboratorsController < Sellers::BaseController
     authorize Collaborator
 
     collaborator_presenter = CollaboratorPresenter.new(seller: current_seller)
-    render inertia: "Collaborators/New", props: {
-      context: -> { collaborator_presenter.new_collaborator_props }
-    }
+    render inertia: "Collaborators/New", props: collaborator_presenter.new_collaborator_props
   end
 
   def create
@@ -36,9 +34,7 @@ class CollaboratorsController < Sellers::BaseController
 
   def edit
     collaborator_presenter = CollaboratorPresenter.new(seller: current_seller, collaborator: @collaborator)
-    render inertia: "Collaborators/Edit", props: {
-      collaborator: -> { collaborator_presenter.edit_collaborator_props },
-    }
+    render inertia: "Collaborators/Edit", props: collaborator_presenter.edit_collaborator_props
   end
 
   def update
