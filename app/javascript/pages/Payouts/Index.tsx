@@ -11,18 +11,6 @@ import { Button, NavigationButton } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { Modal } from "$app/components/Modal";
-import { ExportPayoutsPopover } from "$app/components/Payouts/ExportPayoutsPopover";
-import { showAlert } from "$app/components/server-components/Alert";
-import { PageHeader } from "$app/components/ui/PageHeader";
-import { Pill } from "$app/components/ui/Pill";
-import Placeholder from "$app/components/ui/Placeholder";
-import { Tabs, Tab } from "$app/components/ui/Tabs";
-import useRouteLoading from "$app/components/useRouteLoading";
-import { useUserAgentInfo } from "$app/components/UserAgent";
-import { WithTooltip } from "$app/components/WithTooltip";
-
-import placeholder from "$assets/images/placeholders/payouts.png";
-
 import {
   type PayoutsProps,
   type CurrentPayoutsDataAndPaymentMethodWithUserPayable,
@@ -30,6 +18,17 @@ import {
   type BankAccount,
   type PaypalAccount,
 } from "$app/components/Payouts";
+import { ExportPayoutsPopover } from "$app/components/Payouts/ExportPayoutsPopover";
+import { showAlert } from "$app/components/server-components/Alert";
+import { PageHeader } from "$app/components/ui/PageHeader";
+import { Pill } from "$app/components/ui/Pill";
+import Placeholder from "$app/components/ui/Placeholder";
+import { Tabs, Tab } from "$app/components/ui/Tabs";
+import { useUserAgentInfo } from "$app/components/UserAgent";
+import useRouteLoading from "$app/components/useRouteLoading";
+import { WithTooltip } from "$app/components/WithTooltip";
+
+import placeholder from "$assets/images/placeholders/payouts.png";
 
 const INSTANT_PAYOUT_FEE_PERCENTAGE = 0.03;
 const MINIMUM_INSTANT_PAYOUT_AMOUNT_CENTS = 1000;
@@ -259,29 +258,35 @@ const Period = ({ payoutPeriodData }: { payoutPeriodData: PayoutPeriodData }) =>
             const isCurrentPeriod = payoutPeriodData.status === "payable";
             switch (payoutPeriodData.payout_method_type) {
               case "stripe_connect":
-                return (
-                  <PeriodStripeConnectAccount
-                    isCurrentPeriod={isCurrentPeriod}
-                    stripeConnectAccount={payoutPeriodData as StripeConnectAccount & { payout_currency: string }}
-                  />
-                );
+                if ("stripe_connect_account_id" in payoutPeriodData) {
+                  return (
+                    <PeriodStripeConnectAccount
+                      isCurrentPeriod={isCurrentPeriod}
+                      stripeConnectAccount={{
+                        ...payoutPeriodData,
+                        payout_method_type: "stripe_connect",
+                        stripe_connect_account_id: payoutPeriodData.stripe_connect_account_id,
+                        payout_currency: payoutPeriodData.payout_currency,
+                      }}
+                    />
+                  );
+                }
+                return null;
               case "bank":
                 return (
                   <PeriodBankAccount
                     isCurrentPeriod={isCurrentPeriod}
-                    bankAccount={
-                      payoutPeriodData as BankAccount & {
-                        arrival_date?: string | null;
-                        status?: string;
-                        payout_currency: string;
-                      }
-                    }
+                    bankAccount={{
+                      ...payoutPeriodData,
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                      arrival_date: payoutPeriodData.arrival_date,
+                      status: payoutPeriodData.status,
+                      payout_currency: payoutPeriodData.payout_currency,
+                    }}
                   />
                 );
               case "paypal":
-                return (
-                  <PeriodPaypalAccount isCurrentPeriod={isCurrentPeriod} paypalAccount={payoutPeriodData as PaypalAccount} />
-                );
+                return <PeriodPaypalAccount isCurrentPeriod={isCurrentPeriod} paypalAccount={payoutPeriodData} />;
               case "legacy-na":
               case "none":
                 return <PeriodNoAccount />;
@@ -373,15 +378,15 @@ const PeriodBankAccount = ({
       {bankAccount.bank_account_type === "CANADIAN" ? (
         <>
           <span>
-            Transit number: <span>{(bankAccount as { transit_number: string }).transit_number}</span>
+            Transit number: <span>{"transit_number" in bankAccount ? bankAccount.transit_number : ""}</span>
           </span>{" "}
           <span>
-            Institution number: <span>{(bankAccount as { institution_number: string }).institution_number}</span>
+            Institution number: <span>{"institution_number" in bankAccount ? bankAccount.institution_number : ""}</span>
           </span>
         </>
       ) : bankAccount.bank_account_type === "CARD" ? (
         <span>
-          Card: <span>{(bankAccount as { routing_number: string }).routing_number}</span>
+          Card: <span>{"routing_number" in bankAccount ? bankAccount.routing_number : ""}</span>
         </span>
       ) : "routing_number" in bankAccount ? (
         <span>
@@ -430,11 +435,7 @@ function PayoutLineItem({
 }
 
 export default function PayoutsIndex() {
-  const {
-    payout_presenter,
-    past_payout_period_data,
-    pagination,
-  } = usePage<{
+  const { payout_presenter, past_payout_period_data, pagination } = usePage<{
     payout_presenter: PayoutsProps;
     past_payout_period_data: PayoutsProps["past_payout_period_data"];
     pagination: PayoutsProps["pagination"];
@@ -719,7 +720,7 @@ export default function PayoutsIndex() {
                   <PeriodEmpty minimumPayoutAmountCents={next_payout_period_data.minimum_payout_amount_cents} />
                 )
               ) : (
-                <Period payoutPeriodData={next_payout_period_data as PayoutPeriodData} />
+                <Period payoutPeriodData={next_payout_period_data} />
               )}
             </section>
           )
