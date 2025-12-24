@@ -95,7 +95,7 @@ class EmailsController < Sellers::BaseController
 
   def destroy
     authorize @installment
-    @installment.destroy
+    @installment.update(deleted_at: Time.current)
     redirect_back_or_to emails_path, notice: "Email deleted!", status: :see_other
   end
 
@@ -117,11 +117,26 @@ class EmailsController < Sellers::BaseController
         preview_email_recipient: impersonating_user || logged_in_user
       )
 
+      is_new_record = @installment.nil?
+
       if service.process
-        if params[:save_action_name] == "save_and_preview_post"
-          redirect_to edit_email_path(service.installment.external_id, preview_post: true), notice: "Email saved successfully.", status: :see_other
+        notice_message = case params[:save_action_name]
+        when "save_and_preview_post"
+          "Preview link opened."
+        when "save_and_preview_email"
+          "A preview has been sent to your email."
+        when "save_and_publish"
+          service.installment.send_emails? ? "Email successfully sent!" : "Email successfully published!"
+        when "save_and_schedule"
+          "Email successfully scheduled!"
         else
-          redirect_to emails_path, notice: "Email saved successfully.", status: :see_other
+          is_new_record ? "Email created!" : "Changes saved!"
+        end
+
+        if params[:save_action_name] == "save_and_preview_post"
+          redirect_to edit_email_path(service.installment.external_id, preview_post: true), notice: notice_message, status: :see_other
+        else
+          redirect_to emails_path, notice: notice_message, status: :see_other
         end
       elsif @installment
         redirect_to edit_email_path(@installment.external_id), alert: service.error

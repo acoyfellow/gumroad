@@ -45,7 +45,7 @@ class PaginatedInstallmentsPresenter
     {
       installments: installments.map { InstallmentPresenter.new(seller:, installment: _1).props },
       pagination: pagiation_metadata,
-      has_posts: -> { current_seller.installments.alive.not_workflow_installment.exists? },
+      has_posts: current_seller.installments.alive.not_workflow_installment.exists?,
     }
   end
 

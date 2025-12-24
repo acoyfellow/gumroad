@@ -361,7 +361,7 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
                     type: "link",
                     attrs: {
                       href: Routes.short_link_url(permalink, {
-                        host: currentSeller.subdomain ?? appDomain,
+                        host: `${window.location.protocol}//${currentSeller.subdomain || appDomain}`,
                       }),
                     },
                   },
@@ -568,6 +568,7 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
   const [isSaving, setIsSaving] = React.useState(false);
 
   const save = asyncVoid(async (action: SaveAction = "save") => {
+    await Promise.resolve();
     if (!validate(action)) return;
 
     const payload = {
