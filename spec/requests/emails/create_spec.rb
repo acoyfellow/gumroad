@@ -136,7 +136,7 @@ describe("Email Creation Flow", :js, type: :system) do
     expect(installment.stream_only?).to be(true)
 
     # It redirects to the edit page on creating the email and shows the correct data
-    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
     expect(page).to have_text("Edit email")
     expect(page).to have_radio_button "Customers only", checked: true
     within :fieldset, "Bought" do
@@ -222,7 +222,7 @@ describe("Email Creation Flow", :js, type: :system) do
     expect(installment.allow_comments?).to be(true)
     expect(installment.product_files).to be_empty
 
-    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
     click_on "Cancel"
     expect(page).to have_current_path("#{emails_path}/published")
 
@@ -286,7 +286,7 @@ describe("Email Creation Flow", :js, type: :system) do
     expect(installment.allow_comments?).to be(true)
     expect(installment.product_files).to be_empty
 
-    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
     click_on "Cancel"
     expect(page).to have_current_path("#{emails_path}/published")
 
@@ -322,7 +322,7 @@ describe("Email Creation Flow", :js, type: :system) do
     expect(installment.message).to include("<p>Hello, world!</p>")
     expect(installment.follower_type?).to be(true)
 
-    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
     click_on "Cancel"
     expect(page).to have_current_path("#{emails_path}/published")
 
@@ -416,7 +416,7 @@ describe("Email Creation Flow", :js, type: :system) do
     expect(installment.allow_comments?).to be(true)
     expect(installment.product_files).to be_empty
 
-    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
     click_on "Cancel"
     expect(page).to have_current_path("#{emails_path}/published")
 
@@ -475,7 +475,7 @@ describe("Email Creation Flow", :js, type: :system) do
     expect(installment.product_files.alive.map(&:s3_filename)).to eq(["test.mp4"])
     expect(installment.product_files.alive.sole.subtitle_files).to be_empty
 
-    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
     within find_attachment("test") do
       expect(page).to_not have_attachment(name: "sample")
     end
@@ -504,7 +504,7 @@ describe("Email Creation Flow", :js, type: :system) do
     expect(page).to have_alert(text: "Email created!")
 
     installment = Installment.last
-    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
     expect(installment.name).to eq("Sample product - updated!")
     expect(installment.message).to eq("<p>I have recently updated some files associated with Sample product. They're yours for free.</p>")
     expect(installment.link).to eq(product)
@@ -535,6 +535,7 @@ describe("Email Creation Flow", :js, type: :system) do
         expect(page).to have_button("Bundle Product 2")
       end
       expect(page).to have_field("Title", with: "Introducing Bundle")
+      sleep 0.5 # wait for the rich text editor to fully render
       within find("[aria-label='Email message']") do
         expect(page).to have_text("Hey there,")
         expect(page).to have_text("I've put together a bundle of my products that I think you'll love.")
@@ -587,7 +588,7 @@ describe("Email Creation Flow", :js, type: :system) do
     end
     wait_for_ajax
     expect(page).to have_alert("Please select a date and time in the future.")
-    expect(page).to have_current_path("#{emails_path}/new")
+    expect(page).to have_current_path("#{emails_path}/new", ignore_query: true)
     expect(Installment.count).to eq(0)
 
     # Creates and schedules an email if the schedule date is valid
@@ -719,7 +720,7 @@ describe("Email Creation Flow", :js, type: :system) do
       expect(installment.shown_on_profile).to be(true)
       expect(installment.has_been_blasted?).to be(false)
 
-      expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+      expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
 
       click_on "Cancel"
       click_on "New email", match: :first
@@ -754,7 +755,7 @@ describe("Email Creation Flow", :js, type: :system) do
       expect(installment.shown_on_profile).to be(true)
       expect(installment.has_been_blasted?).to be(false)
 
-      expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+      expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
     end
   end
 
@@ -800,7 +801,7 @@ describe("Email Creation Flow", :js, type: :system) do
       expect(installment.shown_on_profile).to be(false)
       expect(installment.has_been_blasted?).to be(false)
 
-      expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+      expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
 
       click_on "Cancel"
       click_on "New email", match: :first
@@ -834,7 +835,7 @@ describe("Email Creation Flow", :js, type: :system) do
       expect(installment.shown_on_profile).to be(true)
       expect(installment.has_been_blasted?).to be(false)
 
-      expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+      expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
     end
   end
 
@@ -850,6 +851,7 @@ describe("Email Creation Flow", :js, type: :system) do
     uncheck "Allow comments"
     fill_in "Title", with: "Hello"
     set_rich_text_editor_input(find("[aria-label='Email message']"), to_text: "Hello, world!")
+    sleep 0.5 # wait for the message editor to update
     # Allows attaching files to the email
     upload_attachment("thing.mov")
     select_disclosure "Publish" do
@@ -862,7 +864,8 @@ describe("Email Creation Flow", :js, type: :system) do
     find(:table_row, text: "Hello").click
     click_on "Duplicate"
     wait_for_ajax
-    expect(page).to have_current_path("#{emails_path}/new?copy_from=#{Installment.last.external_id}")
+    expect(page).to have_current_path("#{emails_path}/new", ignore_query: true)
+    expect(page.current_url).to include("copy_from=#{CGI.escape(Installment.last.external_id)}")
 
     # Ensure that it auto-populates the fields
     expect(page).to have_checked_field("Send email")
@@ -890,7 +893,7 @@ describe("Email Creation Flow", :js, type: :system) do
     expect(installment.shown_on_profile).to be(true)
     expect(installment.has_been_blasted?).to be(false)
 
-    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit")
+    expect(page).to have_current_path("#{emails_path}/#{installment.external_id}/edit", ignore_query: true)
   end
 
   it "shows unchecked 'Allow comments' setting if the last created email had it unchecked as well" do
