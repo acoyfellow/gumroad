@@ -9,7 +9,13 @@ import { assertDefined } from "$app/utils/assert";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { EmptyStatePlaceholder } from "$app/components/EmailsPage/EmptyStatePlaceholder";
 import { EmailsLayout } from "$app/components/EmailsPage/Layout";
-import { DeleteEmailModal, EmailSheetActions, formatAudienceCount, LoadMoreButton, useAudienceCounts } from "$app/components/EmailsPage/shared";
+import {
+  DeleteEmailModal,
+  EmailSheetActions,
+  formatAudienceCount,
+  LoadMoreButton,
+  useAudienceCounts,
+} from "$app/components/EmailsPage/shared";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";

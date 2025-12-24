@@ -130,4 +130,3 @@ export const LoadMoreButton = ({ isLoading, onClick }: LoadMoreButtonProps) => (
     {isLoading ? "Loading..." : "Load more"}
   </Button>
 );
-

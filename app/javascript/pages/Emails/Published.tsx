@@ -6,12 +6,10 @@ import { Pagination, PublishedInstallment } from "$app/data/installments";
 import { assertDefined } from "$app/utils/assert";
 import { formatStatNumber } from "$app/utils/formatStatNumber";
 
-
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { EmptyStatePlaceholder } from "$app/components/EmailsPage/EmptyStatePlaceholder";
 import { EmailsLayout } from "$app/components/EmailsPage/Layout";
 import { DeleteEmailModal, EmailSheetActions, LoadMoreButton } from "$app/components/EmailsPage/shared";
-
 import { Icon } from "$app/components/Icons";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";

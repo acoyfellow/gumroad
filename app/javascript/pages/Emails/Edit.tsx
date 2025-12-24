@@ -3,13 +3,12 @@ import React from "react";
 import { cast } from "ts-safe-cast";
 
 import { Installment, InstallmentFormContext } from "$app/data/installments";
+
 import { EmailForm } from "$app/components/EmailsPage/EmailForm";
 import { EmailsLayout } from "$app/components/EmailsPage/Layout";
 
 export default function EmailsEdit() {
-  const { installment, context } = cast<{ installment: Installment; context: InstallmentFormContext }>(
-    usePage().props,
-  );
+  const { installment, context } = cast<{ installment: Installment; context: InstallmentFormContext }>(usePage().props);
 
   return (
     <EmailsLayout selectedTab="drafts" hideNewButton>

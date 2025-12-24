@@ -50,7 +50,12 @@ export const MarketingEmailStatus = () => {
             All customers
           </label>
         </fieldset>
-        <NavigationButton color="primary" href={Routes.new_email_path(queryParams)} target="_blank" rel="noopener noreferrer">
+        <NavigationButton
+          color="primary"
+          href={Routes.new_email_path(queryParams)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Draft and send
         </NavigationButton>
       </div>

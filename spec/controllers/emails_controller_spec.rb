@@ -234,9 +234,9 @@ describe EmailsController, type: :controller, inertia: true do
     end
 
     it "destroys the installment" do
-      expect {
+      expect do
         delete :destroy, params: { id: installment.external_id }
-      }.to change(Installment, :count).by(-1)
+      end.to change(Installment, :count).by(-1)
     end
 
     it "redirects to emails path with success notice" do

@@ -121,16 +121,16 @@ class EmailsController < Sellers::BaseController
 
       if service.process
         notice_message = case params[:save_action_name]
-        when "save_and_preview_post"
-          "Preview link opened."
-        when "save_and_preview_email"
-          "A preview has been sent to your email."
-        when "save_and_publish"
-          service.installment.send_emails? ? "Email successfully sent!" : "Email successfully published!"
-        when "save_and_schedule"
-          "Email successfully scheduled!"
-        else
-          is_new_record ? "Email created!" : "Changes saved!"
+                         when "save_and_preview_post"
+                           "Preview link opened."
+                         when "save_and_preview_email"
+                           "A preview has been sent to your email."
+                         when "save_and_publish"
+                           service.installment.send_emails? ? "Email successfully sent!" : "Email successfully published!"
+                         when "save_and_schedule"
+                           "Email successfully scheduled!"
+                         else
+                           is_new_record ? "Email created!" : "Changes saved!"
         end
 
         if params[:save_action_name] == "save_and_preview_post"
