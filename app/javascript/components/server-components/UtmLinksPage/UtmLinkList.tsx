@@ -13,7 +13,7 @@ import {
 import { asyncVoid } from "$app/utils/promise";
 import { assertResponseError } from "$app/utils/request";
 
-import { AnalyticsLayout } from "$app/components/Analytics/Layout";
+import { AnalyticsLayout } from "$app/components/Analytics/AnalyticsLayout";
 import { Button, NavigationButton } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { Icon } from "$app/components/Icons";
