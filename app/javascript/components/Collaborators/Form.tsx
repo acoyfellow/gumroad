@@ -58,7 +58,7 @@ const CollaboratorForm = ({ formData }: { formData: CollaboratorFormData }) => {
     return !product.has_another_collaborator && product.published;
   };
 
-  const { data, setData, post, patch, processing, errors, setError, transform } = useForm<{
+  const form = useForm<{
     email: string;
     apply_to_all_products: boolean;
     percent_commission: number | null;
@@ -70,26 +70,29 @@ const CollaboratorForm = ({ formData }: { formData: CollaboratorFormData }) => {
     apply_to_all_products: initialApplyToAllProducts,
     percent_commission: initialDefaultPercentCommission,
     dont_show_as_co_creator: initialDontShowAsCoCreator,
-    products: formData.products.map((product) =>
-      isEditing
-        ? {
-            ...product,
-            percent_commission: product.percent_commission || initialDefaultPercentCommission,
-            dont_show_as_co_creator: initialApplyToAllProducts
-              ? initialDontShowAsCoCreator
-              : product.dont_show_as_co_creator,
-            has_error: false,
-          }
-        : {
-            ...product,
-            enabled: shouldEnableProduct(product),
-            percent_commission: initialDefaultPercentCommission,
-            has_error: false,
-            dont_show_as_co_creator: false,
-          },
-    ) as CollaboratorProduct[],
+    products: formData.products.map((product): CollaboratorProduct => {
+      if (isEditing) {
+        return {
+          ...product,
+          percent_commission: product.percent_commission || initialDefaultPercentCommission,
+          dont_show_as_co_creator: initialApplyToAllProducts
+            ? initialDontShowAsCoCreator
+            : product.dont_show_as_co_creator,
+          has_error: false,
+        };
+      }
+      return {
+        ...product,
+        enabled: shouldEnableProduct(product),
+        percent_commission: initialDefaultPercentCommission,
+        has_error: false,
+        dont_show_as_co_creator: false,
+      };
+    }),
     default_commission_has_error: false,
   });
+
+  const { data, setData, processing, errors } = form;
 
   const productsWithAffiliates = data.products.filter((product) => product.enabled && product.has_affiliates);
   const listedProductsWithAffiliatesCount =
@@ -145,7 +148,7 @@ const CollaboratorForm = ({ formData }: { formData: CollaboratorFormData }) => {
       }
 
       if (emailError) {
-        setError("email", emailError);
+        form.setError("email", emailError);
         showAlert(emailError, "error");
         emailInputRef.current?.focus();
         return;
@@ -163,9 +166,9 @@ const CollaboratorForm = ({ formData }: { formData: CollaboratorFormData }) => {
       return;
     }
 
-    transform((currentData) => {
+    form.transform((currentData) => {
       const enabledProducts = currentData.products.flatMap(
-        ({ id, enabled, percent_commission, dont_show_as_co_creator }) =>
+        ({ id, enabled, percent_commission, dont_show_as_co_creator }: CollaboratorProduct) =>
           enabled ? { id, percent_commission, dont_show_as_co_creator } : [],
       );
 
@@ -184,18 +187,16 @@ const CollaboratorForm = ({ formData }: { formData: CollaboratorFormData }) => {
       onSuccess: () => {
         showAlert(isEditing ? "Changes saved!" : "Collaborator added!", "success");
       },
-      onError: (errs: any) => {
-        showAlert(
-          errs.base?.[0] || (isEditing ? "Failed to update collaborator" : "Failed to add collaborator"),
-          "error",
-        );
+      onError: (errs: Record<string, string>) => {
+        const errorMessage = errs.base || (isEditing ? "Failed to update collaborator" : "Failed to add collaborator");
+        showAlert(errorMessage, "error");
       },
     };
 
     if (isEditing) {
-      patch(Routes.collaborator_path(formData.id), options);
+      form.patch(Routes.collaborator_path(formData.id), options);
     } else {
-      post(Routes.collaborators_path(), options);
+      form.post(Routes.collaborators_path(), options);
     }
   };
 

@@ -1,17 +1,18 @@
 import { router, usePage } from "@inertiajs/react";
 import * as React from "react";
 
+import { Collaborator, CollaboratorsData } from "$app/data/collaborators";
+
 import { Button } from "$app/components/Button";
 import { Layout } from "$app/components/Collaborators/Layout";
 import { Icon } from "$app/components/Icons";
-import { NavigationButtonInertia } from "$app/components/NavigationButton";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
+import { NavigationButtonInertia } from "$app/components/NavigationButton";
 import { showAlert } from "$app/components/server-components/Alert";
 import Placeholder from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { Collaborator, CollaboratorsData } from "$app/data/collaborators";
 
 import placeholder from "$assets/images/placeholders/collaborators.png";
 
@@ -144,10 +145,7 @@ export default function CollaboratorsIndex() {
           <NavigationButtonInertia
             href={Routes.new_collaborator_path()}
             color="accent"
-            disabled={
-              !loggedInUser?.policies.collaborator.create ||
-              collaborators_disabled_reason !== null
-            }
+            disabled={!loggedInUser?.policies.collaborator.create || collaborators_disabled_reason !== null}
           >
             Add collaborator
           </NavigationButtonInertia>
