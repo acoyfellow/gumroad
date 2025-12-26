@@ -53,3 +53,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     </LoggedInUserProvider>
   );
 }
+
+export function LoggedInUserLayout({ children }: { children: React.ReactNode }) {
+  const { title, flash, logged_in_user, current_seller } = usePage<PageProps>().props;
+
+  React.useEffect(() => {
+    if (flash?.message) {
+      showAlert(flash.message, flash.status === "danger" ? "error" : flash.status);
+    }
+  }, [flash]);
+
+  return (
+    <LoggedInUserProvider value={parseLoggedInUser(logged_in_user)}>
+      <CurrentSellerProvider value={parseCurrentSeller(current_seller)}>
+        <Head title={title} />
+        <Alert initial={flash ?? null} />
+        {children}
+      </CurrentSellerProvider>
+    </LoggedInUserProvider>
+  );
+}
