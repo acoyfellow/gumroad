@@ -245,6 +245,7 @@ describe("Email List", :js, :sidekiq_inline, :elasticsearch_wait_for_refresh, ty
 
     describe "search" do
       it "displays filtered emails for the search query" do
+        stub_const("PaginatedInstallmentsPresenter::PER_PAGE", 1)
         create(:installment, name: "Hello world", seller:, link: product, published_at: 10.days.ago) # does not match 'name' or 'message'
         create(:installment, name: "Thank you!", message: "Thank you email", seller:, link: product, published_at: 1.month.ago) # matches the 'message'
         create(:installment, name: "Email 7 (sent)", published_at: 10.days.ago) # another seller's email, so won't match
