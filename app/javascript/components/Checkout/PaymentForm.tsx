@@ -734,7 +734,7 @@ const TipSelector = () => {
 
   React.useEffect(() => {
     if (!showPercentageOptions && state.tip.type === "percentage")
-      dispatch({ type: "set-value", tip: { type: "fixed", amount: null } });
+      dispatch({ type: "set-value", tip: { type: "fixed", amount: 0 } });
   }, [showPercentageOptions]);
 
   const defaultOther = state.surcharges.type === "loaded" ? state.surcharges.result.subtotal * 0.3 : 5;
