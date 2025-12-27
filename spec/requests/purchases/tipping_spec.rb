@@ -124,12 +124,16 @@ describe("Product checkout with tipping", type: :system, js: true) do
     end
   end
 
-  context "when the cart is free," do
-    let(:free_product) { create(:product, name: "Free Product", user: seller, price_cents: 0) }
+  context "when the cart is free" do
+    let(:seller2) { create(:user, :eligible_for_service_products, tipping_enabled: true, name: "Seller 2", username: "seller2", email: "seller2@example.com", payment_address: "seller2@example.com") }
+    let(:free_product1) { create(:product, name: "Free Product", user: seller, price_cents: 0) }
+    let(:free_product2) { create(:product, name: "Free Product 2", user: seller2, price_cents: 0) }
 
     it "does not show tip selector and allows checkout without tip" do
-      visit free_product.long_url
-      add_to_cart(free_product, pwyw_price: 0)
+      visit free_product1.long_url
+      add_to_cart(free_product1, pwyw_price: 0)
+      visit free_product2.long_url
+      add_to_cart(free_product2, pwyw_price: 0)
 
       expect(page).not_to have_text("Add a tip")
       expect(page).not_to have_radio_button("0%")
@@ -138,13 +142,19 @@ describe("Product checkout with tipping", type: :system, js: true) do
       expect(page).not_to have_radio_button("Other")
       expect(page).not_to have_field("Tip")
 
-      check_out(free_product, is_free: true)
+      check_out(free_product1, is_free: true)
 
       purchase = Purchase.last
       expect(purchase).to be_successful
-      expect(purchase.link).to eq(free_product)
+      expect(purchase.link).to eq(free_product1)
       expect(purchase.price_cents).to eq(0)
       expect(purchase.tip).to be_nil
+
+      purchase2 = Purchase.second_to_last
+      expect(purchase2).to be_successful
+      expect(purchase2.link).to eq(free_product2)
+      expect(purchase2.price_cents).to eq(0)
+      expect(purchase2.tip).to be_nil
     end
   end
 
