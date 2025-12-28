@@ -38,7 +38,7 @@ function Audience() {
   const reloadAudienceData = React.useCallback((start: string, end: string) => {
     router.reload({
       only: ["audience_data"],
-      data: { start_time: start, end_time: end },
+      data: { from: start, to: end },
       onStart: () => setLoading(true),
       onFinish: () => setLoading(false),
     });

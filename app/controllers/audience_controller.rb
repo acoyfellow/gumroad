@@ -35,8 +35,8 @@ class AudienceController < Sellers::BaseController
   protected
     def set_time_range
       begin
-        end_time = DateTime.parse(params[:end_time])
-        start_date = DateTime.parse(params[:start_time])
+        end_time = DateTime.parse(params[:to])
+        start_date = DateTime.parse(params[:from])
       rescue StandardError
         end_time = DateTime.current
         start_date = end_time.ago(29.days)
