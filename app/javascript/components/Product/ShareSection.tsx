@@ -142,9 +142,6 @@ export const ShareSection = ({
                   }
                   void addProduct(newWishlist());
                 }}
-                onMouseDown={(e) => {
-                  if (e.target !== e.currentTarget) e.preventDefault();
-                }}
               >
                 <input
                   type="text"
@@ -152,8 +149,6 @@ export const ShareSection = ({
                   placeholder="Wishlist name"
                   value={dropdownState.state === "creating" ? dropdownState.newWishlistName : ""}
                   onChange={(e) => setDropdownState({ state: "creating", newWishlistName: e.target.value })}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => e.stopPropagation()}
                   className="input"
                   aria-label="Wishlist name"
                 />
@@ -162,11 +157,7 @@ export const ShareSection = ({
                 </Button>
               </form>
             ) : (
-              <div
-                {...props}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setDropdownState({ state: "creating", newWishlistName: "" })}
-              >
+              <div {...props} onClick={() => setDropdownState({ state: "creating", newWishlistName: "" })}>
                 <div>
                   <Icon name="plus" /> New wishlist
                 </div>
