@@ -73,7 +73,7 @@ describe AudienceController, inertia: true do
           .with(start_date: Date.new(2021, 1, 1), end_date: Date.new(2021, 1, 3))
           .and_call_original
 
-        get :index, params: { start_time: Time.utc(2021, 1, 1), end_time: Time.utc(2021, 1, 3) }
+        get :index, params: { from: Time.utc(2021, 1, 1), to: Time.utc(2021, 1, 3) }
 
         expect(response).to be_successful
         expect(inertia.component).to eq("Audience/Index")
@@ -93,7 +93,7 @@ describe AudienceController, inertia: true do
 
       it "handles various timezone formats in date parameters" do
         mask = "%a %b %d %Y %H:%M:%S GMT-1200 (Changement de date)"
-        get :index, params: { start_time: 2.days.ago.strftime(mask), end_time: 1.day.ago.strftime(mask) }
+        get :index, params: { from: 2.days.ago.strftime(mask), to: 1.day.ago.strftime(mask) }
 
         expect(response).to be_successful
         expect(inertia.props[:audience_data]).to be_present
