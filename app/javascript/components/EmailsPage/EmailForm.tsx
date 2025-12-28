@@ -1,4 +1,4 @@
-import { Link, router, useForm } from "@inertiajs/react";
+import { Link, router, useForm, usePage } from "@inertiajs/react";
 import { DirectUpload } from "@rails/activestorage";
 import { Editor, JSONContent } from "@tiptap/core";
 import cx from "classnames";
@@ -214,6 +214,8 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
   // Use browser APIs for URL params
   const searchParams = new URLSearchParams(window.location.search);
   const currentPathname = window.location.pathname;
+  // Use Inertia's usePage to track URL changes for preview functionality
+  const pageUrl = usePage().url;
 
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -224,7 +226,7 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
       const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : "");
       router.replace({ url: newUrl, preserveState: true, preserveScroll: true });
     }
-  }, [installment?.full_url]);
+  }, [pageUrl, installment?.full_url]);
   const [bought, setBought] = React.useState<string[]>(() => {
     if (!installment) return [];
     return installment.installment_type === "variant" && installment.variant_external_id
@@ -602,7 +604,12 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
 
   const save = asyncVoid(async (action: SaveAction = "save") => {
     await Promise.resolve();
-    if (!validate(action)) return;
+    if (!validate(action)) {
+      // Reset isSaving if validation fails after countdown completed
+      setIsSaving(false);
+      setSecondsLeftToPublish(0);
+      return;
+    }
 
     const payload = {
       installment: {
