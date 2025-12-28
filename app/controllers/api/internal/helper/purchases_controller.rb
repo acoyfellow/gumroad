@@ -186,10 +186,10 @@ class Api::Internal::Helper::PurchasesController < Api::Internal::Helper::BaseCo
           schema: {
             type: "object",
             properties: {
-              query: { type: "string", description: "Search query (order ID, email, IP address, or card fingerprint)" },
+              query: { type: "string", description: "Order ID to search for" },
               email: { type: "string", description: "Email address of the customer/buyer" },
               creator_email: { type: "string", description: "Email address of the creator/seller" },
-              license_key: { type: "string", description: "Product license key" },
+              license_key: { type: "string", description: "Product license key (4 groups of alphanumeric characters separated by dashes)" },
               charge_amount: { type: "number", description: "Charge amount in dollars" },
               purchase_date: { type: "string", description: "Purchase date in YYYY-MM-DD format" },
               card_type: { type: "string", description: "Card type" },
@@ -260,7 +260,8 @@ class Api::Internal::Helper::PurchasesController < Api::Internal::Helper::BaseCo
   }.freeze
   def search
     search_params = {
-      query: params[:query] || params[:email],
+      query: params[:query],
+      email: params[:email],
       creator_email: params[:creator_email],
       license_key: params[:license_key],
       transaction_date: params[:purchase_date],
