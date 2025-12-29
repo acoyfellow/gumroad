@@ -25,13 +25,12 @@ export default function SupportPortal() {
   useEffect(() => {
     const url = new URL(location.href);
     if (selectedConversationSlug) {
-      url.searchParams.delete("new_ticket");
       url.searchParams.set("id", selectedConversationSlug);
     } else {
       url.searchParams.delete("id");
     }
     if (url.toString() !== window.location.href) {
-      router.get(url.toString(), {}, { preserveState: true, preserveScroll: true });
+      router.push({ url: url.toString(), preserveScroll: true, preserveState: true });
     }
   }, [selectedConversationSlug]);
 
