@@ -29,14 +29,14 @@ describe BalanceController, type: :controller, inertia: true do
       get :index
       expect(response).to be_successful
       expect(inertia.component).to eq("Payouts/Index")
-      expect(inertia.props[:payout_presenter][:next_payout_period_data]).to eq({
-                                                                                 should_be_shown_currencies_always: false,
-                                                                                 minimum_payout_amount_cents: 1000,
-                                                                                 is_user_payable: false,
-                                                                                 status: "not_payable",
-                                                                                 payout_note: nil,
-                                                                                 has_stripe_connect: false
-                                                                               })
+      expect(inertia.props[:next_payout_period_data]).to eq({
+                                                              should_be_shown_currencies_always: false,
+                                                              minimum_payout_amount_cents: 1000,
+                                                              is_user_payable: false,
+                                                              status: "not_payable",
+                                                              payout_note: nil,
+                                                              has_stripe_connect: false
+                                                            })
       expect(inertia.props[:past_payout_period_data]).to be_present
       expect(inertia.props[:pagination]).to be_present
     end

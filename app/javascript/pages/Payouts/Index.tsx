@@ -434,12 +434,6 @@ function PayoutLineItem({
 }
 
 export default function PayoutsIndex() {
-  const { payout_presenter, past_payout_period_data, pagination } = usePage<{
-    payout_presenter: PayoutsProps;
-    past_payout_period_data: PayoutsProps["past_payout_period_data"];
-    pagination: PayoutsProps["pagination"];
-  }>().props;
-
   const {
     next_payout_period_data,
     processing_payout_periods_data,
@@ -449,7 +443,9 @@ export default function PayoutsIndex() {
     instant_payout,
     show_instant_payouts_notice,
     tax_center_enabled,
-  } = payout_presenter;
+    past_payout_period_data,
+    pagination,
+  } = usePage<PayoutsProps>().props;
 
   const loggedInUser = useLoggedInUser();
   const userAgentInfo = useUserAgentInfo();

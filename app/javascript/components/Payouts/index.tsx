@@ -1,12 +1,11 @@
 import { Link, router } from "@inertiajs/react";
 import classNames from "classnames";
 import * as React from "react";
-import { cast } from "ts-safe-cast";
 
 import { exportPayouts } from "$app/data/balance";
 import { formatPriceCentsWithCurrencySymbol, formatPriceCentsWithoutCurrencySymbol } from "$app/utils/currency";
 import { asyncVoid } from "$app/utils/promise";
-import { assertResponseError, request } from "$app/utils/request";
+import { assertResponseError } from "$app/utils/request";
 
 import { Button, NavigationButton } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
@@ -650,36 +649,21 @@ const Payouts = ({
   past_payout_period_data,
   instant_payout,
   show_instant_payouts_notice,
-  pagination: initialPagination,
+  pagination,
   tax_center_enabled,
 }: PayoutsProps) => {
   const loggedInUser = useLoggedInUser();
   const userAgentInfo = useUserAgentInfo();
 
-  const [pastPayoutPeriodData, setPastPayoutPeriodData] = React.useState(past_payout_period_data);
-  const [pagination, setPagination] = React.useState(initialPagination);
-
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const loadNextPage = async () => {
-    setIsLoading(true);
-    try {
-      const response = await request({
-        method: "GET",
-        accept: "json",
-        url: Routes.balance_path({ page: pagination.page + 1 }),
-      })
-        .then((res) => res.json())
-        .then((json) => cast<{ payouts: PayoutPeriodData[]; pagination: PaginationProps }>(json));
-
-      setPastPayoutPeriodData((prevData) => [...prevData, ...response.payouts]);
-      setPagination(response.pagination);
-    } catch (error) {
-      assertResponseError(error);
-      showAlert(error.message, "error");
-    } finally {
-      setIsLoading(false);
-    }
+  const loadNextPage = () => {
+    router.reload({
+      data: { page: pagination.page + 1 },
+      only: ["pagination", "past_payout_period_data"],
+      onStart: () => setIsLoading(true),
+      onFinish: () => setIsLoading(false),
+    });
   };
 
   const [isInstantPayoutModalOpen, setIsInstantPayoutModalOpen] = React.useState(false);
@@ -919,7 +903,7 @@ const Payouts = ({
                 </Alert>
               ) : null}
               {next_payout_period_data.status === "not_payable" ? (
-                pastPayoutPeriodData.length > 0 ? (
+                past_payout_period_data.length > 0 ? (
                   <Alert role="status" variant="info">
                     Reach a balance of at least{" "}
                     {formatPriceCentsWithCurrencySymbol("usd", next_payout_period_data.minimum_payout_amount_cents, {
@@ -946,18 +930,18 @@ const Payouts = ({
           </section>
         ) : null}
 
-        {pastPayoutPeriodData.length > 0 ? (
+        {past_payout_period_data.length > 0 ? (
           <>
             <section>
               <h2>Past payouts</h2>
               <section className="flex flex-col gap-4">
-                {pastPayoutPeriodData.map((payoutPeriodData, idx) => (
+                {past_payout_period_data.map((payoutPeriodData, idx) => (
                   <Period key={idx} payoutPeriodData={payoutPeriodData} />
                 ))}
               </section>
             </section>
             {pagination.page < pagination.pages ? (
-              <Button color="primary" onClick={() => void loadNextPage()} disabled={isLoading}>
+              <Button color="primary" onClick={loadNextPage} disabled={isLoading}>
                 Show older payouts
               </Button>
             ) : null}
