@@ -2,8 +2,9 @@
 
 require "spec_helper"
 require "shared_examples/merge_guest_cart_with_user_cart"
+require "inertia_rails/rspec"
 
-describe LoginsController do
+describe LoginsController, type: :controller, inertia: true do
   render_views
 
   before :each do
@@ -15,6 +16,32 @@ describe LoginsController do
       get :new
 
       expect(response).to be_successful
+      expect(inertia.component).to eq("Logins/New")
+      expect(inertia.props[:current_user]).to be_nil
+      expect(inertia.props[:title]).to eq("Log In")
+      expect(inertia.props[:email]).to be_nil
+      expect(inertia.props[:application_name]).to be_nil
+      expect(inertia.props[:recaptcha_site_key]).to eq(GlobalConfig.get("RECAPTCHA_LOGIN_SITE_KEY"))
+    end
+
+    context "with an email in the query parameters" do
+      it "renders successfully" do
+        get :new, params: { email: "test@example.com" }
+
+        expect(response).to be_successful
+        expect(inertia.component).to eq("Logins/New")
+        expect(inertia.props[:email]).to eq("test@example.com")
+      end
+    end
+
+    context "with an email in the next parameter" do
+      it "renders successfully" do
+        get :new, params: { next: settings_team_invitations_path(email: "test@example.com", format: :json )}
+
+        expect(response).to be_successful
+        expect(inertia.component).to eq("Logins/New")
+        expect(inertia.props[:email]).to eq("test@example.com")
+      end
     end
 
     it "redirects with the 'next' value from the referrer if not supplied in the params" do
@@ -40,7 +67,11 @@ describe LoginsController do
       it "renders successfully" do
         get :new, params: { next: @next_url }
         expect(response).to be_successful
+        expect(inertia.component).to eq("Logins/New")
+        expect(inertia.props[:application_name]).to eq(@oauth_application.name)
+      end
 
+      it "responds with bad request if format is json" do
         get :new, params: { next: @next_url }, format: :json
         expect(response).to be_a_bad_request
       end
