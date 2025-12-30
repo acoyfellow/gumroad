@@ -4,7 +4,7 @@ import * as React from "react";
 import { classNames } from "$app/utils/classNames";
 
 type StackProps = React.PropsWithChildren<{
-  className?: string;
+  className?: string | undefined;
   asChild?: boolean;
   borderless?: boolean;
   main?: boolean;
@@ -44,7 +44,7 @@ type StackItemProps = React.PropsWithChildren<{
 export const StackItem = React.forwardRef<HTMLDivElement, StackItemProps>(
   ({ className, asChild, details, children, ...rest }, ref) => {
     const baseClasses =
-      "flex flex-wrap items-center p-4 gap-4 justify-between not-first:border-t not-first:border-border ";
+      "flex flex-wrap items-center p-4 gap-4 justify-between not-first:border-t not-first:border-border";
 
     const detailsClasses = details ? "block" : "";
     const Component = asChild ? Slot : "div";

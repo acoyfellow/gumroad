@@ -58,6 +58,7 @@ import { Posts, PostsProvider } from "$app/components/TiptapExtensions/Posts";
 import { ShortAnswer } from "$app/components/TiptapExtensions/ShortAnswer";
 import { UpsellCard } from "$app/components/TiptapExtensions/UpsellCard";
 import { Row, RowContent, Rows } from "$app/components/ui/Rows";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { UpsellSelectModal, Product, ProductOption } from "$app/components/UpsellSelectModal";
 import { useConfigureEvaporate } from "$app/components/useConfigureEvaporate";
@@ -840,22 +841,40 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
                 ) : null}
                 {isDesktop ? (
                   <>
-                    <div className="stack">
-                      <ReviewForm permalink="" purchaseId="" review={null} preview />
-                    </div>
-                    <div className="stack">
+                    <Stack>
+                      <ReviewForm
+                        permalink=""
+                        purchaseId=""
+                        review={null}
+                        preview
+                        className="flex flex-wrap items-center justify-between gap-4 p-4 not-first:border-t not-first:border-border"
+                      />
+                    </Stack>
+                    <Stack>
                       {product.native_type === "membership" ? (
-                        <details>
-                          <summary inert>Membership</summary>
-                        </details>
+                        <StackItem asChild details>
+                          <details>
+                            <summary className="grow grid-flow-col grid-cols-[1fr_auto] before:col-start-2" inert>
+                              Membership
+                            </summary>
+                          </details>
+                        </StackItem>
                       ) : null}
-                      <details>
-                        <summary inert>Receipt</summary>
-                      </details>
-                      <details>
-                        <summary inert>Library</summary>
-                      </details>
-                    </div>
+                      <StackItem asChild details>
+                        <details>
+                          <summary inert className="grow grid-flow-col grid-cols-[1fr_auto] before:col-start-2">
+                            Receipt
+                          </summary>
+                        </details>
+                      </StackItem>
+                      <StackItem asChild details>
+                        <details>
+                          <summary inert className="grow grid-flow-col grid-cols-[1fr_auto] before:col-start-2">
+                            Library
+                          </summary>
+                        </details>
+                      </StackItem>
+                    </Stack>
                     <EntityInfo
                       entityName={selectedVariant ? `${product.name} - ${selectedVariant.name}` : product.name}
                       creator={seller}

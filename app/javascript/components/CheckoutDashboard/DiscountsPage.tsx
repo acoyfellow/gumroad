@@ -38,6 +38,7 @@ import { PageHeader } from "$app/components/ui/PageHeader";
 import { Pill } from "$app/components/ui/Pill";
 import Placeholder from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 import { useGlobalEventListener } from "$app/components/useGlobalEventListener";
@@ -516,92 +517,102 @@ const DiscountsPage = ({
         {selectedOfferCode ? (
           <Sheet open onOpenChange={() => setSelectedOfferCodeId(null)}>
             <SheetHeader>{selectedOfferCode.name || selectedOfferCode.code.toUpperCase()}</SheetHeader>
-            <section className="stack">
-              <h3>Details</h3>
-              <div>
-                <h5>Code</h5>
-                <Pill size="small">{selectedOfferCode.code.toUpperCase()}</Pill>
-              </div>
-              <div>
-                <h5>Discount</h5>
-                {formatAmount(selectedOfferCode)}
-              </div>
-              {selectedOfferCodeStatistics != null ? (
-                <>
-                  <div>
-                    <h5>Uses</h5>
-                    {formatUses(selectedOfferCodeStatistics.uses.total, selectedOfferCode.limit)}
-                  </div>
-                  <div>
-                    <h5>Revenue</h5>
-                    {formatRevenue(selectedOfferCodeStatistics.revenue_cents)}
-                  </div>
-                </>
-              ) : null}
-              {selectedOfferCode.valid_at ? (
-                <div>
-                  <h5>Start date</h5>
-                  {formatDateTime(new Date(selectedOfferCode.valid_at))}
-                </div>
-              ) : null}
-              {selectedOfferCode.expires_at ? (
-                <div>
-                  <h5>End date</h5>
-                  {formatDateTime(new Date(selectedOfferCode.expires_at))}
-                </div>
-              ) : null}
-              {selectedOfferCode.minimum_quantity !== null ? (
-                <div>
-                  <h5>Minimum quantity</h5>
-                  {selectedOfferCode.minimum_quantity}
-                </div>
-              ) : null}
-              {(selectedOfferCode.products ?? products).some(({ is_tiered_membership }) => is_tiered_membership) ? (
-                <div>
-                  <h5>Discount duration for memberships</h5>
-                  {selectedOfferCode.duration_in_billing_cycles === 1 ? "Once (first billing period only)" : "Forever"}
-                </div>
-              ) : null}
-              {selectedOfferCode.minimum_amount_cents !== null ? (
-                <div>
-                  <h5>Minimum amount</h5>
-                  {formatPriceCentsWithCurrencySymbol(
-                    selectedOfferCode.currency_type,
-                    selectedOfferCode.minimum_amount_cents,
-                    {
-                      symbolFormat: "short",
-                    },
-                  )}
-                </div>
-              ) : null}
-            </section>
-            {selectedOfferCode.products ? (
-              <section className="stack">
-                <h3>Products</h3>
-                {selectedOfferCode.products.map((product) => {
-                  const uses =
-                    selectedOfferCodeStatistics != null
-                      ? (selectedOfferCodeStatistics.uses.products[product.id] ?? 0)
-                      : null;
-                  return (
-                    <div key={product.id} className="grid grid-cols-[1fr_auto] gap-2">
-                      <div>
-                        <h5>{product.name}</h5>
-                        {uses != null ? `${uses} ${uses === 1 ? "use" : "uses"}` : null}
-                      </div>
-                      <CopyToClipboard
-                        tooltipPosition="bottom"
-                        copyTooltip="Copy link with discount"
-                        text={`${product.url}/${selectedOfferCode.code}`}
-                      >
-                        <Button aria-label="Copy link with discount">
-                          <Icon name="link" />
-                        </Button>
-                      </CopyToClipboard>
-                    </div>
-                  );
-                })}
+            <Stack asChild>
+              <section>
+                <StackItem asChild>
+                  <h3>Details</h3>
+                </StackItem>
+                <StackItem>
+                  <h5 className="grow font-bold">Code</h5>
+                  <Pill size="small">{selectedOfferCode.code.toUpperCase()}</Pill>
+                </StackItem>
+                <StackItem>
+                  <h5 className="grow font-bold">Discount</h5>
+                  {formatAmount(selectedOfferCode)}
+                </StackItem>
+                {selectedOfferCodeStatistics != null ? (
+                  <>
+                    <StackItem>
+                      <h5 className="grow font-bold">Uses</h5>
+                      {formatUses(selectedOfferCodeStatistics.uses.total, selectedOfferCode.limit)}
+                    </StackItem>
+                    <StackItem>
+                      <h5 className="grow font-bold">Revenue</h5>
+                      {formatRevenue(selectedOfferCodeStatistics.revenue_cents)}
+                    </StackItem>
+                  </>
+                ) : null}
+                {selectedOfferCode.valid_at ? (
+                  <StackItem>
+                    <h5 className="grow font-bold">Start date</h5>
+                    {formatDateTime(new Date(selectedOfferCode.valid_at))}
+                  </StackItem>
+                ) : null}
+                {selectedOfferCode.expires_at ? (
+                  <StackItem>
+                    <h5 className="grow font-bold">End date</h5>
+                    {formatDateTime(new Date(selectedOfferCode.expires_at))}
+                  </StackItem>
+                ) : null}
+                {selectedOfferCode.minimum_quantity !== null ? (
+                  <StackItem>
+                    <h5 className="grow font-bold">Minimum quantity</h5>
+                    {selectedOfferCode.minimum_quantity}
+                  </StackItem>
+                ) : null}
+                {(selectedOfferCode.products ?? products).some(({ is_tiered_membership }) => is_tiered_membership) ? (
+                  <StackItem>
+                    <h5 className="grow font-bold">Discount duration for memberships</h5>
+                    {selectedOfferCode.duration_in_billing_cycles === 1
+                      ? "Once (first billing period only)"
+                      : "Forever"}
+                  </StackItem>
+                ) : null}
+                {selectedOfferCode.minimum_amount_cents !== null ? (
+                  <StackItem>
+                    <h5 className="grow font-bold">Minimum amount</h5>
+                    {formatPriceCentsWithCurrencySymbol(
+                      selectedOfferCode.currency_type,
+                      selectedOfferCode.minimum_amount_cents,
+                      {
+                        symbolFormat: "short",
+                      },
+                    )}
+                  </StackItem>
+                ) : null}
               </section>
+            </Stack>
+            {selectedOfferCode.products ? (
+              <Stack asChild>
+                <section>
+                  <StackItem asChild>
+                    <h3>Products</h3>
+                  </StackItem>
+                  {selectedOfferCode.products.map((product) => {
+                    const uses =
+                      selectedOfferCodeStatistics != null
+                        ? (selectedOfferCodeStatistics.uses.products[product.id] ?? 0)
+                        : null;
+                    return (
+                      <StackItem key={product.id} className="grid grid-cols-[1fr_auto] gap-2">
+                        <div className="grow">
+                          <h5 className="font-bold">{product.name}</h5>
+                          {uses != null ? `${uses} ${uses === 1 ? "use" : "uses"}` : null}
+                        </div>
+                        <CopyToClipboard
+                          tooltipPosition="bottom"
+                          copyTooltip="Copy link with discount"
+                          text={`${product.url}/${selectedOfferCode.code}`}
+                        >
+                          <Button aria-label="Copy link with discount">
+                            <Icon name="link" />
+                          </Button>
+                        </CopyToClipboard>
+                      </StackItem>
+                    );
+                  })}
+                </section>
+              </Stack>
             ) : null}
             <section className="grid auto-cols-fr grid-flow-row gap-4 sm:grid-flow-col">
               <Button onClick={() => setView("create")} disabled={!selectedOfferCode.can_update || isLoading}>

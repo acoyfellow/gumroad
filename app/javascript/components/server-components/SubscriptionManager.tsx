@@ -37,6 +37,7 @@ import {
 } from "$app/components/Product/ConfigurationSelector";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Alert } from "$app/components/ui/Alert";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 import { useOriginalLocation } from "$app/components/useOriginalLocation";
 
 import { useOnChangeSync } from "../useOnChange";
@@ -328,23 +329,25 @@ const SubscriptionManager = ({
       : null;
 
   return (
-    <div className="stack input-group mx-auto my-8 max-w-2xl">
-      <header>
-        {`Manage ${subscriptionEntity}`}
-        <h2>{product.name}</h2>
-      </header>
+    <Stack className="input-group mx-auto my-8 max-w-2xl">
+      <StackItem asChild>
+        <header>
+          {`Manage ${subscriptionEntity}`}
+          <h2 className="grow">{product.name}</h2>
+        </header>
+      </StackItem>
 
       {!hasSavedCard && subscription.is_gift ? (
-        <div>
-          <Alert variant="warning">
+        <StackItem>
+          <Alert variant="warning" className="grow">
             Your {subscriptionEntity} is paid up until {formattedSubscriptionEndDate}. Add your own payment method below
             to ensure that your {subscriptionEntity} renews.
           </Alert>
-        </div>
+        </StackItem>
       ) : null}
 
       {!subscription.is_installment_plan ? (
-        <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "1fr" }}>
+        <StackItem style={{ display: "grid", gap: "1rem", gridTemplateColumns: "1fr" }}>
           <ConfigurationSelector
             product={configurationSelectorProduct}
             selection={selection}
@@ -352,11 +355,11 @@ const SubscriptionManager = ({
             initialSelection={initialSelection}
             discount={subscription.discount}
           />
-        </div>
+        </StackItem>
       ) : null}
 
       <StateContext.Provider value={reducer}>
-        <div>
+        <StackItem>
           <PaymentForm className="borderless" notice={paymentNotice} showCustomFields={false} />
           {totalPrice > 0 ? (
             <div>
@@ -367,22 +370,23 @@ const SubscriptionManager = ({
               </div>
             </div>
           ) : null}
-        </div>
+        </StackItem>
       </StateContext.Provider>
 
       {!restartable && !subscription.is_installment_plan ? (
-        <div>
+        <StackItem>
           <Button
             color="danger"
             outline
             onClick={handleCancel}
             disabled={cancellationStatus === "processing" || cancellationStatus === "done"}
+            className="grow basis-0"
           >
             {cancellationStatus === "done" ? "Cancelled" : `Cancel ${subscriptionEntity}`}
           </Button>
-        </div>
+        </StackItem>
       ) : null}
-    </div>
+    </Stack>
   );
 };
 

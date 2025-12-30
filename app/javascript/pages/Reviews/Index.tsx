@@ -14,6 +14,7 @@ import { ProductIconCell } from "$app/components/ProductsPage/ProductIconCell";
 import { RatingStars } from "$app/components/RatingStars";
 import { ReviewForm } from "$app/components/ReviewForm";
 import Placeholder from "$app/components/ui/Placeholder";
+import { Stack } from "$app/components/ui/Stack";
 import { Table, TableBody, TableCaption, TableCell, TableRow } from "$app/components/ui/Table";
 import { useOnChange } from "$app/components/useOnChange";
 
@@ -93,15 +94,16 @@ const Row = ({ review, onChange }: { review: Review; onChange: (review: Review) 
               </Button>
             }
           >
-            <div className="stack">
+            <Stack>
               <ReviewForm
                 permalink={review.product.permalink}
                 purchaseId={review.purchase_id}
                 purchaseEmailDigest={review.purchase_email_digest}
                 review={review}
                 onChange={(newReview) => onChange({ ...review, ...newReview })}
+                className="flex flex-wrap items-center justify-between gap-4 p-4 not-first:border-t not-first:border-border"
               />
-            </div>
+            </Stack>
           </Popover>
         </div>
       </TableCell>

@@ -40,6 +40,7 @@ import { Skeleton } from "$app/components/Skeleton";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import Placeholder from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 import { Sort, useSortingTableDriver } from "$app/components/useSortingTableDriver";
@@ -396,99 +397,121 @@ const UpsellDrawer = ({
   return (
     <Sheet open onOpenChange={onClose}>
       <SheetHeader>{selectedUpsell.name}</SheetHeader>
-      <section className="stack">
-        <h3>Details</h3>
-        <div>
-          <h5>Offer text</h5>
-          {selectedUpsell.text}
-        </div>
-        {selectedUpsell.discount ? (
-          <div>
-            <h5>Discount</h5>
-            {selectedUpsell.discount.type === "percent"
-              ? `${selectedUpsell.discount.percents}%`
-              : formatPriceCentsWithCurrencySymbol(
-                  selectedUpsell.product.currency_type,
-                  selectedUpsell.discount.cents,
-                  {
-                    symbolFormat: "long",
-                  },
-                )}
-          </div>
-        ) : null}
-        {statistics ? (
-          <>
-            <div>
-              <h5>Uses</h5>
-              {statistics.uses.total}
-            </div>
-            <div>
-              <h5>Revenue</h5>
-              {formatPriceCentsWithCurrencySymbol(selectedUpsell.product.currency_type, statistics.revenue_cents, {
-                symbolFormat: "short",
-              })}
-            </div>
-          </>
-        ) : null}
-        <div>
-          <h5>Status</h5>
-          <span>{selectedUpsell.paused ? "Paused" : "Live"}</span>
-        </div>
-      </section>
+      <Stack asChild>
+        <section>
+          <StackItem asChild>
+            <h3>Details</h3>
+          </StackItem>
+          <StackItem>
+            <h5 className="grow font-bold">Offer text</h5>
+            {selectedUpsell.text}
+          </StackItem>
+          {selectedUpsell.discount ? (
+            <StackItem>
+              <h5 className="grow font-bold">Discount</h5>
+              {selectedUpsell.discount.type === "percent"
+                ? `${selectedUpsell.discount.percents}%`
+                : formatPriceCentsWithCurrencySymbol(
+                    selectedUpsell.product.currency_type,
+                    selectedUpsell.discount.cents,
+                    {
+                      symbolFormat: "long",
+                    },
+                  )}
+            </StackItem>
+          ) : null}
+          {statistics ? (
+            <>
+              <StackItem>
+                <h5 className="grow font-bold">Uses</h5>
+                {statistics.uses.total}
+              </StackItem>
+              <StackItem>
+                <h5 className="grow font-bold">Revenue</h5>
+                {formatPriceCentsWithCurrencySymbol(selectedUpsell.product.currency_type, statistics.revenue_cents, {
+                  symbolFormat: "short",
+                })}
+              </StackItem>
+            </>
+          ) : null}
+          <StackItem>
+            <h5 className="grow font-bold">Status</h5>
+            <span>{selectedUpsell.paused ? "Paused" : "Live"}</span>
+          </StackItem>
+        </section>
+      </Stack>
       <section className="grid auto-cols-fr grid-flow-col gap-4">
         <Button onClick={onTogglePause} disabled={isLoading || isReadOnly}>
           {selectedUpsell.paused ? "Resume upsell" : "Pause upsell"}
         </Button>
       </section>
       {selectedUpsell.cross_sell ? (
-        <section className="stack">
-          <h3>Selected products</h3>
-          {selectedUpsell.universal ? (
-            <div>
-              <h5>All products</h5>
-            </div>
-          ) : (
-            selectedUpsell.selected_products.map(({ id, name }) => (
-              <div key={id}>
-                <div>
-                  <h5>{name}</h5>
-                  {statistics
-                    ? `${statistics.uses.selected_products[id] ?? 0} ${(statistics.uses.selected_products[id] ?? 0) === 1 ? "use" : "uses"} from this product`
-                    : null}
-                </div>
-              </div>
-            ))
-          )}
-        </section>
+        <Stack asChild>
+          <section>
+            <StackItem asChild>
+              <h3>Selected products</h3>
+            </StackItem>
+            {selectedUpsell.universal ? (
+              <StackItem>
+                <h5 className="grow font-bold">All products</h5>
+              </StackItem>
+            ) : (
+              selectedUpsell.selected_products.map(({ id, name }) => (
+                <StackItem key={id}>
+                  <div className="grow">
+                    <h5 className="font-bold">{name}</h5>
+                    {statistics
+                      ? `${statistics.uses.selected_products[id] ?? 0} ${(statistics.uses.selected_products[id] ?? 0) === 1 ? "use" : "uses"} from this product`
+                      : null}
+                  </div>
+                </StackItem>
+              ))
+            )}
+          </section>
+        </Stack>
       ) : (
-        <section className="stack">
-          <h3>Selected product</h3>
-          <div>
-            <h5>{selectedUpsell.product.name}</h5>
-          </div>
-        </section>
+        <Stack asChild>
+          <section>
+            <StackItem asChild>
+              <h3>Selected product</h3>
+            </StackItem>
+            <StackItem>
+              <h5 className="grow font-bold">{selectedUpsell.product.name}</h5>
+            </StackItem>
+          </section>
+        </Stack>
       )}
       {selectedUpsell.cross_sell ? (
-        <section className="stack">
-          <h3>Offered product</h3>
-          <div>
-            <h5>{formatOfferedProductName(selectedUpsell.product.name, selectedUpsell.product.variant?.name)}</h5>
-          </div>
-        </section>
+        <Stack asChild>
+          <section>
+            <StackItem asChild>
+              <h3>Offered product</h3>
+            </StackItem>
+            <StackItem>
+              <h5 className="grow font-bold">
+                {formatOfferedProductName(selectedUpsell.product.name, selectedUpsell.product.variant?.name)}
+              </h5>
+            </StackItem>
+          </section>
+        </Stack>
       ) : (
-        <section className="stack">
-          <h3>Offers</h3>
-          {selectedUpsell.upsell_variants.map((upsellVariant) => (
-            <div key={upsellVariant.id}>
-              <div>
-                <h5>{`${upsellVariant.selected_variant.name} → ${upsellVariant.offered_variant.name}`}</h5>
-                {statistics
-                  ? `${statistics.uses.upsell_variants[upsellVariant.id] ?? 0} ${(statistics.uses.upsell_variants[upsellVariant.id] ?? 0) === 1 ? "use" : "uses"}`
-                  : null}
-              </div>
-            </div>
-          ))}
-        </section>
+        <Stack asChild>
+          <section>
+            <StackItem asChild>
+              <h3>Offers</h3>
+            </StackItem>
+            {selectedUpsell.upsell_variants.map((upsellVariant) => (
+              <StackItem key={upsellVariant.id}>
+                <div className="grow">
+                  <h5 className="font-bold">{`${upsellVariant.selected_variant.name} → ${upsellVariant.offered_variant.name}`}</h5>
+                  {statistics
+                    ? `${statistics.uses.upsell_variants[upsellVariant.id] ?? 0} ${(statistics.uses.upsell_variants[upsellVariant.id] ?? 0) === 1 ? "use" : "uses"}`
+                    : null}
+                </div>
+              </StackItem>
+            ))}
+          </section>
+        </Stack>
       )}
       <section className="grid auto-cols-fr grid-flow-row gap-4 sm:grid-flow-col">
         <Button onClick={onCreate} disabled={isLoading || isReadOnly}>

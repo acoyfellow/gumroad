@@ -5,6 +5,7 @@ import { register } from "$app/utils/serverComponentUtil";
 
 import { Button } from "$app/components/Button";
 import { showAlert } from "$app/components/server-components/Alert";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 
 type SecureRedirectPageProps = {
   message: string;
@@ -80,35 +81,39 @@ const SecureRedirectPage = ({
   };
 
   return (
-    <div className="stack single-page-form horizontal-form">
-      <header>
-        <h2>Confirm access</h2>
-        <p>{message}</p>
-      </header>
-      <div className="mini-rule legacy-only"></div>
-      <form
-        onSubmit={(e) => {
-          void handleSubmit(e);
-        }}
-      >
-        <label htmlFor="confirmation_text" className="form-label">
-          {field_name}
-        </label>
-        <input
-          id="confirmation_text"
-          name="confirmation_text"
-          type="text"
-          placeholder={field_name}
-          required
-          value={confirmationText}
-          onChange={(e) => setConfirmationText(e.target.value)}
-          disabled={isSubmitting}
-        />
-        <Button type="submit" color="primary" disabled={isSubmitting}>
-          {isSubmitting ? "Processing..." : "Continue"}
-        </Button>
-      </form>
-    </div>
+    <Stack className="single-page-form horizontal-form">
+      <StackItem asChild>
+        <header>
+          <h2 className="grow">Confirm access</h2>
+          <p>{message}</p>
+        </header>
+      </StackItem>
+      <StackItem className="mini-rule legacy-only"></StackItem>
+      <StackItem asChild>
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(e);
+          }}
+        >
+          <label htmlFor="confirmation_text" className="form-label grow">
+            {field_name}
+          </label>
+          <input
+            id="confirmation_text"
+            name="confirmation_text"
+            type="text"
+            placeholder={field_name}
+            required
+            value={confirmationText}
+            onChange={(e) => setConfirmationText(e.target.value)}
+            disabled={isSubmitting}
+          />
+          <Button type="submit" color="primary" disabled={isSubmitting}>
+            {isSubmitting ? "Processing..." : "Continue"}
+          </Button>
+        </form>
+      </StackItem>
+    </Stack>
   );
 };
 

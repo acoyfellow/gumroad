@@ -34,6 +34,7 @@ import { Select } from "$app/components/Select";
 import { showAlert } from "$app/components/server-components/Alert";
 import { TypeSafeOptionSelect } from "$app/components/TypeSafeOptionSelect";
 import { Row, RowActions, RowContent, RowDragHandle, Rows } from "$app/components/ui/Rows";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 import { useOnChange } from "$app/components/useOnChange";
 import { useRefToLatest } from "$app/components/useRefToLatest";
 
@@ -179,20 +180,22 @@ export const EditorMenu = ({
           {activeSubmenu}
         </div>
       ) : (
-        <div className="stack" style={{ width: "300px" }}>
+        <Stack style={{ width: "300px" }}>
           {items.map((item, key) =>
             isSubmenu(item) ? (
-              <button onClick={() => setMenuState(key)} key={key}>
-                <h5>{item.props.heading}</h5>
-                <div>
-                  {item.props.text} <Icon name="outline-cheveron-right" />
-                </div>
-              </button>
+              <StackItem asChild key={key}>
+                <button onClick={() => setMenuState(key)}>
+                  <h5 className="grow font-bold">{item.props.heading}</h5>
+                  <div>
+                    {item.props.text} <Icon name="outline-cheveron-right" />
+                  </div>
+                </button>
+              </StackItem>
             ) : (
               item
             ),
           )}
-        </div>
+        </Stack>
       )}
     </Popover>
   );
@@ -278,14 +281,18 @@ export const SectionLayout = ({
             </label>
           </EditorSubmenu>
           {menuItems}
-          <button onClick={copyLink}>
-            <h5>{linkCopied ? "Copied!" : "Copy link"}</h5>
-            <Icon name="link" />
-          </button>
-          <button onClick={() => void remove()} style={{ color: "rgb(var(--danger))" }}>
-            <h5>Remove</h5>
-            <Icon name="trash2" />
-          </button>
+          <StackItem asChild>
+            <button onClick={copyLink}>
+              <h5 className="grow font-bold">{linkCopied ? "Copied!" : "Copy link"}</h5>
+              <Icon name="link" />
+            </button>
+          </StackItem>
+          <StackItem asChild>
+            <button onClick={() => void remove()} style={{ color: "rgb(var(--danger))" }}>
+              <h5 className="grow font-bold">Remove</h5>
+              <Icon name="trash2" />
+            </button>
+          </StackItem>
         </EditorMenu>
         <button
           aria-label="Move section up"

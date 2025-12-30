@@ -15,6 +15,7 @@ import {
   updateInstallment,
 } from "$app/data/installments";
 import { assertDefined } from "$app/utils/assert";
+import { classNames } from "$app/utils/classNames";
 import Countdown from "$app/utils/countdown";
 import { ALLOWED_EXTENSIONS } from "$app/utils/file";
 import { asyncVoid } from "$app/utils/promise";
@@ -47,6 +48,7 @@ import { TagInput } from "$app/components/TagInput";
 import { UpsellCard } from "$app/components/TiptapExtensions/UpsellCard";
 import { Alert } from "$app/components/ui/Alert";
 import { PageHeader } from "$app/components/ui/PageHeader";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 import { useConfigureEvaporate } from "$app/components/useConfigureEvaporate";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 import { useRunOnce } from "$app/components/useRunOnce";
@@ -750,9 +752,9 @@ export const EmailForm = () => {
         {currentSeller.isNameInvalidForEmailDelivery && channel.email ? <InvalidNameForEmailDeliveryWarning /> : null}
 
         <div className="grid grid-cols-1 items-start gap-x-16 gap-y-8 lg:grid-cols-[var(--grid-cols-sidebar)]">
-          <div className="stack">
-            <div>
-              <fieldset role="group">
+          <Stack>
+            <StackItem>
+              <fieldset className="grow basis-0" role="group">
                 <legend>
                   <div>Audience</div>
                   {hasAudience ? (
@@ -812,9 +814,9 @@ export const EmailForm = () => {
                   </label>
                 ) : null}
               </fieldset>
-            </div>
-            <div>
-              <fieldset role="group" className={cx({ danger: invalidFields.has("channel") })}>
+            </StackItem>
+            <StackItem>
+              <fieldset role="group" className={classNames({ danger: invalidFields.has("channel") }, "grow basis-0")}>
                 <legend>Channel</legend>
                 {hasAudience ? (
                   <label htmlFor={`${uid}-channel_email`}>
@@ -893,10 +895,10 @@ export const EmailForm = () => {
                   )
                 ) : null}
               </fieldset>
-            </div>
+            </StackItem>
             {audienceType === "affiliates" ? (
-              <div>
-                <fieldset role="group">
+              <StackItem>
+                <fieldset className="grow basis-0" role="group">
                   <legend>Affiliated products</legend>
                   <label htmlFor={`${uid}-all_affiliated_products`}>
                     All products
@@ -919,11 +921,11 @@ export const EmailForm = () => {
                     isDisabled={isPublished}
                   />
                 </fieldset>
-              </div>
+              </StackItem>
             ) : null}
             {audienceType === "customers" || audienceType === "followers" ? (
-              <div>
-                <fieldset>
+              <StackItem>
+                <fieldset className="grow basis-0">
                   <legend>
                     <label htmlFor={`${uid}-bought`}>Bought</label>
                   </legend>
@@ -936,11 +938,11 @@ export const EmailForm = () => {
                     isDisabled={isPublished}
                   />
                 </fieldset>
-              </div>
+              </StackItem>
             ) : null}
             {hasAudience && audienceType !== "affiliates" ? (
-              <div>
-                <fieldset>
+              <StackItem>
+                <fieldset className="grow basis-0">
                   <legend>
                     <label htmlFor={`${uid}-not_bought`}>Has not yet bought</label>
                   </legend>
@@ -955,16 +957,17 @@ export const EmailForm = () => {
                     maxTags={1}
                   />
                 </fieldset>
-              </div>
+              </StackItem>
             ) : null}
             {audienceType === "customers" ? (
-              <div>
+              <StackItem>
                 <div
                   style={{
                     display: "grid",
                     gap: "var(--spacer-4)",
                     gridTemplateColumns: "repeat(auto-fit, minmax(var(--dynamic-grid), 1fr)",
                   }}
+                  className="grow"
                 >
                   <fieldset className={cx({ danger: invalidFields.has("paidMoreThan") })}>
                     <legend>
@@ -1002,16 +1005,17 @@ export const EmailForm = () => {
                     />
                   </fieldset>
                 </div>
-              </div>
+              </StackItem>
             ) : null}
             {hasAudience ? (
-              <div>
+              <StackItem>
                 <div
                   style={{
                     display: "grid",
                     gap: "var(--spacer-4)",
                     gridTemplateColumns: "repeat(auto-fit, minmax(var(--dynamic-grid), 1fr))",
                   }}
+                  className="grow"
                 >
                   <fieldset className={cx({ danger: invalidFields.has("afterDate") })}>
                     <legend>
@@ -1049,11 +1053,11 @@ export const EmailForm = () => {
                     <small>11:59 {context.timezone}</small>
                   </fieldset>
                 </div>
-              </div>
+              </StackItem>
             ) : null}
             {audienceType === "customers" ? (
-              <div>
-                <fieldset>
+              <StackItem>
+                <fieldset className="grow basis-0">
                   <legend>
                     <label htmlFor={`${uid}-from_country`}>From</label>
                   </legend>
@@ -1071,10 +1075,10 @@ export const EmailForm = () => {
                     ))}
                   </select>
                 </fieldset>
-              </div>
+              </StackItem>
             ) : null}
-            <div>
-              <fieldset role="group">
+            <StackItem>
+              <fieldset className="grow basis-0" role="group">
                 <legend>Engagement</legend>
                 <label htmlFor={`${uid}-allow_comments`}>
                   Allow comments
@@ -1086,8 +1090,8 @@ export const EmailForm = () => {
                   />
                 </label>
               </fieldset>
-            </div>
-          </div>
+            </StackItem>
+          </Stack>
           <S3UploadConfigProvider value={s3UploadConfig}>
             <EvaporateUploaderProvider value={evaporateUploader}>
               <div className="grid gap-6">

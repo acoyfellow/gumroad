@@ -25,6 +25,7 @@ import { Alert } from "$app/components/ui/Alert";
 import Placeholder from "$app/components/ui/Placeholder";
 import { ProductCard, ProductCardFigure, ProductCardHeader, ProductCardFooter } from "$app/components/ui/ProductCard";
 import { ProductCardGrid } from "$app/components/ui/ProductCardGrid";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 import { useAddThirdPartyAnalytics } from "$app/components/useAddThirdPartyAnalytics";
 import { useGlobalEventListener } from "$app/components/useGlobalEventListener";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
@@ -400,26 +401,25 @@ export default function LibraryPage() {
           )}
         >
           {shouldShowFilter ? (
-            <div
-              className="stack overflow-y-auto lg:sticky lg:inset-y-4 lg:max-h-[calc(100vh-2rem)]"
-              aria-label="Filters"
-            >
-              <header>
-                <div>
-                  {filteredResults.length
-                    ? `Showing 1-${Math.min(filteredResults.length, resultsLimit)} of ${filteredResults.length} products`
-                    : "No products found"}
-                </div>
-                {isDesktop ? null : (
-                  <button className="underline" onClick={() => setMobileFiltersExpanded(!mobileFiltersExpanded)}>
-                    Filter
-                  </button>
-                )}
-              </header>
+            <Stack className="overflow-y-auto lg:sticky lg:inset-y-4 lg:max-h-[calc(100vh-2rem)]" aria-label="Filters">
+              <StackItem asChild>
+                <header>
+                  <div className="grow">
+                    {filteredResults.length
+                      ? `Showing 1-${Math.min(filteredResults.length, resultsLimit)} of ${filteredResults.length} products`
+                      : "No products found"}
+                  </div>
+                  {isDesktop ? null : (
+                    <button className="underline" onClick={() => setMobileFiltersExpanded(!mobileFiltersExpanded)}>
+                      Filter
+                    </button>
+                  )}
+                </header>
+              </StackItem>
               {isDesktop || mobileFiltersExpanded ? (
                 <>
-                  <div>
-                    <div className="input input-wrapper product-search__wrapper">
+                  <StackItem>
+                    <div className="input input-wrapper product-search__wrapper grow">
                       <Icon name="solid-search" />
                       <input
                         className="search-products"
@@ -430,9 +430,9 @@ export default function LibraryPage() {
                         onKeyDown={handleSearchKeyDown}
                       />
                     </div>
-                  </div>
-                  <div className="sort">
-                    <fieldset>
+                  </StackItem>
+                  <StackItem className="sort">
+                    <fieldset className="grow basis-0">
                       <legend>
                         <label className="filter-header" htmlFor={sortUid}>
                           Sort by
@@ -452,10 +452,10 @@ export default function LibraryPage() {
                         <option value="purchase_date">Purchase Date</option>
                       </select>
                     </fieldset>
-                  </div>
+                  </StackItem>
                   {bundles.length > 0 ? (
-                    <div>
-                      <fieldset>
+                    <StackItem>
+                      <fieldset className="grow basis-0">
                         <legend>
                           <label htmlFor={bundlesUid}>Bundles</label>
                         </legend>
@@ -474,10 +474,10 @@ export default function LibraryPage() {
                           isClearable
                         />
                       </fieldset>
-                    </div>
+                    </StackItem>
                   ) : null}
-                  <div className="creator">
-                    <fieldset role="group">
+                  <StackItem className="creator">
+                    <fieldset role="group" className="grow basis-0">
                       <legend className="filter-header">Creator</legend>
                       <label>
                         All Creators
@@ -517,10 +517,10 @@ export default function LibraryPage() {
                         ) : null}
                       </div>
                     </fieldset>
-                  </div>
+                  </StackItem>
                   {archivedCount > 0 ? (
-                    <div className="archived">
-                      <fieldset role="group">
+                    <StackItem className="archived">
+                      <fieldset role="group" className="grow basis-0">
                         <label className="filter-archived">
                           Show archived only
                           <input
@@ -536,11 +536,11 @@ export default function LibraryPage() {
                           />
                         </label>
                       </fieldset>
-                    </div>
+                    </StackItem>
                   ) : null}
                 </>
               ) : null}
-            </div>
+            </Stack>
           ) : null}
           <ProductCardGrid>
             {filteredResults.slice(0, resultsLimit).map((result) => (

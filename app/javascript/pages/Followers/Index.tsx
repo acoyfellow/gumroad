@@ -17,6 +17,7 @@ import { showAlert } from "$app/components/server-components/Alert";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import Placeholder from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { useUserAgentInfo } from "$app/components/UserAgent";
@@ -214,10 +215,10 @@ export default function FollowersPage() {
                 className={selectedFollower.can_update ? "" : "js-team-member-read-only"}
               >
                 <SheetHeader>Details</SheetHeader>
-                <div className="stack">
-                  <div>
-                    <div>
-                      <h4>Email</h4>
+                <Stack>
+                  <StackItem>
+                    <div className="grow">
+                      <h4 className="font-bold">Email</h4>
                       <div>{selectedFollower.email}</div>
                       <Button
                         color="danger"
@@ -228,8 +229,8 @@ export default function FollowersPage() {
                         {removing ? "Removing..." : "Remove follower"}
                       </Button>
                     </div>
-                  </div>
-                </div>
+                  </StackItem>
+                </Stack>
               </Sheet>
             ) : null}
           </div>

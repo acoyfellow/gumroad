@@ -7,7 +7,7 @@ import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
 import { Alert } from "$app/components/ui/Alert";
 
-export const GiftForm = ({ isMembership }: { isMembership: boolean }) => {
+export const GiftForm = ({ isMembership, className }: { isMembership: boolean; className?: string | undefined }) => {
   const giftEmailUID = React.useId();
   const giftNoteUID = React.useId();
   const [cancellingPresetGift, setCancellingPresetGift] = React.useState(false);
@@ -17,11 +17,11 @@ export const GiftForm = ({ isMembership }: { isMembership: boolean }) => {
   const hasError = getErrors(state).has("gift");
 
   return (
-    <div className="flex flex-col">
-      <label className="flex w-full items-center justify-between">
+    <div className={`flex flex-col ${className ? className : ""}`}>
+      <label className={`flex w-full items-center justify-between ${className ? "grow" : ""}`}>
         <div className="flex items-center">
           <Icon name="gift-fill" className="mr-2" />
-          <h4>Give as a gift?</h4>
+          <h4 className={className ? "font-bold" : ""}>Give as a gift?</h4>
         </div>
         <input
           type="checkbox"

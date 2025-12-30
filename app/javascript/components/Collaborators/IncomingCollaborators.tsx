@@ -19,6 +19,7 @@ import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { showAlert } from "$app/components/server-components/Alert";
 import Placeholder from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 import { WithTooltip } from "$app/components/WithTooltip";
 
@@ -74,24 +75,33 @@ const IncomingCollaboratorDetails = ({
 }) => (
   <Sheet open onOpenChange={onClose}>
     <SheetHeader>{selected.seller_name}</SheetHeader>
-    <section className="stack">
-      <h3>Email</h3>
-      <div>
-        <span>{selected.seller_email}</span>
-      </div>
-    </section>
-
-    <section className="stack">
-      <h3>Products</h3>
-      {selected.products.map((product) => (
-        <section key={product.id}>
-          <a href={product.url} target="_blank" rel="noreferrer">
-            {product.name}
-          </a>
-          <div>{formatAsPercent(product.affiliate_percentage)}</div>
-        </section>
-      ))}
-    </section>
+    <Stack asChild>
+      <section>
+        <StackItem asChild>
+          <h3>Email</h3>
+        </StackItem>
+        <StackItem>
+          <span className="grow">{selected.seller_email}</span>
+        </StackItem>
+      </section>
+    </Stack>
+    <Stack asChild>
+      <section>
+        <StackItem asChild>
+          <h3>Products</h3>
+        </StackItem>
+        {selected.products.map((product) => (
+          <StackItem asChild key={product.id}>
+            <section>
+              <a href={product.url} target="_blank" rel="noreferrer" className="grow">
+                {product.name}
+              </a>
+              <div>{formatAsPercent(product.affiliate_percentage)}</div>
+            </section>
+          </StackItem>
+        ))}
+      </section>
+    </Stack>
 
     <section className="mt-auto flex gap-4">
       {selected.invitation_accepted ? (

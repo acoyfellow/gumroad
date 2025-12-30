@@ -20,6 +20,7 @@ import { Alert } from "$app/components/ui/Alert";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Pill } from "$app/components/ui/Pill";
 import Placeholder from "$app/components/ui/Placeholder";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { useUserAgentInfo } from "$app/components/UserAgent";
 import { WithTooltip } from "$app/components/WithTooltip";
@@ -354,29 +355,29 @@ const Period = ({ payoutPeriodData }: { payoutPeriodData: PayoutPeriodData }) =>
           </WithTooltip>
         ) : null}
       </div>
-      <div className="stack" style={{ marginTop: "var(--spacer-4)" }}>
-        <div>
-          <h4>Sales</h4>
+      <Stack style={{ marginTop: "var(--spacer-4)" }}>
+        <StackItem>
+          <h4 className="grow font-bold">Sales</h4>
           <div>{formatDollarAmount(payoutPeriodData.sales_cents)}</div>
-        </div>
+        </StackItem>
         {payoutPeriodData.credits_cents > 0 ? (
-          <div>
-            <h4>Credits</h4>
+          <StackItem>
+            <h4 className="grow font-bold">Credits</h4>
             <div>{formatDollarAmount(payoutPeriodData.credits_cents)}</div>
-          </div>
+          </StackItem>
         ) : null}
         {payoutPeriodData.affiliate_credits_cents !== 0 ? (
-          <div>
-            <h4>Affiliate or collaborator fees received</h4>
+          <StackItem>
+            <h4 className="grow font-bold">Affiliate or collaborator fees received</h4>
             <div>{formatDollarAmount(payoutPeriodData.affiliate_credits_cents)}</div>
-          </div>
+          </StackItem>
         ) : null}
         {payoutPeriodData.discover_fees_cents !== 0 || payoutPeriodData.direct_fees_cents !== 0 ? (
           <>
             {payoutPeriodData.discover_fees_cents !== 0 ? (
-              <div>
-                <div>
-                  <h4>
+              <StackItem>
+                <div className="grow">
+                  <h4 className="font-bold">
                     Discover sales{" "}
                     <a href="/help/article/66-gumroads-fees" target="_blank" rel="noreferrer">
                       fees
@@ -390,12 +391,12 @@ const Period = ({ payoutPeriodData }: { payoutPeriodData: PayoutPeriodData }) =>
                   ) : null}
                 </div>
                 <div>{formatNegativeDollarAmount(payoutPeriodData.discover_fees_cents)}</div>
-              </div>
+              </StackItem>
             ) : null}
             {payoutPeriodData.direct_fees_cents !== 0 ? (
-              <div>
-                <div>
-                  <h4>
+              <StackItem>
+                <div className="grow">
+                  <h4 className="font-bold">
                     Direct sales{" "}
                     <a href="/help/article/66-gumroads-fees" target="_blank" rel="noreferrer">
                       fees
@@ -409,80 +410,80 @@ const Period = ({ payoutPeriodData }: { payoutPeriodData: PayoutPeriodData }) =>
                   ) : null}
                 </div>
                 <div>{formatNegativeDollarAmount(payoutPeriodData.direct_fees_cents)}</div>
-              </div>
+              </StackItem>
             ) : null}
           </>
         ) : (
-          <div>
-            <h4>
+          <StackItem>
+            <h4 className="grow font-bold">
               <a href="/help/article/66-gumroads-fees" target="_blank" rel="noreferrer">
                 Fees
               </a>
             </h4>
             <div>{formatNegativeDollarAmount(payoutPeriodData.fees_cents)}</div>
-          </div>
+          </StackItem>
         )}
         {payoutPeriodData.refunds_cents !== 0 ? (
-          <div>
-            <h4>Refunds</h4>
+          <StackItem>
+            <h4 className="grow font-bold">Refunds</h4>
             <div>{formatNegativeDollarAmount(payoutPeriodData.refunds_cents)}</div>
-          </div>
+          </StackItem>
         ) : null}
         {payoutPeriodData.chargebacks_cents !== 0 ? (
-          <div>
-            <h4>
+          <StackItem>
+            <h4 className="grow font-bold">
               <a href="/help/article/134-how-does-gumroad-handle-chargebacks" target="_blank" rel="noreferrer">
                 Chargebacks
               </a>
             </h4>
             <div>{formatNegativeDollarAmount(payoutPeriodData.chargebacks_cents)}</div>
-          </div>
+          </StackItem>
         ) : null}
         {payoutPeriodData.credits_cents < 0 ? (
-          <div>
-            <h4>
+          <StackItem>
+            <h4 className="grow font-bold">
               <a href="/help/article/269-balance-page" target="_blank" rel="noreferrer">
                 Credits
               </a>
             </h4>
             <div>{formatNegativeDollarAmount(payoutPeriodData.credits_cents)}</div>
-          </div>
+          </StackItem>
         ) : null}
         {payoutPeriodData.loan_repayment_cents !== 0 ? (
-          <div>
-            <h4>Loan repayments</h4>
+          <StackItem>
+            <h4 className="grow font-bold">Loan repayments</h4>
             <div>{formatNegativeDollarAmount(payoutPeriodData.loan_repayment_cents)}</div>
-          </div>
+          </StackItem>
         ) : null}
         {payoutPeriodData.affiliate_fees_cents !== 0 ? (
-          <div>
-            <h4>Affiliate or collaborator fees paid</h4>
+          <StackItem>
+            <h4 className="grow font-bold">Affiliate or collaborator fees paid</h4>
             <div>{formatNegativeDollarAmount(payoutPeriodData.affiliate_fees_cents)}</div>
-          </div>
+          </StackItem>
         ) : null}
         {payoutPeriodData.paypal_payout_cents !== 0 ? (
-          <div>
-            <h4>
+          <StackItem>
+            <h4 className="grow font-bold">
               <a href="/help/article/275-paypal-connect" target="_blank" rel="noreferrer">
                 PayPal payouts
               </a>
             </h4>
             <div>{formatNegativeDollarAmount(payoutPeriodData.paypal_payout_cents)}</div>
-          </div>
+          </StackItem>
         ) : null}
         {payoutPeriodData.stripe_connect_payout_cents !== 0 ? (
-          <div>
-            <h4>
+          <StackItem>
+            <h4 className="grow font-bold">
               <a href="/help/article/330-stripe-connect" target="_blank" rel="noreferrer">
                 Stripe Connect payouts
               </a>
             </h4>
             <div>{formatNegativeDollarAmount(payoutPeriodData.stripe_connect_payout_cents)}</div>
-          </div>
+          </StackItem>
         ) : null}
         {payoutPeriodData.taxes_cents !== 0 ? (
-          <div>
-            <h4>
+          <StackItem>
+            <h4 className="grow font-bold">
               <a href="/help/article/121-sales-tax-on-gumroad" target="_blank" rel="noreferrer">
                 Taxes
               </a>
@@ -495,9 +496,9 @@ const Period = ({ payoutPeriodData }: { payoutPeriodData: PayoutPeriodData }) =>
                 <span>{formatDollarAmount(payoutPeriodData.taxes_cents)}</span>
               </WithTooltip>
             </div>
-          </div>
+          </StackItem>
         ) : null}
-        <div>
+        <StackItem>
           {(() => {
             const isCurrentPeriod = payoutPeriodData.status === "payable";
             switch (payoutPeriodData.payout_method_type) {
@@ -523,8 +524,8 @@ const Period = ({ payoutPeriodData }: { payoutPeriodData: PayoutPeriodData }) =>
               {payoutPeriodData.status === "payable" && payoutPeriodData.should_be_shown_currencies_always ? "USD" : ""}
             </span>
           </div>
-        </div>
-      </div>
+        </StackItem>
+      </Stack>
     </section>
   );
 };

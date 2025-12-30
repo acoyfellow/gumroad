@@ -13,6 +13,7 @@ import { Result } from "$app/components/server-components/CheckoutPage";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { ProductCard, ProductCardFigure, ProductCardHeader, ProductCardFooter } from "$app/components/ui/ProductCard";
 import { ProductCardGrid } from "$app/components/ui/ProductCardGrid";
+import { Stack, StackItem } from "$app/components/ui/Stack";
 import { useRunOnce } from "$app/components/useRunOnce";
 
 const formatName = (productName: string, optionName: string | null) =>
@@ -34,8 +35,8 @@ export const TemporaryLibrary = ({ results, canBuyerSignUp }: { results: Result[
       <section className="p-4 md:p-8">
         <div className="grid grid-cols-1 items-start gap-x-16 gap-y-8 lg:grid-cols-[var(--grid-cols-sidebar)]">
           {!user && canBuyerSignUp ? (
-            <div className="stack">
-              <div>
+            <Stack>
+              <StackItem>
                 <CreateAccountForm
                   createAccountData={{
                     email: state.email,
@@ -45,9 +46,10 @@ export const TemporaryLibrary = ({ results, canBuyerSignUp }: { results: Result[
                         ? null
                         : state.status.paymentMethod.cardParamsResult.cardParams,
                   }}
+                  className="grow"
                 />
-              </div>
-            </div>
+              </StackItem>
+            </Stack>
           ) : null}
           <ProductCardGrid>
             {results.flatMap(({ result, item }) =>
