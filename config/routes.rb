@@ -399,7 +399,6 @@ Rails.application.routes.draw do
     get "/collaborators/incomings", to: "collaborators#index"
     get "/collaborators/*other", to: "collaborators#index"
 
-    get "/dashboard/utm_links/*other", to: "utm_links#index" # route handled by react-router
     get "/communities/*other", to: "communities#index" # route handled by react-router
 
     get "/a/:affiliate_id", to: "affiliate_redirect#set_cookie_and_redirect", as: :affiliate_redirect
@@ -821,7 +820,13 @@ Rails.application.routes.draw do
 
     # utm links
     get "/utm_links" => redirect("/dashboard/utm_links")
-    get "/dashboard/utm_links", to: "utm_links#index", as: :utm_links_dashboard
+    scope "/dashboard" do
+      resources :utm_links, only: [:index, :new, :create, :edit, :update, :destroy], controller: "utm_links", as: :utm_links_dashboard do
+        collection do
+          get :unique_permalink
+        end
+      end
+    end
 
     # shipments
     post "/shipments/verify_shipping_address", to: "shipments#verify_shipping_address", as: :verify_shipping_address
@@ -931,9 +936,8 @@ Rails.application.routes.draw do
           resources :existing_product_files, only: [:index]
           resource :receipt_preview, only: [:show]
         end
-        resources :utm_links, only: [:index, :new, :create, :edit, :update, :destroy] do
+        resources :utm_links, only: [] do
           collection do
-            resource :unique_permalink, only: [:show], controller: "utm_links/unique_permalinks", as: :utm_link_unique_permalink
             resources :stats, only: [:index], controller: "utm_links/stats", as: :utm_links_stats
           end
         end
