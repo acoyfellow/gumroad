@@ -7,6 +7,7 @@ import React from "react";
 import { cast } from "ts-safe-cast";
 
 import { AudienceType, getRecipientCount, InstallmentFormContext, Installment } from "$app/data/installments";
+import { type EmailTab, TYPE_TO_TAB } from "$app/data/installments";
 import { assertDefined } from "$app/utils/assert";
 import Countdown from "$app/utils/countdown";
 import { ALLOWED_EXTENSIONS } from "$app/utils/file";
@@ -43,7 +44,6 @@ import { useConfigureEvaporate } from "$app/components/useConfigureEvaporate";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 import { useRunOnce } from "$app/components/useRunOnce";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { type EmailTab, TYPE_TO_TAB } from "$app/data/installments";
 
 type ProductOrVariantOption = {
   id: string;
@@ -654,7 +654,7 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
     files.some((file) => isFileUploading(file) || file.subtitle_files.some(isFileUploading));
 
   const getCancelPath = () => {
-    const tab = TYPE_TO_TAB[installment?.display_type ?? ''] ?? context.from_tab ?? "drafts";
+    const tab = TYPE_TO_TAB[installment?.display_type ?? ""] ?? context.from_tab ?? "drafts";
     return TAB_TO_PATH[tab];
   };
 

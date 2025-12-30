@@ -1,13 +1,13 @@
 import { Link } from "@inertiajs/react";
 import React from "react";
 
+import { EmailTab } from "$app/data/installments";
+
 import { Icon } from "$app/components/Icons";
 import { Popover } from "$app/components/Popover";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tab, Tabs } from "$app/components/ui/Tabs";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { EmailTab } from "$app/data/installments";
-
 
 type LayoutProps = {
   selectedTab: EmailTab;

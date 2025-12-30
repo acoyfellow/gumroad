@@ -77,7 +77,7 @@ class EmailsController < Sellers::BaseController
                when scheduled_emails_url then "scheduled"
                when drafts_emails_url    then "drafts"
                else "drafts"
-               end
+    end
 
     presenter = InstallmentPresenter.new(seller: current_seller, from_tab:)
     render inertia: "Emails/New", props: presenter.new_page_props(copy_from: params[:copy_from])
