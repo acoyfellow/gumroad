@@ -13,7 +13,7 @@ export default function EmailsNew() {
   );
 
   return (
-    <EmailsLayout selectedTab="drafts" hideNewButton>
+    <EmailsLayout selectedTab={context.from_tab ?? "drafts"} hideNewButton>
       <EmailForm context={context} installment={installment} />
     </EmailsLayout>
   );

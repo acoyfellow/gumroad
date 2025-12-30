@@ -72,7 +72,14 @@ class EmailsController < Sellers::BaseController
   def new
     authorize Installment
 
-    presenter = InstallmentPresenter.new(seller: current_seller)
+    from_tab = case request.referer
+               when published_emails_url then "published"
+               when scheduled_emails_url then "scheduled"
+               when drafts_emails_url    then "drafts"
+               else "drafts"
+               end
+
+    presenter = InstallmentPresenter.new(seller: current_seller, from_tab:)
     render inertia: "Emails/New", props: presenter.new_page_props(copy_from: params[:copy_from])
   end
 
@@ -120,27 +127,18 @@ class EmailsController < Sellers::BaseController
       is_new_record = @installment.nil?
 
       if service.process
-        notice_message = case params[:save_action_name]
-                         when "save_and_preview_post"
-                           "Preview link opened."
-                         when "save_and_preview_email"
-                           "A preview has been sent to your email."
-                         when "save_and_publish"
-                           service.installment.send_emails? ? "Email successfully sent!" : "Email successfully published!"
-                         when "save_and_schedule"
-                           "Email successfully scheduled!"
-                         else
-                           is_new_record ? "Email created!" : "Changes saved!"
-        end
-
         if params[:save_action_name] == "save_and_preview_post"
-          redirect_to edit_email_path(service.installment.external_id, preview_post: true), notice: notice_message, status: :see_other
+          redirect_to edit_email_path(service.installment.external_id, preview_post: true), notice: "Preview link opened.", status: :see_other
+        elsif params[:save_action_name] == "save_and_preview_email"
+          redirect_to edit_email_path(service.installment.external_id), notice: "A preview has been sent to your email.", status: :see_other
         elsif params[:save_action_name] == "save_and_publish"
-          redirect_to published_emails_path, notice: notice_message, status: :see_other
+          redirect_to published_emails_path, notice: service.installment.send_emails? ? "Email successfully sent!" : "Email successfully published!", status: :see_other
         elsif params[:save_action_name] == "save_and_schedule"
-          redirect_to scheduled_emails_path, notice: notice_message, status: :see_other
+          redirect_to scheduled_emails_path, notice: "Email successfully scheduled!", status: :see_other
+        elsif is_new_record
+          redirect_to edit_email_path(service.installment.external_id), notice: "Email created!", status: :see_other
         else
-          redirect_to edit_email_path(service.installment.external_id), notice: notice_message, status: :see_other
+          redirect_to edit_email_path(service.installment.external_id), notice: "Changes saved!", status: :see_other
         end
       elsif @installment
         redirect_to edit_email_path(@installment.external_id), alert: service.error

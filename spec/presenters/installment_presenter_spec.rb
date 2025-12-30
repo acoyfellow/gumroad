@@ -12,6 +12,10 @@ describe InstallmentPresenter do
     let!(:sku2) { create(:sku, link: physical_product, name: "Green - Small") }
     let!(:installment) { create(:installment, seller:, allow_comments: true) }
 
+    it "returns the correct display_type" do
+      expect(described_class.new(seller:, installment:).props[:display_type]).to eq("draft")
+    end
+
     it "returns necessary props" do
       section = create(:seller_profile_posts_section, seller:)
 

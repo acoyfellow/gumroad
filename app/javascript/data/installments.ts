@@ -7,6 +7,7 @@ import { FileItem } from "$app/components/EmailAttachments";
 
 export type Installment = {
   external_id?: string;
+  display_type: "published" | "scheduled" | "draft";
   name: string;
   message: string;
   published_at: string | null;
@@ -70,6 +71,14 @@ export type Pagination = {
 
 export type AudienceType = "everyone" | "customers" | "followers" | "affiliates";
 
+export type EmailTab = "published" | "scheduled" | "drafts" | "subscribers";
+
+export const TYPE_TO_TAB: Record<string, EmailTab> = {
+  published: "published",
+  scheduled: "scheduled",
+  draft: "drafts",
+};
+
 export type InstallmentFormContext = {
   audience_types: AudienceType[];
   products: { permalink: string; name: string; archived: boolean; variants: { id: string; name: string }[] }[];
@@ -83,6 +92,7 @@ export type InstallmentFormContext = {
   s3_url: string;
   user_id: string;
   allow_comments_by_default: boolean;
+  from_tab: EmailTab | null;
 };
 
 export async function getAudienceCount(externalId: string) {

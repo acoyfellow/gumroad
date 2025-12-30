@@ -6,27 +6,13 @@ import { Popover } from "$app/components/Popover";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tab, Tabs } from "$app/components/ui/Tabs";
 import { WithTooltip } from "$app/components/WithTooltip";
+import { EmailTab } from "$app/data/installments";
 
-export type EmailTab = "published" | "scheduled" | "drafts" | "subscribers";
-
-// Path helpers using Rails routes
-export const emailTabPath = (tab: EmailTab) => {
-  switch (tab) {
-    case "published":
-      return Routes.published_emails_path();
-    case "scheduled":
-      return Routes.scheduled_emails_path();
-    case "drafts":
-      return Routes.drafts_emails_path();
-    case "subscribers":
-      return Routes.followers_path();
-  }
-};
 
 type LayoutProps = {
   selectedTab: EmailTab;
   children: React.ReactNode;
-  hasPosts?: boolean;
+  hasPosts?: boolean
   query?: string;
   onQueryChange?: (query: string) => void;
   hideNewButton?: boolean;

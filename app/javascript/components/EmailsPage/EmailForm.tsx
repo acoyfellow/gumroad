@@ -25,7 +25,6 @@ import {
   isFileUploading,
   mapEmailFilesToFileState,
 } from "$app/components/EmailAttachments";
-import { emailTabPath } from "$app/components/EmailsPage/Layout";
 import { EvaporateUploaderProvider } from "$app/components/EvaporateUploader";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
@@ -44,6 +43,7 @@ import { useConfigureEvaporate } from "$app/components/useConfigureEvaporate";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 import { useRunOnce } from "$app/components/useRunOnce";
 import { WithTooltip } from "$app/components/WithTooltip";
+import { type EmailTab, TYPE_TO_TAB } from "$app/data/installments";
 
 type ProductOrVariantOption = {
   id: string;
@@ -188,6 +188,13 @@ const parseInitialValue = (value: string): string | JSONContent => {
     }
   } catch {}
   return value;
+};
+
+const TAB_TO_PATH: Record<EmailTab, string> = {
+  published: Routes.published_emails_path(),
+  scheduled: Routes.scheduled_emails_path(),
+  drafts: Routes.drafts_emails_path(),
+  subscribers: Routes.followers_path(),
 };
 
 export const EmailForm = ({ context, installment }: EmailFormProps) => {
@@ -646,7 +653,10 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
     imagesUploading.size > 0 ||
     files.some((file) => isFileUploading(file) || file.subtitle_files.some(isFileUploading));
 
-  const cancelPath = emailTabPath(context.has_scheduled_emails ? "scheduled" : "published");
+  const getCancelPath = () => {
+    const tab = TYPE_TO_TAB[installment?.display_type ?? ''] ?? context.from_tab ?? "drafts";
+    return TAB_TO_PATH[tab];
+  };
 
   return (
     <div>
@@ -684,7 +694,7 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
                 Preview
               </Button>
             )}
-            <Link href={cancelPath} className="button" inert={isBusy ? true : undefined}>
+            <Link href={getCancelPath()} className="button" inert={isBusy ? true : undefined}>
               <Icon name="x-square" />
               Cancel
             </Link>
