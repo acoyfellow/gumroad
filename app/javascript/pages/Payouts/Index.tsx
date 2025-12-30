@@ -487,6 +487,7 @@ export default function PayoutsIndex() {
     router.reload({
       data: { page: pagination.page + 1 },
       only: ["past_payout_period_data", "pagination"],
+      preserveUrl: true
     });
   };
 

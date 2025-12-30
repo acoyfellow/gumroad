@@ -9,7 +9,6 @@ describe BalanceController, type: :controller, inertia: true do
   it_behaves_like "inherits from Sellers::BaseController"
 
   let(:seller) { create(:named_seller) }
-  let(:payout) { create(:payment, user: seller) }
 
   before do
     create_list(:payment_completed, 5, user: seller)
@@ -45,7 +44,7 @@ describe BalanceController, type: :controller, inertia: true do
       let(:payments_per_page) { 2 }
 
       before do
-        stub_const("BalanceController::PAST_PAYMENTS_PER_PAGE", payments_per_page)
+        stub_const("PayoutsPresenter::PAST_PAYMENTS_PER_PAGE", payments_per_page)
       end
 
       it "returns correct payouts for subsequent pages" do
