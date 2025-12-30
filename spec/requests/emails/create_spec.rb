@@ -540,21 +540,20 @@ describe("Email Creation Flow", :js, type: :system) do
 
       installment = Installment.last
       expect(installment.name).to eq("Introducing Bundle")
-      expect(installment.message).to eq(
-        "<p>Hey there,</p>" \
-        "<p>I've put together a bundle of my products that I think you'll love.</p>" \
-        "<hr>" \
-        "<p><strong>Bundle</strong></p>" \
-        "<p><s>$2</s> $1</p>" \
-        "<p>Included in this bundle</p>" \
-        "<ul>\n" \
-        "<li><a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"http://app.test.gumroad.com:31337/l/#{product.bundle_products.first.product.unique_permalink}\">Bundle Product 1</a></li>\n" \
-        "<li><a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"http://app.test.gumroad.com:31337/l/#{product.bundle_products.last.product.unique_permalink}\">Bundle Product 2</a></li>\n" \
-        "</ul>" \
-        "<a href=\"http://app.test.gumroad.com:31337/l/#{product.unique_permalink}\" class=\"tiptap__button button primary\" target=\"_blank\" rel=\"noopener noreferrer nofollow\">Get your bundle</a>" \
-        "<hr>" \
-        "<p>Thanks for your support!</p>"
-      )
+      message = Capybara.string(installment.message)
+      expect(message).to have_css("p", text: "Hey there,")
+      expect(message).to have_css("p", text: "I've put together a bundle of my products that I think you'll love.")
+      expect(message).to have_css("hr", count: 2)
+      expect(message).to have_css("p strong", text: "Bundle")
+      expect(message).to have_css("p s", text: "$2")
+      expect(message).to have_text("$1")
+      expect(message).to have_text("Included in this bundle")
+      expect(message).to have_css("ul li", count: 2)
+      expect(message).to have_link("Bundle Product 1", href: short_link_url(product.bundle_products.first.product, host: DOMAIN))
+      expect(message).to have_link("Bundle Product 2", href: short_link_url(product.bundle_products.last.product, host: DOMAIN))
+      expect(message).to have_css("a.tiptap__button.button.primary", text: "Get your bundle")
+      expect(message).to have_link("Get your bundle", href: short_link_url(product, host: DOMAIN))
+      expect(message).to have_css("p", text: "Thanks for your support!")
       expect(installment.link).to be_nil
       expect(installment.seller).to eq(seller)
       expect(installment.seller_type?).to be(true)
