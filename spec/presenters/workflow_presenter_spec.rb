@@ -96,7 +96,7 @@ describe WorkflowPresenter do
       it "returns installments in order of which ones will be delivered first" do
         props = described_class.new(seller:, workflow:).workflow_props
 
-        expect(props[:installments]).to match_array([
+        expect(props[:installments]).to eq([
                                                       {
                                                         name: "1 hour", message: installment3.message,
                                                         files: [],
@@ -121,6 +121,7 @@ describe WorkflowPresenter do
                                                         paid_more_than_cents: nil,
                                                         paid_less_than_cents: nil,
                                                         allow_comments: true,
+                                                        display_type: "published",
                                                         unique_permalink: product.unique_permalink,
                                                         delayed_delivery_time_duration: 1,
                                                         delayed_delivery_time_period: "hour",
@@ -151,6 +152,7 @@ describe WorkflowPresenter do
                                                         paid_more_than_cents: nil,
                                                         paid_less_than_cents: nil,
                                                         allow_comments: true,
+                                                        display_type: "published",
                                                         unique_permalink: product.unique_permalink,
                                                         delayed_delivery_time_duration: 5,
                                                         delayed_delivery_time_period: "hour",
@@ -181,6 +183,7 @@ describe WorkflowPresenter do
                                                         paid_more_than_cents: nil,
                                                         paid_less_than_cents: nil,
                                                         allow_comments: true,
+                                                        display_type: "published",
                                                         unique_permalink: product.unique_permalink,
                                                         delayed_delivery_time_duration: 24,
                                                         delayed_delivery_time_period: "hour",
