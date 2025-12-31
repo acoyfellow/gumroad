@@ -1,16 +1,15 @@
-import { usePage } from "@inertiajs/react";
+import { router, useForm, usePage } from "@inertiajs/react";
 import debounce from "lodash/debounce";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
-import { deleteFollower, fetchFollowers, Follower } from "$app/data/followers";
+import { Follower } from "$app/data/followers";
 
 import { Button } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { ExportSubscribersPopover } from "$app/components/Followers/ExportSubscribersPopover";
 import { Icon } from "$app/components/Icons";
-import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { Popover } from "$app/components/Popover";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -62,59 +61,90 @@ const Layout = ({
   );
 };
 
-type Props = { followers: Follower[]; per_page: number; total: number };
+type Props = {
+  followers: Follower[];
+  per_page: number;
+  total: number;
+  total_filtered: number;
+  page: number;
+  can_load_more: boolean;
+  email: string;
+};
 
 export default function FollowersPage() {
-  const { followers: initialFollowers, per_page, total } = cast<Props>(usePage().props);
+  const {
+    followers: initialFollowers,
+    total,
+    page: initialPage,
+    can_load_more,
+    email: initialEmail,
+  } = cast<Props>(usePage().props);
   const userAgentInfo = useUserAgentInfo();
 
-  const [loading, setLoading] = React.useState(false);
+  const [isLoadingMore, setIsLoadingMore] = React.useState(false);
   const [followers, setFollowers] = React.useState<Follower[]>(initialFollowers);
   const [selectedFollowerId, setSelectedFollowerId] = React.useState<string | null>(null);
   const [searchBoxOpen, setSearchBoxOpen] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [totalCount, setTotalCount] = React.useState(total);
-  const [totalFilteredCount, setTotalFilteredCount] = React.useState(total);
-  const [removing, setRemoving] = React.useState(false);
-  const [page, setPage] = React.useState(1);
+  const [searchQuery, setSearchQuery] = React.useState(initialEmail);
   const searchInputRef = React.useRef<HTMLInputElement | null>(null);
+  const lastProcessedPageRef = React.useRef(initialPage);
   const selectedFollower = followers.find((follower) => follower.id === selectedFollowerId);
+
+  React.useEffect(() => {
+    if (initialPage === 1) {
+      setFollowers(initialFollowers);
+      lastProcessedPageRef.current = 1;
+    } else if (initialPage > lastProcessedPageRef.current) {
+      setFollowers((prev) => [...prev, ...initialFollowers]);
+      lastProcessedPageRef.current = initialPage;
+    }
+  }, [initialFollowers, initialPage]);
+
+  React.useEffect(() => {
+    setSearchQuery(initialEmail);
+  }, [initialEmail]);
 
   React.useEffect(() => {
     if (searchBoxOpen) searchInputRef.current?.focus();
   }, [searchBoxOpen]);
 
-  const loadFollowers = async (email: string, page = 1) => {
-    try {
-      const response = await fetchFollowers({ email, page });
-      setPage(page);
-      setFollowers(page === 1 ? response.paged_followers : [...followers, ...response.paged_followers]);
-      setTotalFilteredCount(response.total_count);
-    } catch {
-      showAlert("Sorry, something went wrong. Please try again.", "error");
+  const handleSearch = React.useCallback(
+    debounce((email: string) => {
+      router.reload({
+        data: { email: email || undefined, page: 1 },
+        only: ["followers", "total_filtered", "page", "can_load_more", "email"],
+      });
+    }, 500),
+    [],
+  );
+
+  React.useEffect(() => {
+    if (searchQuery !== initialEmail) {
+      handleSearch(searchQuery);
     }
-    setLoading(false);
+  }, [searchQuery, initialEmail, handleSearch]);
+
+  const handleLoadMore = () => {
+    if (!can_load_more || isLoadingMore) return;
+    const nextPage = initialPage + 1;
+    setIsLoadingMore(true);
+    router.reload({
+      data: { email: searchQuery || undefined, page: nextPage },
+      only: ["followers", "total_filtered", "page", "can_load_more"],
+      onFinish: () => setIsLoadingMore(false),
+    });
   };
 
-  const debouncedLoadFollowers = React.useCallback(debounce(loadFollowers, 500), []);
-  React.useEffect(() => {
-    setLoading(true);
-    void debouncedLoadFollowers(searchQuery);
-  }, [searchQuery]);
-
-  const removeFollower = async (id: string) => {
-    setRemoving(true);
-    try {
-      await deleteFollower(id);
-      setTotalCount(totalCount - 1);
-      setTotalFilteredCount(totalFilteredCount - 1);
-      setFollowers(followers.filter((follower) => follower.id !== id));
-      setSelectedFollowerId(null);
-      showAlert("Follower removed!", "success");
-    } catch {
-      showAlert("Failed to remove follower.", "error");
-    }
-    setRemoving(false);
+  const deleteForm = useForm({});
+  const removeFollower = (id: string) => {
+    deleteForm.delete(Routes.follower_path({ id }), {
+      onSuccess: () => {
+        setSelectedFollowerId(null);
+      },
+      onError: () => {
+        showAlert("Failed to remove follower.", "error");
+      },
+    });
   };
 
   const currentSeller = useCurrentSeller();
@@ -175,14 +205,10 @@ export default function FollowersPage() {
       }
     >
       <div className="space-y-4 p-4 md:p-8">
-        {loading ? (
-          <div className="flex justify-center">
-            <LoadingSpinner className="size-20" />
-          </div>
-        ) : followers.length > 0 ? (
+        {followers.length > 0 ? (
           <div>
             <Table>
-              <TableCaption>All subscribers ({totalCount.toLocaleString(userAgentInfo.locale)})</TableCaption>
+              <TableCaption>All subscribers ({total.toLocaleString(userAgentInfo.locale)})</TableCaption>
               <TableHeader>
                 <TableRow>
                   <TableHead>Email</TableHead>
@@ -202,9 +228,9 @@ export default function FollowersPage() {
                 ))}
               </TableBody>
             </Table>
-            {page * per_page < totalFilteredCount ? (
-              <Button color="primary" onClick={() => void loadFollowers(searchQuery, page + 1)} className="mt-6">
-                Load more
+            {can_load_more ? (
+              <Button color="primary" onClick={handleLoadMore} disabled={isLoadingMore} className="mt-6">
+                {isLoadingMore ? "Loading..." : "Load more"}
               </Button>
             ) : null}
             {selectedFollower ? (
@@ -221,11 +247,11 @@ export default function FollowersPage() {
                       <div>{selectedFollower.email}</div>
                       <Button
                         color="danger"
-                        onClick={() => void removeFollower(selectedFollower.id)}
-                        disabled={removing}
+                        onClick={() => removeFollower(selectedFollower.id)}
+                        disabled={deleteForm.processing}
                         className="mt-2"
                       >
-                        {removing ? "Removing..." : "Remove follower"}
+                        {deleteForm.processing ? "Removing..." : "Remove follower"}
                       </Button>
                     </div>
                   </div>

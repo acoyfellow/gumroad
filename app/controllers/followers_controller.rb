@@ -19,36 +19,33 @@ class FollowersController < ApplicationController
     create_user_event("followers_view")
     @on_posts_page = true
     @title = "Subscribers"
-    followers = current_seller.followers.active
-    paginated_followers = followers
-      .order(confirmed_at: :desc, id: :desc)
-      .limit(FOLLOWERS_PER_PAGE)
-      .as_json(pundit_user:)
-
-    render inertia: "Followers/Index", props: {
-      followers: paginated_followers,
-      per_page: FOLLOWERS_PER_PAGE,
-      total: followers.count,
-    }
-  end
-
-  def search
-    authorize [:audience, Follower], :index?
 
     email = params[:email].to_s.strip
     page = params[:page].to_i > 0 ? params[:page].to_i : 1
 
-    searched_followers = current_seller.followers.active
-      .order(confirmed_at: :desc, id: :desc)
+    all_followers = current_seller.followers.active.order(confirmed_at: :desc, id: :desc)
+    searched_followers = all_followers
     searched_followers = searched_followers.where("email LIKE ?", "%#{email}%") if email.present?
 
-    search_followers_total_count = searched_followers.count
+    total_count = searched_followers.count
+    total_unfiltered_count = all_followers.count
 
-    searched_followers = searched_followers
+    paginated_followers = searched_followers
       .limit(FOLLOWERS_PER_PAGE)
       .offset((page - 1) * FOLLOWERS_PER_PAGE)
+      .as_json(pundit_user:)
 
-    render json: { paged_followers: searched_followers.as_json(pundit_user:), total_count: search_followers_total_count }
+    can_load_more = (page * FOLLOWERS_PER_PAGE) < total_count
+
+    render inertia: "Followers/Index", props: {
+      followers: paginated_followers,
+      per_page: FOLLOWERS_PER_PAGE,
+      total: total_unfiltered_count,
+      total_filtered: total_count,
+      page:,
+      can_load_more:,
+      email:,
+    }
   end
 
   def create
@@ -92,6 +89,7 @@ class FollowersController < ApplicationController
     authorize [:audience, @follower]
 
     @follower.mark_deleted!
+    redirect_to followers_path, notice: "Follower removed!", status: :see_other
   end
 
   def cancel
