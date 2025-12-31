@@ -1,14 +1,22 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "shared_examples/sellers_base_controller_concern"
 require "shared_examples/authorize_called"
 require "shared_examples/authentication_required"
+require "inertia_rails/rspec"
 
-describe Api::Internal::CollaboratorsController do
+describe Collaborators::MainController, type: :controller, inertia: true do
+  it "inherits from Collaborators::BaseController" do
+    expect(controller.class.ancestors.include?(Collaborators::BaseController)).to eq(true)
+  end
+
   let(:seller) { create(:user) }
   let!(:product) { create(:product, user: seller) }
 
-  include_context "with user signed in as admin for seller"
+  before do
+    sign_in seller
+  end
 
   describe "GET index" do
     it_behaves_like "authentication required for action", :get, :index
@@ -17,13 +25,23 @@ describe Api::Internal::CollaboratorsController do
       let(:record) { Collaborator }
     end
 
-    it "returns the seller's collaborators" do
-      create(:collaborator, seller:, products: [create(:product, user: seller)])
-      create(:collaborator, seller:)
+    it "renders the index template with correct props" do
+      collaborator1 = create(:collaborator, seller:, products: [create(:product, user: seller)])
+      collaborator2 = create(:collaborator, seller:)
 
-      get :index, format: :json
+      get :index
+
       expect(response).to be_successful
-      expect(response.parsed_body.deep_symbolize_keys).to match(CollaboratorsPresenter.new(seller:).index_props)
+      expect(inertia.component).to eq("Collaborators/Index")
+
+      expected_collaborators = [collaborator1, collaborator2].map do
+        CollaboratorPresenter.new(seller:, collaborator: _1).collaborator_props
+      end
+
+      expect(inertia).to include_props(
+        collaborators: expected_collaborators,
+        has_incoming_collaborators: false
+      )
     end
   end
 
@@ -39,16 +57,21 @@ describe Api::Internal::CollaboratorsController do
       let(:request_params) { { id: collaborator.external_id } }
     end
 
-    it "successfully returns the collaborator when found" do
-      get :edit, params: { id: collaborator.external_id }, format: :json
+    it "renders the edit template with correct props" do
+      get :edit, params: { id: collaborator.external_id }
 
       expect(response).to be_successful
-      expect(response.parsed_body).to match(CollaboratorPresenter.new(seller:, collaborator:).edit_collaborator_props.as_json)
+      expect(inertia.component).to eq("Collaborators/Edit")
+
+      presenter = CollaboratorPresenter.new(seller:, collaborator:)
+      expected_props = presenter.edit_collaborator_props
+      actual_props = inertia.props.slice(*expected_props.keys)
+      expect(actual_props).to eq(expected_props)
     end
 
-    it "raises an e404 if the collaborator is not found" do
+    it "raises ActionController::RoutingError if the collaborator is not found" do
       expect do
-        get :edit, params: { id: "non-existent-id" }, format: :json
+        get :edit, params: { id: "non-existent-id" }
       end.to raise_error(ActionController::RoutingError)
     end
   end
@@ -60,10 +83,16 @@ describe Api::Internal::CollaboratorsController do
       let(:record) { Collaborator }
     end
 
-    it "returns data needed for creating a new collaborator" do
-      get :new, format: :json
+    it "renders the new template with correct props" do
+      get :new
+
       expect(response).to be_successful
-      expect(response.parsed_body).to match(CollaboratorPresenter.new(seller:).new_collaborator_props.as_json)
+      expect(inertia.component).to eq("Collaborators/New")
+
+      presenter = CollaboratorPresenter.new(seller:)
+      expected_props = presenter.new_collaborator_props
+      actual_props = inertia.props.slice(*expected_props.keys)
+      expect(actual_props).to eq(expected_props)
     end
   end
 
@@ -86,23 +115,25 @@ describe Api::Internal::CollaboratorsController do
       }
     end
 
-    it "creates a collaborator" do
+    it "creates a collaborator and redirects" do
       expect do
-        post :create, params:, format: :json
-        expect(response).to have_http_status(:created)
-        expect(response.parsed_body.symbolize_keys).to match({ success: true })
+        post :create, params: params
+        expect(response).to redirect_to(collaborators_path)
+        expect(flash[:notice]).to eq("Changes saved!")
       end.to change { seller.collaborators.count }.from(0).to(1)
          .and change { ProductAffiliate.count }.from(0).to(1)
     end
 
-    it "returns an error with invalid params" do
+    it "redirects to new collaborator page with errors when creation fails" do
       params[:collaborator][:percent_commission] = 90
-      post :create, params:, as: :json
-      expect(response).to have_http_status(:unprocessable_content)
-      expect(response.parsed_body.symbolize_keys).to match({
-                                                             success: false,
-                                                             message: "Product affiliates affiliate basis points must be less than or equal to 5000"
-                                                           })
+
+      post :create, params: params
+
+      expect(response).to be_redirect
+      expect(response).to redirect_to(new_collaborator_path)
+      get :new
+      expect(inertia.component).to eq("Collaborators/New")
+      expect(inertia.props[:errors][:message]).to eq("Product affiliates affiliate basis points must be less than or equal to 5000")
     end
   end
 
@@ -118,47 +149,30 @@ describe Api::Internal::CollaboratorsController do
       let(:request_params) { { id: collaborator.external_id } }
     end
 
-    it "deletes the collaborator" do
+    it "deletes the collaborator, sends the appropriate email, and redirects to the collaborators page" do
       expect do
-        delete :destroy, params: { id: collaborator.external_id }, format: :json
+        delete :destroy, params: { id: collaborator.external_id }
+        expect(response).to be_redirect
+        expect(response).to redirect_to(collaborators_path)
+        expect(flash[:notice]).to eq("The collaborator was removed successfully.")
       end.to have_enqueued_mail(AffiliateMailer, :collaboration_ended_by_seller).with(collaborator.id)
-
-      expect(response).to be_successful
-      expect(response.parsed_body).to eq("")
 
       expect(collaborator.reload.deleted_at).to be_present
     end
 
-    context "when affiliate user is deleting the collaboration" do
-      let(:affiliate_user) { collaborator.affiliate_user }
-
-      before do
-        sign_in(affiliate_user)
-      end
-
-      it "deletes the collaborator and sends the appropriate email" do
-        expect do
-          delete :destroy, params: { id: collaborator.external_id }, format: :json
-        end.to have_enqueued_mail(AffiliateMailer, :collaboration_ended_by_affiliate_user).with(collaborator.id)
-
-        expect(response).to be_successful
-        expect(collaborator.reload.deleted_at).to be_present
-      end
-    end
-
     context "collaborator is not found" do
-      it "returns an error" do
+      it "raises ActionController::RoutingError" do
         expect do
-          delete :destroy, params: { id: "fake" }, format: :json
+          delete :destroy, params: { id: "fake" }
         end.to raise_error(ActionController::RoutingError)
       end
     end
 
     context "collaborator is soft deleted" do
-      it "returns an error" do
+      it "raises ActionController::RoutingError" do
         collaborator.mark_deleted!
         expect do
-          delete :destroy, params: { id: collaborator.external_id }, format: :json
+          delete :destroy, params: { id: collaborator.external_id }
         end.to raise_error(ActionController::RoutingError)
       end
     end
@@ -195,11 +209,12 @@ describe Api::Internal::CollaboratorsController do
       let(:request_params) { { id: collaborator.external_id } }
     end
 
-    it "updates a collaborator" do
+    it "updates a collaborator and redirects to collaborators page" do
       expect do
-        patch :update, params:, format: :json
-        expect(response).to have_http_status(:ok)
-        expect(response.parsed_body.symbolize_keys).to match({ success: true })
+        patch :update, params: params
+        expect(response).to be_redirect
+        expect(response).to redirect_to(collaborators_path)
+        expect(flash[:notice]).to eq("Changes saved!")
       end.to change { collaborator.products.count }.from(1).to(2)
 
       collaborator.reload
@@ -209,20 +224,37 @@ describe Api::Internal::CollaboratorsController do
       expect(collaborator.product_affiliates.find_by(product: product3).affiliate_basis_points).to eq 50_00
     end
 
-    it "returns a 422 if there is an error updating the collaborator" do
+    it "redirects to edit collaborator page with errors when update fails" do
       allow_any_instance_of(Collaborator::UpdateService).to receive(:process).and_return({ success: false, message: "an error" })
 
-      patch :update, params:, format: :json
+      patch :update, params: params
 
-      expect(response).to have_http_status(:unprocessable_content)
-      expect(response.parsed_body.deep_symbolize_keys).to match({ success: false, message: "an error" })
+      expect(response).to be_redirect
+      expect(response).to redirect_to(edit_collaborator_path(collaborator.external_id))
+      get :edit, params: { id: collaborator.external_id }
+      expect(inertia.component).to eq("Collaborators/Edit")
+      expect(inertia.props[:errors][:message]).to eq("an error")
+    end
+
+    it "redirects to edit collaborator page with errors when percent_commission is invalid" do
+      params[:collaborator][:apply_to_all_products] = true
+      params[:collaborator][:percent_commission] = 90
+      params[:collaborator][:products] = [{ id: product2.external_id }]
+
+      patch :update, params: params
+
+      expect(response).to be_redirect
+      expect(response).to redirect_to(edit_collaborator_path(collaborator.external_id))
+      get :edit, params: { id: collaborator.external_id }
+      expect(inertia.component).to eq("Collaborators/Edit")
+      expect(inertia.props[:errors][:message]).to be_present
     end
 
     context "collaborator is soft deleted" do
       it "returns an error" do
         collaborator.mark_deleted!
         expect do
-          patch :update, params:, format: :json
+          patch :update, params:
         end.to raise_error(ActionController::RoutingError)
       end
     end

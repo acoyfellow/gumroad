@@ -422,8 +422,8 @@ describe "Collaborators", type: :system, js: true do
       end
       wait_for_ajax
       expect(page).to have_alert(text: "The collaborator was removed successfully.")
-      expect(collaborators.second.reload.deleted_at).to be_present
       expect(page).to_not have_table_row({ "Name" => collaborators.second.affiliate_user.username })
+      expect(collaborators.second.reload.deleted_at).to be_present
     end
 
     context "editing a collaborator" do
