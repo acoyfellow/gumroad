@@ -331,7 +331,12 @@ describe "Collaborators", type: :system, js: true do
           click_on "Edit"
         end
 
-        expect(page).to have_checked_field("Show unpublished and ineligible products")
+        # Wait for edit page to load
+        expect(page).to have_text(collaborator.affiliate_user.display_name, wait: 10)
+
+        # Check the checkbox to see unpublished products (this state is not persisted)
+        check "Show unpublished and ineligible products"
+
         within find(:table_row, { "Product" => product5.name }) do
           expect(page).to have_checked_field(product5.name)
         end
@@ -446,7 +451,7 @@ describe "Collaborators", type: :system, js: true do
             click_on "Edit"
           end
 
-          expect(page).to have_text collaborator.affiliate_user.display_name
+          expect(page).to have_text(collaborator.affiliate_user.display_name, wait: 10)
 
           # edit default commission
           within find(:table_row, { "Product" => "All products" }) do

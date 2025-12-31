@@ -6,7 +6,7 @@ import type { EditCollaboratorFormData } from "$app/data/collaborators";
 import CollaboratorForm from "$app/components/Collaborators/Form";
 
 export default function CollaboratorsEdit() {
-  const { collaborator } = usePage<{ collaborator: EditCollaboratorFormData }>().props;
+  const formData = usePage<EditCollaboratorFormData>().props;
 
-  return <CollaboratorForm formData={collaborator} />;
+  return <CollaboratorForm formData={formData} />;
 }
