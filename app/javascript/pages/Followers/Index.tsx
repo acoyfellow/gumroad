@@ -138,6 +138,7 @@ export default function FollowersPage() {
   const deleteForm = useForm({});
   const removeFollower = (id: string) => {
     deleteForm.delete(Routes.follower_path({ id }), {
+      preserveScroll: true,
       onSuccess: () => {
         setSelectedFollowerId(null);
       },

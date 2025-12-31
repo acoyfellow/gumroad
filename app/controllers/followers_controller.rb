@@ -89,7 +89,15 @@ class FollowersController < ApplicationController
     authorize [:audience, @follower]
 
     @follower.mark_deleted!
-    redirect_to followers_path, notice: "Follower removed!", status: :see_other
+    redirect_params = {}
+    if request.referer.present?
+      referer_uri = URI.parse(request.referer)
+      referer_params = Rack::Utils.parse_query(referer_uri.query)
+      redirect_params[:email] = referer_params["email"] if referer_params["email"].present?
+      redirect_params[:page] = referer_params["page"] if referer_params["page"].present?
+    end
+
+    redirect_to followers_path(redirect_params), notice: "Follower removed!", status: :see_other
   end
 
   def cancel
