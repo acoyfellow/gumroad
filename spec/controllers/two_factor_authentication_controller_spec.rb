@@ -2,8 +2,9 @@
 
 require "spec_helper"
 require "shared_examples/merge_guest_cart_with_user_cart"
+require "inertia_rails/rspec"
 
-describe TwoFactorAuthenticationController do
+describe TwoFactorAuthenticationController, type: :controller, inertia: true do
   render_views
   include UsersHelper
 
@@ -81,13 +82,13 @@ describe TwoFactorAuthenticationController do
     end
   end
 
-  describe "GET new" do # GET /two-factor
+  describe "GET show" do # GET /two-factor
     include_examples "redirect to signed_in path for html request" do
-      subject(:call_action) { get :new }
+      subject(:call_action) { get :show }
     end
 
     include_examples "check user in session for html request" do
-      subject(:call_action) { get :new }
+      subject(:call_action) { get :show }
     end
 
     before do
@@ -95,15 +96,30 @@ describe TwoFactorAuthenticationController do
     end
 
     it "renders HTTP success" do
-      get :new
+      get :show
 
       expect(response).to be_successful
     end
 
     it "sets @user" do
-      get :new
+      get :show
 
       expect(assigns[:user]).to eq @user
+    end
+
+    it "renders the Inertia TwoFactorAuthentication/Show component" do
+      get :show
+
+      expect(inertia.component).to eq("TwoFactorAuthentication/Show")
+      expect(inertia.props[:user_id]).to eq(@user.encrypted_external_id)
+      expect(inertia.props[:email]).to eq(@user.email)
+      expect(inertia.props[:token]).to eq(User::DEFAULT_AUTH_TOKEN)
+    end
+
+    it "sets the page title" do
+      get :show
+
+      expect(assigns[:title]).to eq("Two-Factor Authentication")
     end
   end
 

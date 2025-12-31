@@ -17,7 +17,6 @@ describe "Two-Factor Authentication", js: true, type: :system do
     fill_in "Email", with: user.email
     fill_in "Password", with: user.password
     click_on "Login"
-
   end
 
   it "redirects to two_factor_authentication_path on login" do
@@ -55,11 +54,12 @@ describe "Two-Factor Authentication", js: true, type: :system do
 
         expect(page).to have_current_path(dashboard_path)
 
-        # Clear the session by resetting the page/session, then login again
-        # The 2FA cookie should still be present, so 2FA should be skipped
-        click_on "Logout"
+        # Clear the session by logging out
+        visit logout_path
 
+        # Visit login page and login again
         visit login_path
+        expect(page).to have_field("Email")
         fill_in "Email", with: user.email
         fill_in "Password", with: user.password
         click_on "Login"

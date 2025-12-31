@@ -1,36 +1,52 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "inertia_rails/rspec"
 
-describe User::PasswordsController do
+describe User::PasswordsController, type: :controller, inertia: true do
+  render_views
+
   before do
     request.env["devise.mapping"] = Devise.mappings[:user]
     @user = create(:user)
   end
 
   describe "#new" do
-    it "404s" do
-      expect { get :new }.to raise_error(ActionController::RoutingError)
+    it "renders the Inertia password reset page" do
+      get :new
+
+      expect(response).to be_successful
+      expect(inertia.component).to eq("PasswordReset/New")
+      expect(inertia.props[:email]).to be_nil
+      expect(inertia.props[:application_name]).to be_nil
+      expect(inertia.props[:recaptcha_site_key]).to eq(GlobalConfig.get("RECAPTCHA_LOGIN_SITE_KEY"))
+    end
+
+    it "sets the page title" do
+      get :new
+
+      expect(assigns[:title]).to eq("Forgot password")
     end
   end
 
   describe "#create" do
-    it "sends an email to the user" do
+    it "sends an email to the user and redirects with success message" do
       post(:create, params: { user: { email: @user.email } })
-      expect(response).to be_successful
+      expect(response).to redirect_to(login_url)
+      expect(flash[:notice]).to eq("Password reset sent! Please make sure to check your spam folder.")
     end
 
-    it "returns a json error if email is blank even if matching user exists" do
+    it "redirects with warning if email is blank even if matching user exists" do
       create(:user, email: "", provider: :twitter)
       post(:create, params: { user: { email: "" } })
-      expect(response).to have_http_status(:unprocessable_content)
-      expect(response.parsed_body["error_message"]).to eq "An account does not exist with that email."
+      expect(response).to redirect_to(login_url)
+      expect(flash[:warning]).to eq("An account does not exist with that email.")
     end
 
-    it "returns a json error if email is not valid" do
+    it "redirects with warning if email is not valid" do
       post(:create, params: { user: { email: "this is no sort of valid email address" } })
-      expect(response).to have_http_status(:unprocessable_content)
-      expect(response.parsed_body["error_message"]).to eq "An account does not exist with that email."
+      expect(response).to redirect_to(login_url)
+      expect(flash[:warning]).to eq("An account does not exist with that email.")
     end
   end
 
