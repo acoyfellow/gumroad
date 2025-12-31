@@ -30,9 +30,7 @@ function TwoFactorAuthentication() {
   };
 
   const resendToken = () => {
-    resendForm.post(Routes.resend_authentication_token_path({ user_id }), {
-      preserveScroll: true,
-    });
+    resendForm.post(Routes.resend_authentication_token_path({ user_id }));
   };
 
   return (
