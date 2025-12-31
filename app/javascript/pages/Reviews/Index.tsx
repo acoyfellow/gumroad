@@ -194,7 +194,7 @@ export default function ReviewsIndex({
       <section className="p-4 md:p-8">
         {reviews.length === 0 && purchases.length === 0 ? (
           <Placeholder>
-            <PlaceholderImage alt="You haven't bought anything... yet!" src={placeholderImage} />
+            <PlaceholderImage src={placeholderImage} />
             <h2>You haven't bought anything... yet!</h2>
             Once you do, it'll show up here so you can review them.
             <NavigationButton href={discoverUrl} color="accent">

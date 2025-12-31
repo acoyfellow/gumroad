@@ -312,7 +312,7 @@ const AffiliatedPage = ({
         <section className="p-4 md:p-8">
           {initialAffiliatedProducts.length === 0 ? (
             <Placeholder>
-              <PlaceholderImage alt="Become an affiliate and earn!" src={placeholder} />
+              <PlaceholderImage src={placeholder} />
               <h2>Become an affiliate and earn!</h2>
               Gumroad is a great place for you to make some side income, even if you're not actively creating your own
               products.
@@ -333,7 +333,7 @@ const AffiliatedPage = ({
               <StatsSection {...stats} />
               {state.affiliatedProducts.length === 0 ? (
                 <Placeholder>
-                  <PlaceholderImage alt="No affiliated products found." src={placeholder} />
+                  <PlaceholderImage src={placeholder} />
                   <h2>No affiliated products found.</h2>
                 </Placeholder>
               ) : (

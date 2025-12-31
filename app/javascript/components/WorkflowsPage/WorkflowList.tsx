@@ -96,7 +96,7 @@ const WorkflowList = ({ workflows }: WorkflowListProps) => {
       ) : (
         <div className="p-4 md:p-8">
           <Placeholder>
-            <PlaceholderImage alt="Automate emails with ease." src={placeholder} />
+            <PlaceholderImage src={placeholder} />
             <h2>Automate emails with ease.</h2>
             <h4>Workflows allow you to send scheduled emails to a subset of your audience based on a trigger.</h4>
             {newWorkflowButton}

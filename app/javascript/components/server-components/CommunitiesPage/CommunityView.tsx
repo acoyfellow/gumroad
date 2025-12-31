@@ -862,7 +862,7 @@ const EmptyCommunitiesPlaceholder = ({ hasProducts }: { hasProducts: boolean }) 
   <div>
     <section>
       <Placeholder>
-        <PlaceholderImage alt="Build your community, one product at a time!" src={placeholderImage} />
+        <PlaceholderImage src={placeholderImage} />
         <h2>Build your community, one product at a time!</h2>
         <p className="max-w-prose">
           When you publish a product, we automatically create a dedicated community chat—your own space to connect with

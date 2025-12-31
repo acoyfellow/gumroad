@@ -235,7 +235,7 @@ export default function FollowersPage() {
           </div>
         ) : (
           <Placeholder>
-            <PlaceholderImage alt="Manage all of your followers in one place." src={placeholder} />
+            <PlaceholderImage src={placeholder} />
             {searchQuery.length === 0 ? (
               <>
                 <h2>Manage all of your followers in one place.</h2>

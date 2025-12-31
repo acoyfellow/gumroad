@@ -555,7 +555,7 @@ const CustomersPage = ({
           </section>
         ) : (
           <Placeholder>
-            <PlaceholderImage alt="Manage all of your sales in one place." src={placeholder} />
+            <PlaceholderImage src={placeholder} />
             {searchQuery !== null ? (
               <h2>No sales found</h2>
             ) : (

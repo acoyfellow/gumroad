@@ -125,7 +125,7 @@ export default function AffiliatesOnboarding() {
       {data.products.length === 0 ? (
         <section className="p-4! md:p-8!">
           <Placeholder>
-            <PlaceholderImage alt="Almost there!" src={placeholderImage} />
+            <PlaceholderImage src={placeholderImage} />
             <h2>Almost there!</h2>
             You need a published product to add affiliates.
             <NavigationButtonInertia

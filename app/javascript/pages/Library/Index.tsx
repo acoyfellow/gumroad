@@ -354,7 +354,7 @@ export default function LibraryPage() {
           <Placeholder>
             {state.results.length === 0 ? (
               <>
-                <PlaceholderImage alt="You haven't bought anything... yet!" src={placeholder} />
+                <PlaceholderImage src={placeholder} />
                 <h2 className="library-header">You haven't bought anything... yet!</h2>
                 Once you do, it'll show up here so you can download, watch, read, or listen to all your purchases.
                 <a href={discoverUrl} className="button accent">

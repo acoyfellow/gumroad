@@ -24,6 +24,6 @@ export const Placeholder: React.FC<PlaceholderProps> = ({ className, children, .
 
 export const PlaceholderImage = ({ alt, className, src, ...imgProps }: React.ImgHTMLAttributes<HTMLImageElement>) => (
   <figure className="w-full">
-    <img {...imgProps} src={src} className={classNames("w-full", className)} alt={alt} />
+    <img {...imgProps} src={src} className={classNames("w-full", className)} role="presentation" />
   </figure>
 );

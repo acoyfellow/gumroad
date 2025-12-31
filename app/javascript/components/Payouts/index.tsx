@@ -530,7 +530,7 @@ const Period = ({ payoutPeriodData }: { payoutPeriodData: PayoutPeriodData }) =>
 const PeriodEmpty = ({ minimumPayoutAmountCents }: { minimumPayoutAmountCents: number }) => (
   <div className="period period-empty full column">
     <Placeholder>
-      <PlaceholderImage alt="Let's get you paid." src={placeholder} />
+      <PlaceholderImage src={placeholder} />
       <h2>Let's get you paid.</h2>
       Reach a balance of at least{" "}
       {formatPriceCentsWithCurrencySymbol("usd", minimumPayoutAmountCents, {

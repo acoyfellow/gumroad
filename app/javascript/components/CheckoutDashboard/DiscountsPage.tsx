@@ -499,7 +499,7 @@ const DiscountsPage = ({
           </section>
         ) : (
           <Placeholder>
-            <PlaceholderImage alt="No discounts yet" src={placeholder} />
+            <PlaceholderImage src={placeholder} />
             <div>
               <h2>No discounts yet</h2>
               <p>Use discounts to create sweet deals for your customers</p>

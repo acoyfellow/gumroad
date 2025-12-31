@@ -118,7 +118,7 @@ export default function WishlistsPage() {
           </Table>
         ) : (
           <Placeholder>
-            <PlaceholderImage alt="Save products you are wishing for" src={placeholder} />
+            <PlaceholderImage src={placeholder} />
             <h2>Save products you are wishing for</h2>
             Bookmark and organize your desired products with ease
             <a href="/help/article/343-wishlists" target="_blank" rel="noreferrer">

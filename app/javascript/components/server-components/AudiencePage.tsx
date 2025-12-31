@@ -88,7 +88,7 @@ const AudiencePage = ({ total_follower_count }: { total_follower_count: number }
       ) : (
         <div className="p-4 md:p-8">
           <Placeholder>
-            <PlaceholderImage alt="It's quiet. Too quiet." src={placeholder} />
+            <PlaceholderImage src={placeholder} />
             <h2>It's quiet. Too quiet.</h2>
             <p>
               You don't have any followers yet. Once you do, you'll see them here, along with powerful data that can

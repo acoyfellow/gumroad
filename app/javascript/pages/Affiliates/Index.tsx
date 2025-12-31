@@ -511,7 +511,7 @@ export default function AffiliatesIndex() {
               </>
             ) : (
               <Placeholder>
-                <PlaceholderImage alt="No affiliates found" src={placeholder} />
+                <PlaceholderImage src={placeholder} />
                 <h2>No affiliates found</h2>
               </Placeholder>
             )}

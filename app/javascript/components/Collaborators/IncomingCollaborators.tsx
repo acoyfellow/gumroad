@@ -176,7 +176,7 @@ const TableRowLoadingSpinner = () => (
 const EmptyState = () => (
   <section className="p-4 md:p-8">
     <Placeholder>
-      <PlaceholderImage alt="No collaborations yet" src={placeholder} />
+      <PlaceholderImage src={placeholder} />
       <h2>No collaborations yet</h2>
       <h4>Creators who have invited you to collaborate on their products will appear here.</h4>
       <a href="/help/article/341-collaborations" target="_blank" rel="noreferrer">

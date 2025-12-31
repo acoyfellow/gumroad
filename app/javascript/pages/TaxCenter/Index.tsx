@@ -212,7 +212,7 @@ const TaxCenterIndex = () => {
           </div>
         ) : (
           <Placeholder>
-            <PlaceholderImage alt="Let's get your tax info ready." src={taxesPlaceholder} />
+            <PlaceholderImage src={taxesPlaceholder} />
             <h2>Let's get your tax info ready.</h2>
             <p>Your 1099-K will appear here once it's available.</p>
           </Placeholder>

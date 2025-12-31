@@ -323,7 +323,7 @@ const UpsellsPage = (props: UpsellsPageProps) => {
           </section>
         ) : (
           <Placeholder>
-            <PlaceholderImage alt="Offering an upsell at checkout" src={placeholder} />
+            <PlaceholderImage src={placeholder} />
             <h2>Offering an upsell at checkout</h2>
             Upsells allow you to suggest additional products to your customer at checkout. You can nudge them to
             purchase either an upgraded version or an extra product add-on.

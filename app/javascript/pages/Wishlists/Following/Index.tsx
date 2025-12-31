@@ -98,7 +98,7 @@ export default function WishlistsFollowingPage() {
           </Table>
         ) : (
           <Placeholder>
-            <PlaceholderImage alt="Follow wishlists that inspire you" src={placeholder} />
+            <PlaceholderImage src={placeholder} />
             <h2>Follow wishlists that inspire you</h2>
             Bookmark and organize your desired products with ease
             <a href="/help/article/343-wishlists" target="_blank" rel="noreferrer">

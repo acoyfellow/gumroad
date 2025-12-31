@@ -148,7 +148,7 @@ type GettingStartedItemProps = {
 
 const Greeter = () => (
   <Placeholder>
-    <PlaceholderImage alt="We're here to help you get paid for your work." src={placeholderImage} />
+    <PlaceholderImage src={placeholderImage} />
     <h2>We're here to help you get paid for your work.</h2>
     <NavigationButton href={Routes.new_product_path()} color="accent">
       Create your first product
