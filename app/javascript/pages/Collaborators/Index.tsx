@@ -8,7 +8,6 @@ import { Layout } from "$app/components/Collaborators/Layout";
 import { Icon } from "$app/components/Icons";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { NavigationButtonInertia } from "$app/components/NavigationButton";
-import { showAlert } from "$app/components/server-components/Alert";
 import Placeholder from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
@@ -120,18 +119,10 @@ export default function CollaboratorsIndex() {
   const [isRemoving, setIsRemoving] = React.useState(false);
 
   const remove = (collaboratorId: string) => {
-    setIsRemoving(true);
     router.delete(Routes.collaborator_path(collaboratorId), {
-      onSuccess: () => {
-        setSelectedCollaborator(null);
-        showAlert("The collaborator was removed successfully.", "success");
-      },
-      onError: () => {
-        showAlert("Failed to remove the collaborator.", "error");
-      },
-      onFinish: () => {
-        setIsRemoving(false);
-      },
+      onStart: () => setIsRemoving(true),
+      onSuccess: () => setSelectedCollaborator(null),
+      onFinish: () => setIsRemoving(false),
     });
   };
 

@@ -6,10 +6,8 @@ import { classNames } from "$app/utils/classNames";
 import { Button } from "$app/components/Button";
 import { Layout } from "$app/components/Collaborators/Layout";
 import { Icon } from "$app/components/Icons";
-import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { NavigationButtonInertia } from "$app/components/NavigationButton";
-import { showAlert } from "$app/components/server-components/Alert";
 import Placeholder from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
@@ -179,16 +177,6 @@ const IncomingCollaboratorsTableRow = ({
   </TableRow>
 );
 
-const TableRowLoadingSpinner = () => (
-  <TableRow>
-    <TableCell colSpan={5}>
-      <div className="flex items-center justify-center py-4">
-        <LoadingSpinner className="size-8" />
-      </div>
-    </TableCell>
-  </TableRow>
-);
-
 const EmptyState = () => (
   <section className="p-4 md:p-8">
     <Placeholder>
@@ -208,7 +196,6 @@ const IncomingCollaboratorsTable = ({
   incomingCollaborators,
   selected,
   processing,
-  loading,
   disabled,
   onSelect,
   onAccept,
@@ -218,7 +205,6 @@ const IncomingCollaboratorsTable = ({
   incomingCollaborators: IncomingCollaborator[];
   selected: IncomingCollaborator | null;
   processing: Set<string>;
-  loading: boolean;
   disabled: boolean;
   onSelect: (collaborator: IncomingCollaborator | null) => void;
   onAccept: (collaborator: IncomingCollaborator) => void;
@@ -226,7 +212,7 @@ const IncomingCollaboratorsTable = ({
   onRemove: (collaborator: IncomingCollaborator) => void;
 }) => (
   <section className="p-4 md:p-8">
-    <Table aria-live="polite" className={classNames((loading || disabled) && "pointer-events-none opacity-50")}>
+    <Table aria-live="polite" className={classNames(disabled && "pointer-events-none opacity-50")}>
       <TableHeader>
         <TableRow>
           <TableHead>From</TableHead>
@@ -238,21 +224,17 @@ const IncomingCollaboratorsTable = ({
       </TableHeader>
 
       <TableBody>
-        {loading ? (
-          <TableRowLoadingSpinner />
-        ) : (
-          incomingCollaborators.map((incomingCollaborator) => (
-            <IncomingCollaboratorsTableRow
-              key={incomingCollaborator.id}
-              incomingCollaborator={incomingCollaborator}
-              isSelected={incomingCollaborator.id === selected?.id}
-              onSelect={() => onSelect(incomingCollaborator)}
-              onAccept={() => onAccept(incomingCollaborator)}
-              onReject={() => onReject(incomingCollaborator)}
-              disabled={processing.has(incomingCollaborator.id) || disabled}
-            />
-          ))
-        )}
+        {incomingCollaborators.map((incomingCollaborator) => (
+          <IncomingCollaboratorsTableRow
+            key={incomingCollaborator.id}
+            incomingCollaborator={incomingCollaborator}
+            isSelected={incomingCollaborator.id === selected?.id}
+            onSelect={() => onSelect(incomingCollaborator)}
+            onAccept={() => onAccept(incomingCollaborator)}
+            onReject={() => onReject(incomingCollaborator)}
+            disabled={processing.has(incomingCollaborator.id) || disabled}
+          />
+        ))}
       </TableBody>
     </Table>
     {selected ? (
@@ -268,35 +250,13 @@ const IncomingCollaboratorsTable = ({
   </section>
 );
 
-const pendingCollaboratorsFirst = (a: IncomingCollaborator, b: IncomingCollaborator) => {
-  const aPriority = a.invitation_accepted ? 0 : 1;
-  const bPriority = b.invitation_accepted ? 0 : 1;
-  if (aPriority !== bPriority) {
-    return bPriority - aPriority;
-  }
-  return 0;
-};
-
 export default function IncomingsIndex() {
   const props = usePage<Props>().props;
   const loggedInUser = useLoggedInUser();
-  const { collaborators: initialCollaborators, collaborators_disabled_reason } = props;
-
-  // We rely on Inertia props updates, but for immediate UI feedback on sorting/filtering
-  // we might maintain local state or just let the server sort.
-  // The original component used local state for sorting pending first.
-  const [incomingCollaborators, setIncomingCollaborators] = React.useState<IncomingCollaborator[]>(
-    [...initialCollaborators].sort(pendingCollaboratorsFirst),
-  );
-
-  // Update state when props change
-  React.useEffect(() => {
-    setIncomingCollaborators([...initialCollaborators].sort(pendingCollaboratorsFirst));
-  }, [initialCollaborators]);
+  const { collaborators: incomingCollaborators, collaborators_disabled_reason } = props;
 
   const [processing, setProcessing] = React.useState<Set<string>>(new Set());
   const [selected, setSelected] = React.useState<IncomingCollaborator | null>(null);
-  const loading = false; // Managed by Inertia router usually
   const isDisabled = processing.size > 0;
 
   const startProcessing = (incomingCollaborator: IncomingCollaborator) => {
@@ -316,58 +276,34 @@ export default function IncomingsIndex() {
   };
 
   const acceptInvitation = (incomingCollaborator: IncomingCollaborator) => {
-    startProcessing(incomingCollaborator);
     router.post(
       Routes.internal_collaborator_invitation_acceptances_path(incomingCollaborator.id),
       {},
       {
-        onSuccess: () => {
-          showAlert("Invitation accepted", "success");
-          setSelected(null);
-        },
-        onError: () => {
-          showAlert("Sorry, something went wrong. Please try again.", "error");
-        },
-        onFinish: () => {
-          finishProcessing(incomingCollaborator);
-        },
+        onStart: () => startProcessing(incomingCollaborator),
+        onSuccess: () => setSelected(null),
+        onFinish: () => finishProcessing(incomingCollaborator),
       },
     );
   };
 
   const declineInvitation = (incomingCollaborator: IncomingCollaborator) => {
-    startProcessing(incomingCollaborator);
     router.post(
       Routes.internal_collaborator_invitation_declines_path(incomingCollaborator.id),
       {},
       {
-        onSuccess: () => {
-          showAlert("Invitation declined", "success");
-          setSelected(null);
-        },
-        onError: () => {
-          showAlert("Sorry, something went wrong. Please try again.", "error");
-        },
-        onFinish: () => {
-          finishProcessing(incomingCollaborator);
-        },
+        onStart: () => startProcessing(incomingCollaborator),
+        onSuccess: () => setSelected(null),
+        onFinish: () => finishProcessing(incomingCollaborator),
       },
     );
   };
 
   const removeIncomingCollaborator = (incomingCollaborator: IncomingCollaborator) => {
-    startProcessing(incomingCollaborator);
     router.delete(Routes.internal_collaborator_path(incomingCollaborator.id), {
-      onSuccess: () => {
-        showAlert("Collaborator removed", "success");
-        setSelected(null);
-      },
-      onError: () => {
-        showAlert("Sorry, something went wrong. Please try again.", "error");
-      },
-      onFinish: () => {
-        finishProcessing(incomingCollaborator);
-      },
+      onStart: () => startProcessing(incomingCollaborator),
+      onSuccess: () => setSelected(null),
+      onFinish: () => finishProcessing(incomingCollaborator),
     });
   };
 
@@ -395,7 +331,6 @@ export default function IncomingsIndex() {
           incomingCollaborators={incomingCollaborators}
           selected={selected}
           processing={processing}
-          loading={loading}
           disabled={isDisabled}
           onSelect={(collaborator) => setSelected(collaborator)}
           onAccept={(collaborator) => acceptInvitation(collaborator)}
