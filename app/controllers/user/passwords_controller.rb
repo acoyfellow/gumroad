@@ -12,15 +12,12 @@ class User::PasswordsController < Devise::PasswordsController
 
   def create
     email = params[:user][:email]
-    if EmailFormatValidator.valid?(email)
-      user = User.alive.by_email(email).first
-      if user&.send_reset_password_instructions
-        return redirect_back fallback_location: root_url, notice: "Password reset sent! Please make sure to check your spam folder."
-      end
-    end
+    user = User.alive.by_email(email).first if EmailFormatValidator.valid?(email)
 
-    if request.inertia?
-      redirect_back fallback_location: root_url, warning: "An account does not exist with that email."
+    if user&.send_reset_password_instructions
+      redirect_back fallback_location: login_url, notice: "Password reset sent! Please make sure to check your spam folder."
+    else
+      redirect_back fallback_location: login_url, warning: "An account does not exist with that email."
     end
   end
 
