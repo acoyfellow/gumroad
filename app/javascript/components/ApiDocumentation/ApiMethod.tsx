@@ -26,7 +26,7 @@ export const ApiMethod: React.FC<ApiMethodProps> = ({ method }) => {
           <div className="parameters">
             <h4>Parameters:</h4>
             {method.parameters.map((param, index) => (
-              <React.Fragment key={param.name}>
+              <div key={param.name}>
                 <strong>{param.name}</strong>
                 {param.description ? (
                   <>
@@ -35,7 +35,7 @@ export const ApiMethod: React.FC<ApiMethodProps> = ({ method }) => {
                   </>
                 ) : null}
                 {index < (method.parameters?.length ?? 0) - 1 ? <br /> : null}
-              </React.Fragment>
+              </div>
             ))}
           </div>
         ) : null}
