@@ -13,10 +13,10 @@ export const Scopes: React.FC = () => {
           <p>We've provided six scopes that you may request when the user authorizes your application.</p>
           <div className="api-list">
             {API_SCOPES.map((scope) => (
-              <React.Fragment key={scope.name}>
-                <strong>{scope.name}:</strong> {scope.description}
-                <br />
-              </React.Fragment>
+              <div key={scope.name}>
+                <strong>{scope.name}:</strong>
+                <span>{scope.description}</span>
+              </div>
             ))}
           </div>
         </div>
