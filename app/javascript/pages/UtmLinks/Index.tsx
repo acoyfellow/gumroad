@@ -344,11 +344,11 @@ const UtmLinkActions = ({ link, onDelete }: { link: SavedUtmLink; onDelete: () =
         }
       >
         <div role="menu">
-          <Link href={Routes.edit_dashboard_utm_link_path(link.id)} role="menuitem">
+          <Link href={Routes.edit_dashboard_utm_link_path(link.id)} role="menuitem" style={{ textDecoration: "none" }}>
             <Icon name="pencil" />
             &ensp;Edit
           </Link>
-          <Link href={Routes.new_dashboard_utm_link_path({ copy_from: link.id })} role="menuitem">
+          <Link href={Routes.new_dashboard_utm_link_path({ copy_from: link.id })} role="menuitem" style={{ textDecoration: "none" }}>
             <Icon name="outline-duplicate" />
             &ensp;Duplicate
           </Link>
