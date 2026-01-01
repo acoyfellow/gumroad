@@ -123,13 +123,18 @@ export default function UtmLinksIndex() {
 
   const onSetSort = (newSort: Sort<SortKey> | null) => {
     const params = new URLSearchParams(window.location.search);
-    if (pagination.pages >= 1) params.delete("page");
+    params.delete("page");
     if (newSort) {
       params.set("key", newSort.key);
       params.set("direction", newSort.direction);
+    } else {
+      params.delete("key");
+      params.delete("direction");
     }
     setSort(newSort);
-    router.reload({ data: Object.fromEntries(params) });
+    const url = new URL(window.location.href);
+    url.search = params.toString();
+    router.get(url.toString());
   };
 
   const thProps = useSortingTableDriver<SortKey>(sort, onSetSort);
@@ -144,7 +149,9 @@ export default function UtmLinksIndex() {
       params.delete("query");
     }
     params.delete("page");
-    router.reload({ data: Object.fromEntries(params) });
+    const url = new URL(window.location.href);
+    url.search = params.toString();
+    router.get(url.toString());
   }, 500);
 
   const handleDelete = (id: string) => {
