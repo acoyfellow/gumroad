@@ -123,7 +123,6 @@ class ProfileSectionsPresenter
       search_results = search_products(
         params.merge(
           {
-            size: Product::Searchable::RECOMMENDED_PRODUCTS_ON_PROFILE_PAGE,
             sort: params[:sort] || section.default_product_sort,
             section:,
             is_alive_on_profile: true,
