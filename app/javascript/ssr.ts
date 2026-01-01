@@ -25,13 +25,11 @@ import AdminUserGuids from "$app/components/server-components/Admin/UserGuids";
 import AdminUserStats from "$app/components/server-components/Admin/UserStats";
 import AffiliateRequestPage from "$app/components/server-components/AffiliateRequestPage";
 import Alert from "$app/components/server-components/Alert";
-import AudiencePage from "$app/components/server-components/AudiencePage";
 import BundleEditPage from "$app/components/server-components/BundleEditPage";
 import CheckoutPage from "$app/components/server-components/CheckoutPage";
 import CommunitiesPage from "$app/components/server-components/CommunitiesPage";
 import CustomersDownloadPopover from "$app/components/server-components/CustomersPage/DownloadPopover";
 import CustomersFilterPopover from "$app/components/server-components/CustomersPage/FilterPopover";
-import DeveloperWidgetsPage from "$app/components/server-components/Developer/WidgetsPage";
 import Discover from "$app/components/server-components/Discover";
 import DiscoverProductPage from "$app/components/server-components/Discover/ProductPage";
 import DiscoverWishlistPage from "$app/components/server-components/Discover/WishlistPage";
@@ -98,14 +96,12 @@ ReactOnRails.register({
   AdminAddCreditForm,
   HelpCenterArticlesIndexPage,
   SupportHeader,
-  AudiencePage,
   BundleEditPage,
   CheckoutPage,
   CodeSnippet,
   CommunitiesPage,
   CustomersDownloadPopover,
   CustomersFilterPopover,
-  DeveloperWidgetsPage,
   Discover,
   DiscoverProductPage,
   DiscoverWishlistPage,

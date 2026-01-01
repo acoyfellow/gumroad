@@ -15,7 +15,7 @@ import { Pagination, PaginationProps } from "$app/components/Pagination";
 import { Popover } from "$app/components/Popover";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Skeleton } from "$app/components/Skeleton";
-import Placeholder from "$app/components/ui/Placeholder";
+import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
@@ -325,18 +325,14 @@ export default function UtmLinksIndex() {
       ) : query ? (
         <div className="p-4 md:p-8">
           <Placeholder>
-            <figure>
-              <img src={noLinksFoundPlaceholder} />
-            </figure>
+            <PlaceholderImage src={noLinksFoundPlaceholder} />
             <h4>No links found for "{query}"</h4>
           </Placeholder>
         </div>
       ) : (
         <div className="p-4 md:p-8">
           <Placeholder>
-            <figure>
-              <img src={noLinksYetPlaceholder} />
-            </figure>
+            <PlaceholderImage src={noLinksYetPlaceholder} />
             <h2>No links yet</h2>
             <h4>Use UTM links to track which sources are driving the most conversions and revenue</h4>
 
