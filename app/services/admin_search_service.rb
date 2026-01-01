@@ -3,8 +3,12 @@
 class AdminSearchService
   class InvalidDateError < StandardError; end
 
-  def search_purchases(query: nil, product_title_query: nil, purchase_status: nil, creator_email: nil, license_key: nil, transaction_date: nil, last_4: nil, card_type: nil, price: nil, expiry_date: nil, limit: nil)
+  def search_purchases(query: nil, email: nil, product_title_query: nil, purchase_status: nil, creator_email: nil, license_key: nil, transaction_date: nil, last_4: nil, card_type: nil, price: nil, expiry_date: nil, limit: nil)
     purchases = Purchase.order(created_at: :desc)
+
+    if email.present?
+      purchases = purchases.where(email: email)
+    end
 
     if query.present?
       unions = [
@@ -15,6 +19,14 @@ class AdminSearchService
         Purchase.select("purchases.id as purchase_id").where(stripe_fingerprint: query).to_sql,
         Purchase.select("purchases.id as purchase_id").where(ip_address: query).to_sql,
       ]
+
+      if (purchase_id = Purchase.from_external_id(query))
+        unions << Purchase.select("purchases.id as purchase_id").where(id: purchase_id).to_sql
+      end
+
+      if !Purchase.external_id?(query)
+        unions << Purchase.select("purchases.id as purchase_id").where(id: query.to_i).to_sql
+      end
 
       union_sql = <<~SQL.squish
         SELECT purchase_id FROM (

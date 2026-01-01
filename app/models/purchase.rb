@@ -806,7 +806,7 @@ class Purchase < ApplicationRecord
     {
       "email" => email,
       "created" => "#{time_ago_in_words(created_at)} ago",
-      "id" => id,
+      "external_id" => external_id,
       "amount" => price_cents,
       "displayed_price" => formatted_total_price,
       "formatted_gumroad_tax_amount" => formatted_gumroad_tax_amount,
@@ -3075,7 +3075,7 @@ class Purchase < ApplicationRecord
 
     # Private: validator that guarantees that the right transaction information is present for paid purchases.
     def financial_transaction_validation
-      return if self.price_cents > 0 &&
+      return if self.price_cents.to_i > 0 &&
                 stripe_transaction_id.present? &&
                 merchant_account.present? &&
                 (stripe_fingerprint.present? || paypal_order_id) &&
