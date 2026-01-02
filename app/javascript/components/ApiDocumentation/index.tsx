@@ -1,10 +1,10 @@
 import React from "react";
 
 import { Layout } from "$app/components/Developer/Layout";
-import { API_METHODS } from "$app/data/apiDocumentation";
 
 import { ApiResource } from "./ApiResource";
 import { Authentication } from "./Authentication";
+import { API_RESOURCES } from "./Endpoints";
 import { Errors } from "./Errors";
 import { Introduction } from "./Introduction";
 import { Navigation } from "./Navigation";
@@ -17,7 +17,7 @@ const ApiDocumentation: React.FC = () => {
       <main className="p-4 md:p-8">
         <div>
           <div className="grid grid-cols-1 items-start gap-x-16 gap-y-8 lg:grid-cols-[var(--grid-cols-sidebar)]">
-            <Navigation resources={API_METHODS} />
+            <Navigation resources={API_RESOURCES} />
             <article style={{ display: "grid", gap: "var(--spacer-6)" }}>
               <Introduction />
               <Authentication />
@@ -36,8 +36,8 @@ const ApiDocumentation: React.FC = () => {
                   </p>
                 </div>
               </div>
-              {API_METHODS.map((resource) => (
-                <ApiResource key={resource.name} resource={resource} />
+              {API_RESOURCES.map((resource) => (
+                <ApiResource key={resource.id} name={resource.name} id={resource.id} endpoints={resource.endpoints} />
               ))}
             </article>
           </div>

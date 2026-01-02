@@ -1,6 +1,36 @@
 import React from "react";
 
-import { API_RESOURCES, OAUTH_READING_LINKS } from "$app/data/apiDocumentation";
+const RESOURCES = [
+  {
+    title: "Create an OAuth application",
+    description: "A getting started guide for creating an application with our API.",
+    isHelper: true,
+  },
+  {
+    title: "omniauth-gumroad",
+    url: "http://rubygems.org/gems/omniauth-gumroad",
+    description: "(Ruby) an OmniAuth strategy for Gumroad OAuth.",
+  },
+];
+
+const OAUTH_READING_LINKS = [
+  {
+    title: "OAuth 2 spec",
+    url: "http://tools.ietf.org/html/draft-ietf-oauth-v2-07",
+  },
+  {
+    title: "Ruby OAuth2 library",
+    url: "https://github.com/intridea/oauth2",
+  },
+  {
+    title: "Python OAuth2 library",
+    url: "https://github.com/dgouldin/python-oauth2",
+  },
+  {
+    title: "PHP OAuth2 library",
+    url: "https://github.com/adoy/PHP-OAuth2",
+  },
+];
 
 export const Resources: React.FC = () => {
   return (
@@ -11,7 +41,7 @@ export const Resources: React.FC = () => {
         </div>
         <div>
           <div className="flex flex-col gap-4">
-            {API_RESOURCES.map((resource, index) => (
+            {RESOURCES.map((resource, index) => (
               <p key={index}>
                 {resource.url ? (
                   <a href={resource.url} target="_blank" rel="noopener noreferrer">

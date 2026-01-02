@@ -1,24 +1,18 @@
 import React from "react";
 
-import type { ApiResource as ApiResourceType } from "$app/data/apiDocumentation";
-
-import { ApiMethod } from "./ApiMethod";
-
 type ApiResourceProps = {
-  resource: ApiResourceType;
+  name: string;
+  id: string;
+  endpoints: React.ReactNode[];
 };
 
-export const ApiResource: React.FC<ApiResourceProps> = ({ resource }) => {
-  const resourceId = resource.name.toLowerCase().replace(/\s+/g, "-");
-
+export const ApiResource: React.FC<ApiResourceProps> = ({ name, id, endpoints }) => {
   return (
-    <div className="stack" id={resourceId}>
+    <div className="stack" id={id}>
       <div>
-        <h2>{resource.name}</h2>
+        <h2>{name}</h2>
       </div>
-      {resource.methods.map((method) => (
-        <ApiMethod key={`${method.type}-${method.path}`} method={method} />
-      ))}
+      {endpoints}
     </div>
   );
 };

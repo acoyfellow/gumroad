@@ -1,9 +1,12 @@
 import React from "react";
 
-import type { ApiResource } from "$app/data/apiDocumentation";
+type ApiResourceNav = {
+  name: string;
+  id: string;
+};
 
 type NavigationProps = {
-  resources: ApiResource[];
+  resources: ApiResourceNav[];
 };
 
 export const Navigation: React.FC<NavigationProps> = ({ resources }) => {
@@ -30,8 +33,8 @@ export const Navigation: React.FC<NavigationProps> = ({ resources }) => {
           <a href="#api-methods">Methods</a>
           <menu>
             {resources.map((resource) => (
-              <li key={resource.name}>
-                <a href={`#${resource.name.toLowerCase().replace(/\s+/g, "-")}`}>{resource.name}</a>
+              <li key={resource.id}>
+                <a href={`#${resource.id}`}>{resource.name}</a>
               </li>
             ))}
           </menu>
