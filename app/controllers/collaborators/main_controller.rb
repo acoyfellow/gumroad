@@ -4,7 +4,8 @@ class Collaborators::MainController < Collaborators::BaseController
   prepend_before_action :set_collaborator, only: %i[edit update destroy]
 
   def index
-    render_index_props
+    @title = "Collaborators"
+    render inertia: "Collaborators/Index", props: CollaboratorsPresenter.new(seller: current_seller).index_props
   end
 
   def new
@@ -46,10 +47,5 @@ class Collaborators::MainController < Collaborators::BaseController
   private
     def collaborator_params
       params.require(:collaborator).permit(:email, :apply_to_all_products, :percent_commission, :dont_show_as_co_creator, products: [:id, :percent_commission, :dont_show_as_co_creator])
-    end
-
-    def render_index_props
-      @title = "Collaborators"
-      render inertia: "Collaborators/Index", props: CollaboratorsPresenter.new(seller: current_seller).index_props
     end
 end

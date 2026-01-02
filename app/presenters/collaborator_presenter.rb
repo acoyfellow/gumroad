@@ -18,7 +18,15 @@ class CollaboratorPresenter
   end
 
   def edit_collaborator_props
-    collaborator_form_props.compact
+    collaborator_form_props(
+      product_affiliates: collaborator.product_affiliates.includes(:product),
+      default_commission: collaborator.affiliate_percentage || DEFAULT_PERCENT_COMMISSION,
+      apply_to_all: collaborator.apply_to_all_products?,
+      collaborator_id: collaborator.external_id,
+      email: nil,
+      dont_show_as_co_creator: collaborator.dont_show_as_co_creator?,
+      title: collaborator.affiliate_user.display_name(prefer_email_over_default_username: true)
+    ).compact
   end
 
   def inertia_shared_props
@@ -52,27 +60,22 @@ class CollaboratorPresenter
   private
     attr_reader :seller, :collaborator
 
-    def collaborator_form_props
-      for_edit_page = collaborator.present?
-      product_affiliates = for_edit_page ? collaborator.product_affiliates.includes(:product) : []
-      default_commission = for_edit_page ? (collaborator.affiliate_percentage || DEFAULT_PERCENT_COMMISSION) : DEFAULT_PERCENT_COMMISSION
-      apply_to_all = for_edit_page ? collaborator.apply_to_all_products? : true
-
+    def collaborator_form_props(product_affiliates: [], default_commission: DEFAULT_PERCENT_COMMISSION, apply_to_all: true, collaborator_id: nil, email: "", dont_show_as_co_creator: false, title: "New collaborator")
       {
         form_data: {
-          id: for_edit_page ? collaborator.external_id : nil,
-          email: for_edit_page ? nil : "",
+          id: collaborator_id,
+          email:,
           apply_to_all_products: apply_to_all,
           percent_commission: default_commission,
-          dont_show_as_co_creator: for_edit_page ? collaborator.dont_show_as_co_creator? : false,
-          products: all_products(for_edit_page:, product_affiliates:, default_commission:, apply_to_all:),
+          dont_show_as_co_creator: dont_show_as_co_creator,
+          products: all_products(product_affiliates:, default_commission:, apply_to_all:, collaborator_id:),
         }.compact,
         page_metadata: {
           default_percent_commission: DEFAULT_PERCENT_COMMISSION,
           min_percent_commission: Collaborator::MIN_PERCENT_COMMISSION,
           max_percent_commission: Collaborator::MAX_PERCENT_COMMISSION,
           max_products_with_affiliates_to_show: MAX_PRODUCTS_WITH_AFFILIATES_TO_SHOW,
-          title: for_edit_page ? collaborator.affiliate_user.display_name(prefer_email_over_default_username: true) : "New collaborator",
+          title:,
         }.compact,
       }
     end
@@ -87,18 +90,18 @@ class CollaboratorPresenter
       end
     end
 
-    def all_products(for_edit_page:, product_affiliates:, default_commission:, apply_to_all:)
+    def all_products(product_affiliates: [], default_commission: DEFAULT_PERCENT_COMMISSION, apply_to_all: true, collaborator_id: nil)
       seller.products.includes(product_affiliates: :affiliate).visible_and_not_archived.map do |product|
-        product_affiliate = for_edit_page ? product_affiliates.find { _1.product.id == product.id } : nil
+        product_affiliate = collaborator_id && product_affiliates.find { _1.product.id == product.id }
         {
           id: product.external_id,
           name: product.name,
           has_another_collaborator: product.has_another_collaborator?(collaborator:),
           has_affiliates: product.direct_affiliates.alive.exists?,
           published: product.published?,
-          enabled: for_edit_page ? product_affiliate.present? : (!product.has_another_collaborator?(collaborator:) && product.published?),
-          percent_commission: for_edit_page ? (product_affiliate&.affiliate_percentage || default_commission) : DEFAULT_PERCENT_COMMISSION,
-          dont_show_as_co_creator: for_edit_page ? (apply_to_all ? collaborator.dont_show_as_co_creator? : (product_affiliate&.dont_show_as_co_creator || false)) : false,
+          enabled: collaborator_id.present? ? product_affiliate.present? : (!product.has_another_collaborator?(collaborator:) && product.published?),
+          percent_commission: collaborator_id.present? ? (product_affiliate&.affiliate_percentage || default_commission) : DEFAULT_PERCENT_COMMISSION,
+          dont_show_as_co_creator: collaborator_id.present? ? (apply_to_all ? collaborator.dont_show_as_co_creator? : (product_affiliate&.dont_show_as_co_creator || false)) : false,
           has_error: false,
         }
       end

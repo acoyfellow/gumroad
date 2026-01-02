@@ -25,7 +25,7 @@ class IncomingCollaboratorsPresenter
           product_affiliates: :product
         )
         .order(
-          Arel.sql("CASE WHEN collaborator_invitations.id IS NULL THEN 0 ELSE 1 END"),
+          Arel.sql("CASE WHEN collaborator_invitations.id IS NULL THEN 1 ELSE 0 END"),
           :id
         )
     end

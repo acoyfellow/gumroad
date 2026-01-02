@@ -18,7 +18,7 @@ class Collaborators::BaseController < Sellers::BaseController
       AffiliateMailer.collaboration_ended_by_affiliate_user(@collaborator.id).deliver_later
     end
 
-    yield if block_given?
+    yield
   end
 
   private
@@ -27,6 +27,10 @@ class Collaborators::BaseController < Sellers::BaseController
     end
 
     def authorize_user
-      authorize(@collaborator || Collaborator)
+      if @collaborator.present?
+        authorize @collaborator
+      else
+        authorize Collaborator
+      end
     end
 end

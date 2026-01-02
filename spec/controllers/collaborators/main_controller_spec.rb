@@ -2,14 +2,13 @@
 
 require "spec_helper"
 require "shared_examples/sellers_base_controller_concern"
+require "shared_examples/collaborators_base_controller_concern"
 require "shared_examples/authorize_called"
 require "shared_examples/authentication_required"
 require "inertia_rails/rspec"
 
 describe Collaborators::MainController, type: :controller, inertia: true do
-  it "inherits from Collaborators::BaseController" do
-    expect(controller.class.ancestors.include?(Collaborators::BaseController)).to eq(true)
-  end
+  it_behaves_like "inherits from Collaborators::BaseController"
 
   let(:seller) { create(:user) }
   let!(:product) { create(:product, user: seller) }
@@ -24,6 +23,8 @@ describe Collaborators::MainController, type: :controller, inertia: true do
     it_behaves_like "authorize called for action", :get, :index do
       let(:record) { Collaborator }
     end
+
+    it_behaves_like "collaborator disabled reason sent", :get, :index
 
     it "renders the index template with correct props" do
       collaborator1 = create(:collaborator, seller:, products: [create(:product, user: seller)])
@@ -57,6 +58,10 @@ describe Collaborators::MainController, type: :controller, inertia: true do
       let(:request_params) { { id: collaborator.external_id } }
     end
 
+    it_behaves_like "collaborator disabled reason sent", :get, :edit do
+      let(:request_params) { { id: collaborator.external_id } }
+    end
+
     it "renders the edit template with correct props" do
       get :edit, params: { id: collaborator.external_id }
 
@@ -82,6 +87,8 @@ describe Collaborators::MainController, type: :controller, inertia: true do
     it_behaves_like "authorize called for action", :get, :new do
       let(:record) { Collaborator }
     end
+
+    it_behaves_like "collaborator disabled reason sent", :get, :new
 
     it "renders the new template with correct props" do
       get :new
