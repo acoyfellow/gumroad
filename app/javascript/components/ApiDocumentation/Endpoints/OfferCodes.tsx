@@ -55,7 +55,13 @@ export const GetOfferCode: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "offer_code": {...}
+  "offer_code": {
+    "id": "mN7CdHiwHaR9FlxKvF-n-g==",
+    "name": "1OFF",
+    "amount_cents": 100,
+    "max_purchase_count": null,
+    "times_used": 1
+  }
 }`}
     </CodeSnippet>
   </ApiEndpoint>
@@ -68,11 +74,9 @@ export const CreateOfferCode: React.FC = () => (
     description="Create a new offer code for a product. Default offer code is in cents. A universal offer code is one that applies to all products."
   >
     <ApiParameters>
-      <ApiParameter name="name" required>
-        the coupon code used at checkout
-      </ApiParameter>
+      <ApiParameter name="name">the coupon code used at checkout</ApiParameter>
       <br />
-      <ApiParameter name="amount_off" required />
+      <ApiParameter name="amount_off" />
       <br />
       <ApiParameter name="offer_type">optional, "cents" or "percent") Default: "cents"</ApiParameter>
       <br />
@@ -91,7 +95,13 @@ export const CreateOfferCode: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "offer_code": {...}
+  "offer_code": {
+    "id": "mN7CdHiwHaR9FlxKvF-n-g==",
+    "name": "1OFF",
+    "amount_cents": 100,
+    "max_purchase_count": null,
+    "times_used": 1
+  }
 }`}
     </CodeSnippet>
   </ApiEndpoint>
@@ -104,13 +114,9 @@ export const UpdateOfferCode: React.FC = () => (
     description="Edit an existing product's offer code."
   >
     <ApiParameters>
-      <ApiParameter name="name">the coupon code used at checkout</ApiParameter>
+      <ApiParameter name="offer_code" />
       <br />
-      <ApiParameter name="amount_off" />
-      <br />
-      <ApiParameter name="offer_type">optional, "cents" or "percent"</ApiParameter>
-      <br />
-      <ApiParameter name="max_purchase_count">optional</ApiParameter>
+      <ApiParameter name="max_purchase_count" />
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/products/A-m3CDDC5dlrSdKZp0RFhA==/offer_codes/bfi_30HLgGWL8H2wo_Gzlg== \\
@@ -121,7 +127,13 @@ export const UpdateOfferCode: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "offer_code": {...}
+  "offer_code": {
+    "id": "mN7CdHiwHaR9FlxKvF-n-g==",
+    "name": "1OFF",
+    "amount_cents": 100,
+    "max_purchase_count": 10,
+    "universal": false
+  }
 }`}
     </CodeSnippet>
   </ApiEndpoint>
@@ -141,7 +153,7 @@ export const DeleteOfferCode: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "message": "Offer code deleted"
+  "message": "The offer_code has been deleted successfully."
 }`}
     </CodeSnippet>
   </ApiEndpoint>

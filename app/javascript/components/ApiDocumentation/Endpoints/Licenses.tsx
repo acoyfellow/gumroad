@@ -8,11 +8,11 @@ import { ApiParameter, ApiParameters } from "../ApiParameters";
 export const VerifyLicense: React.FC = () => (
   <ApiEndpoint method="post" path="/licenses/verify" description="Verify a license">
     <ApiParameters>
-      <ApiParameter name="product_id">the unique ID of the product, available on product's edit page</ApiParameter>
+      <ApiParameter name="product_id">(the unique ID of the product, available on product's edit page)</ApiParameter>
       <br />
-      <ApiParameter name="license_key">the license key provided by your customer</ApiParameter>
+      <ApiParameter name="license_key">(the license key provided by your customer)</ApiParameter>
       <br />
-      <ApiParameter name="increment_uses_count">"true"/"false", optional, default: "true"</ApiParameter>
+      <ApiParameter name="increment_uses_count">(optional, default: "true") "true"/"false"</ApiParameter>
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/licenses/verify \\
@@ -72,9 +72,9 @@ export const VerifyLicense: React.FC = () => (
 export const EnableLicense: React.FC = () => (
   <ApiEndpoint method="put" path="/licenses/enable" description="Enable a license">
     <ApiParameters>
-      <ApiParameter name="product_id">the unique ID of the product, available on product's edit page</ApiParameter>
+      <ApiParameter name="product_id">(the unique ID of the product, available on product's edit page)</ApiParameter>
       <br />
-      <ApiParameter name="license_key">the license key provided by your customer</ApiParameter>
+      <ApiParameter name="license_key">(the license key provided by your customer)</ApiParameter>
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/licenses/enable \\
@@ -135,9 +135,9 @@ export const EnableLicense: React.FC = () => (
 export const DisableLicense: React.FC = () => (
   <ApiEndpoint method="put" path="/licenses/disable" description="Disable a license">
     <ApiParameters>
-      <ApiParameter name="product_id">the unique ID of the product, available on product's edit page</ApiParameter>
+      <ApiParameter name="product_id">(the unique ID of the product, available on product's edit page)</ApiParameter>
       <br />
-      <ApiParameter name="license_key">the license key provided by your customer</ApiParameter>
+      <ApiParameter name="license_key">(the license key provided by your customer)</ApiParameter>
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/licenses/disable \\
@@ -198,9 +198,9 @@ export const DisableLicense: React.FC = () => (
 export const DecrementUsesCount: React.FC = () => (
   <ApiEndpoint method="put" path="/licenses/decrement_uses_count" description="Decrement the uses count of a license">
     <ApiParameters>
-      <ApiParameter name="product_id">the unique ID of the product, available on product's edit page</ApiParameter>
+      <ApiParameter name="product_id">(the unique ID of the product, available on product's edit page)</ApiParameter>
       <br />
-      <ApiParameter name="license_key">the license key provided by your customer</ApiParameter>
+      <ApiParameter name="license_key">(the license key provided by your customer)</ApiParameter>
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/licenses/decrement_uses_count \\
@@ -265,9 +265,9 @@ export const RotateLicense: React.FC = () => (
     description="Rotate a license key. The old license key will no longer be valid."
   >
     <ApiParameters>
-      <ApiParameter name="product_id">the unique ID of the product, available on product's edit page</ApiParameter>
+      <ApiParameter name="product_id">(the unique ID of the product, available on product's edit page)</ApiParameter>
       <br />
-      <ApiParameter name="license_key">the license key provided by your customer</ApiParameter>
+      <ApiParameter name="license_key">(the license key provided by your customer)</ApiParameter>
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/licenses/rotate \\
