@@ -163,7 +163,7 @@ export default function SettingsPage() {
               <fieldset>
                 <legend>Social links</legend>
                 {creatorProfile.twitter_handle ? (
-                  <Button type="button" brand="twitter" onClick={handleUnlinkTwitter}>
+                  <Button type="button" color="twitter" onClick={handleUnlinkTwitter}>
                     Disconnect {creatorProfile.twitter_handle} from X
                   </Button>
                 ) : (

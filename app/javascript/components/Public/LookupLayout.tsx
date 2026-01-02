@@ -175,7 +175,7 @@ const LookupLayout = ({ children, title, type }: {
             </fieldset>
             <fieldset>
               <Button
-                brand="paypal"
+                color="paypal"
                 type="submit"
                 disabled={isPaypalLoading}
               >

@@ -155,7 +155,7 @@ export const GoogleCalendarIntegrationEditor = ({
                 People who purchase your product will automatically receive a Google Calendar invite and we'll keep your
                 calendar in sync.
               </p>
-              <Button brand="google" onClick={handleConnectGoogleAccount}>
+              <Button color="google" onClick={handleConnectGoogleAccount}>
                 Connect to Google Calendar
               </Button>
             </>

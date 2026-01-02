@@ -112,7 +112,6 @@ type ButtonVariation = {
   color?: ButtonColor | BrandName | undefined;
   outline?: boolean | undefined;
   small?: boolean | undefined;
-  brand?: BrandName | undefined;
 };
 
 export interface ButtonProps extends Omit<React.ComponentPropsWithoutRef<"button">, "color">, ButtonVariation {
@@ -124,16 +123,14 @@ const useButtonCommon = ({
   color,
   outline,
   small,
-  brand,
 }: ButtonVariation & { className?: string | undefined }) => {
   useValidateClassName(className);
 
   const variant = outline ? "outline" : color === "danger" ? "destructive" : "default";
   const size = small ? "sm" : "default";
 
-  // Support legacy brand prop by mapping it to color
-  const effectiveColor = brand || color;
-  const effectiveBrand = brand || (brandNames.includes(effectiveColor as BrandName) ? (effectiveColor as BrandName) : undefined);
+  const effectiveColor = color;
+  const effectiveBrand = brandNames.includes(effectiveColor as BrandName) ? (effectiveColor as BrandName) : undefined;
 
   const classes = classNames(
     buttonVariants({ variant, size, color: effectiveColor && !outline ? effectiveColor : undefined }),
@@ -146,8 +143,8 @@ const useButtonCommon = ({
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, color, outline, small, brand, disabled, children, asChild = false, ...props }, ref) => {
-    const { classes, icon } = useButtonCommon({ className, color, outline, small, brand });
+  ({ className, color, outline, small, disabled, children, asChild = false, ...props }, ref) => {
+    const { classes, icon } = useButtonCommon({ className, color, outline, small });
     const Comp = asChild ? Slot : "button";
 
     return (
@@ -169,8 +166,8 @@ export interface NavigationButtonProps extends Omit<React.ComponentPropsWithoutR
 }
 
 export const NavigationButton = React.forwardRef<HTMLAnchorElement, NavigationButtonProps>(
-  ({ className, color, outline, small, brand, disabled, children, ...props }, ref) => {
-    const { icon } = useButtonCommon({ className, color, outline, small, brand });
+  ({ className, color, outline, small, disabled, children, ...props }, ref) => {
+    const { icon } = useButtonCommon({ className, color, outline, small });
 
     return (
       <Button
@@ -179,7 +176,6 @@ export const NavigationButton = React.forwardRef<HTMLAnchorElement, NavigationBu
         color={color}
         outline={outline}
         small={small}
-        brand={brand}
         disabled={disabled}
       >
         <a

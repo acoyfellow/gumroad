@@ -67,7 +67,7 @@ const PayPalConnectSection = ({
                 <div>
                   <Button
                     asChild
-                    brand="paypal"
+                    color="paypal"
                     disabled={isFormDisabled || !paypalConnect.allow_paypal_connect}
                   >
                     <a
@@ -111,8 +111,7 @@ const PayPalConnectSection = ({
                 <>
                   <p>
                     <Button
-                      color="danger"
-                      brand="paypal"
+                      color="paypal"
                       aria-label="Disconnect PayPal account"
                       disabled={isFormDisabled || !paypalConnect.paypal_disconnect_allowed}
                       onClick={disconnectPayPal}
@@ -138,7 +137,7 @@ const PayPalConnectSection = ({
                 <p>
                   <Button
                     asChild
-                    brand="paypal"
+                    color="paypal"
                     disabled={isFormDisabled || !paypalConnect.allow_paypal_connect}
                   >
                     <a
