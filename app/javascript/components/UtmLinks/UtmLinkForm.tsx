@@ -184,7 +184,7 @@ export const UtmLinkForm = (pageProps: UtmLinkFormProps | UtmLinkEditProps) => {
         const newPermalink = additionalMetadata?.new_permalink;
         if (newPermalink) {
           setShortUrl((shortUrl) => ({ ...shortUrl, permalink: newPermalink }));
-          setData("utm_link", { ...data.utm_link, permalink: newPermalink });
+          setData("utm_link.permalink", newPermalink);
         }
       },
       onError: () => {
@@ -287,7 +287,7 @@ export const UtmLinkForm = (pageProps: UtmLinkFormProps | UtmLinkEditProps) => {
               placeholder="Title"
               value={data.utm_link.title}
               ref={titleRef}
-              onChange={(e) => setData("utm_link", { ...data.utm_link, title: e.target.value })}
+              onChange={(e) => setData("utm_link.title", e.target.value)}
             />
             {getFieldError("title") ? <small>{getFieldError("title")}</small> : null}
           </fieldset>
@@ -375,7 +375,7 @@ export const UtmLinkForm = (pageProps: UtmLinkFormProps | UtmLinkEditProps) => {
                 placeholder="newsletter"
                 baseOptionValues={context.utm_fields_values.sources}
                 value={data.utm_link.utm_source}
-                onChange={(value) => setData("utm_link", { ...data.utm_link, utm_source: value })}
+                onChange={(value) => setData("utm_link.utm_source", value)}
               />
               {getFieldError("utm_source") ? (
                 <small>{getFieldError("utm_source")}</small>
@@ -392,7 +392,7 @@ export const UtmLinkForm = (pageProps: UtmLinkFormProps | UtmLinkEditProps) => {
                 placeholder="email"
                 baseOptionValues={context.utm_fields_values.mediums}
                 value={data.utm_link.utm_medium}
-                onChange={(value) => setData("utm_link", { ...data.utm_link, utm_medium: value })}
+                onChange={(value) => setData("utm_link.utm_medium", value)}
               />
               {getFieldError("utm_medium") ? (
                 <small>{getFieldError("utm_medium")}</small>
@@ -410,7 +410,7 @@ export const UtmLinkForm = (pageProps: UtmLinkFormProps | UtmLinkEditProps) => {
               placeholder="new-course-launch"
               baseOptionValues={context.utm_fields_values.campaigns}
               value={data.utm_link.utm_campaign}
-              onChange={(value) => setData("utm_link", { ...data.utm_link, utm_campaign: value })}
+              onChange={(value) => setData("utm_link.utm_campaign", value)}
             />
             {getFieldError("utm_campaign") ? (
               <small>{getFieldError("utm_campaign")}</small>
@@ -427,7 +427,7 @@ export const UtmLinkForm = (pageProps: UtmLinkFormProps | UtmLinkEditProps) => {
               placeholder="photo-editing"
               baseOptionValues={context.utm_fields_values.terms}
               value={data.utm_link.utm_term}
-              onChange={(value) => setData("utm_link", { ...data.utm_link, utm_term: value })}
+              onChange={(value) => setData("utm_link.utm_term", value)}
             />
             {getFieldError("utm_term") ? (
               <small>{getFieldError("utm_term")}</small>
@@ -444,7 +444,7 @@ export const UtmLinkForm = (pageProps: UtmLinkFormProps | UtmLinkEditProps) => {
               placeholder="video-ad"
               baseOptionValues={context.utm_fields_values.contents}
               value={data.utm_link.utm_content}
-              onChange={(value) => setData("utm_link", { ...data.utm_link, utm_content: value })}
+              onChange={(value) => setData("utm_link.utm_content", value)}
             />
             {getFieldError("utm_content") ? (
               <small>{getFieldError("utm_content")}</small>
