@@ -4,7 +4,7 @@ import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { PriceInput } from "$app/components/PriceInput";
 import { ShippingDestination, useProductEditContext } from "$app/components/ProductEdit/state";
-import Placeholder from "$app/components/ui/Placeholder";
+import { Placeholder } from "$app/components/ui/Placeholder";
 import { Stack, StackItem } from "$app/components/ui/Stack";
 import { WithTooltip } from "$app/components/WithTooltip";
 

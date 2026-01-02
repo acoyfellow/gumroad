@@ -20,7 +20,7 @@ import { Popover } from "$app/components/Popover";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Skeleton } from "$app/components/Skeleton";
 import { PageHeader } from "$app/components/ui/PageHeader";
-import Placeholder from "$app/components/ui/Placeholder";
+import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Stack, StackItem } from "$app/components/ui/Stack";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
@@ -512,9 +512,7 @@ export default function AffiliatesIndex() {
               </>
             ) : (
               <Placeholder>
-                <figure>
-                  <img src={placeholder} />
-                </figure>
+                <PlaceholderImage src={placeholder} />
                 <h2>No affiliates found</h2>
               </Placeholder>
             )}

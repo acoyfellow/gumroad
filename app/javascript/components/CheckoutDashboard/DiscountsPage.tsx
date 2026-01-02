@@ -36,7 +36,7 @@ import { TypeSafeOptionSelect } from "$app/components/TypeSafeOptionSelect";
 import { Alert } from "$app/components/ui/Alert";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Pill } from "$app/components/ui/Pill";
-import Placeholder from "$app/components/ui/Placeholder";
+import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Stack, StackItem } from "$app/components/ui/Stack";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
@@ -500,9 +500,7 @@ const DiscountsPage = ({
           </section>
         ) : (
           <Placeholder>
-            <figure>
-              <img src={placeholder} />
-            </figure>
+            <PlaceholderImage src={placeholder} />
             <div>
               <h2>No discounts yet</h2>
               <p>Use discounts to create sweet deals for your customers</p>
