@@ -395,7 +395,12 @@ Rails.application.routes.draw do
     end
     resources :collaborators, only: [:index, :new, :create, :edit, :update, :destroy]
     namespace :collaborators do
-      resources :incomings, only: [:index]
+      resources :incomings, only: [:index, :destroy] do
+        member do
+          post :accept
+          post :decline
+        end
+      end
     end
 
     get "/dashboard/utm_links/*other", to: "utm_links#index" # route handled by react-router

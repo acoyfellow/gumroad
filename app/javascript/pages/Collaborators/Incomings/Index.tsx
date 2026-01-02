@@ -1,4 +1,4 @@
-import { router, usePage } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import * as React from "react";
 
 import { classNames } from "$app/utils/classNames";
@@ -165,10 +165,10 @@ const IncomingCollaboratorsTableRow = ({
     <TableCell>
       {incomingCollaborator.invitation_accepted ? null : (
         <div className="flex flex-wrap gap-3 lg:justify-end" onClick={(e) => e.stopPropagation()}>
-          <Button type="submit" aria-label="Accept" onClick={onAccept} disabled={disabled}>
+          <Button aria-label="Accept" onClick={onAccept} disabled={disabled}>
             <Icon name="outline-check" />
           </Button>
-          <Button type="submit" color="danger" aria-label="Decline" onClick={onReject} disabled={disabled}>
+          <Button color="danger" aria-label="Decline" onClick={onReject} disabled={disabled}>
             <Icon name="x" />
           </Button>
         </div>
@@ -193,7 +193,6 @@ const EmptyState = () => (
 const IncomingCollaboratorsTable = ({
   incomingCollaborators,
   selected,
-  processing,
   disabled,
   onSelect,
   onAccept,
@@ -202,7 +201,6 @@ const IncomingCollaboratorsTable = ({
 }: {
   incomingCollaborators: IncomingCollaborator[];
   selected: IncomingCollaborator | null;
-  processing: Set<string>;
   disabled: boolean;
   onSelect: (collaborator: IncomingCollaborator | null) => void;
   onAccept: (collaborator: IncomingCollaborator) => void;
@@ -230,7 +228,7 @@ const IncomingCollaboratorsTable = ({
             onSelect={() => onSelect(incomingCollaborator)}
             onAccept={() => onAccept(incomingCollaborator)}
             onReject={() => onReject(incomingCollaborator)}
-            disabled={processing.has(incomingCollaborator.id) || disabled}
+            disabled={disabled}
           />
         ))}
       </TableBody>
@@ -242,7 +240,7 @@ const IncomingCollaboratorsTable = ({
         onAccept={() => onAccept(selected)}
         onReject={() => onReject(selected)}
         onRemove={() => onRemove(selected)}
-        disabled={processing.has(selected.id) || disabled}
+        disabled={disabled}
       />
     ) : null}
   </section>
@@ -253,55 +251,29 @@ export default function IncomingsIndex() {
   const loggedInUser = useLoggedInUser();
   const { collaborators: incomingCollaborators, collaborators_disabled_reason } = props;
 
-  const [processing, setProcessing] = React.useState<Set<string>>(new Set());
   const [selected, setSelected] = React.useState<IncomingCollaborator | null>(null);
-  const isDisabled = processing.size > 0;
 
-  const startProcessing = (incomingCollaborator: IncomingCollaborator) => {
-    setProcessing((prev) => {
-      const newSet = new Set(prev);
-      newSet.add(incomingCollaborator.id);
-      return newSet;
-    });
-  };
+  const acceptForm = useForm({});
+  const declineForm = useForm({});
+  const removeForm = useForm({});
 
-  const finishProcessing = (incomingCollaborator: IncomingCollaborator) => {
-    setProcessing((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(incomingCollaborator.id);
-      return newSet;
-    });
-  };
+  const isDisabled = acceptForm.processing || declineForm.processing || removeForm.processing;
 
   const acceptInvitation = (incomingCollaborator: IncomingCollaborator) => {
-    router.post(
-      Routes.internal_collaborator_invitation_acceptances_path(incomingCollaborator.id),
-      {},
-      {
-        onStart: () => startProcessing(incomingCollaborator),
-        onSuccess: () => setSelected(null),
-        onFinish: () => finishProcessing(incomingCollaborator),
-      },
-    );
+    acceptForm.post(Routes.accept_collaborators_incoming_path(incomingCollaborator.id), {
+      onSuccess: () => setSelected(null),
+    });
   };
 
   const declineInvitation = (incomingCollaborator: IncomingCollaborator) => {
-    router.post(
-      Routes.internal_collaborator_invitation_declines_path(incomingCollaborator.id),
-      {},
-      {
-        onStart: () => startProcessing(incomingCollaborator),
-        onSuccess: () => setSelected(null),
-        onFinish: () => finishProcessing(incomingCollaborator),
-      },
-    );
+    declineForm.post(Routes.decline_collaborators_incoming_path(incomingCollaborator.id), {
+      onSuccess: () => setSelected(null),
+    });
   };
 
   const removeIncomingCollaborator = (incomingCollaborator: IncomingCollaborator) => {
-    router.delete(Routes.internal_collaborator_path(incomingCollaborator.id), {
-      onStart: () => startProcessing(incomingCollaborator),
+    removeForm.delete(Routes.collaborators_incoming_path(incomingCollaborator.id), {
       onSuccess: () => setSelected(null),
-      onFinish: () => finishProcessing(incomingCollaborator),
     });
   };
 
@@ -328,7 +300,6 @@ export default function IncomingsIndex() {
         <IncomingCollaboratorsTable
           incomingCollaborators={incomingCollaborators}
           selected={selected}
-          processing={processing}
           disabled={isDisabled}
           onSelect={(collaborator) => setSelected(collaborator)}
           onAccept={(collaborator) => acceptInvitation(collaborator)}
