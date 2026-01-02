@@ -122,19 +122,15 @@ export default function UtmLinksIndex() {
   };
 
   const onSetSort = (newSort: Sort<SortKey> | null) => {
-    const params = new URLSearchParams(window.location.search);
-    params.delete("page");
-    if (newSort) {
-      params.set("key", newSort.key);
-      params.set("direction", newSort.direction);
-    } else {
-      params.delete("key");
-      params.delete("direction");
-    }
     setSort(newSort);
-    const url = new URL(window.location.href);
-    url.search = params.toString();
-    router.get(url.toString());
+    router.reload({
+      data: {
+        key: newSort?.key,
+        direction: newSort?.direction,
+        page: undefined,
+      },
+      only: ["utm_links", "pagination", "sort"],
+    });
   };
 
   const thProps = useSortingTableDriver<SortKey>(sort, onSetSort);
@@ -142,16 +138,10 @@ export default function UtmLinksIndex() {
   const onSearch = useDebouncedCallback((newQuery: string) => {
     if (query === newQuery) return;
 
-    const params = new URLSearchParams(window.location.search);
-    if (newQuery.length > 0) {
-      params.set("query", newQuery);
-    } else {
-      params.delete("query");
-    }
-    params.delete("page");
-    const url = new URL(window.location.href);
-    url.search = params.toString();
-    router.get(url.toString());
+    router.reload({
+      data: { query: newQuery.length > 0 ? newQuery : undefined, page: undefined },
+      only: ["utm_links", "pagination", "query"],
+    });
   }, 500);
 
   const handleDelete = (id: string) => {

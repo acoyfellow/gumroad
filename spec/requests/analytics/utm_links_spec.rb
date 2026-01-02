@@ -266,7 +266,7 @@ describe "UTM links", :js, type: :system do
         expect(page).not_to have_table_row({ "Link" => utm_link2.title })
         expect(page).to_not have_button("Next")
         # Always takes to the first page when searching regardless of the previous page number
-        expect(page).to have_current_path("#{dashboard_utm_links_path}?key=link&direction=desc&query=+Sale+++++")
+        expect(page).to have_current_path("#{dashboard_utm_links_path}?key=link&direction=desc&query=%20Sale%20%20%20%20%20")
 
         # Search by source
         select_disclosure "Search" do
