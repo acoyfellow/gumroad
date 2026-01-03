@@ -342,10 +342,10 @@ describe LoginsController, type: :controller, inertia: true do
       sign_in user
     end
 
-    it "signs out the user and redirects to login path with notice" do
+    it "signs out the user and redirects to root path with notice" do
       delete :destroy
 
-      expect(response).to redirect_to(login_path)
+      expect(response).to redirect_to(root_path)
       expect(flash[:notice]).to eq("Signed out successfully.")
       expect(controller.user_signed_in?).to be(false)
     end

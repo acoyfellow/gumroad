@@ -288,7 +288,7 @@ describe SignupController, type: :controller, inertia: true do
       expect do
         post :create, params: { user:
           { email: purchase.email, add_purchase_to_existing_account: false, buyer_signup: true, password: "password", purchase_id: purchase.external_id } }
-        expect(response).to redirect_to(Addressable::URI.escape("/#{referrer_path}"))
+          expect(response).to redirect_to(Addressable::URI.escape(referrer_path))
       end.to change { User.count }.by(1)
     end
 
