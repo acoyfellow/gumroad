@@ -55,10 +55,10 @@ describe "Two-Factor Authentication", js: true, type: :system do
         expect(page).to have_current_path(dashboard_path)
 
         # Clear the session by logging out
-        visit logout_path
+        first("nav[aria-label='Main'] details summary").click
+        click_on "Logout"
+        login_to_app
 
-        # Visit login page and login again
-        visit login_path
         expect(page).to have_field("Email")
         fill_in "Email", with: user.email
         fill_in "Password", with: user.password

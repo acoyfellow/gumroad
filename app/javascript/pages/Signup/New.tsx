@@ -10,7 +10,7 @@ import { PasswordInput } from "$app/components/PasswordInput";
 import { Separator } from "$app/components/Separator";
 import { useOriginalLocation } from "$app/components/useOriginalLocation";
 import { RecaptchaCancelledError, useRecaptcha } from "$app/components/useRecaptcha";
-import { WarningFlash } from "$app/components/WarningFlashMessage";
+import { AuthAlert } from "$app/components/AuthAlertComponent";
 
 type PageProps = {
   email: string | null;
@@ -84,7 +84,7 @@ function SignupPage() {
           <span>or</span>
         </Separator>
         <section>
-          <WarningFlash />
+          <AuthAlert />
           <fieldset>
             <legend>
               <label htmlFor={`${uid}-email`}>Email</label>

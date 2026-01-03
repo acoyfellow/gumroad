@@ -6,7 +6,7 @@ import { SocialAuth } from "$app/components/Authentication/SocialAuth";
 import { Button } from "$app/components/Button";
 import { Separator } from "$app/components/Separator";
 import { useOriginalLocation } from "$app/components/useOriginalLocation";
-import { WarningFlash } from "$app/components/WarningFlashMessage";
+import { AuthAlert } from "$app/components/AuthAlertComponent";
 
 type PageProps = {
   email: string | null;
@@ -42,7 +42,7 @@ function ForgotPasswordPage() {
           <span>or</span>
         </Separator>
         <section>
-          <WarningFlash />
+          <AuthAlert />
           <fieldset>
             <legend>
               <label htmlFor={uid}>Email to send reset instructions to</label>

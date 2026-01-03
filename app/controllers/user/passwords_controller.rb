@@ -7,7 +7,7 @@ class User::PasswordsController < Devise::PasswordsController
   def new
     @title = "Forgot password"
     auth_presenter = AuthPresenter.new(params:, application: @application)
-    render inertia: "PasswordReset/New", props: auth_presenter.login_props
+    render inertia: "User/Passwords/New", props: auth_presenter.login_props
   end
 
   def create
@@ -15,7 +15,7 @@ class User::PasswordsController < Devise::PasswordsController
     user = User.alive.by_email(email).first if EmailFormatValidator.valid?(email)
 
     if user&.send_reset_password_instructions
-      redirect_to login_url, notice: "Password reset sent! Please make sure to check your spam folder."
+      redirect_to login_url, notice: "Password reset sent! Please make sure to check your spam folder.", status: :see_other
     else
       redirect_back fallback_location: login_url, warning: "An account does not exist with that email."
     end
@@ -31,7 +31,7 @@ class User::PasswordsController < Devise::PasswordsController
     end
 
     @title = "Reset your password"
-    render inertia: "PasswordReset/Edit", props: {
+    render inertia: "User/Password/Edit", props: {
       reset_password_token: reset_password_token
     }
   end

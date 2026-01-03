@@ -8,7 +8,7 @@ type PageProps = {
   flash?: AlertPayload;
 };
 
-export const WarningFlash: React.FC = () => {
+export const AuthAlert: React.FC = () => {
   const { flash } = usePage<PageProps>().props;
 
   React.useEffect(() => {
