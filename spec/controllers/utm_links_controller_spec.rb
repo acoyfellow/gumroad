@@ -92,6 +92,24 @@ describe UtmLinksController, type: :controller, inertia: true do
       expect(response).to be_successful
       expect(inertia.props[:utm_links].map { _1[:id] }).to eq([utm_link2.external_id])
     end
+
+    context "when fetching only utm_links_stats via partial request" do
+      let!(:utm_link) { create(:utm_link, seller:) }
+
+      before do
+        request.headers["X-Inertia"] = "true"
+        request.headers["X-Inertia-Partial-Component"] = "UtmLinks/Index"
+        request.headers["X-Inertia-Partial-Data"] = "utm_links_stats"
+      end
+
+      it "does not call PaginatedUtmLinksPresenter" do
+        expect(PaginatedUtmLinksPresenter).not_to receive(:new)
+
+        get :index, params: { ids: [utm_link.external_id] }
+
+        expect(response).to be_successful
+      end
+    end
   end
 
   describe "GET new" do
@@ -118,6 +136,22 @@ describe UtmLinksController, type: :controller, inertia: true do
       expect(inertia.component).to eq("UtmLinks/New")
       expect(inertia.props[:utm_link]).to be_present
       expect(inertia.props[:utm_link][:title]).to eq(existing_utm_link.title)
+    end
+
+    context "when fetching only additional_metadata via partial request" do
+      before do
+        request.headers["X-Inertia"] = "true"
+        request.headers["X-Inertia-Partial-Component"] = "UtmLinks/New"
+        request.headers["X-Inertia-Partial-Data"] = "additional_metadata"
+      end
+
+      it "does not compute utm_link or context props" do
+        expect_any_instance_of(UtmLinkPresenter).not_to receive(:new_page_react_props)
+
+        get :new
+
+        expect(response).to be_successful
+      end
     end
   end
 
@@ -172,6 +206,12 @@ describe UtmLinksController, type: :controller, inertia: true do
       end.not_to change { UtmLink.count }
 
       expect(response).to redirect_to(new_dashboard_utm_link_path)
+    end
+
+    it "raises error for missing required utm_link param" do
+      expect do
+        post :create, params: {}
+      end.to raise_error(ActionController::ParameterMissing, /param is missing or the value is empty: utm_link/)
     end
   end
 
@@ -271,6 +311,12 @@ describe UtmLinksController, type: :controller, inertia: true do
       expect(response).to redirect_to(dashboard_utm_links_path)
       expect(flash[:alert]).to eq("Link not found")
     end
+
+    it "raises error for missing required utm_link param" do
+      expect do
+        patch :update, params: { id: utm_link.external_id }
+      end.to raise_error(ActionController::ParameterMissing, /param is missing or the value is empty: utm_link/)
+    end
   end
 
   describe "DELETE destroy" do
@@ -300,20 +346,24 @@ describe UtmLinksController, type: :controller, inertia: true do
       expect(flash[:notice]).to eq("Link deleted!")
       expect(utm_link.reload).to be_deleted
     end
-  end
 
-  describe "GET unique_permalink" do
-    it_behaves_like "authorize called for action", :get, :unique_permalink do
-      let(:record) { UtmLink }
-      let(:policy_method) { :new? }
-    end
+    it "preserves query, page, and sort params in redirect" do
+      delete :destroy, params: {
+        id: utm_link.external_id,
+        query: "facebook",
+        page: 2,
+        key: "date",
+        direction: "desc"
+      }
 
-    it "returns a unique permalink" do
-      get :unique_permalink, format: :json
-
-      expect(response).to be_successful
-      expect(response.parsed_body["permalink"]).to be_present
-      expect(response.parsed_body["permalink"].length).to eq(8)
+      expect(response).to redirect_to(
+        dashboard_utm_links_path(
+          query: "facebook",
+          page: 2,
+          key: "date",
+          direction: "desc"
+        )
+      )
     end
   end
 end

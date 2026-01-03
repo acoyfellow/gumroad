@@ -11,7 +11,8 @@ class UtmLinksController < Sellers::BaseController
     authorize UtmLink
 
     render inertia: "UtmLinks/Index", props: {
-      **paginated_utm_links_props,
+      utm_links: -> { paginated_utm_links_presenter[:utm_links] },
+      pagination: -> { paginated_utm_links_presenter[:pagination] },
       query: index_params[:query],
       sort: index_params[:sort],
       utm_links_stats: InertiaRails.merge { fetch_utm_links_stats(params[:ids]) }
@@ -22,7 +23,8 @@ class UtmLinksController < Sellers::BaseController
     authorize UtmLink
 
     render inertia: "UtmLinks/New", props: {
-      **new_page_props,
+      utm_link: -> { new_page_presenter[:utm_link] },
+      context: -> { new_page_presenter[:context] },
       additional_metadata: InertiaRails.optional { UtmLinkPresenter.new(seller: current_seller).new_additional_metadata_props }
     }
   end
@@ -63,12 +65,6 @@ class UtmLinksController < Sellers::BaseController
     redirect_to dashboard_utm_links_path(index_route_params.except(:ids).compact), notice: "Link deleted!"
   end
 
-  def unique_permalink
-    authorize UtmLink, :new?
-
-    render json: { permalink: UtmLink.generate_permalink }
-  end
-
   private
     def set_title
       @title = "UTM Links"
@@ -106,8 +102,8 @@ class UtmLinksController < Sellers::BaseController
       { key: key, direction: direction == "desc" ? "desc" : "asc" }
     end
 
-    def paginated_utm_links_props
-      PaginatedUtmLinksPresenter.new(
+    def paginated_utm_links_presenter
+      @paginated_utm_links_presenter ||= PaginatedUtmLinksPresenter.new(
         seller: current_seller,
         query: index_params[:query],
         page: index_params[:page],
@@ -115,8 +111,8 @@ class UtmLinksController < Sellers::BaseController
       ).props
     end
 
-    def new_page_props
-      UtmLinkPresenter.new(seller: current_seller).new_page_react_props(copy_from: params[:copy_from])
+    def new_page_presenter
+      @new_page_presenter ||= UtmLinkPresenter.new(seller: current_seller).new_page_react_props(copy_from: params[:copy_from])
     end
 
     def edit_page_props

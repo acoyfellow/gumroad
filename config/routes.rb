@@ -821,11 +821,7 @@ Rails.application.routes.draw do
     # utm links
     get "/utm_links" => redirect("/dashboard/utm_links")
     scope as: :dashboard, path: "dashboard" do
-      resources :utm_links, only: [:index, :new, :create, :edit, :update, :destroy] do
-        collection do
-          get :unique_permalink
-        end
-      end
+      resources :utm_links, only: [:index, :new, :create, :edit, :update, :destroy]
     end
 
     # shipments
