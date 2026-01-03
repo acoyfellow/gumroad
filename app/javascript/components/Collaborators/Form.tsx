@@ -28,24 +28,23 @@ const CollaboratorForm = ({
   page_metadata: pageMetadata,
 }: NewPageProps | EditPageProps) => {
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = React.useState(false);
-  const [isConfirmed, setIsConfirmed] = React.useState(false);
   const form = useForm(formData);
   const emailInputRef = React.useRef<HTMLInputElement>(null);
   const isEditPage = "id" in formData;
 
-  const hasEnabledUnpublishedOrIneligibleProducts =
-    isEditPage &&
-    form.data.products.some((product) => product.enabled && (!product.published || product.has_another_collaborator));
-
-  const [showIneligibleProducts, setShowIneligibleProducts] = React.useState(hasEnabledUnpublishedOrIneligibleProducts);
+  const [showUnpublishedOrIneligibleProducts, setShowUnpublishedOrIneligibleProducts] = React.useState(
+    () =>
+      isEditPage &&
+      formData.products.some((product) => product.enabled && (!product.published || product.has_another_collaborator)),
+  );
 
   const shouldEnableProduct = (product: CollaboratorFormProduct) => {
     if (product.has_another_collaborator) return false;
-    return showIneligibleProducts || product.published;
+    return showUnpublishedOrIneligibleProducts || product.published;
   };
 
   const shouldShowProduct = (product: CollaboratorFormProduct) => {
-    if (showIneligibleProducts) return true;
+    if (showUnpublishedOrIneligibleProducts) return true;
     return !product.has_another_collaborator && product.published;
   };
 
@@ -70,21 +69,19 @@ const CollaboratorForm = ({
     );
   };
 
-  const handleSubmit = () => {
-    form.setData(
-      "products",
-      form.data.products.map((product) => ({
-        ...product,
-        has_error:
-          product.enabled &&
+  const submitForm = (acknowledgement?: "withConfirmedAcknowledgement") => {
+    form.data.products.forEach((product, index) => {
+      form.setData(
+        `products.${index}.has_error`,
+        product.enabled &&
           !form.data.apply_to_all_products &&
           !validCommission(
             product.percent_commission,
             pageMetadata.min_percent_commission,
             pageMetadata.max_percent_commission,
           ),
-      })),
-    );
+      );
+    });
 
     if (!isEditPage) {
       const emailError =
@@ -124,7 +121,11 @@ const CollaboratorForm = ({
       return;
     }
 
-    if (form.data.products.some((product) => product.enabled && product.has_affiliates) && !isConfirmed) {
+    if (
+      acknowledgement !== "withConfirmedAcknowledgement" &&
+      form.data.products.some((product) => product.enabled && product.has_affiliates) &&
+      !isConfirmationModalOpen
+    ) {
       setIsConfirmationModalOpen(true);
       return;
     }
@@ -160,10 +161,6 @@ const CollaboratorForm = ({
       });
     }
   };
-  React.useEffect(() => {
-    if (!isConfirmed) return;
-    handleSubmit();
-  }, [isConfirmed]);
 
   return (
     <Layout
@@ -177,7 +174,7 @@ const CollaboratorForm = ({
           <WithTooltip position="bottom" tip={collaboratorsDisabledReason}>
             <Button
               color="accent"
-              onClick={handleSubmit}
+              onClick={() => submitForm()}
               disabled={collaboratorsDisabledReason !== null || form.processing}
             >
               {form.processing ? "Saving..." : isEditPage ? "Save changes" : "Add collaborator"}
@@ -234,10 +231,9 @@ const CollaboratorForm = ({
                       onChange={(evt) => {
                         const enabled = evt.target.checked;
                         form.setData("apply_to_all_products", enabled);
-                        form.setData(
-                          "products",
-                          form.data.products.map((item) => (shouldEnableProduct(item) ? { ...item, enabled } : item)),
-                        );
+                        form.data.products.forEach((item, index) => {
+                          if (shouldEnableProduct(item)) form.setData(`products.${index}.enabled`, enabled);
+                        });
                       }}
                       aria-label="All products"
                     />
@@ -251,7 +247,6 @@ const CollaboratorForm = ({
                         value={form.data.percent_commission}
                         onChange={(percentCommissionValue) => {
                           form.setData("percent_commission", percentCommissionValue);
-
                           form.data.products.forEach((_, index) => {
                             form.setData(`products.${index}.percent_commission`, percentCommissionValue);
                             form.setData(`products.${index}.has_error`, false);
@@ -281,14 +276,10 @@ const CollaboratorForm = ({
                         onChange={(evt) => {
                           const value = !evt.target.checked;
                           form.setData("dont_show_as_co_creator", value);
-                          form.setData(
-                            "products",
-                            form.data.products.map((item) => ({
-                              ...item,
-                              dont_show_as_co_creator: value,
-                              has_error: false,
-                            })),
-                          );
+                          form.data.products.forEach((_, index) => {
+                            form.setData(`products.${index}.dont_show_as_co_creator`, value);
+                            form.setData(`products.${index}.has_error`, false);
+                          });
                         }}
                         disabled={!form.data.apply_to_all_products}
                       />
@@ -365,17 +356,16 @@ const CollaboratorForm = ({
           <label>
             <input
               type="checkbox"
-              checked={showIneligibleProducts}
+              checked={showUnpublishedOrIneligibleProducts}
               onChange={(evt) => {
                 const enabled = evt.target.checked;
-                setShowIneligibleProducts(enabled);
+                setShowUnpublishedOrIneligibleProducts(enabled);
                 if (form.data.apply_to_all_products) {
-                  form.setData(
-                    "products",
-                    form.data.products.map((item) =>
-                      !item.has_another_collaborator && enabled && !item.published ? { ...item, enabled } : item,
-                    ),
-                  );
+                  form.data.products.forEach((item, index) => {
+                    if (!item.has_another_collaborator && enabled && !item.published) {
+                      form.setData(`products.${index}.enabled`, enabled);
+                    }
+                  });
                 }
               }}
             />
@@ -407,7 +397,7 @@ const CollaboratorForm = ({
               className="grow"
               onClick={() => {
                 setIsConfirmationModalOpen(false);
-                setIsConfirmed(true);
+                submitForm("withConfirmedAcknowledgement");
               }}
             >
               Yes, continue
