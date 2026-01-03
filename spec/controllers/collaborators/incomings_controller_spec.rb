@@ -130,26 +130,13 @@ describe Collaborators::IncomingsController, inertia: true do
         expect(collaborator.reload.invitation_accepted?).to eq(true)
       end
 
-      it "returns not found for non-existent collaborator" do
-        expect do
-          post :accept, params: { id: "non-existent-id" }
-        end.to raise_error(ActionController::RoutingError)
-      end
-
-      it "returns not found when the collaborator has been soft-deleted" do
-        collaborator.mark_deleted!
-
-        expect do
-          post :accept, params: { id: collaborator.external_id }
-        end.to raise_error(ActionController::RoutingError)
+      context "when records are faulty" do
+        include_examples "invalid collaborator records", :post, :accept
       end
 
       it "returns not found when there is no invitation" do
         invitation.destroy!
-
-        expect do
-          post :accept, params: { id: collaborator.external_id }
-        end.to raise_error(ActionController::RoutingError)
+        expect { post :accept, params: { id: collaborator.external_id } }.to raise_error(ActionController::RoutingError)
       end
     end
 
@@ -185,18 +172,13 @@ describe Collaborators::IncomingsController, inertia: true do
         expect(collaborator.reload.deleted?).to eq(true)
       end
 
-      it "returns not found for non-existent collaborator" do
-        expect do
-          post :decline, params: { id: "non-existent-id" }
-        end.to raise_error(ActionController::RoutingError)
+      context "when records are faulty" do
+        include_examples "invalid collaborator records", :post, :decline
       end
 
       it "returns not found when there is no invitation" do
         invitation.destroy!
-
-        expect do
-          post :decline, params: { id: collaborator.external_id }
-        end.to raise_error(ActionController::RoutingError)
+        expect { post :decline, params: { id: collaborator.external_id } }.to raise_error(ActionController::RoutingError)
       end
     end
 
@@ -233,21 +215,8 @@ describe Collaborators::IncomingsController, inertia: true do
       expect(accepted_collaboration.reload.deleted_at).to be_present
     end
 
-    context "collaborator is not found" do
-      it "raises ActionController::RoutingError" do
-        expect do
-          delete :destroy, params: { id: "fake" }
-        end.to raise_error(ActionController::RoutingError)
-      end
-    end
-
-    context "collaborator is soft deleted" do
-      it "raises ActionController::RoutingError" do
-        accepted_collaboration.mark_deleted!
-        expect do
-          delete :destroy, params: { id: accepted_collaboration.external_id }
-        end.to raise_error(ActionController::RoutingError)
-      end
+    context "when records are faulty" do
+      include_examples "invalid collaborator records", :delete, :destroy
     end
   end
 end

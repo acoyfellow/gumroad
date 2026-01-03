@@ -24,3 +24,12 @@ RSpec.shared_examples_for "collaborator disabled reason sent" do |verb, action|
     expect(inertia.props).to have_key(:collaborators_disabled_reason)
   end
 end
+
+RSpec.shared_examples_for "invalid collaborator records" do |verb, action|
+  it "returns not found for invalid collaborator records" do
+    expect { public_send(verb, action, params: { id: "non-existent-id" }) }.to raise_error(ActionController::RoutingError)
+
+    collaborator.mark_deleted!
+    expect { public_send(verb, action, params: { id: collaborator.external_id }) }.to raise_error(ActionController::RoutingError)
+  end
+end

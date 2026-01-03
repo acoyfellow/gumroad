@@ -31,13 +31,14 @@ describe CollaboratorPresenter do
                                                    { id: product_with_global_affiliate.external_id, name: product_with_global_affiliate.name, published: false, has_another_collaborator: false, has_affiliates: false, enabled: false, percent_commission: 50, dont_show_as_co_creator: false, has_error: false },
                                                    { id: product_with_deleted_collaborator.external_id, name: product_with_deleted_collaborator.name, published: true, has_another_collaborator: false, has_affiliates: false, enabled: true, percent_commission: 50, dont_show_as_co_creator: false, has_error: false },
                                                  ])
+      expect(props[:form_data]).to_not include(:id)
       expect(props[:form_data]).to include(
         email: "",
         apply_to_all_products: true,
         percent_commission: CollaboratorPresenter::DEFAULT_PERCENT_COMMISSION,
         dont_show_as_co_creator: false,
       )
-      expect(props[:page_metadata]).to_not include(:id)
+
       expect(props[:page_metadata]).to eq(
        title: "New collaborator",
        default_percent_commission: CollaboratorPresenter::DEFAULT_PERCENT_COMMISSION,
@@ -74,6 +75,7 @@ describe CollaboratorPresenter do
 
     it "returns the collaborator and eligible products" do
       props = described_class.new(seller:, collaborator:).edit_collaborator_props
+      default_commission = collaborator.affiliate_percentage || CollaboratorPresenter::DEFAULT_PERCENT_COMMISSION
 
       expect(props[:form_data]).to include(
         id: collaborator.external_id,
@@ -81,11 +83,11 @@ describe CollaboratorPresenter do
         percent_commission: collaborator.affiliate_percentage,
         dont_show_as_co_creator: collaborator.dont_show_as_co_creator?,
       )
-      default_commission = collaborator.affiliate_percentage || CollaboratorPresenter::DEFAULT_PERCENT_COMMISSION
       expect(props[:form_data][:products]).to match_array([
                                                             { id: visible_product.external_id, name: visible_product.name, published: true, has_another_collaborator: false, has_affiliates: false, enabled: true, percent_commission: default_commission, dont_show_as_co_creator: false, has_error: false },
                                                             { id: ineligible_product.external_id, name: ineligible_product.name, published: true, has_another_collaborator: true, has_affiliates: false, enabled: false, percent_commission: default_commission, dont_show_as_co_creator: false, has_error: false },
                                                           ])
+
       expect(props[:page_metadata]).to eq(
         title: collaborator.affiliate_user.display_name(prefer_email_over_default_username: true),
         default_percent_commission: CollaboratorPresenter::DEFAULT_PERCENT_COMMISSION,

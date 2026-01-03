@@ -74,10 +74,8 @@ describe Collaborators::MainController, type: :controller, inertia: true do
       expect(actual_props).to eq(expected_props)
     end
 
-    it "raises ActionController::RoutingError if the collaborator is not found" do
-      expect do
-        get :edit, params: { id: "non-existent-id" }
-      end.to raise_error(ActionController::RoutingError)
+    context "when records are faulty" do
+      include_examples "invalid collaborator records", :get, :edit
     end
   end
 
@@ -167,21 +165,8 @@ describe Collaborators::MainController, type: :controller, inertia: true do
       expect(collaborator.reload.deleted_at).to be_present
     end
 
-    context "collaborator is not found" do
-      it "raises ActionController::RoutingError" do
-        expect do
-          delete :destroy, params: { id: "fake" }
-        end.to raise_error(ActionController::RoutingError)
-      end
-    end
-
-    context "collaborator is soft deleted" do
-      it "raises ActionController::RoutingError" do
-        collaborator.mark_deleted!
-        expect do
-          delete :destroy, params: { id: collaborator.external_id }
-        end.to raise_error(ActionController::RoutingError)
-      end
+    context "when records are faulty" do
+      include_examples "invalid collaborator records", :delete, :destroy
     end
   end
 
@@ -257,13 +242,9 @@ describe Collaborators::MainController, type: :controller, inertia: true do
       expect(inertia.props[:errors][:message]).to be_present
     end
 
-    context "collaborator is soft deleted" do
-      it "returns an error" do
-        collaborator.mark_deleted!
-        expect do
-          patch :update, params:
-        end.to raise_error(ActionController::RoutingError)
-      end
+
+    context "when records are faulty" do
+      include_examples "invalid collaborator records", :patch, :update
     end
   end
 end
