@@ -9,24 +9,36 @@ class UtmLinksController < Sellers::BaseController
   def index
     authorize UtmLink
 
-    presenter = PaginatedUtmLinksPresenter.new(
-      seller: current_seller,
+    render inertia: "UtmLinks/Index", props: {
+      utm_links_props: -> {
+        PaginatedUtmLinksPresenter.new(
+          seller: current_seller,
+          query: index_params[:query],
+          page: index_params[:page],
+          sort: index_params[:sort]
+        ).props
+      },
       query: index_params[:query],
-      page: index_params[:page],
-      sort: index_params[:sort]
-    )
-
-    render inertia: "UtmLinks/Index", props: presenter.props.merge(
-      query: index_params[:query],
-      sort: index_params[:sort]
-    )
+      sort: index_params[:sort],
+      utm_links_stats: InertiaRails.merge do
+        if params[:ids].present?
+          utm_link_ids = current_seller.utm_links.by_external_ids(params[:ids]).pluck(:id)
+          UtmLinksStatsPresenter.new(seller: current_seller, utm_link_ids:).props
+        else
+          {}
+        end
+      end
+    }
   end
 
   def new
     authorize UtmLink
 
     presenter = UtmLinkPresenter.new(seller: current_seller)
-    render inertia: "UtmLinks/New", props: presenter.new_page_react_props(copy_from: params[:copy_from])
+    render inertia: "UtmLinks/New", props: {
+      utm_link: -> { new_utm_link_props(presenter) },
+      context: InertiaRails.optional { presenter.utm_link_form_context_props }
+    }
   end
 
   def create
@@ -34,7 +46,7 @@ class UtmLinksController < Sellers::BaseController
 
     save_utm_link(
       success_message: "Link created!",
-      error_redirect_path: new_dashboard_utm_link_path
+      error_redirect_path: new_dashboard_utm_link_path(copy_from: params[:copy_from])
     )
   end
 
@@ -54,12 +66,23 @@ class UtmLinksController < Sellers::BaseController
 
   def destroy
     @utm_link.mark_deleted!
-    redirect_to dashboard_utm_links_path, notice: "Link deleted!", status: :see_other
+    redirect_to dashboard_utm_links_path(
+      index_params.except(:ids).to_h.compact
+    ), notice: "Link deleted!", status: :see_other
   end
 
   private
     def set_title
       @title = "UTM Links"
+    end
+
+    def new_utm_link_props(presenter)
+      base_props = presenter.new_page_react_props(copy_from: params[:copy_from])
+      utm_link_props = base_props[:utm_link] || {}
+      # Generate fresh permalink for the new link (or when regenerating via partial reload)
+      new_permalink = UtmLink.generate_permalink
+      new_short_url = UtmLink.new(permalink: new_permalink).short_url
+      utm_link_props.merge(short_url: new_short_url, permalink: new_permalink)
     end
 
     def set_utm_link
@@ -72,7 +95,7 @@ class UtmLinksController < Sellers::BaseController
     end
 
     def index_params
-      params.permit(:query, :page, :key, :direction).tap do |p|
+      params.permit(:query, :page, :key, :direction, ids: []).tap do |p|
         p[:sort] = { key: p[:key], direction: p[:direction] } if p[:key].present? && p[:direction].present?
       end
     end

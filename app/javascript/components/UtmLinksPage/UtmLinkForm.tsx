@@ -1,15 +1,14 @@
-import { Link, useForm } from "@inertiajs/react";
+import { router, useForm } from "@inertiajs/react";
 import cx from "classnames";
 import * as React from "react";
 
-import { getUniquePermalink } from "$app/data/utm_links";
 import type { UtmLinkFormContext, UtmLink, SavedUtmLink } from "$app/types/utm_link";
 import { assertDefined } from "$app/utils/assert";
-import { asyncVoid } from "$app/utils/promise";
 
 import { Button } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { Icon } from "$app/components/Icons";
+import { NavigationButtonInertia } from "$app/components/NavigationButton";
 import { Select } from "$app/components/Select";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Pill } from "$app/components/ui/Pill";
@@ -151,17 +150,22 @@ export const UtmLinkForm = ({ context, utm_link }: Props) => {
     form.data.utm_content,
   ]);
 
-  const generateNewPermalink = asyncVoid(async () => {
-    setIsLoadingNewPermalink(true);
-    try {
-      const { permalink: newPermalink } = await getUniquePermalink();
-      form.setData("permalink", newPermalink);
-    } catch {
-      showAlert("Sorry, something went wrong. Please try again.", "error");
-    } finally {
-      setIsLoadingNewPermalink(false);
-    }
-  });
+  const generateNewPermalink = () => {
+    router.reload({
+      only: ["utm_link"],
+      onStart: () => setIsLoadingNewPermalink(true),
+      onSuccess: (page) => {
+        const newPermalink = (page.props.utm_link as { permalink: string } | undefined)?.permalink;
+        if (newPermalink) {
+          form.setData("permalink", newPermalink);
+        }
+      },
+      onError: () => {
+        showAlert("Sorry, something went wrong. Please try again.", "error");
+      },
+      onFinish: () => setIsLoadingNewPermalink(false),
+    });
+  };
 
   const validate = () => {
     const newErrors: ServerErrors = {};
@@ -249,10 +253,10 @@ export const UtmLinkForm = ({ context, utm_link }: Props) => {
       selectedTab="utm_links"
       actions={
         <>
-          <Link href={Routes.dashboard_utm_links_path()} className="button">
+          <NavigationButtonInertia disabled={form.processing} href={Routes.dashboard_utm_links_path()}>
             <Icon name="x-square" />
             Cancel
-          </Link>
+          </NavigationButtonInertia>
           <Button color="accent" onClick={submit} disabled={form.processing}>
             {form.processing ? "Saving..." : isEditing ? "Save changes" : "Add link"}
           </Button>

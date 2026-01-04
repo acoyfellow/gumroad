@@ -44,38 +44,38 @@ class UtmLinkPresenter
     }
   end
 
+  def utm_link_form_context_props
+    products = *seller.products.includes(:user).alive.order(:name).map { destination_option(type: UtmLink.target_resource_types[:product_page], resource: _1) }
+    posts = *seller.installments.audience_type.shown_on_profile.not_workflow_installment.published.includes(:seller).order(:name).map { destination_option(type: UtmLink.target_resource_types[:post_page], resource: _1) }
+    utm_fields_values = seller.utm_links.alive.pluck(:utm_campaign, :utm_medium, :utm_source, :utm_term, :utm_content)
+      .each_with_object({
+                          campaigns: Set.new,
+                          mediums: Set.new,
+                          sources: Set.new,
+                          terms: Set.new,
+                          contents: Set.new
+                        }) do |(campaign, medium, source, term, content), result|
+      result[:campaigns] << campaign if campaign.present?
+      result[:mediums] << medium if medium.present?
+      result[:sources] << source if source.present?
+      result[:terms] << term if term.present?
+      result[:contents] << content if content.present?
+    end.transform_values(&:to_a)
+
+    {
+      destination_options: [
+        destination_option(type: UtmLink.target_resource_types[:profile_page]),
+        destination_option(type: UtmLink.target_resource_types[:subscribe_page]),
+        *products,
+        *posts,
+      ],
+      short_url: utm_link.present? ? utm_link.short_url : UtmLink.new(permalink: UtmLink.generate_permalink).short_url,
+      utm_fields_values:,
+    }
+  end
+
   private
     attr_reader :seller, :utm_link
-
-    def utm_link_form_context_props
-      products = *seller.products.includes(:user).alive.order(:name).map { destination_option(type: UtmLink.target_resource_types[:product_page], resource: _1) }
-      posts = *seller.installments.audience_type.shown_on_profile.not_workflow_installment.published.includes(:seller).order(:name).map { destination_option(type: UtmLink.target_resource_types[:post_page], resource: _1) }
-      utm_fields_values = seller.utm_links.alive.pluck(:utm_campaign, :utm_medium, :utm_source, :utm_term, :utm_content)
-        .each_with_object({
-                            campaigns: Set.new,
-                            mediums: Set.new,
-                            sources: Set.new,
-                            terms: Set.new,
-                            contents: Set.new
-                          }) do |(campaign, medium, source, term, content), result|
-        result[:campaigns] << campaign if campaign.present?
-        result[:mediums] << medium if medium.present?
-        result[:sources] << source if source.present?
-        result[:terms] << term if term.present?
-        result[:contents] << content if content.present?
-      end.transform_values(&:to_a)
-
-      {
-        destination_options: [
-          destination_option(type: UtmLink.target_resource_types[:profile_page]),
-          destination_option(type: UtmLink.target_resource_types[:subscribe_page]),
-          *products,
-          *posts,
-        ],
-        short_url: utm_link.present? ? utm_link.short_url : UtmLink.new(permalink: UtmLink.generate_permalink).short_url,
-        utm_fields_values:,
-      }
-    end
 
     def destination_option_id(resource_type, resource_external_id)
       return resource_type if resource_type.in?(target_resource_types.values_at(:profile_page, :subscribe_page))

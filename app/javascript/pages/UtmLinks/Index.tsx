@@ -2,9 +2,7 @@ import { Link, router, usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
-import { getUtmLinksStats, UtmLinksStats, UtmLinkStats } from "$app/data/utm_links";
-import type { SavedUtmLink, SortKey } from "$app/types/utm_link";
-import { asyncVoid } from "$app/utils/promise";
+import type { SavedUtmLink, SortKey, UtmLinksStats, UtmLinkStats } from "$app/types/utm_link";
 
 import { Button } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
@@ -28,10 +26,13 @@ import noLinksYetPlaceholder from "$assets/images/placeholders/utm_links_empty.p
 import noLinksFoundPlaceholder from "$assets/images/placeholders/utm_links_not_found.png";
 
 type UtmLinksIndexProps = {
-  utm_links: SavedUtmLink[];
-  pagination: PaginationProps;
+  utm_links_props: {
+    utm_links: SavedUtmLink[];
+    pagination: PaginationProps;
+  };
   query: string | null;
   sort: Sort<SortKey> | null;
+  utm_links_stats: UtmLinksStats;
 };
 
 const truncateText = (text: string, maxLength: number) => {
@@ -75,11 +76,22 @@ const extractSortParam = (sort: Sort<SortKey> | null): Sort<SortKey> | null => {
 
 export default function UtmLinksIndex() {
   const props = cast<UtmLinksIndexProps>(usePage().props);
-  const { utm_links: utmLinks, pagination, query: initialQuery, sort: initialSort } = props;
+  const { utm_links_props, query: initialQuery, sort: initialSort, utm_links_stats: utmLinksStatsFromServer } = props;
+  const { utm_links: utmLinks, pagination } = utm_links_props;
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [utmLinksStats, setUtmLinksStats] = React.useState<UtmLinksStats>({});
-  const utmLinksWithStats = utmLinks.map((utmLink) => utmLinkWithStats(utmLink, utmLinksStats[utmLink.id]));
+
+  // Merge server stats into local state
+  React.useEffect(() => {
+    if (utmLinksStatsFromServer && Object.keys(utmLinksStatsFromServer).length > 0) {
+      setUtmLinksStats((prev) => ({ ...prev, ...utmLinksStatsFromServer }));
+    }
+  }, [utmLinksStatsFromServer]);
+
+  const utmLinksWithStats = utmLinks.map((utmLink: SavedUtmLink) =>
+    utmLinkWithStats(utmLink, utmLinksStats[utmLink.id]),
+  );
   const [selectedUtmLink, setSelectedUtmLink] = React.useState<SavedUtmLink | null>(null);
   const [sort, setSort] = React.useState<Sort<SortKey> | null>(
     () => extractSortParam(initialSort) || { key: "date", direction: "desc" },
@@ -91,27 +103,24 @@ export default function UtmLinksIndex() {
     state: "delete-confirmation" | "deleting";
   } | null>(null);
 
-  const activeStatsRequest = React.useRef<{ cancel: () => void } | null>(null);
-  const debouncedGetUtmLinksStats = useDebouncedCallback((ids: string[]) => {
-    activeStatsRequest.current?.cancel();
-    asyncVoid(async () => {
-      const request = getUtmLinksStats({ ids });
-      activeStatsRequest.current = request;
-      const stats = await request.response;
-      setUtmLinksStats((prev) => ({ ...prev, ...stats }));
-    })();
+  // Fetch stats via Inertia partial reload
+  const debouncedFetchStats = useDebouncedCallback((ids: string[]) => {
+    router.reload({
+      only: ["utm_links_stats"],
+      data: { ids },
+    });
   }, 500);
 
   React.useEffect(() => {
     if (utmLinks.length === 0) return;
     const sortKey = sort?.key;
     if (sortKey === "sales_count" || sortKey === "revenue_cents" || sortKey === "conversion_rate") return;
-    const ids = utmLinks.flatMap((link) =>
+    const ids = utmLinks.flatMap((link: SavedUtmLink) =>
       utmLinkWithStats(link, utmLinksStats[link.id]).sales_count === null ? [link.id] : [],
     );
     if (ids.length === 0) return;
 
-    debouncedGetUtmLinksStats(ids);
+    debouncedFetchStats(ids);
   }, [utmLinks, sort]);
 
   const navigateWithParams = (params: { page?: number; query?: string; sort?: Sort<SortKey> | null }) => {

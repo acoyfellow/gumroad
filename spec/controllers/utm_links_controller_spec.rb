@@ -42,9 +42,9 @@ describe UtmLinksController, type: :controller, inertia: true do
 
       expect(response).to be_successful
       expect(inertia.component).to eq("UtmLinks/Index")
-      expect(inertia.props[:utm_links]).to be_an(Array)
-      expect(inertia.props[:pagination]).to be_present
-      expect(inertia.props[:utm_links].map { |l| l[:id] }).to match_array([utm_link1.external_id, utm_link2.external_id])
+      expect(inertia.props[:utm_links_props][:utm_links]).to be_an(Array)
+      expect(inertia.props[:utm_links_props][:pagination]).to be_present
+      expect(inertia.props[:utm_links_props][:utm_links].map { |l| l[:id] }).to match_array([utm_link1.external_id, utm_link2.external_id])
     end
 
     it "filters UTM links by search query" do
@@ -55,7 +55,7 @@ describe UtmLinksController, type: :controller, inertia: true do
 
       expect(response).to be_successful
       props = inertia.props
-      expect(props[:utm_links].map { |l| l[:id] }).to eq([utm_link1.external_id])
+      expect(props[:utm_links_props][:utm_links].map { |l| l[:id] }).to eq([utm_link1.external_id])
       expect(props[:query]).to eq("Facebook")
     end
 
@@ -68,8 +68,23 @@ describe UtmLinksController, type: :controller, inertia: true do
 
       expect(response).to be_successful
       props = inertia.props
-      expect(props[:utm_links].map { _1[:title] }).to eq(["A Link", "B Link", "C Link"])
+      expect(props[:utm_links_props][:utm_links].map { _1[:title] }).to eq(["A Link", "B Link", "C Link"])
       expect(props[:sort].permit!.to_h).to eq({ "key" => "link", "direction" => "asc" })
+    end
+
+    context "with stats ids param" do
+      it "returns utm_links_stats via InertiaRails.merge" do
+        utm_link = create(:utm_link, seller:)
+
+        get :index, params: { ids: [utm_link.external_id] }
+
+        expect(response).to have_http_status(:ok)
+        expect(inertia.props[:utm_links_stats]).to be_a(Hash)
+        expect(inertia.props[:utm_links_stats][utm_link.external_id]).to include(
+          sales_count: 0,
+          revenue_cents: 0
+        )
+      end
     end
   end
 
@@ -82,7 +97,9 @@ describe UtmLinksController, type: :controller, inertia: true do
       get :new
       expect(response).to be_successful
       expect(inertia.component).to eq("UtmLinks/New")
-      expect(inertia.props[:context]).to be_present
+      expect(inertia.props[:utm_link]).to be_present
+      expect(inertia.props[:utm_link][:permalink]).to be_present
+      expect(inertia.props[:utm_link][:short_url]).to be_present
     end
 
     it "returns props for duplicating an existing UTM link" do
@@ -93,6 +110,29 @@ describe UtmLinksController, type: :controller, inertia: true do
       expect(response).to be_successful
       expect(inertia.props[:utm_link]).to be_present
       expect(inertia.props[:utm_link][:title]).to eq(existing_utm_link.title)
+    end
+
+    it "generates a new permalink each time" do
+      get :new
+
+      expect(response).to be_successful
+      first_permalink = inertia.props[:utm_link][:permalink]
+      expect(first_permalink).to be_present
+      expect(first_permalink.length).to eq(8)
+    end
+
+    context "with partial reload for permalink" do
+      it "generates a new permalink on reload" do
+        get :new
+
+        first_permalink = inertia.props[:utm_link][:permalink]
+
+        get :new
+
+        second_permalink = inertia.props[:utm_link][:permalink]
+        expect(second_permalink).to be_present
+        expect(second_permalink).not_to eq(first_permalink)
+      end
     end
   end
 
