@@ -33,7 +33,6 @@ class Collaborators::IncomingsController < Collaborators::BaseController
 
   private
     def set_invitation!
-      raise ActiveRecord::RecordNotFound unless @collaborator.present?
       @invitation = @collaborator.collaborator_invitation || e404
     end
 end

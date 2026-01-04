@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Collaborators::MainController < Collaborators::BaseController
-  prepend_before_action :set_collaborator, only: %i[edit update destroy]
+  prepend_before_action :set_collaborator, only: [:edit, :update, :destroy]
 
   def index
     render inertia: "Collaborators/Index", props: CollaboratorsPresenter.new(seller: current_seller).index_props
