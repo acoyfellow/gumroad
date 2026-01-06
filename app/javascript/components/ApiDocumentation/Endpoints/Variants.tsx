@@ -27,8 +27,7 @@ export const CreateVariantCategory: React.FC = () => (
   "success": true,
   "variant_category": {
     "id": "mN7CdHiwHaR9FlxKvF-n-g==",
-    "title": "colors",
-    ...
+    "title": "colors"
   }
 }`}
     </CodeSnippet>
@@ -51,8 +50,7 @@ export const GetVariantCategory: React.FC = () => (
   "success": true,
   "variant_category": {
     "id": "mN7CdHiwHaR9FlxKvF-n-g==",
-    "title": "colors",
-    ...
+    "title": "colors"
   }
 }`}
     </CodeSnippet>
@@ -73,7 +71,7 @@ export const UpdateVariantCategory: React.FC = () => (
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/products/A-m3CDDC5dlrSdKZp0RFhA==/variant_categories/mN7CdHiwHaR9FlxKvF-n-g== \\
   -d "access_token=ACCESS_TOKEN" \\
-  -d "title=colors" \\
+  -d "title=sizes" \\
   -X PUT`}
     </CodeSnippet>
     <CodeSnippet caption="Example response:">
@@ -122,13 +120,10 @@ export const GetVariantCategories: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "variant_categories": [
-    {
-      "id": "mN7CdHiwHaR9FlxKvF-n-g==",
-      "title": "colors"
-    },
-    { ..., ..., ... }
-  ]
+  "variant_categories": [{
+    "id": "mN7CdHiwHaR9FlxKvF-n-g==",
+    "title": "colors"
+  }, {...}, {...}]
 }`}
     </CodeSnippet>
   </ApiEndpoint>
@@ -141,11 +136,13 @@ export const CreateVariant: React.FC = () => (
     description="Create a new variant of a product."
   >
     <ApiParameters>
+      <ApiParameter name="variant" />
+      <br />
       <ApiParameter name="name" required />
       <br />
-      <ApiParameter name="price_difference">(Optional price difference in cents)</ApiParameter>
+      <ApiParameter name="price_difference_cents" />
       <br />
-      <ApiParameter name="max_purchase_count">(Optional max purchase count)</ApiParameter>
+      <ApiParameter name="max_purchase_count">(optional)</ApiParameter>
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/products/A-m3CDDC5dlrSdKZp0RFhA==/variant_categories/mN7CdHiwHaR9FlxKvF-n-g==/variants \\
@@ -157,9 +154,10 @@ export const CreateVariant: React.FC = () => (
       {`{
   "success": true,
   "variant": {
-    "id": "kuaXCPHTmRuoK13rNGVbxg==",
+    "id": "lSC1XVfr2TC3WoCGY7YrUg==",
+    "max_purchase_count": null,
     "name": "red",
-    ...
+    "price_difference_cents": 100
   }
 }`}
     </CodeSnippet>
@@ -181,9 +179,10 @@ export const GetVariant: React.FC = () => (
       {`{
   "success": true,
   "variant": {
-    "id": "kuaXCPHTmRuoK13rNGVbxg==",
+    "id": "lSC1XVfr2TC3WoCGY7YrUg==",
+    "max_purchase_count": null,
     "name": "red",
-    ...
+    "price_difference_cents": 100
   }
 }`}
     </CodeSnippet>
@@ -197,11 +196,13 @@ export const UpdateVariant: React.FC = () => (
     description="Edit a variant of an existing product."
   >
     <ApiParameters>
+      <ApiParameter name="variant" />
+      <br />
       <ApiParameter name="name" required />
       <br />
-      <ApiParameter name="price_difference">(Optional price difference in cents)</ApiParameter>
+      <ApiParameter name="price_difference_cents" />
       <br />
-      <ApiParameter name="max_purchase_count">(Optional max purchase count)</ApiParameter>
+      <ApiParameter name="max_purchase_count">(optional)</ApiParameter>
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/products/A-m3CDDC5dlrSdKZp0RFhA==/variant_categories/mN7CdHiwHaR9FlxKvF-n-g==/variants/kuaXCPHTmRuoK13rNGVbxg== \\
@@ -212,9 +213,11 @@ export const UpdateVariant: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "variant_category": {
-    "id": "mN7CdHiwHaR9FlxKvF-n-g==",
-    "title": "sizes"
+  "variant": {
+    "id": "lSC1XVfr2TC3WoCGY7YrUg==",
+    "max_purchase_count": null,
+    "name": "red",
+    "price_difference_cents": 100
   }
 }`}
     </CodeSnippet>
@@ -235,7 +238,7 @@ export const DeleteVariant: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "message": "Variant deleted"
+  "message": "The variant has been deleted successfully."
 }`}
     </CodeSnippet>
   </ApiEndpoint>
@@ -255,7 +258,12 @@ export const GetVariants: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "variants": [...]
+  "variants": [{
+    "id": "lSC1XVfr2TC3WoCGY7YrUg==",
+    "max_purchase_count": null,
+    "name": "red",
+    "price_difference_cents": 100
+  }, {...}, {...}]
 }`}
     </CodeSnippet>
   </ApiEndpoint>

@@ -19,7 +19,10 @@ export const GetCustomFields: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "custom_fields": [...]
+  "custom_fields": [{
+    "name": "phone number",
+    "required": "false"
+  }, {...}, {...}]
 }`}
     </CodeSnippet>
   </ApiEndpoint>
@@ -32,9 +35,11 @@ export const CreateCustomField: React.FC = () => (
     description="Create a new custom field for a product."
   >
     <ApiParameters>
+      <ApiParameter name="variant" />
+      <br />
       <ApiParameter name="name" required />
       <br />
-      <ApiParameter name="required">(optional, true or false)</ApiParameter>
+      <ApiParameter name="required">(true or false)</ApiParameter>
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/products/A-m3CDDC5dlrSdKZp0RFhA==/custom_fields \\
@@ -46,7 +51,10 @@ export const CreateCustomField: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "custom_field": {...}
+  "custom_field": {
+    "name": "phone number",
+    "required": "false"
+  }
 }`}
     </CodeSnippet>
   </ApiEndpoint>
@@ -59,7 +67,9 @@ export const UpdateCustomField: React.FC = () => (
     description="Edit an existing product's custom field."
   >
     <ApiParameters>
-      <ApiParameter name="required">(optional, true or false)</ApiParameter>
+      <ApiParameter name="variant" />
+      <br />
+      <ApiParameter name="required">(true or false)</ApiParameter>
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/products/A-m3CDDC5dlrSdKZp0RFhA==/custom_fields/phone%20number \\

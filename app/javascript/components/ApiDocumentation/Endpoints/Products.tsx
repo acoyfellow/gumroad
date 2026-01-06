@@ -170,7 +170,7 @@ export const DeleteProduct: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "message": "Product deleted"
+  "message": "The product has been deleted successfully."
 }`}
     </CodeSnippet>
   </ApiEndpoint>

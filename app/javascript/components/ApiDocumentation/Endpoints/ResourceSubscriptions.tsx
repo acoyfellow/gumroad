@@ -205,7 +205,7 @@ export const GetResourceSubscriptions: React.FC = () => (
     "id": "G_-mnBf9b1j9A7a4ub4nFQ==",
     "resource_name": "sale",
     "post_url": "https://postatmebro.com"
-  }, {...}]
+  }, {...}, {...}]
 }`}
     </CodeSnippet>
   </ApiEndpoint>
@@ -225,7 +225,7 @@ export const DeleteResourceSubscription: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "message": "The resource subscription was deleted successfully."
+  "message": "The resource_subscription was deleted successfully."
 }`}
     </CodeSnippet>
   </ApiEndpoint>
