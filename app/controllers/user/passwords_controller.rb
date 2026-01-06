@@ -56,6 +56,6 @@ class User::PasswordsController < Devise::PasswordsController
   end
 
   def after_sending_reset_password_instructions_path_for(_resource_name, _user)
-    root_path
+    root_url
   end
 end
