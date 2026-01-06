@@ -32,7 +32,7 @@ describe CollaboratorsController, inertia: true do
       get :new
       expect(response).to be_successful
       expect(inertia.component).to eq("Collaborators/New")
-      expect(inertia.props[:context]).to include(:products, :collaborators_disabled_reason)
+      expect(inertia.props).to include(:products, :collaborators_disabled_reason)
     end
   end
 
@@ -48,7 +48,8 @@ describe CollaboratorsController, inertia: true do
       get :edit, params: { id: collaborator.external_id }
       expect(response).to be_successful
       expect(inertia.component).to eq("Collaborators/Edit")
-      expect(inertia.props[:collaborator]).to be_present
+      expect(inertia.props[:id]).to eq(collaborator.external_id)
+      expect(inertia.props).to include(:products, :collaborators_disabled_reason)
     end
 
     it "returns 404 for non-existent collaborator" do

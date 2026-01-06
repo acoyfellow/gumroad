@@ -912,13 +912,6 @@ Rails.application.routes.draw do
     # React Router routes
     scope module: :api, defaults: { format: :json } do
       namespace :internal do
-        resources :collaborators, only: [:index, :new, :create, :edit, :update, :destroy] do
-          scope module: :collaborators do
-            resources :invitation_acceptances, only: [:create]
-            resources :invitation_declines, only: [:create]
-          end
-        end
-
         resources :installments, only: [] do
           member do
             resource :audience_count, only: [:show], controller: "installments/audience_counts", as: :installment_audience_count
