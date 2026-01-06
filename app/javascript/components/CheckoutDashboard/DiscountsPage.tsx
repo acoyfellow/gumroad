@@ -16,7 +16,7 @@ import { asyncVoid } from "$app/utils/promise";
 import { AbortError, assertResponseError } from "$app/utils/request";
 import { writeQueryParams } from "$app/utils/url";
 
-import { Button } from "$app/components/Button";
+import { Button, buttonVariants } from "$app/components/Button";
 import { DiscountInput, InputtedDiscount } from "$app/components/CheckoutDashboard/DiscountInput";
 import { Layout, Page } from "$app/components/CheckoutDashboard/Layout";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
@@ -443,9 +443,9 @@ const DiscountsPage = ({
                             onToggle={(open) => setPopoverOfferCodeId(open ? offerCode.id : null)}
                             aria-label="Open discount action menu"
                             trigger={
-                              <Button>
+                              <div className={buttonVariants({ size: "default" })}>
                                 <Icon name="three-dots" />
-                              </Button>
+                              </div>
                             }
                           >
                             <div role="menu">

@@ -9,7 +9,7 @@ import { formatPriceCentsWithCurrencySymbol } from "$app/utils/currency";
 import { asyncVoid } from "$app/utils/promise";
 import { assertResponseError } from "$app/utils/request";
 
-import { Button } from "$app/components/Button";
+import { Button, buttonVariants } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
@@ -87,7 +87,7 @@ const SearchBoxPopover = ({ initialQuery, onSearch }: { initialQuery: string; on
       aria-label="Search"
       trigger={
         <WithTooltip tip="Search" position="bottom">
-          <div className="button">
+          <div className={buttonVariants({ size: "default" })}>
             <Icon name="solid-search" />
           </div>
         </WithTooltip>

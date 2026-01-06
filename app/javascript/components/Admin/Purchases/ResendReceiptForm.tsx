@@ -1,8 +1,7 @@
 import * as React from "react";
 
-import { Button } from "$app/components/Button";
-
 import { Form } from "$app/components/Admin/Form";
+import { Button } from "$app/components/Button";
 import { showAlert } from "$app/components/server-components/Alert";
 
 type AdminResendReceiptFormProps = {

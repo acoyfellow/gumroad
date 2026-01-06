@@ -149,7 +149,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <Comp className={classes} ref={ref} disabled={disabled} type={asChild ? undefined : "button"} {...props}>
-        {asChild ? children : (
+        {asChild ? (
+          children
+        ) : (
           <>
             {icon}
             {children}
@@ -170,14 +172,7 @@ export const NavigationButton = React.forwardRef<HTMLAnchorElement, NavigationBu
     const { icon } = useButtonCommon({ className, color, outline, small });
 
     return (
-      <Button
-        asChild
-        className={className}
-        color={color}
-        outline={outline}
-        small={small}
-        disabled={disabled}
-      >
+      <Button asChild className={className} color={color} outline={outline} small={small} disabled={disabled}>
         <a
           ref={ref}
           inert={disabled}

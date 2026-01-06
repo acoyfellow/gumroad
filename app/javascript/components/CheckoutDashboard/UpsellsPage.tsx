@@ -20,7 +20,7 @@ import { CurrencyCode, formatPriceCentsWithCurrencySymbol } from "$app/utils/cur
 import { asyncVoid } from "$app/utils/promise";
 import { AbortError, assertResponseError } from "$app/utils/request";
 
-import { Button } from "$app/components/Button";
+import { Button, buttonVariants } from "$app/components/Button";
 import { ProductToAdd, CartItem } from "$app/components/Checkout/cartState";
 import { CheckoutPreview } from "$app/components/CheckoutDashboard/CheckoutPreview";
 import { DiscountInput, InputtedDiscount } from "$app/components/CheckoutDashboard/DiscountInput";
@@ -237,9 +237,9 @@ const UpsellsPage = (props: UpsellsPageProps) => {
               onToggle={setIsSearchPopoverOpen}
               aria-label="Search"
               trigger={
-                <Button asChild>
+                <div className={buttonVariants({ size: "default" })}>
                   <Icon name="solid-search" />
-                </Button>
+                </div>
               }
             >
               <div className="input">

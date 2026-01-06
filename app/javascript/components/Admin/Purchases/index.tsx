@@ -1,5 +1,4 @@
 import { Link } from "@inertiajs/react";
-import { Button } from "$app/components/Button";
 import React from "react";
 
 import { formatPriceCentsWithCurrencySymbol } from "$app/utils/currency";
@@ -10,6 +9,7 @@ import DateTimeWithRelativeTooltip from "$app/components/Admin/DateTimeWithRelat
 import { Form } from "$app/components/Admin/Form";
 import { NoIcon, BooleanIcon } from "$app/components/Admin/Icons";
 import AdminResendReceiptForm from "$app/components/Admin/Purchases/ResendReceiptForm";
+import { Button } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { Icon } from "$app/components/Icons";
 import { showAlert } from "$app/components/server-components/Alert";

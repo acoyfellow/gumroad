@@ -1,9 +1,8 @@
 import React from "react";
 
-import { Button } from "$app/components/Button";
-
 import { Membership, Product } from "$app/data/products";
 
+import { buttonVariants } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { NavigationButtonInertia } from "$app/components/NavigationButton";
 import { PaginationProps } from "$app/components/Pagination";
@@ -48,9 +47,9 @@ export const ArchivedProductsPage = ({
             aria-label="Toggle Search"
             trigger={
               <WithTooltip tip="Search" position="bottom">
-                <Button>
+                <div className={buttonVariants({ size: "default" })}>
                   <Icon name="solid-search" />
-                </Button>
+                </div>
               </WithTooltip>
             }
           >

@@ -1,7 +1,5 @@
 import * as React from "react";
 
-import { Button } from "$app/components/Button";
-
 import { getSearchResults, ProductFilter, SearchRequest, SearchResults } from "$app/data/search";
 import { SORT_KEYS, PROFILE_SORT_KEYS } from "$app/parsers/product";
 import { classNames } from "$app/utils/classNames";
@@ -9,6 +7,7 @@ import { CurrencyCode, getShortCurrencySymbol } from "$app/utils/currency";
 import { asyncVoid } from "$app/utils/promise";
 import { AbortError, assertResponseError } from "$app/utils/request";
 
+import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { NumberInput } from "$app/components/NumberInput";
 import { showAlert } from "$app/components/server-components/Alert";

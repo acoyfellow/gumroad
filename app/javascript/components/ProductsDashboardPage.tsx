@@ -2,6 +2,7 @@ import React from "react";
 
 import { Membership, Product } from "$app/data/products";
 
+import { buttonVariants } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { NavigationButtonInertia } from "$app/components/NavigationButton";
 import { PaginationProps } from "$app/components/Pagination";
@@ -9,7 +10,6 @@ import { Popover } from "$app/components/Popover";
 import { ProductsLayout } from "$app/components/ProductsLayout";
 import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { Button } from "$app/components/Button";
 
 import ProductsPage from "./ProductsPage";
 
@@ -55,9 +55,9 @@ export const ProductsDashboardPage = ({
               aria-label="Toggle Search"
               trigger={
                 <WithTooltip tip="Search" position="bottom">
-                  <Button>
+                  <div className={buttonVariants({ size: "default" })}>
                     <Icon name="solid-search" />
-                  </Button>
+                  </div>
                 </WithTooltip>
               }
             >

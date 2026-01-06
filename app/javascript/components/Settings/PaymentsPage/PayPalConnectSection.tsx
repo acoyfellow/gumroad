@@ -65,11 +65,7 @@ const PayPalConnectSection = ({
             {paypalConnect.show_paypal_connect ? (
               <>
                 <div>
-                  <Button
-                    asChild
-                    color="paypal"
-                    disabled={isFormDisabled || !paypalConnect.allow_paypal_connect}
-                  >
+                  <Button asChild color="paypal" disabled={isFormDisabled || !paypalConnect.allow_paypal_connect}>
                     <a
                       href={Routes.connect_paypal_path({
                         referer: Routes.settings_payments_path(),
@@ -135,11 +131,7 @@ const PayPalConnectSection = ({
             {paypalConnect.show_paypal_connect ? (
               <>
                 <p>
-                  <Button
-                    asChild
-                    color="paypal"
-                    disabled={isFormDisabled || !paypalConnect.allow_paypal_connect}
-                  >
+                  <Button asChild color="paypal" disabled={isFormDisabled || !paypalConnect.allow_paypal_connect}>
                     <a
                       href={Routes.connect_paypal_path({
                         referer: Routes.settings_payments_path(),

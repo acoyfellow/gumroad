@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Button } from "$app/components/Button";
 import { createCast } from "ts-safe-cast";
 
 import { register } from "$app/utils/serverComponentUtil";
 
+import { Button } from "$app/components/Button";
 import { Form } from "$app/components/server-components/Admin/Form";
 import { showAlert } from "$app/components/server-components/Alert";
 

@@ -11,7 +11,7 @@ import { classNames } from "$app/utils/classNames";
 import { asyncVoid } from "$app/utils/promise";
 import { assertResponseError } from "$app/utils/request";
 
-import { Button, NavigationButton } from "$app/components/Button";
+import { Button, NavigationButton, buttonVariants } from "$app/components/Button";
 import { FileRow, shouldShowSubtitlesForFile } from "$app/components/Download/FileList";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
@@ -372,10 +372,10 @@ const FileGroupDownloadAllButton = ({ folderId, files }: { folderId: string; fil
     <Popover
       disabled={isDownloading}
       trigger={
-        <Button contentEditable={false}>
+        <div className={buttonVariants({ size: "default" })} contentEditable={false}>
           Download all
           <Icon name="outline-cheveron-down" />
-        </Button>
+        </div>
       }
     >
       <div className="grid gap-2">

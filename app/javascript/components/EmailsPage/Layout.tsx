@@ -3,6 +3,7 @@ import React from "react";
 
 import { EmailTab } from "$app/data/installments";
 
+import { buttonVariants } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { Popover } from "$app/components/Popover";
 import { PageHeader } from "$app/components/ui/PageHeader";
@@ -39,7 +40,7 @@ export const EmailsLayout = ({ selectedTab, children, hasPosts, query, onQueryCh
                 aria-label="Toggle Search"
                 trigger={
                   <WithTooltip tip="Search" position="bottom">
-                    <div className="button">
+                    <div className={buttonVariants({ size: "default" })}>
                       <Icon name="solid-search" />
                     </div>
                   </WithTooltip>

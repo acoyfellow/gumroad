@@ -10,7 +10,7 @@ import { between } from "$app/utils/math";
 import { asyncVoid } from "$app/utils/promise";
 import { assertResponseError } from "$app/utils/request";
 
-import { Button } from "$app/components/Button";
+import { Button, buttonVariants } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { Popover } from "$app/components/Popover";
@@ -91,9 +91,9 @@ export const CoverEditor = ({
                 disabled={!canAddPreview || isUploading}
                 aria-label="Add cover"
                 trigger={
-                  <Button>
+                  <div className={buttonVariants({ size: "default" })}>
                     <Icon name="plus" />
-                  </Button>
+                  </div>
                 }
                 open={isUploaderOpen}
                 onToggle={(value) => {

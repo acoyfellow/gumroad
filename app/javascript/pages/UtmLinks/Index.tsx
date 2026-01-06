@@ -5,7 +5,7 @@ import { SavedUtmLink, SortKey, UtmLinkStats, UtmLinksStats } from "$app/types/u
 import { classNames } from "$app/utils/classNames";
 
 import { AnalyticsLayout } from "$app/components/Analytics/AnalyticsLayout";
-import { Button } from "$app/components/Button";
+import { Button, buttonVariants } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
@@ -372,11 +372,9 @@ const SearchBoxPopover = ({ initialQuery, onSearch }: { initialQuery: string; on
       aria-label="Toggle Search"
       trigger={
         <WithTooltip tip="Search" position="bottom">
-          <Button asChild>
-            <div>
-              <Icon name="solid-search" />
-            </div>
-          </Button>
+          <div className={buttonVariants({ size: "default" })}>
+            <Icon name="solid-search" />
+          </div>
         </WithTooltip>
       }
     >
@@ -518,9 +516,9 @@ const UtmLinkDetails = ({
         </div>
       </section>
       <div style={{ display: "grid", gridAutoFlow: "column", gap: "var(--spacer-4)" }}>
-        <Link href={Routes.new_dashboard_utm_link_path({ copy_from: utmLink.id })} className="button">
-          Duplicate
-        </Link>
+        <Button asChild>
+          <Link href={Routes.new_dashboard_utm_link_path({ copy_from: utmLink.id })}>Duplicate</Link>
+        </Button>
         <NavigationButtonInertia href={Routes.edit_dashboard_utm_link_path(utmLink.id)} disabled={isNavigating}>
           Edit
         </NavigationButtonInertia>

@@ -6,7 +6,7 @@ import { formatPriceCentsWithCurrencySymbol } from "$app/utils/currency";
 import { asyncVoid } from "$app/utils/promise";
 import { AbortError, assertResponseError } from "$app/utils/request";
 
-import { Button } from "$app/components/Button";
+import { Button, buttonVariants } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { GlobalAffiliates } from "$app/components/GlobalAffiliates";
 import { Icon } from "$app/components/Icons";
@@ -193,9 +193,9 @@ const Search = ({ onSearch, value }: SearchProps) => {
       aria-label="Toggle Search"
       trigger={
         <WithTooltip tip="Search" position="bottom">
-          <Button>
+          <div className={buttonVariants({ size: "default" })}>
             <Icon name="solid-search" />
-          </Button>
+          </div>
         </WithTooltip>
       }
     >
