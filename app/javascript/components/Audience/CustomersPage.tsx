@@ -525,7 +525,7 @@ const CustomersPage = ({
                         {customer.utm_link ? (
                           <WithTooltip
                             tooltipProps={{ className: "w-80 p-0" }}
-                            tip={<UtmLinkCard link={customer.utm_link} showHeader={false} />}
+                            tip={<UtmLinkStack link={customer.utm_link} showHeader={false} />}
                           >
                             <Pill size="small" className="ml-2">
                               UTM
@@ -1009,7 +1009,7 @@ const CustomerDrawer = ({
           ) : null}
         </section>
       </Card>
-      {customer.utm_link ? <UtmLinkCard link={customer.utm_link} showHeader /> : null}
+      {customer.utm_link ? <UtmLinkStack link={customer.utm_link} showHeader /> : null}
       {customer.review ? (
         <ReviewSection
           review={customer.review}
@@ -1984,7 +1984,7 @@ const OptionSection = ({
   );
 };
 
-const UtmLinkCard = ({ link, showHeader }: { link: Customer["utm_link"]; showHeader: boolean }) => {
+const UtmLinkStack = ({ link, showHeader }: { link: Customer["utm_link"]; showHeader: boolean }) => {
   if (!link) return null;
 
   return (
