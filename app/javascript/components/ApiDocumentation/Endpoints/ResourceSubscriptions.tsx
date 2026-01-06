@@ -160,22 +160,21 @@ const ResourceSubscriptionsDescription: React.FC = () => (
 
 export const CreateResourceSubscription: React.FC = () => (
   <ApiEndpoint method="put" path="/resource_subscriptions" description={<ResourceSubscriptionsDescription />}>
-    <ApiParameters>
-      <ApiParameter name="post_url" required />
-      <br />
-      <ApiParameter name="resource_name" required />
-    </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/resource_subscriptions \\
   -d "access_token=ACCESS_TOKEN" \\
-  -d "post_url=http://example.com/ping" \\
   -d "resource_name=sale" \\
+  -d "post_url=https://postatmebro.com" \\
   -X PUT`}
     </CodeSnippet>
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "resource_subscription": {...}
+  "resource_subscription": {
+    "id": "G_-mnBf9b1j9A7a4ub4nFQ==",
+    "resource_name": "sale",
+    "post_url": "https://postatmebro.com"
+  }
 }`}
     </CodeSnippet>
   </ApiEndpoint>
@@ -188,17 +187,25 @@ export const GetResourceSubscriptions: React.FC = () => (
     description="Show all active subscriptions of user for the input resource."
   >
     <ApiParameters>
-      <ApiParameter name="resource_name">(optional)</ApiParameter>
+      <ApiParameter name="resource_name">
+        (string) - Currently there are 8 supported values - "sale", "refund", "dispute", "dispute_won", "cancellation",
+        "subscription_updated", "subscription_ended", and "subscription_restarted".
+      </ApiParameter>
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/resource_subscriptions \\
   -d "access_token=ACCESS_TOKEN" \\
+  -d "resource_name=sale" \\
   -X GET`}
     </CodeSnippet>
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "resource_subscriptions": [...]
+  "resource_subscriptions": [{
+    "id": "G_-mnBf9b1j9A7a4ub4nFQ==",
+    "resource_name": "sale",
+    "post_url": "https://postatmebro.com"
+  }, {...}]
 }`}
     </CodeSnippet>
   </ApiEndpoint>
@@ -211,14 +218,14 @@ export const DeleteResourceSubscription: React.FC = () => (
     description="Unsubscribe from a resource."
   >
     <CodeSnippet caption="cURL example">
-      {`curl https://api.gumroad.com/v2/resource_subscriptions/subscription_id \\
+      {`curl https://api.gumroad.com/v2/resource_subscriptions/G_-mnBf9b1j9A7a4ub4nFQ== \\
   -d "access_token=ACCESS_TOKEN" \\
   -X DELETE`}
     </CodeSnippet>
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "message": "Resource subscription deleted"
+  "message": "The resource subscription was deleted successfully."
 }`}
     </CodeSnippet>
   </ApiEndpoint>

@@ -12,7 +12,7 @@ export const VerifyLicense: React.FC = () => (
       <br />
       <ApiParameter name="license_key">(the license key provided by your customer)</ApiParameter>
       <br />
-      <ApiParameter name="increment_uses_count">(optional, default: "true") - "true"/"false"</ApiParameter>
+      <ApiParameter name="increment_uses_count">("true"/"false", optional, default: "true")</ApiParameter>
     </ApiParameters>
     <CodeSnippet caption="cURL example">
       {`curl https://api.gumroad.com/v2/licenses/verify \\

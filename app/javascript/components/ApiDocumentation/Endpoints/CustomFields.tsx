@@ -65,12 +65,16 @@ export const UpdateCustomField: React.FC = () => (
       {`curl https://api.gumroad.com/v2/products/A-m3CDDC5dlrSdKZp0RFhA==/custom_fields/phone%20number \\
   -d "access_token=ACCESS_TOKEN" \\
   -d "required=false" \\
+  -d "name=phone number" \\
   -X PUT`}
     </CodeSnippet>
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "custom_field": {...}
+  "custom_field": {
+    "name": "phone number",
+    "required": "false"
+  }
 }`}
     </CodeSnippet>
   </ApiEndpoint>
@@ -90,7 +94,7 @@ export const DeleteCustomField: React.FC = () => (
     <CodeSnippet caption="Example response:">
       {`{
   "success": true,
-  "message": "Custom field deleted"
+  "message": "The custom_field has been deleted successfully."
 }`}
     </CodeSnippet>
   </ApiEndpoint>

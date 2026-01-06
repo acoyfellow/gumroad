@@ -379,14 +379,13 @@ export const ResendReceipt: React.FC = () => (
     description="Resend the purchase receipt to the customer's email. Available with the 'edit_sales' scope."
   >
     <CodeSnippet caption="cURL example">
-      {`curl https://api.gumroad.com/v2/sales/sale_id/resend_receipt \\
+      {`curl https://api.gumroad.com/v2/sales/A-m3CDDC5dlrSdKZp0RFhA==/resend_receipt \\
   -d "access_token=ACCESS_TOKEN" \\
   -X POST`}
     </CodeSnippet>
     <CodeSnippet caption="Example response:">
       {`{
-  "success": true,
-  "message": "Receipt resent"
+  "success": true
 }`}
     </CodeSnippet>
   </ApiEndpoint>
