@@ -35,18 +35,14 @@ class FollowersController < ApplicationController
       .offset((page - 1) * FOLLOWERS_PER_PAGE)
       .as_json(pundit_user:)
 
-    can_load_more = (page * FOLLOWERS_PER_PAGE) < total_count
+    has_more = (page * FOLLOWERS_PER_PAGE) < total_count
 
-
-    is_partial_reload = request.headers["X-Inertia-Partial-Data"].present?
     followers_prop = if page == 1
       paginated_followers
-    elsif is_partial_reload
+    elsif request.inertia_partial?
       InertiaRails.merge { paginated_followers }
     else
-      searched_followers
-        .limit(page * FOLLOWERS_PER_PAGE)
-        .as_json(pundit_user:)
+      paginated_followers
     end
 
     render inertia: "Followers/Index", props: {
@@ -55,7 +51,7 @@ class FollowersController < ApplicationController
       total: total_unfiltered_count,
       total_filtered: total_count,
       page:,
-      can_load_more:,
+      has_more:,
       email:,
     }
   end
@@ -101,15 +97,8 @@ class FollowersController < ApplicationController
     authorize [:audience, @follower]
 
     @follower.mark_deleted!
-    redirect_params = {}
-    if request.referer.present?
-      referer_uri = URI.parse(request.referer)
-      referer_params = Rack::Utils.parse_query(referer_uri.query)
-      redirect_params[:email] = referer_params["email"] if referer_params["email"].present?
-      redirect_params[:page] = referer_params["page"] if referer_params["page"].present?
-    end
 
-    redirect_to followers_path(redirect_params), notice: "Follower removed!", status: :see_other
+    redirect_to followers_path, notice: "Follower removed!", status: :see_other
   end
 
   def cancel

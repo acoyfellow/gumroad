@@ -29,7 +29,7 @@ describe FollowersController, inertia: true do
           total: 21,
           total_filtered: 21,
           page: 1,
-          can_load_more: true,
+          has_more: true,
           email: "",
         ))
       end
@@ -56,7 +56,7 @@ describe FollowersController, inertia: true do
         expect(response).to be_successful
         expect(inertia.props[:page]).to eq(2)
         expect(inertia.props[:followers].length).to eq(5)
-        expect(inertia.props[:can_load_more]).to be(false)
+        expect(inertia.props[:has_more]).to be(false)
       end
 
       it "combines search and pagination" do

@@ -3,8 +3,6 @@ import debounce from "lodash/debounce";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
-import { Follower } from "$app/data/followers";
-
 import { Button } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
@@ -61,30 +59,35 @@ const Layout = ({
   );
 };
 
+type Follower = {
+  id: string;
+  email: string;
+  created_at: string;
+  source: string | null;
+  formatted_confirmed_on: string;
+  can_update: boolean | null;
+};
+
 type Props = {
   followers: Follower[];
   per_page: number;
   total: number;
   total_filtered: number;
   page: number;
-  can_load_more: boolean;
+  has_more: boolean;
   email: string;
 };
 
 export default function FollowersPage() {
-  const { followers, total, page: initialPage, can_load_more, email: initialEmail } = cast<Props>(usePage().props);
+  const { followers, total, page, has_more, email } = cast<Props>(usePage().props);
   const userAgentInfo = useUserAgentInfo();
 
   const [isLoadingMore, setIsLoadingMore] = React.useState(false);
   const [selectedFollowerId, setSelectedFollowerId] = React.useState<string | null>(null);
   const [searchBoxOpen, setSearchBoxOpen] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState(initialEmail);
+  const [searchQuery, setSearchQuery] = React.useState(email);
   const searchInputRef = React.useRef<HTMLInputElement | null>(null);
   const selectedFollower = followers.find((follower) => follower.id === selectedFollowerId);
-
-  React.useEffect(() => {
-    setSearchQuery(initialEmail);
-  }, [initialEmail]);
 
   React.useEffect(() => {
     if (searchBoxOpen) searchInputRef.current?.focus();
@@ -94,25 +97,27 @@ export default function FollowersPage() {
     debounce((email: string) => {
       router.reload({
         data: { email: email || undefined, page: 1 },
-        only: ["followers", "total_filtered", "page", "can_load_more", "email"],
+        only: ["followers", "total_filtered", "page", "has_more", "email"],
+        preserveUrl: true,
       });
     }, 500),
     [],
   );
 
   React.useEffect(() => {
-    if (searchQuery !== initialEmail) {
+    if (searchQuery !== email) {
       handleSearch(searchQuery);
     }
-  }, [searchQuery, initialEmail, handleSearch]);
+  }, [searchQuery, email, handleSearch]);
 
   const handleLoadMore = () => {
-    if (!can_load_more || isLoadingMore) return;
-    const nextPage = initialPage + 1;
+    if (!has_more || isLoadingMore) return;
+    const nextPage = page + 1;
     setIsLoadingMore(true);
     router.reload({
       data: { email: searchQuery || undefined, page: nextPage },
-      only: ["followers", "total_filtered", "page", "can_load_more"],
+      only: ["followers", "has_more"],
+      preserveUrl: true,
       onFinish: () => setIsLoadingMore(false),
     });
   };
@@ -211,7 +216,7 @@ export default function FollowersPage() {
                 ))}
               </TableBody>
             </Table>
-            {can_load_more ? (
+            {has_more ? (
               <Button color="primary" onClick={handleLoadMore} disabled={isLoadingMore} className="mt-6">
                 {isLoadingMore ? "Loading..." : "Load more"}
               </Button>
