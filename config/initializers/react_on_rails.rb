@@ -103,7 +103,7 @@ module RenderingExtension
           update: Pundit.policy!(pundit_user, [:settings, :third_party_analytics, pundit_user.seller]).update?
         },
         installment: {
-          create: Pundit.policy!(pundit_user, Installment).create?,
+          create: Pundit.policy!(pundit_user, ::Installment).create?,
         },
         workflow: {
           create: Pundit.policy!(pundit_user, Workflow).create?,
