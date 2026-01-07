@@ -29,9 +29,11 @@ export const GetSubscribers = () => (
     <ApiParameters>
       <ApiParameter name="email">(optional) - Filter subscribers by this email</ApiParameter>
       <ApiParameter name="paginated">
+        {" "}
         (optional, default: "false") - Set to "true" to limit the number of subscribers returned to 100.
       </ApiParameter>
       <ApiParameter name="page_key">
+        {" "}
         (optional) - A key representing a page of results. It is given in the paginated response of the previous page as
         `next_page_key`.
       </ApiParameter>

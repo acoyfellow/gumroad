@@ -1,6 +1,6 @@
 import React from "react";
 
-export const Navigation = ({ resources }: { resources: { name: string; id: string }[] }) => (
+export const Navigation = () => (
   <div
     role="navigation"
     aria-label="API Reference"
@@ -22,11 +22,36 @@ export const Navigation = ({ resources }: { resources: { name: string; id: strin
       <li>
         <a href="#api-methods">Methods</a>
         <menu>
-          {resources.map((resource) => (
-            <li key={resource.id}>
-              <a href={`#${resource.id}`}>{resource.name}</a>
-            </li>
-          ))}
+          <li>
+            <a href="#products">Products</a>
+          </li>
+          <li>
+            <a href="#variant-categories">Variant categories</a>
+          </li>
+          <li>
+            <a href="#offer-codes">Offer codes</a>
+          </li>
+          <li>
+            <a href="#custom-fields">Custom fields</a>
+          </li>
+          <li>
+            <a href="#user">User</a>
+          </li>
+          <li>
+            <a href="#resource-subscriptions">Resource subscriptions</a>
+          </li>
+          <li>
+            <a href="#sales">Sales</a>
+          </li>
+          <li>
+            <a href="#subscribers">Subscribers</a>
+          </li>
+          <li>
+            <a href="#licenses">Licenses</a>
+          </li>
+          <li>
+            <a href="#payouts">Payouts</a>
+          </li>
         </menu>
       </li>
     </menu>
