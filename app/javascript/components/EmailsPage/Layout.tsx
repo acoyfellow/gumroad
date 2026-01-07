@@ -4,7 +4,7 @@ import React from "react";
 import { EmailTab } from "$app/data/installments";
 
 import { Icon } from "$app/components/Icons";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tab, Tabs } from "$app/components/ui/Tabs";
 import { WithTooltip } from "$app/components/WithTooltip";
@@ -33,28 +33,26 @@ export const EmailsLayout = ({ selectedTab, children, hasPosts, query, onQueryCh
         actions={
           <>
             {hasPosts && onQueryChange ? (
-              <Popover
-                open={isSearchPopoverOpen}
-                onToggle={setIsSearchPopoverOpen}
-                aria-label="Toggle Search"
-                trigger={
+              <Popover open={isSearchPopoverOpen} onOpenChange={setIsSearchPopoverOpen}>
+                <PopoverTrigger aria-label="Toggle Search" asChild>
                   <WithTooltip tip="Search" position="bottom">
                     <div className="button">
                       <Icon name="solid-search" />
                     </div>
                   </WithTooltip>
-                }
-              >
-                <div className="input">
-                  <Icon name="solid-search" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="Search emails"
-                    value={query ?? ""}
-                    onChange={(evt) => onQueryChange(evt.target.value)}
-                  />
-                </div>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <div className="input">
+                    <Icon name="solid-search" />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Search emails"
+                      value={query ?? ""}
+                      onChange={(evt) => onQueryChange(evt.target.value)}
+                    />
+                  </div>
+                </PopoverContent>
               </Popover>
             ) : null}
             {!hideNewButton && <NewEmailButton />}

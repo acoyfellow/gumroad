@@ -46,9 +46,10 @@ export const PopoverContent = React.forwardRef<
         align={align}
         collisionPadding={collisionPadding}
         autoFocus={false}
+        forceMount
         onOpenAutoFocus={(e: Event) => e.preventDefault()}
         className={classNames(
-          "z-30 w-max max-w-[calc(100vw-2rem)] rounded-sm border border-border bg-background p-4 text-foreground shadow outline-none focus-visible:outline-none",
+          "z-30 w-max max-w-[calc(100vw-2rem)] rounded-sm border border-border bg-background p-4 text-foreground shadow outline-none focus-visible:outline-none data-[state=closed]:hidden",
           { "w-[var(--radix-popover-trigger-width)] min-w-[var(--radix-popover-trigger-width)]": matchTriggerWidth },
           className,
         )}
@@ -58,12 +59,12 @@ export const PopoverContent = React.forwardRef<
         <PopoverPrimitive.Arrow
           width={16}
           height={8}
-          className={classNames("fill-black dark:fill-foreground/35", arrowClassName)}
+          className={classNames("fill-black data-[state=closed]:hidden dark:fill-foreground/35", arrowClassName)}
         />
       </PopoverPrimitive.Content>
     );
 
-    return usePortal ? <PopoverPrimitive.Portal>{content}</PopoverPrimitive.Portal> : content;
+    return usePortal ? <PopoverPrimitive.Portal forceMount>{content}</PopoverPrimitive.Portal> : content;
   },
 );
 PopoverContent.displayName = PopoverPrimitive.Content.displayName;

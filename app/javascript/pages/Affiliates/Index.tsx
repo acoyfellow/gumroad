@@ -16,7 +16,7 @@ import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { NavigationButtonInertia } from "$app/components/NavigationButton";
 import { Pagination, PaginationProps } from "$app/components/Pagination";
-import { Popover } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Skeleton } from "$app/components/Skeleton";
 import { PageHeader } from "$app/components/ui/PageHeader";
@@ -81,30 +81,28 @@ const SearchBoxPopover = ({ initialQuery, onSearch }: { initialQuery: string; on
   };
 
   return (
-    <Popover
-      open={searchBoxOpen}
-      onToggle={setSearchBoxOpen}
-      aria-label="Search"
-      trigger={
+    <Popover open={searchBoxOpen} onOpenChange={setSearchBoxOpen}>
+      <PopoverTrigger aria-label="Search" asChild>
         <WithTooltip tip="Search" position="bottom">
           <div className="button">
             <Icon name="solid-search" />
           </div>
         </WithTooltip>
-      }
-    >
-      <div className="input input-wrapper">
-        <Icon name="solid-search" />
-        <input
-          ref={searchInputRef}
-          value={inputValue}
-          autoFocus
-          type="text"
-          placeholder="Search"
-          aria-label="Search"
-          onChange={handleChange}
-        />
-      </div>
+      </PopoverTrigger>
+      <PopoverContent>
+        <div className="input input-wrapper">
+          <Icon name="solid-search" />
+          <input
+            ref={searchInputRef}
+            value={inputValue}
+            autoFocus
+            type="text"
+            placeholder="Search"
+            aria-label="Search"
+            onChange={handleChange}
+          />
+        </div>
+      </PopoverContent>
     </Popover>
   );
 };
