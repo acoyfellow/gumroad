@@ -1,9 +1,61 @@
 import React from "react";
 
-
 import { ApiResource } from "$app/components/ApiDocumentation/ApiResource";
 import { Authentication } from "$app/components/ApiDocumentation/Authentication";
-import { API_RESOURCES } from "$app/components/ApiDocumentation/Endpoints";
+import {
+  GetCustomFields,
+  CreateCustomField,
+  UpdateCustomField,
+  DeleteCustomField,
+} from "$app/components/ApiDocumentation/Endpoints/CustomFields";
+import {
+  VerifyLicense,
+  EnableLicense,
+  DisableLicense,
+  DecrementUsesCount,
+  RotateLicense,
+} from "$app/components/ApiDocumentation/Endpoints/Licenses";
+import {
+  GetOfferCodes,
+  GetOfferCode,
+  CreateOfferCode,
+  UpdateOfferCode,
+  DeleteOfferCode,
+} from "$app/components/ApiDocumentation/Endpoints/OfferCodes";
+import { GetPayouts, GetPayout } from "$app/components/ApiDocumentation/Endpoints/Payouts";
+import {
+  GetProducts,
+  GetProduct,
+  DeleteProduct,
+  EnableProduct,
+  DisableProduct,
+} from "$app/components/ApiDocumentation/Endpoints/Products";
+import {
+  CreateResourceSubscription,
+  GetResourceSubscriptions,
+  DeleteResourceSubscription,
+} from "$app/components/ApiDocumentation/Endpoints/ResourceSubscriptions";
+import {
+  GetSales,
+  GetSale,
+  MarkSaleAsShipped,
+  RefundSale,
+  ResendReceipt,
+} from "$app/components/ApiDocumentation/Endpoints/Sales";
+import { GetSubscribers, GetSubscriber } from "$app/components/ApiDocumentation/Endpoints/Subscribers";
+import { GetUser } from "$app/components/ApiDocumentation/Endpoints/User";
+import {
+  CreateVariantCategory,
+  GetVariantCategory,
+  UpdateVariantCategory,
+  DeleteVariantCategory,
+  GetVariantCategories,
+  CreateVariant,
+  GetVariant,
+  UpdateVariant,
+  DeleteVariant,
+  GetVariants,
+} from "$app/components/ApiDocumentation/Endpoints/Variants";
 import { Errors } from "$app/components/ApiDocumentation/Errors";
 import { Introduction } from "$app/components/ApiDocumentation/Introduction";
 import { Navigation } from "$app/components/ApiDocumentation/Navigation";
@@ -17,7 +69,7 @@ export default function Api() {
       <main className="p-4 md:p-8">
         <div>
           <div className="grid grid-cols-1 items-start gap-x-16 gap-y-8 lg:grid-cols-[var(--grid-cols-sidebar)]">
-            <Navigation resources={API_RESOURCES} />
+            <Navigation />
             <article className="grid gap-8">
               <Introduction />
               <Authentication />
@@ -36,9 +88,78 @@ export default function Api() {
                   </p>
                 </div>
               </div>
-              {API_RESOURCES.map((resource) => (
-                <ApiResource key={resource.id} name={resource.name} id={resource.id} endpoints={resource.endpoints} />
-              ))}
+
+              <ApiResource name="Products" id="products">
+                <GetProducts />
+                <GetProduct />
+                <DeleteProduct />
+                <EnableProduct />
+                <DisableProduct />
+              </ApiResource>
+
+              <ApiResource name="Variant categories" id="variant-categories">
+                <CreateVariantCategory />
+                <GetVariantCategory />
+                <UpdateVariantCategory />
+                <DeleteVariantCategory />
+                <GetVariantCategories />
+                <CreateVariant />
+                <GetVariant />
+                <UpdateVariant />
+                <DeleteVariant />
+                <GetVariants />
+              </ApiResource>
+
+              <ApiResource name="Offer codes" id="offer-codes">
+                <GetOfferCodes />
+                <GetOfferCode />
+                <CreateOfferCode />
+                <UpdateOfferCode />
+                <DeleteOfferCode />
+              </ApiResource>
+
+              <ApiResource name="Custom fields" id="custom-fields">
+                <GetCustomFields />
+                <CreateCustomField />
+                <UpdateCustomField />
+                <DeleteCustomField />
+              </ApiResource>
+
+              <ApiResource name="User" id="user">
+                <GetUser />
+              </ApiResource>
+
+              <ApiResource name="Resource subscriptions" id="resource-subscriptions">
+                <CreateResourceSubscription />
+                <GetResourceSubscriptions />
+                <DeleteResourceSubscription />
+              </ApiResource>
+
+              <ApiResource name="Sales" id="sales">
+                <GetSales />
+                <GetSale />
+                <MarkSaleAsShipped />
+                <RefundSale />
+                <ResendReceipt />
+              </ApiResource>
+
+              <ApiResource name="Subscribers" id="subscribers">
+                <GetSubscribers />
+                <GetSubscriber />
+              </ApiResource>
+
+              <ApiResource name="Licenses" id="licenses">
+                <VerifyLicense />
+                <EnableLicense />
+                <DisableLicense />
+                <DecrementUsesCount />
+                <RotateLicense />
+              </ApiResource>
+
+              <ApiResource name="Payouts" id="payouts">
+                <GetPayouts />
+                <GetPayout />
+              </ApiResource>
             </article>
           </div>
         </div>
