@@ -673,7 +673,7 @@ describe "Affiliates", type: :system, js: true do
         # Ignore Will's request
         click_on("Ignore")
       end
-      expect(page).to_not have_text("Will")
+      expect(page).to_not have_text("Will") # Capybara waits for UI to update
       expect(request_three.reload.state).to eq("ignored")
 
       # Ignore Jane's request
@@ -693,20 +693,21 @@ describe "Affiliates", type: :system, js: true do
       # Approve Rob's request
       within all("tr")[1] do
         click_on("Approve")
+        # But because Rob doesn't have an account yet, his request won't go away
+        # Wait for the button to change to indicate action completed
+        expect(page).to have_button("Approved", disabled: true)
       end
       expect(request_four.reload.state).to eq("approved")
 
-      # But because Rob doesn't have an account yet, his request won't go away
+      # Ignore Rob's request
       within all("tr")[1] do
-        expect(page).to have_text("Rob")
-
-        # Ignore Rob's request
         click_on("Ignore")
       end
       expect(page).to_not have_text("Rob")
       expect(request_four.reload.state).to eq("ignored")
 
-      expect(page).to have_text("No requests yet")
+      # After all requests are processed, redirects to onboarding since seller has no products
+      expect(page).to have_text("You need a published product to add affiliates.")
     end
   end
 
