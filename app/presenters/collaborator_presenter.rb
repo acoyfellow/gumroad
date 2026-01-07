@@ -20,7 +20,6 @@ class CollaboratorPresenter
   def edit_collaborator_props
     collaborator_form_props(
       apply_to_all_products: collaborator.apply_to_all_products?,
-      collaborator_id: collaborator.external_id,
       dont_show_as_co_creator: collaborator.dont_show_as_co_creator?,
       email: nil,
       percent_commission: collaborator.affiliate_percentage,
@@ -60,15 +59,15 @@ class CollaboratorPresenter
   private
     attr_reader :seller, :collaborator
 
-    def collaborator_form_props(apply_to_all_products: true, collaborator_id: nil, dont_show_as_co_creator: false, email: "", percent_commission: DEFAULT_PERCENT_COMMISSION, product_affiliates: [], title: "New collaborator")
+    def collaborator_form_props(apply_to_all_products: true, dont_show_as_co_creator: false, email: "", percent_commission: DEFAULT_PERCENT_COMMISSION, product_affiliates: [], title: "New collaborator")
       {
         form_data: {
-          id: collaborator_id,
+          id: collaborator&.external_id,
           email:,
           apply_to_all_products:,
           percent_commission:,
           dont_show_as_co_creator:,
-          products: all_products(product_affiliates:, percent_commission:, apply_to_all_products:, collaborator_id:),
+          products: all_products(product_affiliates:, percent_commission:, apply_to_all_products:, dont_show_as_co_creator:),
         }.compact,
         page_metadata: {
           default_percent_commission: DEFAULT_PERCENT_COMMISSION,
@@ -90,18 +89,19 @@ class CollaboratorPresenter
       end
     end
 
-    def all_products(apply_to_all_products: true, collaborator_id: nil,  percent_commission: DEFAULT_PERCENT_COMMISSION, product_affiliates: [])
+    def all_products(apply_to_all_products: true, percent_commission: DEFAULT_PERCENT_COMMISSION, product_affiliates: [], dont_show_as_co_creator: false)
       seller.products.includes(product_affiliates: :affiliate).visible_and_not_archived.map do |product|
-        product_affiliate = collaborator_id && product_affiliates.find { _1.product.id == product.id }
+        product_affiliate = product.product_affiliates.find_by(affiliate: collaborator)
+        has_another_collaborator = product.has_another_collaborator?(collaborator:)
         {
           id: product.external_id,
           name: product.name,
-          has_another_collaborator: product.has_another_collaborator?(collaborator:),
+          has_another_collaborator:,
           has_affiliates: product.direct_affiliates.alive.exists?,
           published: product.published?,
-          enabled: product_affiliate.present? || (!product.has_another_collaborator?(collaborator:) && product.published?),
+          enabled: collaborator ? product_affiliate.present? : (!has_another_collaborator && product.published?),
           percent_commission: product_affiliate&.affiliate_percentage || percent_commission,
-          dont_show_as_co_creator: product_affiliate && (apply_to_all_products ? collaborator.dont_show_as_co_creator? : product_affiliate.dont_show_as_co_creator?) || false,
+          dont_show_as_co_creator: product_affiliate&.dont_show_as_co_creator? || dont_show_as_co_creator,
         }
       end
     end

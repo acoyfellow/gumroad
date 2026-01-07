@@ -67,11 +67,22 @@ describe CollaboratorPresenter do
 
   describe "#edit_collaborator_props" do
     let(:seller) { create(:user) }
-    let(:visible_product) { create(:product, user: seller) }
+    let!(:visible_product) { create(:product, user: seller) }
     let!(:archived_product) { create(:product, user: seller, archived: true) }
     let!(:deleted_product) { create(:product, user: seller, deleted_at: 1.day.ago) }
+    let!(:product_with_affiliates) { create(:product, user: seller).tap { |product| create(:direct_affiliate, products: [product]) } }
     let!(:ineligible_product) { create(:product, user: seller).tap { |product| create(:collaborator, products: [product]) } }
     let!(:collaborator) { create(:collaborator, seller:, products: [visible_product]) }
+    let!(:product_with_global_affiliate) do
+      create(:product, user: seller, purchase_disabled_at: Time.current).tap do |product|
+        create(:product_affiliate, product:, affiliate: create(:user).global_affiliate)
+      end
+    end
+    let!(:product_with_deleted_collaborator) do
+      create(:product, user: seller).tap do |product|
+        create(:collaborator, seller:, products: [product], deleted_at: 1.day.ago)
+      end
+    end
 
     it "returns the collaborator and eligible products" do
       props = described_class.new(seller:, collaborator:).edit_collaborator_props
@@ -83,10 +94,14 @@ describe CollaboratorPresenter do
         percent_commission: collaborator.affiliate_percentage,
         dont_show_as_co_creator: collaborator.dont_show_as_co_creator?,
       )
-      expect(props[:form_data][:products]).to match_array([
-                                                            { id: visible_product.external_id, name: visible_product.name, published: true, has_another_collaborator: false, has_affiliates: false, enabled: true, percent_commission: default_commission, dont_show_as_co_creator: false },
-                                                            { id: ineligible_product.external_id, name: ineligible_product.name, published: true, has_another_collaborator: true, has_affiliates: false, enabled: false, percent_commission: default_commission, dont_show_as_co_creator: false },
-                                                          ])
+
+      expect(props[:form_data][:products]).to eq([
+                                                   { id: visible_product.external_id, name: visible_product.name, published: true, has_another_collaborator: false, has_affiliates: false, enabled: true, percent_commission: default_commission, dont_show_as_co_creator: false },
+                                                   { id: product_with_affiliates.external_id, name: product_with_affiliates.name, published: true, has_another_collaborator: false, has_affiliates: true, enabled: false, percent_commission: default_commission, dont_show_as_co_creator: false },
+                                                   { id: ineligible_product.external_id, name: ineligible_product.name, published: true, has_another_collaborator: true, has_affiliates: false, enabled: false, percent_commission: default_commission, dont_show_as_co_creator: false },
+                                                   { id: product_with_global_affiliate.external_id, name: product_with_global_affiliate.name, published: false, has_another_collaborator: false, has_affiliates: false, enabled: false, percent_commission: default_commission, dont_show_as_co_creator: false },
+                                                   { id: product_with_deleted_collaborator.external_id, name: product_with_deleted_collaborator.name, published: true, has_another_collaborator: false, has_affiliates: false, enabled: false, percent_commission: default_commission, dont_show_as_co_creator: false },
+                                                 ])
 
       expect(props[:page_metadata]).to eq(
         title: collaborator.affiliate_user.display_name(prefer_email_over_default_username: true),
