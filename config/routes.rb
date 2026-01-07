@@ -320,15 +320,19 @@ Rails.application.routes.draw do
 
     # users (logins/signups and other goodies)
     devise_for(:users,
-               skip: [:passwords],
                controllers: {
                  sessions: "logins",
                  registrations: "signup",
                  confirmations: "confirmations",
                  omniauth_callbacks: "user/omniauth_callbacks",
+                 passwords: "user/passwords",
                })
 
     devise_scope :user do
+      # Custom /forgot_password URL instead of Devise's /users/password/new
+      get "forgot_password", to: "user/passwords#new", as: :forgot_password
+      post "forgot_password", to: "user/passwords#create"
+
       get "signup", to: "signup#new", as: :signup
       post "signup", to: "signup#create"
       post "save_to_library", to: "signup#save_to_library", as: :save_to_library
@@ -339,11 +343,6 @@ Rails.application.routes.draw do
 
       post "login", to: "logins#create"
       get "logout", to: "logins#destroy" # TODO: change the method to DELETE to conform to REST
-      get "forgot_password", to: "user/passwords#new", as: :new_user_password
-      post "forgot_password", to: "user/passwords#create", as: :forgot_password
-      get "users/password/edit", to: "user/passwords#edit", as: :edit_user_password
-      patch "users/password", to: "user/passwords#update", as: :user_password
-      put "users/password", to: "user/passwords#update"
       scope "/users" do
         get "/check_twitter_link", to: "users/oauth#check_twitter_link"
         get "/unsubscribe/:id", to: "users#email_unsubscribe", as: :user_unsubscribe
