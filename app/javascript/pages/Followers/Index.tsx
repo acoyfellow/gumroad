@@ -1,5 +1,4 @@
 import { router, useForm, usePage } from "@inertiajs/react";
-import debounce from "lodash/debounce";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
@@ -16,6 +15,7 @@ import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
+import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 import { useUserAgentInfo } from "$app/components/UserAgent";
 import { WithTooltip } from "$app/components/WithTooltip";
 
@@ -91,45 +91,37 @@ export default function FollowersPage() {
     if (searchBoxOpen) searchInputRef.current?.focus();
   }, [searchBoxOpen]);
 
-  const handleSearch = React.useCallback(
-    debounce((email: string) => {
-      router.reload({
-        data: { email: email || undefined, page: 1 },
-        only: ["followers", "total_count", "page", "has_more", "email"],
-        preserveUrl: true,
-      });
-    }, 500),
-    [],
-  );
+  const updateSearch = useDebouncedCallback((email: string) => {
+    router.reload({
+      data: { email: email || undefined, page: 1 },
+      reset: ["followers"],
+      preserveUrl: true,
+    });
+  }, 500);
 
   React.useEffect(() => {
     if (searchQuery !== email) {
-      handleSearch(searchQuery);
+      updateSearch(searchQuery);
     }
-  }, [searchQuery, email, handleSearch]);
+  }, [searchQuery, email, updateSearch]);
 
-  const handleLoadMore = () => {
+  const loadMore = () => {
     if (!has_more || isLoadingMore) return;
-    const nextPage = page + 1;
-    setIsLoadingMore(true);
     router.reload({
-      data: { email: searchQuery || undefined, page: nextPage },
+      data: { email: searchQuery || undefined, page: page + 1 },
       only: ["followers", "has_more", "page"],
       preserveUrl: true,
+      onStart: () => setIsLoadingMore(true),
       onFinish: () => setIsLoadingMore(false),
     });
   };
 
   const deleteForm = useForm({});
   const removeFollower = (id: string) => {
-    deleteForm.delete(Routes.follower_path({ id }), {
+    deleteForm.delete(Routes.follower_path(id), {
       preserveScroll: true,
-      onSuccess: () => {
-        setSelectedFollowerId(null);
-      },
-      onError: () => {
-        showAlert("Failed to remove follower.", "error");
-      },
+      onSuccess: () => setSelectedFollowerId(null),
+      onError: () => showAlert("Failed to remove follower.", "error"),
     });
   };
 
@@ -215,7 +207,7 @@ export default function FollowersPage() {
               </TableBody>
             </Table>
             {has_more ? (
-              <Button color="primary" onClick={handleLoadMore} disabled={isLoadingMore} className="mt-6">
+              <Button color="primary" onClick={loadMore} disabled={isLoadingMore} className="mt-6">
                 {isLoadingMore ? "Loading..." : "Load more"}
               </Button>
             ) : null}

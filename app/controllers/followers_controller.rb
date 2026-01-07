@@ -3,6 +3,7 @@
 class FollowersController < ApplicationController
   layout "inertia"
   include CustomDomainConfig
+  include Pagy::Backend
 
   PUBLIC_ACTIONS = %i[new create from_embed_form confirm cancel].freeze
   before_action :authenticate_user!, except: PUBLIC_ACTIONS
@@ -21,35 +22,22 @@ class FollowersController < ApplicationController
     @title = "Subscribers"
 
     email = params[:email].to_s.strip
-    page = params[:page].to_i > 0 ? params[:page].to_i : 1
 
     all_followers = current_seller.followers.active.order(confirmed_at: :desc, id: :desc)
     searched_followers = all_followers
     searched_followers = searched_followers.where("email LIKE ?", "%#{email}%") if email.present?
 
-    total_count = searched_followers.count
-    total_unfiltered_count = all_followers.count
-
-    paginated_followers = searched_followers
-      .limit(FOLLOWERS_PER_PAGE)
-      .offset((page - 1) * FOLLOWERS_PER_PAGE)
-      .as_json(pundit_user:)
-
-    has_more = (page * FOLLOWERS_PER_PAGE) < total_count
-
-    followers_prop = if page == 1
-      paginated_followers
-    elsif request.inertia_partial?
-      InertiaRails.merge { paginated_followers }
-    else
-      paginated_followers
-    end
+    pagination, paginated_followers = pagy(
+      searched_followers,
+      page: params[:page],
+      limit: FOLLOWERS_PER_PAGE
+    )
 
     render inertia: "Followers/Index", props: {
-      followers: followers_prop,
-      total_count: total_unfiltered_count,
-      page:,
-      has_more:,
+      followers: InertiaRails.merge { paginated_followers.as_json(pundit_user:) },
+      total_count: all_followers.count,
+      page: pagination.page,
+      has_more: pagination.next.present?,
       email:,
     }
   end
