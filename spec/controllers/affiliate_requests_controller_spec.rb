@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "inertia_rails/rspec"
 require "shared_examples/authorize_called"
 
-describe AffiliateRequestsController do
+describe AffiliateRequestsController, inertia: true do
   describe "GET new" do
     context "when the creator doesn't exist" do
       it "renders 404 page" do
@@ -54,6 +55,11 @@ describe AffiliateRequestsController do
 
           expect(response).to have_http_status(:ok)
           expect(assigns[:title]).to eq("Become an affiliate for #{creator.display_name}")
+          expect(inertia.component).to eq("AffiliateRequests/New")
+          expect(inertia.props[:creator_profile]).to be_present
+          expect(inertia.props[:success]).to eq(false)
+          expect(inertia.props[:requester_has_existing_account]).to eq(false)
+          expect(inertia.props[:email_param]).to be_nil
         end
       end
 
@@ -69,6 +75,11 @@ describe AffiliateRequestsController do
 
           expect(response).to have_http_status(:ok)
           expect(assigns[:title]).to eq("Become an affiliate for #{creator.display_name}")
+          expect(inertia.component).to eq("AffiliateRequests/New")
+          expect(inertia.props[:creator_profile]).to be_present
+          expect(inertia.props[:success]).to eq(false)
+          expect(inertia.props[:requester_has_existing_account]).to eq(false)
+          expect(inertia.props[:email_param]).to be_nil
         end
       end
 
@@ -77,12 +88,16 @@ describe AffiliateRequestsController do
 
         include_context "with user signed in as admin for seller"
 
-        it "assigns the correct instance variables and renders template" do
+        it "renders the affiliate request form" do
           get :new, params: { username: creator.username }
 
           expect(response).to be_successful
-
           expect(assigns[:title]).to eq("Become an affiliate for #{creator.display_name}")
+          expect(inertia.component).to eq("AffiliateRequests/New")
+          expect(inertia.props[:creator_profile]).to be_present
+          expect(inertia.props[:success]).to eq(false)
+          expect(inertia.props[:requester_has_existing_account]).to eq(false)
+          expect(inertia.props[:email_param]).to be_nil
         end
       end
     end
@@ -108,7 +123,7 @@ describe AffiliateRequestsController do
           post :create, params: { username: creator.username, affiliate_request: { name: "John Doe", email: "foobar", promotion_text: "hello" } }
 
           expect(response).to redirect_to(custom_domain_new_affiliate_request_path)
-          expect(flash[:warning]).to eq("Email is invalid")
+          expect(flash[:alert]).to eq("Email is invalid")
         end
       end
 
@@ -225,14 +240,14 @@ describe AffiliateRequestsController do
         end.to_not change { affiliate_request.reload.ignored? }
 
         expect(response).to redirect_to(affiliates_path)
-        expect(flash[:warning]).to eq("John Doe's affiliate request has been already processed.")
+        expect(flash[:alert]).to eq("John Doe's affiliate request has been already processed.")
       end
 
       it "redirects with a warning for an unknown action name" do
         patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "delete" } }
 
         expect(response).to redirect_to(affiliates_path)
-        expect(flash[:warning]).to eq("delete is not a valid affiliate request action")
+        expect(flash[:alert]).to eq("delete is not a valid affiliate request action")
       end
     end
 
@@ -272,7 +287,7 @@ describe AffiliateRequestsController do
         post :approve_all
 
         expect(response).to redirect_to(affiliates_path)
-        expect(flash[:warning]).to eq("Failed to approve all requests")
+        expect(flash[:alert]).to eq("Failed to approve all requests")
       end
 
       context "when seller is not signed in" do

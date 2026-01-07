@@ -13,10 +13,10 @@ class AffiliateRequestsController < ApplicationController
   before_action :set_affiliate_request, only: %i[approve ignore]
 
   def new
-    @title = "Become an affiliate for #{user.display_name}"
+    @title = "Become an affiliate for #{@user.display_name}"
     profile_presenter = ProfilePresenter.new(
       pundit_user:,
-      seller: user,
+      seller: @user,
     )
     render inertia: "AffiliateRequests/New", props: {
       creator_profile: profile_presenter.creator_profile,
@@ -27,11 +27,11 @@ class AffiliateRequestsController < ApplicationController
   end
 
   def create
-    affiliate_request = user.affiliate_requests.new(permitted_create_params)
+    affiliate_request = @user.affiliate_requests.new(permitted_create_params)
     affiliate_request.locale = params[:locale] || "en"
 
     if affiliate_request.save
-      affiliate_request.approve! if Feature.active?(:auto_approve_affiliates, user)
+      affiliate_request.approve! if Feature.active?(:auto_approve_affiliates, @user)
       update_logged_in_user_name_if_needed(permitted_create_params[:name])
 
       redirect_to custom_domain_new_affiliate_request_path(
@@ -41,7 +41,7 @@ class AffiliateRequestsController < ApplicationController
       ), status: :see_other
     else
       redirect_to custom_domain_new_affiliate_request_path,
-                  warning: affiliate_request.errors.full_messages.to_sentence
+                  alert: affiliate_request.errors.full_messages.to_sentence
     end
   end
 
@@ -53,7 +53,7 @@ class AffiliateRequestsController < ApplicationController
 
     unless affiliate_request.can_perform_action?(action_name)
       redirect_to affiliates_path,
-                  warning: "#{affiliate_request.name}'s affiliate request has been already processed."
+                  alert: "#{affiliate_request.name}'s affiliate request has been already processed."
       return
     end
 
@@ -66,10 +66,10 @@ class AffiliateRequestsController < ApplicationController
         redirect_to affiliates_path, notice: "Ignored #{affiliate_request.name}'s request!", status: :see_other
       else
         redirect_to affiliates_path,
-                    warning: "#{action_name} is not a valid affiliate request action"
+                    alert: "#{action_name} is not a valid affiliate request action"
       end
     rescue ActiveRecord::RecordInvalid => e
-      redirect_to affiliates_path, warning: e.message
+      redirect_to affiliates_path, alert: e.message
     end
   end
 
@@ -106,14 +106,10 @@ class AffiliateRequestsController < ApplicationController
     pending_requests.find_each(&:approve!)
     redirect_to affiliates_path, notice: "Approved all pending affiliate requests!", status: :see_other
   rescue ActiveRecord::RecordInvalid, StateMachines::InvalidTransition
-    redirect_to affiliates_path, warning: "Failed to approve all requests"
+    redirect_to affiliates_path, alert: "Failed to approve all requests"
   end
 
   private
-    def user
-      @user ||= current_seller
-    end
-
     def ensure_creator_has_enabled_affiliate_requests
       respond_with_404 unless @user.self_service_affiliate_products.enabled.exists?
     end

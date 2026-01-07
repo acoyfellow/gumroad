@@ -693,8 +693,11 @@ describe "Affiliates", type: :system, js: true do
       # Approve Rob's request
       within all("tr")[1] do
         click_on("Approve")
+      end
+      expect(request_four.reload.state).to eq("approved")
 
-        # But because Rob doesn't have an account yet, his request won't go away
+      # But because Rob doesn't have an account yet, his request won't go away
+      within all("tr")[1] do
         expect(page).to have_text("Rob")
 
         # Ignore Rob's request

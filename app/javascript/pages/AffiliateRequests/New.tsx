@@ -19,8 +19,7 @@ type Props = {
 };
 
 const AffiliateRequestsNew = () => {
-  const { props } = usePage();
-  const { creator_profile, success, requester_has_existing_account, email_param } = cast<Props>(props);
+  const { creator_profile, success, requester_has_existing_account, email_param } = cast<Props>(usePage().props);
 
   const appDomain = useAppDomain();
   const loggedInUser = useLoggedInUser();
