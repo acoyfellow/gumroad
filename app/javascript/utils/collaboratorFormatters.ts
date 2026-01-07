@@ -14,31 +14,15 @@ export const formatProductNames = (collaborator: Collaborator | IncomingCollabor
   return count === 1 ? "1 product" : `${count.toLocaleString()} products`;
 };
 
-export const getProductCommission = (
-  product: Collaborator["products"][number] | IncomingCollaborator["products"][number],
-): number => {
-  if ("percent_commission" in product) {
-    return product.percent_commission;
-  }
-  return product.affiliate_percentage;
-};
-
-const getDefaultCommission = (collaborator: Collaborator | IncomingCollaborator): number => {
-  if ("percent_commission" in collaborator) {
-    return collaborator.percent_commission ?? 0;
-  }
-  return collaborator.affiliate_percentage ?? 0;
-};
-
 export const formatCommission = (collaborator: Collaborator | IncomingCollaborator) => {
   const products = collaborator.products;
 
   if (products.length > 0) {
-    const sortedCommissions = products.map((product) => getProductCommission(product)).sort((a, b) => a - b);
+    const sortedCommissions = products.map((product) => product.percent_commission).sort((a, b) => a - b);
     const commissions = [...new Set(sortedCommissions)]; // remove duplicates
 
     if (commissions.length === 0) {
-      return formatAsPercent(getDefaultCommission(collaborator));
+      return formatAsPercent(collaborator.percent_commission);
     } else if (commissions.length === 1 && commissions[0] !== undefined) {
       return formatAsPercent(commissions[0]);
     } else if (commissions.length > 1) {
@@ -50,5 +34,5 @@ export const formatCommission = (collaborator: Collaborator | IncomingCollaborat
     }
   }
 
-  return formatAsPercent(getDefaultCommission(collaborator));
+  return formatAsPercent(collaborator.percent_commission);
 };

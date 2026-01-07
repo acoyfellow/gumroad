@@ -126,7 +126,7 @@ describe CollaboratorPresenter do
       expect(props).to include(
         id: collaborator.external_id,
         apply_to_all_products: collaborator.apply_to_all_products,
-        affiliate_percentage: collaborator.affiliate_percentage,
+        percent_commission: collaborator.affiliate_percentage,
         dont_show_as_co_creator: collaborator.dont_show_as_co_creator,
         invitation_accepted: collaborator.invitation_accepted?,
         seller_email: seller.email,
@@ -138,8 +138,7 @@ describe CollaboratorPresenter do
                                                   id: product.external_id,
                                                   url: product.long_url,
                                                   name: product.name,
-                                                  affiliate_percentage: collaborator.affiliate_percentage,
-                                                  dont_show_as_co_creator: product_affiliate.dont_show_as_co_creator,
+                                                  percent_commission: collaborator.affiliate_percentage,
                                                 },
                                               ])
     end

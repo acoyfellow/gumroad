@@ -4,14 +4,13 @@ export type IncomingCollaborator = {
   seller_name: string;
   seller_avatar_url: string;
   apply_to_all_products: boolean;
-  affiliate_percentage: number | null;
+  percent_commission: number;
   dont_show_as_co_creator: boolean;
   invitation_accepted: boolean;
   products: {
     id: string;
     url: string;
     name: string;
-    affiliate_percentage: number;
-    dont_show_as_co_creator: boolean;
+    percent_commission: number;
   }[];
 };

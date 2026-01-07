@@ -3,7 +3,7 @@ export type Collaborator = {
   email: string;
   name: string | null;
   avatar_url: string;
-  percent_commission: number | null;
+  percent_commission: number;
   setup_incomplete: boolean;
   products: {
     id: string;

@@ -76,7 +76,7 @@ describe Collaborators::IncomingsController, inertia: true do
             seller_name: seller1.display_name(prefer_email_over_default_username: true),
             seller_avatar_url: seller1.avatar_url,
             apply_to_all_products: pending_collaboration.apply_to_all_products,
-            affiliate_percentage: pending_collaboration.affiliate_percentage,
+            percent_commission: pending_collaboration.affiliate_percentage,
             dont_show_as_co_creator: pending_collaboration.dont_show_as_co_creator,
             invitation_accepted: pending_collaboration.invitation_accepted?,
             products: [
@@ -84,8 +84,7 @@ describe Collaborators::IncomingsController, inertia: true do
                 id: seller1_product.external_id,
                 url: seller1_product.long_url,
                 name: seller1_product.name,
-                affiliate_percentage: pending_collaboration_product.affiliate_percentage,
-                dont_show_as_co_creator: pending_collaboration_product.dont_show_as_co_creator,
+                percent_commission: pending_collaboration_product.affiliate_percentage,
               }
             ]
           },
@@ -95,7 +94,7 @@ describe Collaborators::IncomingsController, inertia: true do
             seller_name: seller2.display_name(prefer_email_over_default_username: true),
             seller_avatar_url: seller2.avatar_url,
             apply_to_all_products: accepted_collaboration.apply_to_all_products,
-            affiliate_percentage: accepted_collaboration.affiliate_percentage,
+            percent_commission: accepted_collaboration.affiliate_percentage,
             dont_show_as_co_creator: accepted_collaboration.dont_show_as_co_creator,
             invitation_accepted: accepted_collaboration.invitation_accepted?,
             products: [
@@ -103,8 +102,7 @@ describe Collaborators::IncomingsController, inertia: true do
                 id: seller2_product.external_id,
                 url: seller2_product.long_url,
                 name: seller2_product.name,
-                affiliate_percentage: accepted_collaboration_product.affiliate_percentage,
-                dont_show_as_co_creator: accepted_collaboration_product.dont_show_as_co_creator,
+                percent_commission: accepted_collaboration_product.affiliate_percentage,
               }
             ]
           }

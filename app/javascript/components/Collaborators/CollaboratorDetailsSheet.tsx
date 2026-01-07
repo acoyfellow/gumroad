@@ -2,7 +2,7 @@ import * as React from "react";
 
 import type { Collaborator } from "$app/data/collaborators";
 import type { IncomingCollaborator } from "$app/data/incoming_collaborators";
-import { formatAsPercent, getProductCommission } from "$app/utils/collaboratorFormatters";
+import { formatAsPercent } from "$app/utils/collaboratorFormatters";
 
 import { Alert } from "$app/components/ui/Alert";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
@@ -52,7 +52,7 @@ const CollaboratorDetailsSheet = ({
               ) : (
                 <div>{productName}</div>
               )}
-              <div>{formatAsPercent(getProductCommission(product))}</div>
+              <div>{formatAsPercent(product.percent_commission)}</div>
             </section>
           );
         })}

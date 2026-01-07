@@ -14,7 +14,7 @@ class CollaboratorPresenter
   end
 
   def collaborator_props
-    collaborator.as_json.merge(products:)
+    collaborator.as_json.merge(products:, percent_commission: collaborator.affiliate_percentage || DEFAULT_PERCENT_COMMISSION)
   end
 
   def edit_collaborator_props
@@ -35,21 +35,14 @@ class CollaboratorPresenter
   end
 
   def incoming_collaborator_props(collaborator)
+    @collaborator = collaborator
     {
-      affiliate_percentage: collaborator.affiliate_percentage || DEFAULT_PERCENT_COMMISSION,
+      percent_commission: collaborator.affiliate_percentage || DEFAULT_PERCENT_COMMISSION,
       apply_to_all_products: collaborator.apply_to_all_products,
       dont_show_as_co_creator: collaborator.dont_show_as_co_creator,
       id: collaborator.external_id,
       invitation_accepted: collaborator.invitation_accepted?,
-      products: collaborator.product_affiliates.includes(:product).map do |product_affiliate|
-        {
-          id: product_affiliate.product.external_id,
-          url: product_affiliate.product.long_url,
-          name: product_affiliate.product.name,
-          affiliate_percentage: product_affiliate.affiliate_percentage || collaborator.affiliate_percentage,
-          dont_show_as_co_creator: product_affiliate.dont_show_as_co_creator,
-        }
-      end,
+      products: products(with_product_url: true),
       seller_avatar_url: collaborator.seller.avatar_url,
       seller_email: collaborator.seller.email,
       seller_name: collaborator.seller.display_name(prefer_email_over_default_username: true),
@@ -79,13 +72,14 @@ class CollaboratorPresenter
       }
     end
 
-    def products
+    def products(with_product_url: false)
       collaborator&.product_affiliates&.includes(:product)&.map do |pa|
         {
           id: pa.product.external_id,
           name: pa.product.name,
           percent_commission: pa.affiliate_percentage || collaborator.affiliate_percentage,
-        }
+          url: with_product_url ? pa.product.long_url : nil,
+        }.compact
       end
     end
 
