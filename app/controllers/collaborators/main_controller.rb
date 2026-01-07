@@ -54,6 +54,6 @@ class Collaborators::MainController < Collaborators::BaseController
     end
 
     def collaborator_params
-      params.require(:collaborator).permit(:email, :apply_to_all_products, :percent_commission, :dont_show_as_co_creator, products: [:id, :percent_commission, :dont_show_as_co_creator, :product_index])
+      params.require(:collaborator).permit(:email, :apply_to_all_products, :percent_commission, :dont_show_as_co_creator, products: [:id, :percent_commission, :dont_show_as_co_creator])
     end
 end

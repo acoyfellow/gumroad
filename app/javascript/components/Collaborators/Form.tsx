@@ -57,15 +57,6 @@ const CollaboratorForm = ({
       ? productsWithAffiliates.length
       : pageMetadata.max_products_with_affiliates_to_show;
 
-  const handleProductChange = (id: string, attrs: Partial<CollaboratorFormProduct>) => {
-    const index = form.data.products.findIndex((product) => product.id === id);
-    form.clearErrors(`products.${index}.percent_commission`);
-    form.setData(
-      "products",
-      form.data.products.map((item) => (item.id === id ? { ...item, ...attrs } : item)),
-    );
-  };
-
   const submitForm = (acknowledgement?: typeof WITH_CONFIRMED_ACKNOWLEDGEMENT) => {
     let commissionErrorMessage: string | null = null;
     if (
@@ -297,7 +288,10 @@ const CollaboratorForm = ({
                           role="switch"
                           disabled={product.has_another_collaborator}
                           checked={product.enabled}
-                          onChange={(evt) => handleProductChange(product.id, { enabled: evt.target.checked })}
+                          onChange={(evt) => {
+                            form.setData(`products.${index}.enabled`, evt.target.checked);
+                            form.clearErrors(`products.${index}.enabled`);
+                          }}
                           aria-label="Enable all products"
                         />
                       </TableCell>
@@ -315,7 +309,10 @@ const CollaboratorForm = ({
                         <fieldset className={cx({ danger: form.errors[`products.${index}.percent_commission`] })}>
                           <NumberInput
                             value={product.percent_commission}
-                            onChange={(value) => handleProductChange(product.id, { percent_commission: value })}
+                            onChange={(value) => {
+                              form.setData(`products.${index}.percent_commission`, value);
+                              form.clearErrors(`products.${index}.percent_commission`);
+                            }}
                           >
                             {(inputProps) => (
                               <div className={cx("input", { disabled })}>
@@ -337,9 +334,10 @@ const CollaboratorForm = ({
                           <input
                             type="checkbox"
                             checked={!product.dont_show_as_co_creator}
-                            onChange={(evt) =>
-                              handleProductChange(product.id, { dont_show_as_co_creator: !evt.target.checked })
-                            }
+                            onChange={(evt) => {
+                              form.setData(`products.${index}.dont_show_as_co_creator`, !evt.target.checked);
+                              form.clearErrors(`products.${index}.percent_commission`);
+                            }}
                             disabled={disabled}
                           />
                           Show as co-creator
