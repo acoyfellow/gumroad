@@ -53,6 +53,14 @@ class LoginsController < Devise::SessionsController
   end
 
   private
+    def respond_to_on_destroy(non_navigational_status: :no_content)
+      redirect_status = request.inertia? ? :see_other : Devise.responder.redirect_status
+      respond_to do |format|
+        format.all { head non_navigational_status }
+        format.any(*navigational_formats) { redirect_to after_sign_out_path_for(resource_name), status: redirect_status }
+      end
+    end
+
     def block_json_request
       return if request.inertia?
 
