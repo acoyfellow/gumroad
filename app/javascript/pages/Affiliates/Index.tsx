@@ -361,7 +361,7 @@ export default function AffiliatesIndex() {
           </div>
         ) : (
           <>
-            {affiliate_requests.length > 0 && !searchQuery && pagination.page === 1 ? (
+            {!searchQuery && pagination.page === 1 ? (
               <AffiliateRequestsTable
                 affiliateRequests={affiliate_requests}
                 allowApproveAll={allow_approve_all_requests}

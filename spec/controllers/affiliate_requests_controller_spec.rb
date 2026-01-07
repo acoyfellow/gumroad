@@ -83,11 +83,6 @@ describe AffiliateRequestsController do
           expect(response).to be_successful
 
           expect(assigns[:title]).to eq("Become an affiliate for #{creator.display_name}")
-          expect(assigns[:hide_layouts]).to be(true)
-
-          profile_presenter = assigns[:profile_presenter]
-          expect(profile_presenter.seller).to eq(creator)
-          expect(profile_presenter.pundit_user).to eq(controller.pundit_user)
         end
       end
     end
@@ -109,11 +104,11 @@ describe AffiliateRequestsController do
       let!(:enabled_self_service_affiliate_product) { create(:self_service_affiliate_product, enabled: true, seller: creator, product:) }
 
       context "when the request payload is invalid" do
-        it "redirects with a warning" do
+        it "redirects with warning" do
           post :create, params: { username: creator.username, affiliate_request: { name: "John Doe", email: "foobar", promotion_text: "hello" } }
 
           expect(response).to redirect_to(custom_domain_new_affiliate_request_path)
-          expect(flash[:warning]).to eq "Email is invalid"
+          expect(flash[:warning]).to eq("Email is invalid")
         end
       end
 
@@ -181,10 +176,10 @@ describe AffiliateRequestsController do
       context "when creator is not signed in" do
         before { sign_out(seller) }
 
-        it "responds with an error" do
-          patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "approve" } }, format: :json
+        it "redirects to login" do
+          patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "approve" } }
 
-          expect(response.parsed_body["success"]).to eq false
+          expect(response.redirect_url).to start_with(login_url)
         end
       end
 
@@ -192,55 +187,52 @@ describe AffiliateRequestsController do
         expect_any_instance_of(AffiliateRequest).to receive(:make_requester_an_affiliate!)
 
         expect do
-          patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "approve" } }, format: :json
+          patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "approve" } }
         end.to change { affiliate_request.reload.approved? }.from(false).to(true)
 
-        expect(response.parsed_body["success"]).to eq(true)
-        expect(response.parsed_body["affiliate_request"]["state"]).to eq("approved")
-        expect(response.parsed_body["requester_has_existing_account"]).to eq(false)
+        expect(response).to redirect_to(affiliates_path)
+        expect(flash[:notice]).to eq("Approved John Doe's request!")
       end
 
       it "ignores a request" do
         expect do
-          patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "ignore" } }, format: :json
+          patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "ignore" } }
         end.to change { affiliate_request.reload.ignored? }.from(false).to(true)
 
-        expect(response.parsed_body["success"]).to eq(true)
-        expect(response.parsed_body["affiliate_request"]["state"]).to eq("ignored")
-        expect(response.parsed_body["requester_has_existing_account"]).to eq(false)
+        expect(response).to redirect_to(affiliates_path)
+        expect(flash[:notice]).to eq("Ignored John Doe's request!")
       end
 
       it "ignores an approved request for an affiliate who doesn't have an account" do
         affiliate_request.approve!
 
         expect do
-          patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "ignore" } }, format: :json
+          patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "ignore" } }
         end.to change { affiliate_request.reload.ignored? }.from(false).to(true)
 
-        expect(response.parsed_body["success"]).to eq(true)
-        expect(response.parsed_body["affiliate_request"]["state"]).to eq("ignored")
-        expect(response.parsed_body["requester_has_existing_account"]).to eq(false)
+        expect(response).to redirect_to(affiliates_path)
+        expect(flash[:notice]).to eq("Ignored John Doe's request!")
       end
 
-      it "responds with an error while ignoring an already approved request for an affiliate who has an account" do
+      it "redirects with a warning while ignoring an already approved request for an affiliate who has an account" do
         # Ensure that the affiliate has an account
         create(:user, email: affiliate_request.email)
 
         affiliate_request.approve!
 
         expect do
-          patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "ignore" } }, format: :json
+          patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "ignore" } }
         end.to_not change { affiliate_request.reload.ignored? }
 
-        expect(response.parsed_body["success"]).to eq false
-        expect(response.parsed_body["error"]).to eq("John Doe's affiliate request has been already processed.")
+        expect(response).to redirect_to(affiliates_path)
+        expect(flash[:warning]).to eq("John Doe's affiliate request has been already processed.")
       end
 
-      it "responds with an error for an unknown action name" do
-        patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "delete" } }, format: :json
+      it "redirects with a warning for an unknown action name" do
+        patch :update, params: { id: affiliate_request.external_id, affiliate_request: { action: "delete" } }
 
-        expect(response.parsed_body["success"]).to eq false
-        expect(response.parsed_body["error"]).to eq("delete is not a valid affiliate request action")
+        expect(response).to redirect_to(affiliates_path)
+        expect(flash[:warning]).to eq("delete is not a valid affiliate request action")
       end
     end
 
@@ -259,38 +251,37 @@ describe AffiliateRequestsController do
         expect do
           expect do
             expect do
-              post :approve_all, format: :json
+              post :approve_all
             end.not_to change { approved_request.reload }
           end.not_to change { ignored_request.reload }
         end.not_to change { other_seller_request.reload }
 
-        expect(response).to have_http_status :ok
-        expect(response.parsed_body["success"]).to eq true
+        expect(response).to redirect_to(affiliates_path)
+        expect(flash[:notice]).to eq("Approved all pending affiliate requests!")
 
         pending_requests.each do |request|
           expect(request.reload).to be_approved
         end
       end
 
-      it "returns an error if there is a problem updating a record" do
+      it "redirects with a warning if there is a problem updating a record" do
         allow_any_instance_of(AffiliateRequest).to receive(:approve!).and_raise(ActiveRecord::RecordInvalid)
 
         sign_in seller
 
-        post :approve_all, format: :json
+        post :approve_all
 
-        expect(response).to have_http_status :ok
-        expect(response.parsed_body["success"]).to eq false
+        expect(response).to redirect_to(affiliates_path)
+        expect(flash[:warning]).to eq("Failed to approve all requests")
       end
 
-      context "when seller is signed in" do
+      context "when seller is not signed in" do
         before { sign_out(seller) }
 
-        it "returns 404" do
-          post :approve_all, format: :json
+        it "redirects to login" do
+          post :approve_all
 
-          expect(response).to have_http_status(:not_found)
-          expect(response.parsed_body["success"]).to eq false
+          expect(response.redirect_url).to start_with(login_url)
         end
       end
     end

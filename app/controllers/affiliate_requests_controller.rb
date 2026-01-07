@@ -41,7 +41,7 @@ class AffiliateRequestsController < ApplicationController
       ), status: :see_other
     else
       redirect_to custom_domain_new_affiliate_request_path,
-                  alert: affiliate_request.errors.full_messages.to_sentence
+                  warning: affiliate_request.errors.full_messages.to_sentence
     end
   end
 
@@ -52,7 +52,8 @@ class AffiliateRequestsController < ApplicationController
     action_name = permitted_update_params[:action]
 
     unless affiliate_request.can_perform_action?(action_name)
-      redirect_to affiliates_path, alert: "#{affiliate_request.name}'s affiliate request has been already processed.", status: :see_other
+      redirect_to affiliates_path,
+                  warning: "#{affiliate_request.name}'s affiliate request has been already processed."
       return
     end
 
@@ -64,10 +65,11 @@ class AffiliateRequestsController < ApplicationController
         affiliate_request.ignore!
         redirect_to affiliates_path, notice: "Ignored #{affiliate_request.name}'s request!", status: :see_other
       else
-        redirect_to affiliates_path, alert: "#{action_name} is not a valid affiliate request action"
+        redirect_to affiliates_path,
+                    warning: "#{action_name} is not a valid affiliate request action"
       end
     rescue ActiveRecord::RecordInvalid => e
-      redirect_to affiliates_path, alert: e.message
+      redirect_to affiliates_path, warning: e.message
     end
   end
 
@@ -104,7 +106,7 @@ class AffiliateRequestsController < ApplicationController
     pending_requests.find_each(&:approve!)
     redirect_to affiliates_path, notice: "Approved all pending affiliate requests!", status: :see_other
   rescue ActiveRecord::RecordInvalid, StateMachines::InvalidTransition
-    redirect_to affiliates_path, alert: "Failed to approve all requests", status: :see_other
+    redirect_to affiliates_path, warning: "Failed to approve all requests"
   end
 
   private
