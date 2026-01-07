@@ -671,48 +671,37 @@ describe "Affiliates", type: :system, js: true do
         expect(page).to have_text("Will")
 
         # Ignore Will's request
-        expect do
-          click_on("Ignore")
-          wait_for_ajax
-        end.to change { request_three.reload.state }.to eq("ignored")
+        click_on("Ignore")
       end
       expect(page).to_not have_text("Will")
+      expect(request_three.reload.state).to eq("ignored")
 
       # Ignore Jane's request
       within all("tr")[1] do
-        expect do
-          click_on("Ignore")
-          wait_for_ajax
-        end.to change { request_two.reload.state }.to eq("ignored")
+        click_on("Ignore")
       end
       expect(page).to_not have_text("Jane")
+      expect(request_two.reload.state).to eq("ignored")
 
       # Approve John's request
       within all("tr")[1] do
-        expect do
-          click_on("Approve")
-          wait_for_ajax
-        end.to change { request_one.reload.state }.to eq("approved")
+        click_on("Approve")
       end
       expect(page).to_not have_text("John")
+      expect(request_one.reload.state).to eq("approved")
 
       # Approve Rob's request
       within all("tr")[1] do
-        expect do
-          click_on("Approve")
-          wait_for_ajax
-        end.to change { request_four.reload.state }.to eq("approved")
+        click_on("Approve")
 
         # But because Rob doesn't have an account yet, his request won't go away
         expect(page).to have_text("Rob")
 
         # Ignore Rob's request
-        expect do
-          click_on("Ignore")
-          wait_for_ajax
-        end.to change { request_four.reload.state }.to eq("ignored")
+        click_on("Ignore")
       end
       expect(page).to_not have_text("Rob")
+      expect(request_four.reload.state).to eq("ignored")
 
       expect(page).to have_text("No requests yet")
     end
