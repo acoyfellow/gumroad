@@ -89,6 +89,7 @@ const AffiliateRequestsNew = () => {
                   <input
                     id={nameUID}
                     type="text"
+                    required
                     placeholder="Name"
                     value={data.affiliate_request.name}
                     onChange={(event) => setData("affiliate_request.name", event.target.value)}
