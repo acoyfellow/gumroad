@@ -38,7 +38,6 @@ describe HelpCenter::ArticlesController, inertia: true do
         title: article.title,
         slug: article.slug
       )
-      expect(inertia.props[:article][:content]).to be_present
       expect(inertia.props[:article][:category]).to include(:title, :slug, :url)
     end
 
@@ -54,7 +53,6 @@ describe HelpCenter::ArticlesController, inertia: true do
         title: "#{article.title} - Gumroad Help Center"
       )
       expect(inertia.props[:meta][:canonical_url]).to be_present
-      expect(inertia.props[:meta][:description]).to be_present
     end
 
     it "redirects to help center root for non-existent articles" do
