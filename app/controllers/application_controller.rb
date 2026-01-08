@@ -38,6 +38,7 @@ class ApplicationController < ActionController::Base
   before_action :track_utm_link_visit
   add_flash_types :warning
 
+
   def redirect_to_next
     safe_redirect_to(params[:next])
   end
