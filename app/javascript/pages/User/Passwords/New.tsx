@@ -28,7 +28,7 @@ function ForgotPasswordPage() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    form.post(Routes.forgot_password_path());
+    form.post(Routes.user_password_path());
   };
 
   return (

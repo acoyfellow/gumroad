@@ -23,6 +23,7 @@ describe("Password Reset", type: :system, js: true) do
           click_on("Reset password")
 
           expect(page).to have_current_path(dashboard_path)
+          expect(page).to have_text("Your password has been reset, and you're now logged in.")
           expect(@user.reload.encrypted_password).not_to eq(@original_encrypted_password)
         end
       end

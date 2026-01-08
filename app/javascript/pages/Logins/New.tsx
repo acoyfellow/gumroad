@@ -84,7 +84,7 @@ function LoginPage() {
           <fieldset>
             <legend>
               <label htmlFor={`${uid}-password`}>Password</label>
-              <Link href={Routes.forgot_password_path({ next })} className="font-normal underline">
+              <Link href={Routes.new_user_password_path({ next })} className="font-normal underline">
                 Forgot your password?
               </Link>
             </legend>

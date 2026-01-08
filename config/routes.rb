@@ -330,10 +330,6 @@ Rails.application.routes.draw do
                path_names: { password: 'forgot_password' })
 
     devise_scope :user do
-      # Custom /forgot_password URL instead of Devise's /users/password/new
-      get "forgot_password", to: "user/passwords#new", as: :forgot_password
-      post "forgot_password", to: "user/passwords#create"
-
       get "signup", to: "signup#new", as: :signup
       post "signup", to: "signup#create"
       post "save_to_library", to: "signup#save_to_library", as: :save_to_library
