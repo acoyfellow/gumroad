@@ -20,15 +20,16 @@ class HelpCenterPresenter
   end
 
   def article_props(article)
+    content = render_article_content(article)
     {
       article: {
         title: article.title,
         slug: article.slug,
-        content: render_article_content(article),
+        content: content,
         category: category_data(article.category)
       },
       sidebar_categories: article.category.categories_for_same_audience.map { |cat| sidebar_category_data(cat, article.category) },
-      meta: article_meta(article)
+      meta: article_meta(article, content)
     }
   end
 
@@ -94,10 +95,10 @@ class HelpCenterPresenter
       end
     end
 
-    def article_meta(article)
+    def article_meta(article, content)
       {
         title: "#{article.title} - Gumroad Help Center",
-        description: extract_description(article),
+        description: extract_description(content),
         canonical_url: help_center_article_url(article)
       }
     end
@@ -110,11 +111,7 @@ class HelpCenterPresenter
       }
     end
 
-    def extract_description(article)
-      # The @description is set in article partials, but we can't access it directly
-      # from the presenter. We'll extract it from the rendered content or use a default.
-      content = render_article_content(article)
-      # Strip HTML and get first 160 characters
+    def extract_description(content)
       plain_text = ActionController::Base.helpers.strip_tags(content).squish
       plain_text.truncate(160)
     end
