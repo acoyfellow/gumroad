@@ -12,7 +12,7 @@ export const AuthAlert: React.FC = () => {
   const { flash } = usePage<PageProps>().props;
 
   React.useEffect(() => {
-    if (flash?.status === "success" && flash?.message) {
+    if (flash?.status === "success" && flash.message) {
       showAlert(flash.message, "success");
     }
   }, [flash]);
