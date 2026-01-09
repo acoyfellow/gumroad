@@ -16,7 +16,7 @@ type MembershipProps = {
 
 const Membership = ({ membership, className }: MembershipProps) => (
   <div className={className}>
-    <div className={`flex items-center gap-4 ${className ? "grow" : ""}`}>
+    <div className="flex grow items-center gap-4">
       <img src={membership.seller.avatar_url} className="user-avatar" alt={membership.seller.display_name_or_email} />
       <div className="grid">
         <h5>

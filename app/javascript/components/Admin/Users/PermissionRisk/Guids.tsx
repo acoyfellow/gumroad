@@ -18,7 +18,7 @@ type GuidProps = {
 
 const Guid = ({ guid, user_ids, className }: GuidProps) => (
   <div className={className}>
-    <h5 className={className ? "grow font-bold" : ""}>
+    <h5 className="grow font-bold">
       <Link href={Routes.admin_guid_path(guid)}>{guid}</Link>
     </h5>
     <span>{user_ids.length} users</span>

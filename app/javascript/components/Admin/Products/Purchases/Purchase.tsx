@@ -46,7 +46,7 @@ const AdminProductPurchase = ({
 
   return (
     <div className={className}>
-      <div className={`flex items-start gap-2 ${className ? "grow" : ""}`}>
+      <div className="flex grow items-start gap-2">
         <input
           type="checkbox"
           aria-label={`Select purchase ${external_id}`}

@@ -21,7 +21,7 @@ export type PostProps = {
 
 const Post = ({ name, created_at, className }: PostProps) => (
   <div className={className}>
-    <h5 className={className ? "grow font-bold" : ""}>{name}</h5>
+    <h5 className="grow font-bold">{name}</h5>
     <time>{created_at}</time>
   </div>
 );

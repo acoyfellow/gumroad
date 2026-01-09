@@ -104,7 +104,7 @@ export const ReviewForm = React.forwardRef<
     preview?: boolean;
     disabledStatus?: string | null;
     style?: React.CSSProperties;
-    className?: string | undefined;
+    className?: string;
   }
 >(
   (
@@ -334,7 +334,7 @@ export const ReviewForm = React.forwardRef<
         className={`flex flex-col items-start! ${className}`}
       >
         {error ? <p className="text-red"> {error} </p> : null}
-        <div className={`flex flex-wrap justify-between gap-2 ${className ? "grow" : ""}`}>
+        <div className="flex grow flex-wrap justify-between gap-2">
           <label htmlFor={uid}>{viewing ? "Your rating:" : "Liked it? Give it a rating:"}</label>
           <RatingSelector currentRating={rating} onChangeCurrentRating={setRating} disabled={disabled || viewing} />
         </div>

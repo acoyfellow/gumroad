@@ -16,8 +16,8 @@ export const GiftForm = ({ isMembership, className }: { isMembership: boolean; c
   const hasError = getErrors(state).has("gift");
 
   return (
-    <div className={`flex flex-col gap-4 ${className ? className : ""}`}>
-      <label className={`flex w-full items-center gap-4 ${className ? "grow" : ""}`}>
+    <div className={`flex flex-col gap-4 ${className}`}>
+      <label className="flex w-full grow items-center gap-4">
         <input
           type="checkbox"
           role="switch"

@@ -375,8 +375,8 @@ const SharedInputs = ({
     <>
       {showCountryInput || showVatIdInput ? (
         <div className={className}>
-          <div className={`flex flex-col gap-4 ${className ? "grow" : ""}`}>
-            <h4 className={className ? "font-bold" : ""}>Contact information</h4>
+          <div className="flex grow flex-col gap-4">
+            <h4 className="font-bold">Contact information</h4>
             {showCountryInput ? (
               <div
                 style={{
@@ -494,7 +494,7 @@ const CustomerDetails = ({ showCustomFields, className }: { showCustomFields: bo
       <SharedInputs showCustomFields={showCustomFields} className={className} />
       {hasShipping(state) ? (
         <div className={className}>
-          <div className={`flex flex-col gap-4 ${className ? "grow" : ""}`}>
+          <div className="flex grow flex-col gap-4">
             <h4 style={{ display: "flex", justifyContent: "space-between" }}>
               Shipping information
               {isLoggedIn ? (
@@ -599,7 +599,7 @@ const CustomerDetails = ({ showCustomFields, className }: { showCustomFields: bo
       ) : null}
       {state.warning ? (
         <div className={className}>
-          <Alert role="status" variant="warning" className={className ? "grow" : ""}>
+          <Alert role="status" variant="warning" className="grow">
             {state.warning}
           </Alert>
         </div>
@@ -611,7 +611,7 @@ const CustomerDetails = ({ showCustomFields, className }: { showCustomFields: bo
             color="primary"
             onClick={() => dispatch({ type: "offer" })}
             disabled={isSubmitDisabled(state)}
-            className={className ? "grow basis-0" : ""}
+            className="grow basis-0"
           >
             {payLabel}
           </Button>
@@ -752,8 +752,8 @@ const TipSelector = ({ className }: { className?: string | undefined }) => {
 
   return (
     <div className={className}>
-      <div className={`flex flex-col gap-4 ${className ? "grow" : ""}`}>
-        <h4>Add a tip</h4>
+      <div className="flex grow flex-col gap-4">
+        <h4 className="font-bold">Add a tip</h4>
         {showPercentageOptions ? (
           <div
             role="radiogroup"
@@ -1178,7 +1178,7 @@ const StripePaymentRequest = ({ className }: { className?: string | undefined })
         color="primary"
         onClick={() => dispatch({ type: "offer" })}
         disabled={isSubmitDisabled(state)}
-        className={className ? "grow basis-0" : ""}
+        className="grow basis-0"
       >
         {payLabel}
       </Button>
