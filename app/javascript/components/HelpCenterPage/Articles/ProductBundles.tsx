@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const ProductBundlesDescription =
@@ -52,8 +53,8 @@ export default function ProductBundles() {
         </figure>
         <ol start={3}>
           <li>
-            <a href="/help/article/149-adding-a-product#describe">Add a description</a> and additional product info to
-            your bundle like you would for an individual product.
+            <Link href="/help/article/149-adding-a-product#describe">Add a description</Link> and additional product
+            info to your bundle like you would for an individual product.
           </li>
           <li>Click Save &amp; Continue</li>
         </ol>
@@ -80,7 +81,7 @@ export default function ProductBundles() {
           <img src="https://d33v4339jhl8k0.cloudfront.net/docs/assets/5c4657ad2c7d3a66e32d763f/images/66095e437c483540738bc0fb/file-9ktwYyzbT9.png" />
         </figure>
         <p>
-          If your bundle has products with <a href="/help/article/76-license-keys">license keys</a> enabled, each
+          If your bundle has products with <Link href="/help/article/76-license-keys">license keys</Link> enabled, each
           eligible product will have its license key instead of one key for the entire bundle.
         </p>
         <h3 id="Variants-Xw9Jf">Variants</h3>
@@ -155,14 +156,14 @@ export default function ProductBundles() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/149-adding-a-product">
+            <Link href="/help/article/149-adding-a-product">
               <span>Adding a product</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/331-creating-upsells">
+            <Link href="/help/article/331-creating-upsells">
               <span>Creating an Upsell</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

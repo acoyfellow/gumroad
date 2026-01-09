@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const DesigningYourProductPageDescription =
@@ -27,7 +28,7 @@ export default function DesigningYourProductPage() {
         <h3 id="discounts">Offering discounts</h3>
         <p>
           By providing discounts on your product, you can run a sale or offer your customers an attractive price. Read{" "}
-          <a href="/help/article/128-discount-codes">this article</a> to learn all about discount codes.
+          <Link href="/help/article/128-discount-codes">this article</Link> to learn all about discount codes.
         </p>
         <h3 id="custom-fields">Add custom fields</h3>
         <p>
@@ -49,12 +50,12 @@ export default function DesigningYourProductPage() {
         </figure>
         <p>
           The custom field info will be accessible in the <a href="https://www.gumroad.com/customers">Sales tab</a> and
-          the <a href="/help/article/74-the-analytics-dashboard#sales-csv">sales CSV</a>.
+          the <Link href="/help/article/74-the-analytics-dashboard#sales-csv">sales CSV</Link>.
         </p>
         <h3 id="More-like-this-recommendations-5J9b1">Recommend related products</h3>
         <p>
-          Our <a href="/help/article/334-more-like-this">Recommend related products</a> feature allows you to recommend
-          other products from your store, products you're an affiliate of, or all of the products found on{" "}
+          Our <Link href="/help/article/334-more-like-this">Recommend related products</Link> feature allows you to
+          recommend other products from your store, products you're an affiliate of, or all of the products found on{" "}
           <a href="https://gumroad.com/discover">Gumroad Discover</a>!
         </p>
         <figure>
@@ -67,7 +68,7 @@ export default function DesigningYourProductPage() {
         </p>
         <p>
           Read this article to learn more about implementing Upsells in your product checkout process:{" "}
-          <a href="/help/article/331-creating-upsells">Creating an Upsell</a>
+          <Link href="/help/article/331-creating-upsells">Creating an Upsell</Link>
         </p>
         <figure>
           <img src="https://d33v4339jhl8k0.cloudfront.net/docs/assets/5c4657ad2c7d3a66e32d763f/images/65c304828106ae1c4ab6f390/file-mlXPkvZndM.png" />
@@ -77,19 +78,19 @@ export default function DesigningYourProductPage() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/128-discount-codes">
+            <Link href="/help/article/128-discount-codes">
               <span>Discount codes</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/331-creating-upsells">
+            <Link href="/help/article/331-creating-upsells">
               <span>Creating an Upsell</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/334-more-like-this">
+            <Link href="/help/article/334-more-like-this">
               <span>Recommend related products</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

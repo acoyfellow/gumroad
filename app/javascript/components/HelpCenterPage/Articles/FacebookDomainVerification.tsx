@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const FacebookDomainVerificationDescription =
@@ -35,7 +36,8 @@ export default function FacebookDomainVerification() {
         <p>
           You can point your Facebook ad tools directy to your Gumroad profile page at &#123;username&#125;.gumroad.com!
           You are not required to have a custom domain to input a Facebook Meta tag (although{" "}
-          <a href="/help/article/153-setting-up-a-custom-domain">configuring a Custom Domain</a> will work as usual).
+          <Link href="/help/article/153-setting-up-a-custom-domain">configuring a Custom Domain</Link> will work as
+          usual).
         </p>
         <figure>
           <img src="https://d33v4339jhl8k0.cloudfront.net/docs/assets/5c4657ad2c7d3a66e32d763f/images/624695ac42ba434a7afe227f/file-t2ULtEfIqP.png" />
@@ -96,14 +98,14 @@ export default function FacebookDomainVerification() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/67-the-settings-menu">
+            <Link href="/help/article/67-the-settings-menu">
               <span>Account settings</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/174-third-party-analytics">
+            <Link href="/help/article/174-third-party-analytics">
               <span>Third-party analytics</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

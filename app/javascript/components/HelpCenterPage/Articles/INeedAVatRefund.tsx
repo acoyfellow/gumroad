@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const INeedAVatRefundDescription =
@@ -39,14 +40,14 @@ export default function INeedAVatRefund() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/194-i-need-an-invoice">
+            <Link href="/help/article/194-i-need-an-invoice">
               <span>I need an invoice</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/212-i-never-received-a-receipt">
+            <Link href="/help/article/212-i-never-received-a-receipt">
               <span>I never received a receipt</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

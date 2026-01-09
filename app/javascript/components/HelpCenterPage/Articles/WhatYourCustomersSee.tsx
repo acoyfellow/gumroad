@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const WhatYourCustomersSeeDescription =
@@ -51,8 +52,8 @@ export default function WhatYourCustomersSee() {
         <h3 id="What-is-the-Gumroad-Library-app-x5AtC">What is the Gumroad app?</h3>
         <p>
           You can also access your Library from our iOS or Android mobile app.{" "}
-          <a href="/help/article/177-the-gumroad-dashboard-app">Read this article</a> to know all about downloading and
-          using our app!{" "}
+          <Link href="/help/article/177-the-gumroad-dashboard-app">Read this article</Link> to know all about
+          downloading and using our app!{" "}
         </p>
         <figure>
           <img src="https://d33v4339jhl8k0.cloudfront.net/docs/assets/5c4657ad2c7d3a66e32d763f/images/654dedfc2d28585006d0164c/file-jcOHcoXhih.png" />
@@ -79,9 +80,9 @@ export default function WhatYourCustomersSee() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/177-the-gumroad-dashboard-app">
+            <Link href="/help/article/177-the-gumroad-dashboard-app">
               <span>Gumroad mobile app</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const MyCustomerDidNotReceiveAReceiptDescription =
@@ -27,7 +28,7 @@ export default function MyCustomerDidNotReceiveAReceipt() {
       <p>
         {" "}
         The customer needs to go to the URL of your product and try buying it again.{" "}
-        <a href="/help/article/136-find-your-products-url">Here's how to find the URL of your product</a>.
+        <Link href="/help/article/136-find-your-products-url">Here's how to find the URL of your product</Link>.
       </p>
       <p>
         {" "}

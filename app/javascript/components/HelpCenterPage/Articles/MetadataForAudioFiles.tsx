@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const MetadataForAudioFilesDescription =
@@ -32,9 +33,9 @@ export default function MetadataForAudioFiles() {
             Your song's (or audiobook chapter's) <strong>title</strong> is determined by the{" "}
             <strong>product file's name</strong>. If you change the name of the file while editing the product, the
             metadata will also change. Learn more about editing products{" "}
-            <a href="/help/article/149-adding-a-product" rel="nofollow">
+            <Link href="/help/article/149-adding-a-product" rel="nofollow">
               here
-            </a>
+            </Link>
             .
           </li>
           <li>
@@ -69,14 +70,14 @@ export default function MetadataForAudioFiles() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/74-the-analytics-dashboard">
+            <Link href="/help/article/74-the-analytics-dashboard">
               <span>The sales analytics dashboard</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/174-third-party-analytics">
+            <Link href="/help/article/174-third-party-analytics">
               <span>Third-party analytics</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

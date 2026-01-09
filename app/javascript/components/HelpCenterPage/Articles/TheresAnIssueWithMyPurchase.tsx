@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const TheresAnIssueWithMyPurchaseDescription =
@@ -12,7 +13,7 @@ export default function TheresAnIssueWithMyPurchase() {
         <p>You should contact them to:</p>
         <ul>
           <li>
-            inquire <a href="/help/article/190-how-do-i-get-a-refund">about a refund</a>
+            inquire <Link href="/help/article/190-how-do-i-get-a-refund">about a refund</Link>
           </li>
           <li>find out the shipping status of the product</li>
           <li>change your shipping address</li>
@@ -20,7 +21,8 @@ export default function TheresAnIssueWithMyPurchase() {
         </ul>
         <p>Looking for the contact information of your seller? </p>
         <p>
-          Just reply directly to <a href="/help/article/204-get-to-know-your-gumroad-receipt">your receipt email</a>:
+          Just reply directly to{" "}
+          <Link href="/help/article/204-get-to-know-your-gumroad-receipt">your receipt email</Link>:
         </p>
         <figure>
           <img src="https://lh7-us.googleusercontent.com/SwHF1nnGQyAF2hlCOTYXKC_V6vWV6Pr4VcY4HE7mcew6do15PR9a7Yg5zqec9m6qC7CW2jk6BFncJuUszTodbr2sNIiZ8hm-8JOaNTLTWyVImB82ob885Rp7j13wiCGxPMTAF-bFLk3jWsDTTdIxGvY" />
@@ -30,31 +32,31 @@ export default function TheresAnIssueWithMyPurchase() {
           <img src="https://d33v4339jhl8k0.cloudfront.net/docs/assets/5c4657ad2c7d3a66e32d763f/images/624be8d0bf4c8f642be9d6aa/file-1oJLfQp4m0.png" />
         </figure>
         <p>
-          If the creator is unresponsive, please <a href="/help/article/196-contact-gumroad">Contact Gumroad</a>.{" "}
+          If the creator is unresponsive, please <Link href="/help/article/196-contact-gumroad">Contact Gumroad</Link>.{" "}
         </p>
       </div>
       <div>
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/190-how-do-i-get-a-refund">
+            <Link href="/help/article/190-how-do-i-get-a-refund">
               <span>How do I get a refund?</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/192-how-do-i-cancel-my-membership">
+            <Link href="/help/article/192-how-do-i-cancel-my-membership">
               <span>How do I cancel my membership?</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/204-get-to-know-your-gumroad-receipt">
+            <Link href="/help/article/204-get-to-know-your-gumroad-receipt">
               <span>Get to know your Gumroad receipt</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/217-i-have-extra-charges-from-gumroad-after-my-purchase">
+            <Link href="/help/article/217-i-have-extra-charges-from-gumroad-after-my-purchase">
               <span>I have extra charges from Gumroad after my purchase</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

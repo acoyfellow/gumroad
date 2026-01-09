@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const ProductsDashboardDescription =
@@ -23,9 +24,10 @@ export default function ProductsDashboard() {
         </ul>
         <h3 id="all-products">Products you have created</h3>
         <p>
-          The "Products dashboard" allows you to <a href="/help/article/149-adding-a-product">create new products</a>,
-          see product summaries, track <a href="/help/article/79-gumroad-discover">Discover eligibility</a>, and view
-          details of affiliated products as well.
+          The "Products dashboard" allows you to{" "}
+          <Link href="/help/article/149-adding-a-product">create new products</Link>, see product summaries, track{" "}
+          <Link href="/help/article/79-gumroad-discover">Discover eligibility</Link>, and view details of affiliated
+          products as well.
         </p>
         <figure>
           <img src="https://d33v4339jhl8k0.cloudfront.net/docs/assets/5c4657ad2c7d3a66e32d763f/images/651e45b3ed8c6d2f1cffdf90/file-4cgKZm6AzN.png" />
@@ -71,19 +73,19 @@ export default function ProductsDashboard() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/149-adding-a-product">
+            <Link href="/help/article/149-adding-a-product">
               <span>Adding a product</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/82-membership-products">
+            <Link href="/help/article/82-membership-products">
               <span>Selling memberships</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/249-affiliate-faq">
+            <Link href="/help/article/249-affiliate-faq">
               <span>Becoming an affiliate on Gumroad</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

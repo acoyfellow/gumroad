@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const YourGumroadProfilePageDescription =
@@ -50,8 +51,8 @@ export default function YourGumroadProfilePage() {
         </figure>
         <p>
           Your profile allows you to have your own website on Gumroad. You can use it to introduce yourself with a
-          profile picture and bio, <a href="/help/article/170-audience">grow your following</a> by collecting email
-          addresses, and showcase your products across customizable pages and sections.
+          profile picture and bio, <Link href="/help/article/170-audience">grow your following</Link> by collecting
+          email addresses, and showcase your products across customizable pages and sections.
         </p>
         <p>
           Your profile is located at [username].gumroad.com where [username] is replaced with your unique username. You
@@ -140,7 +141,7 @@ export default function YourGumroadProfilePage() {
         <h3 id="Posts-sections-y8C6f">Posts sections</h3>
         <p>
           Adding a Posts section will display all eligible emails{" "}
-          <a href="/help/article/169-how-to-send-an-update">posted on your profile</a>.
+          <Link href="/help/article/169-how-to-send-an-update">posted on your profile</Link>.
         </p>
         <figure>
           <img src="https://d33v4339jhl8k0.cloudfront.net/docs/assets/5c4657ad2c7d3a66e32d763f/images/660a47e050568305fcb28b75/file-gqecfYxkl0.gif" />
@@ -174,24 +175,24 @@ export default function YourGumroadProfilePage() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/149-adding-a-product">
+            <Link href="/help/article/149-adding-a-product">
               <span>Adding a product</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/101-designing-your-product-page">
+            <Link href="/help/article/101-designing-your-product-page">
               <span>Checkout customization</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/60-adding-a-cover-image">
+            <Link href="/help/article/60-adding-a-cover-image">
               <span>Adding cover and thumbnail images</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/81-custom-product-urls">
+            <Link href="/help/article/81-custom-product-urls">
               <span>Custom product URLs</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

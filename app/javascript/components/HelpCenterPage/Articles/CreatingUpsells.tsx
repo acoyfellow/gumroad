@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const CreatingUpsellsDescription =
@@ -48,8 +49,8 @@ export default function CreatingUpsells() {
           </li>
           <li>
             <p>
-              Offer an upgraded <a href="/help/article/126-setting-up-versions-on-a-digital-product">version</a> of the
-              product currently in their cart.
+              Offer an upgraded <Link href="/help/article/126-setting-up-versions-on-a-digital-product">version</Link>{" "}
+              of the product currently in their cart.
             </p>
             <figure>
               <img src="https://d33v4339jhl8k0.cloudfront.net/docs/assets/5c4657ad2c7d3a66e32d763f/images/64ca38a26d36cc04e8262761/file-yFrRtm1vu9.png" />
@@ -60,21 +61,21 @@ export default function CreatingUpsells() {
         <p>
           When the customer proceeds to checkout, after entering their payment information and pressing Pay, we'll
           present them with your upsell. You can try this for yourself by{" "}
-          <a href="/help/article/62-testing-a-purchase">testing a purchase</a>.
+          <Link href="/help/article/62-testing-a-purchase">testing a purchase</Link>.
         </p>
       </div>
       <div>
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/149-adding-a-product">
+            <Link href="/help/article/149-adding-a-product">
               <span>Adding a product</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/101-designing-your-product-page">
+            <Link href="/help/article/101-designing-your-product-page">
               <span>Checkout customization</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

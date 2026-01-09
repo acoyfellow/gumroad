@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const HowDoIContactGumroadDescription =
@@ -57,19 +58,19 @@ export default function HowDoIContactGumroad() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/64-is-gumroad-for-me">
+            <Link href="/help/article/64-is-gumroad-for-me">
               <span>Why choose Gumroad?</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/51-what-is-gumroads-refund-policy">
+            <Link href="/help/article/51-what-is-gumroads-refund-policy">
               <span>Gumroad's refund policy</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/160-suspension">
+            <Link href="/help/article/160-suspension">
               <span>Account suspension FAQ</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

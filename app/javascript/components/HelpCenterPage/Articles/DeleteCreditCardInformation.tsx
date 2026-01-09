@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const DeleteCreditCardInformationDescription =
@@ -13,8 +14,8 @@ export default function DeleteCreditCardInformation() {
         </p>
         <p>
           <b>Note:</b> You cannot delete your saved payment information if there's an active{" "}
-          <a href="/help/article/278-guide-to-memberships">membership</a> on it. To do so, you must first cancel your
-          membership and wait for the billed period to complete.
+          <Link href="/help/article/278-guide-to-memberships">membership</Link> on it. To do so, you must first cancel
+          your membership and wait for the billed period to complete.
         </p>
         <figure>
           <img src="https://d33v4339jhl8k0.cloudfront.net/docs/assets/5c4657ad2c7d3a66e32d763f/images/64c09ddc57a4e8315e721e19/file-nbVxZc5hmP.png" />
@@ -24,14 +25,14 @@ export default function DeleteCreditCardInformation() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/189-safe-gumroad-buying">
+            <Link href="/help/article/189-safe-gumroad-buying">
               <span>Safe buying on Gumroad</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/203-why-did-my-payment-fail">
+            <Link href="/help/article/203-why-did-my-payment-fail">
               <span>Why did my payment fail?</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

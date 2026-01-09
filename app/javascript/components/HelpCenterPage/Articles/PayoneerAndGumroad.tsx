@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const PayoneerAndGumroadDescription =
@@ -36,12 +37,12 @@ export default function PayoneerAndGumroad() {
         <p>
           {" "}
           If you <strong>live</strong> (as in, have an address and the proper identification) in one of{" "}
-          <a href="/help/article/13-getting-paid#weekly">these countries</a>, you{" "}
+          <Link href="/help/article/13-getting-paid#weekly">these countries</Link>, you{" "}
           <i style={{ backgroundColor: "initial", fontWeight: "bold" }}>can only </i>be paid out to a bank account. You
           can <strong style={{ backgroundColor: "initial" }}>also </strong>choose to{" "}
-          <a href="/help/article/275-paypal-connect" target="_blank" rel="noreferrer">
+          <Link href="/help/article/275-paypal-connect" target="_blank" rel="noreferrer">
             connect your PayPal account
-          </a>{" "}
+          </Link>{" "}
           to receive instant payments whenever a customer pays with PayPal{" "}
         </p>
         <p>
@@ -58,9 +59,9 @@ export default function PayoneerAndGumroad() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/13-getting-paid">
+            <Link href="/help/article/13-getting-paid">
               <span>Getting paid by Gumroad</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const SettingUpVersionsOnADigitalProductDescription =
@@ -114,14 +115,14 @@ export default function SettingUpVersionsOnADigitalProduct() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/81-custom-product-urls">
+            <Link href="/help/article/81-custom-product-urls">
               <span>Custom product URLs</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/112-mobile-friendly-files">
+            <Link href="/help/article/112-mobile-friendly-files">
               <span>Mobile-friendly files</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

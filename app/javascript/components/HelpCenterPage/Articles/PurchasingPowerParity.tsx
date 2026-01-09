@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 export const PurchasingPowerParityDescription =
@@ -65,14 +66,14 @@ export default function PurchasingPowerParity() {
         <h3>Related Articles</h3>
         <ul>
           <li>
-            <a href="/help/article/128-discount-codes">
+            <Link href="/help/article/128-discount-codes">
               <span>Discount codes</span>
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/help/article/133-pay-what-you-want-pricing">
+            <Link href="/help/article/133-pay-what-you-want-pricing">
               <span>"Pay what you want" pricing</span>
-            </a>
+            </Link>
           </li>
         </ul>
       </div>
