@@ -274,6 +274,11 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
     form.setData("installment.message", newMessage);
   }, 500);
 
+  const initialMessageValue = React.useMemo(
+    () => parseInitialValue(installment?.message ?? ""),
+    [installment?.message],
+  );
+
   const [messageEditor, setMessageEditor] = React.useState<Editor | null>(null);
   React.useEffect(() => {
     if (form.data.installment.message !== "" && messageEditor?.isEmpty) {
@@ -1169,7 +1174,7 @@ export const EmailForm = ({ context, installment }: EmailFormProps) => {
                     className="textarea"
                     ariaLabel="Email message"
                     placeholder="Write a personalized message..."
-                    initialValue={parseInitialValue(form.data.installment.message)}
+                    initialValue={initialMessageValue}
                     onChange={handleMessageChange}
                     onCreate={setMessageEditor}
                     extensions={[UpsellCard]}
