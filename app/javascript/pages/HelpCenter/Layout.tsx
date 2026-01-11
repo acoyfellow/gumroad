@@ -3,7 +3,6 @@ import { Link, router, usePage } from "@inertiajs/react";
 import * as React from "react";
 
 import { Button, NavigationButton } from "$app/components/Button";
-import { GitHubIcon } from "$app/components/HelpCenterPage/GitHubIcon";
 import { Icon } from "$app/components/Icons";
 import { NewTicketModal } from "$app/components/support/NewTicketModal";
 import { UnauthenticatedNewTicketModal } from "$app/components/support/UnauthenticatedNewTicketModal";
@@ -11,6 +10,8 @@ import { UnreadTicketsBadge } from "$app/components/support/UnreadTicketsBadge";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tab, Tabs } from "$app/components/ui/Tabs";
 import { useOriginalLocation } from "$app/components/useOriginalLocation";
+
+import githubIcon from "$assets/images/help-center/github-icon.svg";
 
 type HelperSession = {
   email?: string | null;
@@ -94,7 +95,7 @@ function HelpCenterHeader({
             rel="noopener noreferrer"
             className="flex items-center gap-2"
           >
-            <GitHubIcon />
+            <img src={githubIcon} alt="" className="h-4 w-4" />
             Report a bug
           </NavigationButton>
           <Button color="accent" onClick={() => setIsUnauthenticatedNewTicketOpen(true)}>
@@ -115,7 +116,7 @@ function HelpCenterHeader({
             rel="noopener noreferrer"
             className="flex items-center gap-2"
           >
-            <GitHubIcon />
+            <img src={githubIcon} alt="" className="h-4 w-4" />
             Report a bug
           </NavigationButton>
           <Button color="accent" onClick={onOpenNewTicket}>
