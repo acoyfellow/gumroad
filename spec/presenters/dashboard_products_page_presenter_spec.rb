@@ -285,82 +285,92 @@ describe DashboardProductsPagePresenter do
     end
   end
 
-  describe "sorting", :elasticsearch_wait_for_refresh do
+  describe "sorting + pagination", :elasticsearch_wait_for_refresh do
     include_context "with products and memberships"
+
+    before do
+      stub_const("DashboardProductsPagePresenter::PER_PAGE", 2)
+    end
 
     describe "products" do
       it "sorts by name ascending" do
         presenter = described_class.new(pundit_user:, products_sort: { key: "name", direction: "asc" })
         names = presenter.products_table_props[:products].map { |p| p["name"] }
 
-        expect(names).to eq(["Product 1", "Product 2", "Product 3", "Product 4"])
+        expect(names).to eq(["Product 1", "Product 2"])
       end
 
       it "sorts by name descending" do
         presenter = described_class.new(pundit_user:, products_sort: { key: "name", direction: "desc" })
         names = presenter.products_table_props[:products].map { |p| p["name"] }
 
-        expect(names).to eq(["Product 4", "Product 3", "Product 2", "Product 1"])
+        expect(names).to eq(["Product 4", "Product 3"])
+      end
+
+      it "paginates sorted results correctly" do
+        page1 = described_class.new(pundit_user:, products_sort: { key: "name", direction: "asc" }, products_page: 1).products_table_props
+        page2 = described_class.new(pundit_user:, products_sort: { key: "name", direction: "asc" }, products_page: 2).products_table_props
+
+        expect(page1[:products].map { |p| p["name"] }).to eq(["Product 1", "Product 2"])
+        expect(page2[:products].map { |p| p["name"] }).to eq(["Product 3", "Product 4"])
+        expect(page1[:products_pagination]).to eq(page: 1, pages: 2)
+        expect(page2[:products_pagination]).to eq(page: 2, pages: 2)
       end
 
       it "sorts by successful_sales_count ascending" do
         presenter = described_class.new(pundit_user:, products_sort: { key: "successful_sales_count", direction: "asc" })
         names = presenter.products_table_props[:products].map { |p| p["name"] }
 
-        expect(names).to eq(["Product 1", "Product 2", "Product 3", "Product 4"])
+        expect(names).to eq(["Product 1", "Product 2"])
       end
 
       it "sorts by successful_sales_count descending" do
         presenter = described_class.new(pundit_user:, products_sort: { key: "successful_sales_count", direction: "desc" })
         names = presenter.products_table_props[:products].map { |p| p["name"] }
 
-        expect(names).to eq(["Product 4", "Product 3", "Product 2", "Product 1"])
+        expect(names).to eq(["Product 4", "Product 3"])
       end
 
       it "sorts by revenue ascending" do
         presenter = described_class.new(pundit_user:, products_sort: { key: "revenue", direction: "asc" })
         names = presenter.products_table_props[:products].map { |p| p["name"] }
 
-        expect(names).to eq(["Product 3", "Product 2", "Product 1", "Product 4"])
+        expect(names).to eq(["Product 3", "Product 2"])
       end
 
       it "sorts by revenue descending" do
         presenter = described_class.new(pundit_user:, products_sort: { key: "revenue", direction: "desc" })
         names = presenter.products_table_props[:products].map { |p| p["name"] }
 
-        expect(names).to eq(["Product 4", "Product 1", "Product 2", "Product 3"])
+        expect(names).to eq(["Product 4", "Product 1"])
       end
 
       it "sorts by display_price_cents ascending" do
         presenter = described_class.new(pundit_user:, products_sort: { key: "display_price_cents", direction: "asc" })
         names = presenter.products_table_props[:products].map { |p| p["name"] }
 
-        expect(names).to eq(["Product 3", "Product 4", "Product 2", "Product 1"])
+        expect(names).to eq(["Product 3", "Product 4"])
       end
 
       it "sorts by display_price_cents descending" do
         presenter = described_class.new(pundit_user:, products_sort: { key: "display_price_cents", direction: "desc" })
         names = presenter.products_table_props[:products].map { |p| p["name"] }
 
-        expect(names).to eq(["Product 1", "Product 2", "Product 4", "Product 3"])
+        expect(names).to eq(["Product 1", "Product 2"])
       end
 
       it "sorts by status ascending (unpublished first)" do
         presenter = described_class.new(pundit_user:, products_sort: { key: "status", direction: "asc" })
         names = presenter.products_table_props[:products].map { |p| p["name"] }
 
-        # unpublished (Product 3, 4) come before published (Product 1, 2), then by created_at desc
-        expect(names.first(2)).to match_array(["Product 3", "Product 4"])
-        expect(names.last(2)).to match_array(["Product 1", "Product 2"])
+        expect(names).to match_array(["Product 3", "Product 4"])
       end
 
       it "sorts by status descending (published first)" do
         presenter = described_class.new(pundit_user:, products_sort: { key: "status", direction: "desc" })
         names = presenter.products_table_props[:products].map { |p| p["name"] }
 
-        # published (Product 1, 2) come before unpublished (Product 3, 4), then by created_at desc
-        expect(names.first(2)).to match_array(["Product 1", "Product 2"])
-        expect(names.last(2)).to match_array(["Product 3", "Product 4"])
+        expect(names).to match_array(["Product 1", "Product 2"])
       end
     end
 
@@ -369,74 +379,80 @@ describe DashboardProductsPagePresenter do
         presenter = described_class.new(pundit_user:, memberships_sort: { key: "name", direction: "asc" })
         names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
 
-        expect(names).to eq(["Membership 1", "Membership 2", "Membership 3", "Membership 4"])
+        expect(names).to eq(["Membership 1", "Membership 2"])
       end
 
       it "sorts by name descending" do
         presenter = described_class.new(pundit_user:, memberships_sort: { key: "name", direction: "desc" })
         names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
 
-        expect(names).to eq(["Membership 4", "Membership 3", "Membership 2", "Membership 1"])
+        expect(names).to eq(["Membership 4", "Membership 3"])
+      end
+
+      it "paginates sorted results correctly" do
+        page1 = described_class.new(pundit_user:, memberships_sort: { key: "name", direction: "asc" }, memberships_page: 1).memberships_table_props
+        page2 = described_class.new(pundit_user:, memberships_sort: { key: "name", direction: "asc" }, memberships_page: 2).memberships_table_props
+
+        expect(page1[:memberships].map { |m| m["name"] }).to eq(["Membership 1", "Membership 2"])
+        expect(page2[:memberships].map { |m| m["name"] }).to eq(["Membership 3", "Membership 4"])
+        expect(page1[:memberships_pagination]).to eq(page: 1, pages: 2)
+        expect(page2[:memberships_pagination]).to eq(page: 2, pages: 2)
       end
 
       it "sorts by successful_sales_count ascending" do
         presenter = described_class.new(pundit_user:, memberships_sort: { key: "successful_sales_count", direction: "asc" })
         names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
 
-        expect(names).to eq(["Membership 4", "Membership 1", "Membership 3", "Membership 2"])
+        expect(names).to eq(["Membership 4", "Membership 1"])
       end
 
       it "sorts by successful_sales_count descending" do
         presenter = described_class.new(pundit_user:, memberships_sort: { key: "successful_sales_count", direction: "desc" })
         names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
 
-        expect(names).to eq(["Membership 2", "Membership 3", "Membership 1", "Membership 4"])
+        expect(names).to eq(["Membership 2", "Membership 3"])
       end
 
       it "sorts by revenue ascending" do
         presenter = described_class.new(pundit_user:, memberships_sort: { key: "revenue", direction: "asc" })
         names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
 
-        expect(names).to eq(["Membership 4", "Membership 1", "Membership 3", "Membership 2"])
+        expect(names).to eq(["Membership 4", "Membership 1"])
       end
 
       it "sorts by revenue descending" do
         presenter = described_class.new(pundit_user:, memberships_sort: { key: "revenue", direction: "desc" })
         names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
 
-        expect(names).to eq(["Membership 2", "Membership 3", "Membership 1", "Membership 4"])
+        expect(names).to eq(["Membership 2", "Membership 3"])
       end
 
       it "sorts by display_price_cents ascending" do
         presenter = described_class.new(pundit_user:, memberships_sort: { key: "display_price_cents", direction: "asc" })
         names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
 
-        expect(names).to eq(["Membership 4", "Membership 3", "Membership 2", "Membership 1"])
+        expect(names).to eq(["Membership 4", "Membership 3"])
       end
 
       it "sorts by display_price_cents descending" do
         presenter = described_class.new(pundit_user:, memberships_sort: { key: "display_price_cents", direction: "desc" })
         names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
 
-        expect(names).to eq(["Membership 1", "Membership 2", "Membership 3", "Membership 4"])
+        expect(names).to eq(["Membership 1", "Membership 2"])
       end
 
       it "sorts by status ascending (unpublished first)" do
         presenter = described_class.new(pundit_user:, memberships_sort: { key: "status", direction: "asc" })
         names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
 
-        # unpublished (Membership 3, 4) come before published (Membership 1, 2), then by created_at desc
-        expect(names.first(2)).to match_array(["Membership 3", "Membership 4"])
-        expect(names.last(2)).to match_array(["Membership 1", "Membership 2"])
+        expect(names).to match_array(["Membership 3", "Membership 4"])
       end
 
       it "sorts by status descending (published first)" do
         presenter = described_class.new(pundit_user:, memberships_sort: { key: "status", direction: "desc" })
         names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
 
-        # published (Membership 1, 2) come before unpublished (Membership 3, 4), then by created_at desc
-        expect(names.first(2)).to match_array(["Membership 1", "Membership 2"])
-        expect(names.last(2)).to match_array(["Membership 3", "Membership 4"])
+        expect(names).to match_array(["Membership 1", "Membership 2"])
       end
     end
   end
