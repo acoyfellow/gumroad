@@ -221,6 +221,23 @@ describe DashboardProductsPagePresenter do
       expect(page1_ids & page2_ids).to be_empty
       expect((page1_ids + page2_ids) - products.map(&:id)).to be_empty
     end
+
+    it "raises on page overflow" do
+      expect { described_class.new(pundit_user:, products_page: 10).products_table_props }.to raise_error(Pagy::OverflowError)
+    end
+
+    context "when some products are deleted" do
+      before do
+        products.first(2).each { |p| p.update!(deleted_at: Time.current) }
+      end
+
+      it "paginates only visible products" do
+        props = described_class.new(pundit_user:, products_page: 1).products_table_props
+
+        expect(props[:products].length).to eq(2)
+        expect(props[:products_pagination]).to eq(page: 1, pages: 2)
+      end
+    end
   end
 
   describe "memberships pagination" do
@@ -248,6 +265,23 @@ describe DashboardProductsPagePresenter do
       page2_ids = page2_props[:memberships].map { |m| m["id"] }
       expect(page1_ids & page2_ids).to be_empty
       expect((page1_ids + page2_ids) - memberships.map(&:id)).to be_empty
+    end
+
+    it "raises on page overflow" do
+      expect { described_class.new(pundit_user:, memberships_page: 10).memberships_table_props }.to raise_error(Pagy::OverflowError)
+    end
+
+    context "when some memberships are deleted" do
+      before do
+        memberships.first(2).each { |m| m.update!(deleted_at: Time.current) }
+      end
+
+      it "paginates only visible memberships" do
+        props = described_class.new(pundit_user:, memberships_page: 1).memberships_table_props
+
+        expect(props[:memberships].length).to eq(2)
+        expect(props[:memberships_pagination]).to eq(page: 1, pages: 2)
+      end
     end
   end
 
@@ -661,6 +695,84 @@ describe DashboardProductsPagePresenter do
         page2_ids = page2_props[:memberships].map { |m| m["id"] }
         expect(page1_ids & page2_ids).to be_empty
         expect((page1_ids + page2_ids) - archived_memberships.map(&:id)).to be_empty
+      end
+    end
+
+    describe "sorting", :elasticsearch_wait_for_refresh do
+      include_context "with products and memberships", archived: true
+
+      describe "archived products" do
+        it "sorts by name ascending" do
+          presenter = described_class.new(pundit_user:, archived: true, products_sort: { key: "name", direction: "asc" })
+          names = presenter.products_table_props[:products].map { |p| p["name"] }
+
+          expect(names).to eq(["Product 1", "Product 2", "Product 3", "Product 4"])
+        end
+
+        it "sorts by name descending" do
+          presenter = described_class.new(pundit_user:, archived: true, products_sort: { key: "name", direction: "desc" })
+          names = presenter.products_table_props[:products].map { |p| p["name"] }
+
+          expect(names).to eq(["Product 4", "Product 3", "Product 2", "Product 1"])
+        end
+
+        it "sorts by successful_sales_count ascending" do
+          presenter = described_class.new(pundit_user:, archived: true, products_sort: { key: "successful_sales_count", direction: "asc" })
+          names = presenter.products_table_props[:products].map { |p| p["name"] }
+
+          expect(names).to eq(["Product 1", "Product 2", "Product 3", "Product 4"])
+        end
+
+        it "sorts by revenue descending" do
+          presenter = described_class.new(pundit_user:, archived: true, products_sort: { key: "revenue", direction: "desc" })
+          names = presenter.products_table_props[:products].map { |p| p["name"] }
+
+          expect(names).to eq(["Product 4", "Product 1", "Product 2", "Product 3"])
+        end
+
+        it "sorts by display_price_cents ascending" do
+          presenter = described_class.new(pundit_user:, archived: true, products_sort: { key: "display_price_cents", direction: "asc" })
+          names = presenter.products_table_props[:products].map { |p| p["name"] }
+
+          expect(names).to eq(["Product 3", "Product 4", "Product 2", "Product 1"])
+        end
+      end
+
+      describe "archived memberships" do
+        it "sorts by name ascending" do
+          presenter = described_class.new(pundit_user:, archived: true, memberships_sort: { key: "name", direction: "asc" })
+          names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
+
+          expect(names).to eq(["Membership 1", "Membership 2", "Membership 3", "Membership 4"])
+        end
+
+        it "sorts by name descending" do
+          presenter = described_class.new(pundit_user:, archived: true, memberships_sort: { key: "name", direction: "desc" })
+          names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
+
+          expect(names).to eq(["Membership 4", "Membership 3", "Membership 2", "Membership 1"])
+        end
+
+        it "sorts by successful_sales_count descending" do
+          presenter = described_class.new(pundit_user:, archived: true, memberships_sort: { key: "successful_sales_count", direction: "desc" })
+          names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
+
+          expect(names).to eq(["Membership 2", "Membership 3", "Membership 1", "Membership 4"])
+        end
+
+        it "sorts by revenue ascending" do
+          presenter = described_class.new(pundit_user:, archived: true, memberships_sort: { key: "revenue", direction: "asc" })
+          names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
+
+          expect(names).to eq(["Membership 4", "Membership 1", "Membership 3", "Membership 2"])
+        end
+
+        it "sorts by display_price_cents descending" do
+          presenter = described_class.new(pundit_user:, archived: true, memberships_sort: { key: "display_price_cents", direction: "desc" })
+          names = presenter.memberships_table_props[:memberships].map { |m| m["name"] }
+
+          expect(names).to eq(["Membership 1", "Membership 2", "Membership 3", "Membership 4"])
+        end
       end
     end
   end
