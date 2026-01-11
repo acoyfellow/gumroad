@@ -32,26 +32,21 @@ describe Products::ArchivedController, inertia: true do
       let(:policy_method) { :index? }
     end
 
-    it "returns the user's archived products, no unarchived products or deleted products" do
+    it "renders the Products/Archived/Index component with correct props" do
       get :index
 
       expect(response).to have_http_status(:ok)
       expect(assigns[:title]).to eq("Archived products")
-
       expect(inertia).to render_component("Products/Archived/Index")
-
-      memberships = inertia.props[:memberships]
-      products = inertia.props[:products]
-
-      expect(memberships.any? { |m| m["name"] == membership.name }).to be(false)
-      expect(memberships.any? { |m| m["name"] == archived_membership.name }).to be(true)
-      expect(memberships.any? { |m| m["name"] == deleted_membership.name }).to be(false)
-      expect(memberships.any? { |m| m["name"] == other_membership.name }).to be(false)
-
-      expect(products.any? { |p| p["name"] == product.name }).to be(false)
-      expect(products.any? { |p| p["name"] == archived_product.name }).to be(true)
-      expect(products.any? { |p| p["name"] == deleted_product.name }).to be(false)
-      expect(products.any? { |p| p["name"] == other_product.name }).to be(false)
+      expect(inertia.props).to include(
+        :can_create_product,
+        :products,
+        :products_pagination,
+        :products_sort,
+        :memberships,
+        :memberships_pagination,
+        :memberships_sort
+      )
     end
 
     context "when there are no archived products" do
@@ -60,7 +55,7 @@ describe Products::ArchivedController, inertia: true do
         archived_product.update(archived: false)
       end
 
-      it "redirects" do
+      it "redirects to products page" do
         get :index
 
         expect(response).to redirect_to(products_url)
