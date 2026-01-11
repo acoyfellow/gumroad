@@ -7,7 +7,7 @@ class DashboardProductsPagePresenter
   include ActionView::Helpers::TextHelper
   include Rails.application.routes.url_helpers
 
-  PER_PAGE = 10
+  PER_PAGE = 50
 
   attr_reader :products_sort, :memberships_sort
 
@@ -57,6 +57,10 @@ class DashboardProductsPagePresenter
         products_pagination:,
       }
     end
+  end
+
+  def product_props(product)
+    product_base_data(product, pundit_user:)
   end
 
   private
