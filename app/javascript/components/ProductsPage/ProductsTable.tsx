@@ -159,16 +159,16 @@ export const ProductsPageProductsTable = (props: {
                   <div className="flex flex-wrap gap-3 lg:justify-end">
                     <ActionsPopover
                       product={product}
-                      onDuplicate={() => void loadProducts(1)}
-                      onDelete={() => void reloadProducts()}
+                      onDuplicate={() => loadProducts(1)}
+                      onDelete={() => reloadProducts()}
                       onArchive={() => {
                         props.setEnableArchiveTab?.(true);
-                        void reloadProducts();
+                        reloadProducts();
                       }}
                       onUnarchive={(hasRemainingArchivedProducts) => {
                         props.setEnableArchiveTab?.(hasRemainingArchivedProducts);
                         if (!hasRemainingArchivedProducts) router.get(Routes.products_path());
-                        else void reloadProducts();
+                        else reloadProducts();
                       }}
                     />
                   </div>
@@ -196,9 +196,7 @@ export const ProductsPageProductsTable = (props: {
         </TableFooter>
       </Table>
 
-      {pagination.pages > 1 ? (
-        <Pagination onChangePage={(page) => void loadProducts(page)} pagination={pagination} />
-      ) : null}
+      {pagination.pages > 1 ? <Pagination onChangePage={(page) => loadProducts(page)} pagination={pagination} /> : null}
     </div>
   );
 };

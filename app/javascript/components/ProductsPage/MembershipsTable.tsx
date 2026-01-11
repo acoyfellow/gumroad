@@ -168,16 +168,16 @@ export const ProductsPageMembershipsTable = (props: {
                 <TableCell>
                   <ActionsPopover
                     product={membership}
-                    onDuplicate={() => void loadMemberships(1)}
-                    onDelete={() => void reloadMemberships()}
+                    onDuplicate={() => loadMemberships(1)}
+                    onDelete={() => reloadMemberships()}
                     onArchive={() => {
                       props.setEnableArchiveTab?.(true);
-                      void reloadMemberships();
+                      reloadMemberships();
                     }}
                     onUnarchive={(hasRemainingArchivedProducts) => {
                       props.setEnableArchiveTab?.(hasRemainingArchivedProducts);
                       if (!hasRemainingArchivedProducts) router.get(Routes.products_path());
-                      else void reloadMemberships();
+                      else reloadMemberships();
                     }}
                   />
                 </TableCell>
@@ -208,7 +208,7 @@ export const ProductsPageMembershipsTable = (props: {
       </Table>
 
       {pagination.pages > 1 ? (
-        <Pagination onChangePage={(page) => void loadMemberships(page)} pagination={pagination} />
+        <Pagination onChangePage={(page) => loadMemberships(page)} pagination={pagination} />
       ) : null}
     </section>
   );
