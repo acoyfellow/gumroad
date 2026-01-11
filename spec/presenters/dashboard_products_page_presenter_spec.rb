@@ -27,7 +27,9 @@ describe DashboardProductsPagePresenter do
   end
 
   describe "#products_table_props" do
-    let!(:product) { create(:product, user: seller, name: "normal_product") }
+    include Rails.application.routes.url_helpers
+
+    let!(:product) { create(:product, user: seller, name: "normal_product", price_cents: 1000) }
     let!(:archived_product) { create(:product, user: seller, name: "archived_product", archived: true) }
     let!(:deleted_product) { create(:product, user: seller, name: "deleted_product", deleted_at: Time.current) }
     let!(:other_user_product) { create(:product, name: "other_product") }
@@ -49,19 +51,22 @@ describe DashboardProductsPagePresenter do
       expect(returned_product).to include(
         "id" => product.id,
         "name" => "normal_product",
-        "edit_url" => be_present,
+        "edit_url" => edit_link_path(product),
         "is_duplicating" => false,
         "is_unpublished" => false,
-        "permalink" => be_present,
-        "price_formatted" => be_present,
-        "revenue" => be_a(Numeric),
+        "permalink" => product.unique_permalink,
+        "price_formatted" => product.price_formatted_including_rental_verbose,
+        "revenue" => product.total_usd_cents,
         "status" => "published",
-        "url" => be_present,
-        "url_without_protocol" => be_present,
-        "successful_sales_count" => be_a(Integer),
-        "remaining_for_sale_count" => anything,
-        "monthly_recurring_revenue" => be_a(Numeric),
-        "revenue_pending" => be_a(Numeric),
+        "thumbnail" => product.thumbnail&.alive&.as_json,
+        "display_price_cents" => product.display_price_cents,
+        "url" => product.long_url,
+        "url_without_protocol" => product.long_url(include_protocol: false),
+        "has_duration" => false,
+        "successful_sales_count" => product.successful_sales_count,
+        "remaining_for_sale_count" => product.remaining_for_sale_count,
+        "monthly_recurring_revenue" => product.monthly_recurring_revenue.to_f,
+        "revenue_pending" => product.revenue_pending.to_f,
         "can_edit" => true,
         "can_destroy" => true,
         "can_duplicate" => true,
@@ -106,6 +111,8 @@ describe DashboardProductsPagePresenter do
   end
 
   describe "#memberships_table_props" do
+    include Rails.application.routes.url_helpers
+
     let!(:membership) { create(:membership_product, user: seller, name: "normal_membership") }
     let!(:archived_membership) { create(:membership_product, user: seller, name: "archived_membership", archived: true) }
     let!(:deleted_membership) { create(:membership_product, user: seller, name: "deleted_membership", deleted_at: Time.current) }
@@ -128,19 +135,22 @@ describe DashboardProductsPagePresenter do
       expect(returned_membership).to include(
         "id" => membership.id,
         "name" => "normal_membership",
-        "edit_url" => be_present,
+        "edit_url" => edit_link_path(membership),
         "is_duplicating" => false,
         "is_unpublished" => false,
-        "permalink" => be_present,
-        "price_formatted" => be_present,
-        "revenue" => be_a(Numeric),
+        "permalink" => membership.unique_permalink,
+        "price_formatted" => membership.price_formatted_including_rental_verbose,
+        "revenue" => membership.total_usd_cents,
         "status" => "published",
-        "url" => be_present,
-        "url_without_protocol" => be_present,
-        "successful_sales_count" => be_a(Integer),
-        "remaining_for_sale_count" => anything,
-        "monthly_recurring_revenue" => be_a(Numeric),
-        "revenue_pending" => be_a(Numeric),
+        "thumbnail" => membership.thumbnail&.alive&.as_json,
+        "display_price_cents" => membership.display_price_cents,
+        "url" => membership.long_url,
+        "url_without_protocol" => membership.long_url(include_protocol: false),
+        "has_duration" => membership.duration_in_months.present?,
+        "successful_sales_count" => membership.successful_sales_count,
+        "remaining_for_sale_count" => membership.remaining_for_sale_count,
+        "monthly_recurring_revenue" => membership.monthly_recurring_revenue.to_f,
+        "revenue_pending" => membership.revenue_pending.to_f,
         "can_edit" => true,
         "can_destroy" => true,
         "can_duplicate" => true,
@@ -331,7 +341,9 @@ describe DashboardProductsPagePresenter do
     end
 
     describe "#products_table_props" do
-      let!(:archived_product) { create(:product, user: seller, name: "archived_product", archived: true) }
+      include Rails.application.routes.url_helpers
+
+      let!(:archived_product) { create(:product, user: seller, name: "archived_product", archived: true, price_cents: 1500) }
       let!(:normal_product) { create(:product, user: seller, name: "normal_product") }
       let!(:deleted_archived_product) { create(:product, user: seller, name: "deleted_archived", archived: true, deleted_at: Time.current) }
       let!(:other_user_archived_product) { create(:product, name: "other_archived", archived: true) }
@@ -348,13 +360,29 @@ describe DashboardProductsPagePresenter do
 
       it "returns products with correct properties" do
         presenter = described_class.new(pundit_user:, archived: true)
-        product = presenter.products_table_props[:products].first
+        returned_product = presenter.products_table_props[:products].first
 
-        expect(product).to include(
+        expect(returned_product).to include(
           "id" => archived_product.id,
           "name" => "archived_product",
+          "edit_url" => edit_link_path(archived_product),
+          "is_duplicating" => archived_product.is_duplicating?,
+          "is_unpublished" => archived_product.draft? || archived_product.purchase_disabled_at?,
+          "permalink" => archived_product.unique_permalink,
+          "price_formatted" => archived_product.price_formatted_including_rental_verbose,
+          "revenue" => archived_product.total_usd_cents,
+          "thumbnail" => archived_product.thumbnail&.alive&.as_json,
+          "display_price_cents" => archived_product.display_price_cents,
+          "url" => archived_product.long_url,
+          "url_without_protocol" => archived_product.long_url(include_protocol: false),
+          "has_duration" => archived_product.duration_in_months.present?,
+          "successful_sales_count" => archived_product.successful_sales_count,
+          "remaining_for_sale_count" => archived_product.remaining_for_sale_count,
+          "monthly_recurring_revenue" => archived_product.monthly_recurring_revenue.to_f,
+          "revenue_pending" => archived_product.revenue_pending.to_f,
           "can_edit" => true,
           "can_destroy" => true,
+          "can_duplicate" => true,
           "can_archive" => false,
           "can_unarchive" => true
         )
@@ -379,6 +407,8 @@ describe DashboardProductsPagePresenter do
     end
 
     describe "#memberships_table_props" do
+      include Rails.application.routes.url_helpers
+
       let!(:archived_membership) { create(:membership_product, user: seller, name: "archived_membership", archived: true) }
       let!(:normal_membership) { create(:membership_product, user: seller, name: "normal_membership") }
       let!(:deleted_archived_membership) { create(:membership_product, user: seller, name: "deleted_archived", archived: true, deleted_at: Time.current) }
@@ -396,13 +426,29 @@ describe DashboardProductsPagePresenter do
 
       it "returns memberships with correct properties" do
         presenter = described_class.new(pundit_user:, archived: true)
-        membership = presenter.memberships_table_props[:memberships].first
+        returned_membership = presenter.memberships_table_props[:memberships].first
 
-        expect(membership).to include(
+        expect(returned_membership).to include(
           "id" => archived_membership.id,
           "name" => "archived_membership",
+          "edit_url" => edit_link_path(archived_membership),
+          "is_duplicating" => archived_membership.is_duplicating?,
+          "is_unpublished" => archived_membership.draft? || archived_membership.purchase_disabled_at?,
+          "permalink" => archived_membership.unique_permalink,
+          "price_formatted" => archived_membership.price_formatted_including_rental_verbose,
+          "revenue" => archived_membership.total_usd_cents,
+          "thumbnail" => archived_membership.thumbnail&.alive&.as_json,
+          "display_price_cents" => archived_membership.display_price_cents,
+          "url" => archived_membership.long_url,
+          "url_without_protocol" => archived_membership.long_url(include_protocol: false),
+          "has_duration" => archived_membership.duration_in_months.present?,
+          "successful_sales_count" => archived_membership.successful_sales_count,
+          "remaining_for_sale_count" => archived_membership.remaining_for_sale_count,
+          "monthly_recurring_revenue" => archived_membership.monthly_recurring_revenue.to_f,
+          "revenue_pending" => archived_membership.revenue_pending.to_f,
           "can_edit" => true,
           "can_destroy" => true,
+          "can_duplicate" => true,
           "can_archive" => false,
           "can_unarchive" => true
         )
