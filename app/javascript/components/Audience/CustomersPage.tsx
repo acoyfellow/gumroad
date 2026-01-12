@@ -285,6 +285,7 @@ const CustomersPage = ({
             </Popover>
             <Popover
               aria-label="Filter"
+              dropdownClassName="p-0!"
               trigger={
                 <WithTooltip tip="Filter">
                   <div className="button">
@@ -293,7 +294,7 @@ const CustomersPage = ({
                 </WithTooltip>
               }
             >
-              <Card style={{ width: "35rem" }}>
+              <Card className="w-140 border-none shadow-none">
                 <CardContent>
                   <ProductSelect
                     products={products.filter(

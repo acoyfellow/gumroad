@@ -156,6 +156,7 @@ export const EditorMenu = ({
 
   return (
     <Popover
+      dropdownClassName="p-0!"
       aria-label={label}
       trigger={
         <div className={sectionButtonClasses}>
@@ -168,7 +169,7 @@ export const EditorMenu = ({
       }}
     >
       {isSubmenu(activeSubmenu) ? (
-        <div className="flex w-75 flex-col gap-4">
+        <div className="flex w-75 flex-col gap-4 p-4">
           <h4 style={{ display: "grid", gridTemplateColumns: "1em 1fr 1em" }}>
             <button onClick={() => setMenuState("menu")} aria-label="Go back">
               <Icon name="outline-cheveron-left" />
@@ -178,10 +179,7 @@ export const EditorMenu = ({
           {activeSubmenu}
         </div>
       ) : (
-        <div
-          style={{ width: "300px" }}
-          className="-m-4 grid max-w-[calc(100%+2rem)] !divide-y !divide-solid !divide-border rounded border border-none border-border bg-background shadow-none"
-        >
+        <div className="grid w-75 !divide-y !divide-solid !divide-border rounded border border-none border-border bg-background shadow-none">
           {items.map((item, key) =>
             isSubmenu(item) ? (
               <CardContent asChild key={key}>

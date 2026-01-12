@@ -16,6 +16,7 @@ export const ProductsPopover = ({
   setProducts: React.Dispatch<React.SetStateAction<ProductOption[]>>;
 }) => (
   <Popover
+    dropdownClassName="p-0!"
     trigger={
       <span className="input">
         <div className="fake-input">Select products...</div>
@@ -23,7 +24,7 @@ export const ProductsPopover = ({
       </span>
     }
   >
-    <Card className="-m-4 max-w-[calc(100%+2rem)] border-none shadow-none">
+    <Card className="border-none shadow-none">
       <CardContent>
         <fieldset className="grow basis-0">
           <label>
