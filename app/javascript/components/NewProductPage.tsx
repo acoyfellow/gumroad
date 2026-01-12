@@ -45,6 +45,7 @@ type NewProductFormData = {
     custom_summary: string | null;
     ai_prompt: string;
     number_of_content_pages: number | null;
+    release_at_date: string;
   };
 };
 
@@ -52,17 +53,18 @@ export type NewProductPageProps = {
   current_seller_currency_code: CurrencyCode;
   native_product_types: ProductNativeType[];
   service_product_types: ProductServiceType[];
+  release_at_date: string;
   show_orientation_text: boolean;
   eligible_for_service_products: boolean;
   ai_generation_enabled: boolean;
   ai_promo_dismissed: boolean;
-  release_at_date: string;
 };
 
 const NewProductPage = ({
   current_seller_currency_code,
   native_product_types,
   service_product_types,
+  release_at_date,
   show_orientation_text,
   eligible_for_service_products,
   ai_generation_enabled,
@@ -87,6 +89,7 @@ const NewProductPage = ({
       custom_summary: null,
       ai_prompt: "",
       number_of_content_pages: null,
+      release_at_date,
     },
   });
 
