@@ -14,10 +14,7 @@ class AffiliateRequestsController < ApplicationController
 
   def new
     @title = "Become an affiliate for #{@user.display_name}"
-    profile_presenter = ProfilePresenter.new(
-      pundit_user:,
-      seller: @user,
-    )
+    profile_presenter = ProfilePresenter.new(pundit_user:, seller: @user)
     render inertia: "AffiliateRequests/New", props: {
       creator_profile: profile_presenter.creator_profile,
       success: params[:success] == "true",
