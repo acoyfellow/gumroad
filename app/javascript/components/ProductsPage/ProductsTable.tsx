@@ -39,8 +39,6 @@ export const ProductsPageProductsTable = (props: {
   const pagination = props.pagination;
 
   const onSetSort = (newSort: Sort<SortKey> | null) => {
-    setSort(newSort);
-    setIsLoading(true);
     router.reload({
       data: {
         products_sort_key: newSort?.key,
@@ -48,6 +46,8 @@ export const ProductsPageProductsTable = (props: {
         products_page: undefined,
       },
       only: ["products_data"],
+      onBefore: () => setSort(newSort),
+      onStart: () => setIsLoading(true),
       onFinish: () => setIsLoading(false),
     });
   };
@@ -55,7 +55,6 @@ export const ProductsPageProductsTable = (props: {
   const thProps = useSortingTableDriver<SortKey>(sort, onSetSort);
 
   const loadProducts = (page: number = 1) => {
-    setIsLoading(true);
     router.reload({
       data: {
         products_page: page,
@@ -64,6 +63,7 @@ export const ProductsPageProductsTable = (props: {
         query: props.query || undefined,
       },
       only: ["products_data"],
+      onStart: () => setIsLoading(true),
       onFinish: () => {
         setIsLoading(false);
         tableRef.current?.scrollIntoView({ behavior: "smooth" });
