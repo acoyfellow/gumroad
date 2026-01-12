@@ -7,7 +7,7 @@ import { Button } from "$app/components/Button";
 import { showAlert } from "$app/components/server-components/Alert";
 
 export const AdminManualPayoutForm = ({
-  user_id,
+  user_external_id,
   stripe,
   paypal,
   manual_payout_period_end_date,
@@ -15,7 +15,7 @@ export const AdminManualPayoutForm = ({
   currency,
   ask_confirmation,
 }: {
-  user_id: number;
+  user_external_id: string;
   stripe: {
     unpaid_balance_held_by_gumroad: string;
     unpaid_balance_held_by_stripe: string;
@@ -30,7 +30,7 @@ export const AdminManualPayoutForm = ({
   ask_confirmation: boolean;
 }) => (
   <Form
-    url={Routes.admin_pay_user_path(user_id)}
+    url={Routes.admin_pay_user_path(user_external_id)}
     method="POST"
     confirmMessage={ask_confirmation ? "DON'T USE UNLESS to transfer the balance to Stripe Connect account" : undefined}
     onSuccess={() => showAlert("Successfully issued payout.", "success")}

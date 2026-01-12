@@ -66,7 +66,7 @@ export type Purchase = PurchaseStatesInfo & {
   external_id_numeric: number;
   quantity: number;
   refunds: {
-    user: { id: number; name: string | null } | null;
+    user: { external_id: string; name: string | null } | null;
     status: string;
     created_at: string;
   }[];
@@ -274,8 +274,8 @@ const Info = ({ purchase }: { purchase: Purchase }) => (
                   <li>
                     Refunder:
                     {refund.user ? (
-                      <Link href={Routes.admin_user_path(refund.user.id)}>
-                        {refund.user.name || `User ${refund.user.id}`}
+                      <Link href={Routes.admin_user_path(refund.user.external_id)}>
+                        {refund.user.name || `User ${refund.user.external_id}`}
                       </Link>
                     ) : (
                       "(unknown)"
