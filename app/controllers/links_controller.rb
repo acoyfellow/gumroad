@@ -143,8 +143,7 @@ class LinksController < ApplicationController
       else
         "Sorry, something went wrong."
       end
-      flash[:error] = @error_message
-      return redirect_to new_product_path
+      return redirect_to new_product_path, alert: @error_message
     end
 
     create_user_event("add_product")
