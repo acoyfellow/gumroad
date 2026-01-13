@@ -5,37 +5,6 @@ require "spec_helper"
 describe RpushApnsAppService do
   let!(:app_name) { Device::APP_TYPES[:creator] }
 
-
-  let(:mock_certificate) do
-    key = OpenSSL::PKey::RSA.new(2048)
-    cert = OpenSSL::X509::Certificate.new
-    cert.version = 2
-    cert.serial = 1
-    cert.subject = OpenSSL::X509::Name.parse("/CN=Test Certificate/O=Test/C=US")
-    cert.issuer = cert.subject
-    cert.public_key = key.public_key
-    cert.not_before = Time.now
-    cert.not_after = Time.now + 365 * 24 * 60 * 60
-    cert.sign(key, OpenSSL::Digest.new("SHA256"))
-
-    cert.to_pem + key.to_pem
-  end
-
-  before do
-    allow(File).to receive(:read).and_call_original
-    allow(File).to receive(:read).with(anything).and_wrap_original do |method, path|
-      if path.to_s.include?("certs") && path.to_s.end_with?(".pem")
-        mock_certificate
-      else
-        method.call(path)
-      end
-    end
-
-    allow(GlobalConfig).to receive(:get).and_call_original
-    allow(GlobalConfig).to receive(:get).with("RPUSH_APN_CERT_CREATOR_PASSWORD").and_return("mock_creator_password")
-    allow(GlobalConfig).to receive(:get).with("RPUSH_APN_CERT_BUYER_PASSWORD").and_return("mock_buyer_password")
-  end
-
   describe "#first_or_create!" do
     before do
       Rpush::Apns2::App.all.each(&:destroy)
