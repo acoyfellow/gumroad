@@ -1,21 +1,21 @@
 # frozen_string_literal: true
 
-class Api::Internal::ReceiptPreviewsController < Api::Internal::BaseController
-  include FetchProductByUniquePermalink
+class ReceiptPreviewRendererService
+  def initialize(product:, custom_receipt_text: nil, custom_view_content_button_text: nil, override_existing_text: false)
+    @product = product
+    @custom_receipt_text = custom_receipt_text
+    @custom_view_content_button_text = custom_view_content_button_text
+    @override_existing_text = override_existing_text
+  end
 
-  before_action :authenticate_user!
-  before_action :fetch_product_by_unique_permalink
+  def perform
+    @product.custom_receipt_text = @custom_receipt_text if @override_existing_text
+    @product.custom_view_content_button_text = @custom_view_content_button_text if @override_existing_text
 
-  def show
-    e404 if @product.nil? || @product.user != current_seller
-
-    @product.custom_receipt_text = params[:custom_receipt_text]
-    @product.custom_view_content_button_text = params[:custom_view_content_button_text]
     purchase_preview = build_purchase_preview
 
     unless purchase_preview.valid?
-      error_message = purchase_preview.errors.full_messages.join(", ")
-      return render html: "Error: #{error_message}", status: :unprocessable_entity
+      return "<div>Error loading receipt preview</div>".html_safe
     end
 
     rendered_html = ApplicationController.renderer.render(
@@ -27,9 +27,7 @@ class Api::Internal::ReceiptPreviewsController < Api::Internal::BaseController
       }
     )
 
-    premailer = Premailer::Rails::CustomizedPremailer.new(rendered_html)
-
-    render html: premailer.to_inline_css.html_safe, layout: false
+    Premailer::Rails::CustomizedPremailer.new(rendered_html).to_inline_css.html_safe
   end
 
   private
@@ -45,9 +43,7 @@ class Api::Internal::ReceiptPreviewsController < Api::Internal::BaseController
         formatted_total_display_price_per_unit: MoneyFormatter.format(price_cents, @product.price_currency_type.to_sym, no_cents_if_whole: true, symbol: true),
         shipping_cents: 0,
         displayed_price_currency_type: @product.price_currency_type,
-        url_redirect: OpenStruct.new(
-          token: "preview_token"
-        ),
+        url_redirect: OpenStruct.new(token: "preview_token"),
         displayed_price_cents: price_cents,
         support_email: @product.user.support_or_form_email,
         charged_amount_cents: price_cents,

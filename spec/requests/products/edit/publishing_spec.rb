@@ -17,12 +17,13 @@ describe("Product Edit - Publishing Scenario", type: :system, js: true) do
       @product.tag!("camel")
       create(:product_review, purchase: create(:purchase, link: @product))
       create(:merchant_account_stripe_connect, user: seller)
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
     end
 
     it("allows user to publish and unpublish product") do
       click_on "Unpublish"
       wait_for_ajax
+      expect(page).to have_alert("Unpublished!")
       select_tab "Content"
       expect(page).to have_button("Publish and continue")
       expect(@product.reload.alive?).to be(false)
@@ -82,7 +83,7 @@ describe("Product Edit - Publishing Scenario", type: :system, js: true) do
     end
 
     it("does not allow publishing a product if no payout method is setup") do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
       click_on "Save and continue"
       wait_for_ajax
       click_on "Publish and continue"
@@ -95,7 +96,7 @@ describe("Product Edit - Publishing Scenario", type: :system, js: true) do
     it("allows user to publish and unpublish product if a payout method is setup") do
       create(:merchant_account_stripe_connect, user: seller)
 
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
       click_on "Save and continue"
       wait_for_ajax
       click_on "Publish and continue"
@@ -131,7 +132,7 @@ describe("Product Edit - Publishing Scenario", type: :system, js: true) do
       end
 
       it "allows publishing if new account and has a valid merchant account connected" do
-        visit edit_link_path(@product.unique_permalink)
+        visit edit_product_path(@product)
 
         select_tab "Content"
         click_on "Publish and continue"
@@ -148,7 +149,7 @@ describe("Product Edit - Publishing Scenario", type: :system, js: true) do
       end
 
       it "allows publishing a product without payment method setup" do
-        visit edit_link_path(@product.unique_permalink)
+        visit edit_product_path(@product)
         click_on "Save and continue"
         wait_for_ajax
         click_on "Publish and continue"

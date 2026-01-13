@@ -674,16 +674,26 @@ Rails.application.routes.draw do
       resources :archived, only: %i[index create destroy]
     end
 
-    resources :products, only: [:new], controller: "links" do
+    resources :products, only: [:index, :new, :create], controller: "links" do
       scope module: :products, format: true, constraints: { format: :json } do
         resources :other_refund_policies, only: :index
         resources :remaining_call_availabilities, only: :index
         resources :available_offer_codes, only: :index
       end
+
+      member do
+        get :edit, to: "products/main#edit"
+        patch :update, to: "products/main#update"
+        put :update, to: "products/main#update"
+      end
+
+      scope module: :products do
+        resource :content, only: [:edit, :update], controller: "content"
+        resource :receipt, only: [:edit, :update], controller: "receipt"
+        resource :share, only: [:edit, :update], controller: "share"
+      end
     end
 
-    get "/products/:id/edit", to: "links#edit", as: :edit_link
-    get "/products/:id/edit/*other", to: "links#edit"
     get "/products/:id/card", to: "links#card", as: :product_card
     get "/products/search", to: "links#search"
 
@@ -733,13 +743,15 @@ Rails.application.routes.draw do
     get "/dashboard/monthly_recurring_revenue" => "dashboard#monthly_recurring_revenue", as: :dashboard_monthly_recurring_revenue
     get "/dashboard/download_tax_form" => "dashboard#download_tax_form", as: :dashboard_download_tax_form
 
-    get "/products", to: "links#index", as: :products
     get "/l/:id", to: "links#show", defaults: { format: "html" }, as: :short_link
     get "/l/:id/:code", to: "links#show", defaults: { format: "html" }, as: :short_link_offer_code
     get "/cart_items_count", to: "links#cart_items_count"
 
     get "/products/:id" => redirect("/l/%{id}")
     get "/product/:id" => redirect("/l/%{id}")
+    get "/products/:id/edit/content" => redirect("/products/%{id}/content/edit")
+    get "/products/:id/edit/receipt" => redirect("/products/%{id}/receipt/edit")
+    get "/products/:id/edit/share" => redirect("/products/%{id}/share/edit")
     get "/products/:id/:code" => redirect("/l/%{id}/%{code}")
     get "/product/:id/:code" => redirect("/l/%{id}/%{code}")
 
@@ -910,8 +922,6 @@ Rails.application.routes.draw do
         resource :cart, only: [:update]
         resources :products, only: [:show] do
           resources :product_posts, only: [:index]
-          resources :existing_product_files, only: [:index]
-          resource :receipt_preview, only: [:show]
         end
         resources :product_public_files, only: [:create]
         resources :communities, only: [:index] do

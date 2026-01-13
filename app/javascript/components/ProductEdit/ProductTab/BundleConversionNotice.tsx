@@ -1,15 +1,14 @@
 import * as React from "react";
 
-import { Button, NavigationButton } from "$app/components/Button";
+import { Button } from "$app/components/Button";
 import { Modal } from "$app/components/Modal";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import { NavigationButtonInertia } from "$app/components/NavigationButton";
+import { EditProduct } from "$app/components/ProductEdit/state";
 import { Alert } from "$app/components/ui/Alert";
 
 const BUNDLE_WORDS = ["bundle", "pack"];
 
-export const BundleConversionNotice = () => {
-  const { product, id } = useProductEditContext();
-
+export const BundleConversionNotice = ({ product }: { product: EditProduct }) => {
   const showNotice = BUNDLE_WORDS.some((word) => product.name.toLowerCase().includes(word.toLowerCase()));
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -39,10 +38,9 @@ export const BundleConversionNotice = () => {
         footer={
           <>
             <Button onClick={() => setIsModalOpen(false)}>No, cancel</Button>
-            {/* TODO: Change to NavigationButtonInertia once ProductEdit page is migrated to Inertia */}
-            <NavigationButton href={Routes.edit_bundle_content_path(id)}>
+            <NavigationButtonInertia href={Routes.edit_bundle_content_path(product.id)}>
               Yes, let's select the products
-            </NavigationButton>
+            </NavigationButtonInertia>
           </>
         }
       >

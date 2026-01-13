@@ -60,8 +60,8 @@ class LinkPolicy < ApplicationPolicy
     update?
   end
 
-  def product_permitted_attributes
-    attributes = [
+  def product_tab_permitted_attributes
+    [
       :name,
       :description,
       :custom_permalink,
@@ -75,13 +75,8 @@ class LinkPolicy < ApplicationPolicy
       :hide_sold_out_variants,
       :custom_button_text_option,
       :custom_summary,
-      :custom_view_content_button_text,
-      :custom_receipt_text,
       :is_epublication,
-      :display_product_reviews,
-      :is_adult,
       :discover_fee_per_thousand,
-      :taxonomy_id,
       :product_refund_policy_enabled,
       :seller_refund_policy_enabled,
       :custom_domain,
@@ -93,11 +88,11 @@ class LinkPolicy < ApplicationPolicy
       :block_access_after_membership_cancellation,
       :duration_in_months,
       :subscription_duration,
-      :has_same_rich_content_for_all_variants,
       :require_shipping,
       :is_multiseat_license,
       :community_chat_enabled,
       :default_offer_code_id,
+      :publish,
       refund_policy: [
         :max_refund_period_in_days,
         :title,
@@ -129,7 +124,6 @@ class LinkPolicy < ApplicationPolicy
         :subscription_price_change_effective_date,
         :subscription_price_change_message,
         recurrence_price_values: BasePrice::Recurrence::PERMITTED_PARAMS,
-        rich_content:,
         integrations: Integration::ALL_NAMES,
       ],
       availabilities: [
@@ -142,11 +136,6 @@ class LinkPolicy < ApplicationPolicy
         :one_item_rate_cents,
         :multiple_items_rate_cents,
       ],
-      section_ids: [],
-      tags: [],
-      rich_content:,
-      files: [:id, :display_name, :description, :folder_id, :size, :position, :url, :isbn,
-              :extension, :stream_only, :pdf_stamp_enabled, :modified, subtitle_files: [:url, :language], thumbnail: [:signed_id]],
       call_limitation_info: [:minimum_notice_in_minutes, :maximum_calls_per_day],
       public_files: [:id, :name, status: [:type]],
       cancellation_discount: [
@@ -157,8 +146,6 @@ class LinkPolicy < ApplicationPolicy
         :number_of_installments,
       ]
     ]
-
-    attributes
   end
 
   def bundle_permitted_attributes
@@ -190,6 +177,25 @@ class LinkPolicy < ApplicationPolicy
       custom_attributes: [:name, :value],
       products: [:product_id, :variant_id, :quantity, :position],
       installment_plan: [:number_of_installments]
+    ]
+  end
+
+  def receipt_tab_permitted_attributes
+    [:custom_receipt_text, :custom_view_content_button_text, :publish]
+  end
+
+  def share_tab_permitted_attributes
+    [:display_product_reviews, :is_adult, :publish, :taxonomy_id, section_ids: [], tags: []]
+  end
+
+  def content_tab_permitted_attributes
+    [
+      :has_same_rich_content_for_all_variants,
+      :publish,
+      rich_content:,
+      files: [:id, :display_name, :description, :folder_id, :size, :position, :url, :isbn,
+              :extension, :stream_only, :pdf_stamp_enabled, :modified, subtitle_files: [:url, :language, :size], thumbnail: [:signed_id]],
+      variants: [:id, rich_content:],
     ]
   end
 

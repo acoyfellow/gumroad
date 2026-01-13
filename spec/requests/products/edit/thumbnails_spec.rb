@@ -18,7 +18,7 @@ describe("Product Edit Thumbnail Scenario", type: :system, js: true) do
   include_context "with switching account to user as admin for seller"
 
   it "allows uploading images as thumbnails and validates them" do
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
 
     within_section "Thumbnail", section_element: :section do
       page.attach_file("Upload", file_fixture("sample.mov"), visible: false)
@@ -67,7 +67,7 @@ describe("Product Edit Thumbnail Scenario", type: :system, js: true) do
       create(:thumbnail, product: @product)
       @product.reload
 
-      visit("/products/#{@product.unique_permalink}/edit")
+      visit edit_product_path(@product)
     end
 
     it "shows the thumbnail" do

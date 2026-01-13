@@ -618,7 +618,7 @@ describe("Product checkout with upsells", type: :system, js: true) do
       product = create(:product, user: seller, name: "Sample product", price_cents: 1000)
       create(:purchase, :with_review, link: product)
 
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_path(product)
       select_disclosure "Insert" do
         click_on "Upsell"
       end

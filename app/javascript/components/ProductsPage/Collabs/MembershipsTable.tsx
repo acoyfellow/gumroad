@@ -1,4 +1,4 @@
-import { router } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 import * as React from "react";
 
 import { Membership } from "$app/data/collabs";
@@ -68,15 +68,22 @@ export const CollabsMembershipsTable = (props: { entries: Membership[]; paginati
           {memberships.map((membership) => (
             <TableRow key={membership.id}>
               <ProductIconCell
+                productEditUrl={membership.can_edit}
                 href={membership.can_edit ? membership.edit_url : membership.url}
                 thumbnail={membership.thumbnail?.url ?? null}
               />
 
               <TableCell hideLabel>
                 {/* Safari currently doesn't support position: relative on <tr>, so we can't make the whole row a link here */}
-                <a href={membership.can_edit ? membership.edit_url : membership.url} style={{ textDecoration: "none" }}>
-                  <h4 className="font-bold">{membership.name}</h4>
-                </a>
+                {membership.can_edit ? (
+                  <Link href={membership.edit_url} style={{ textDecoration: "none" }}>
+                    <h4 className="font-bold">{membership.name}</h4>
+                  </Link>
+                ) : (
+                  <a href={membership.url} style={{ textDecoration: "none" }}>
+                    <h4 className="font-bold">{membership.name}</h4>
+                  </a>
+                )}
                 <a href={membership.url} title={membership.url} target="_blank" rel="noreferrer">
                   <small>{membership.url_without_protocol}</small>
                 </a>

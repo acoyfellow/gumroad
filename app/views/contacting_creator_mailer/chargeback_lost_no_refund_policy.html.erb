@@ -14,5 +14,5 @@
     We noticed that <%= @disputable.first_product_without_refund_policy.name %> currently doesn't have a refund policy.
   </p>
 
-  <%= link_to("Add a refund policy to this product", edit_link_url(@disputable.first_product_without_refund_policy), class: "button primary") %>
+  <%= link_to("Add a refund policy to this product", edit_product_url(@disputable.first_product_without_refund_policy), class: "button primary") %>
 </div>

@@ -38,7 +38,7 @@
         <% existing_subs = link.sales.paid.not_chargedback_or_chargedback_reversed.recurring_charge.where("created_at > ? and created_at <= ?", @start_of_period, @end_of_period) %>
         <tr>
           <td>
-            <a href="<%= edit_link_url(link) %>"><%= truncate(link.name, separator: " ", length: 48) %></a>
+            <a href="<%= edit_product_url(link) %>"><%= truncate(link.name, separator: " ", length: 48) %></a>
           </td>
           <% if link.is_recurring_billing %>
             <td>

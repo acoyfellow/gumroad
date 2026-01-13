@@ -1,9 +1,11 @@
 import * as React from "react";
 
+import { CurrencyCode } from "$app/utils/currency";
+
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { PriceInput } from "$app/components/PriceInput";
-import { ShippingDestination, useProductEditContext } from "$app/components/ProductEdit/state";
+import { ShippingCountry, ShippingDestination } from "$app/components/ProductEdit/state";
 import { Card, CardContent } from "$app/components/ui/Card";
 import { Placeholder } from "$app/components/ui/Placeholder";
 import { WithTooltip } from "$app/components/WithTooltip";
@@ -11,18 +13,20 @@ import { WithTooltip } from "$app/components/WithTooltip";
 export const ShippingDestinationsEditor = ({
   shippingDestinations,
   onChange,
+  available_countries,
+  currency_type,
 }: {
   shippingDestinations: ShippingDestination[];
   onChange: (shippingDestinations: ShippingDestination[]) => void;
+  available_countries: ShippingCountry[];
+  currency_type: CurrencyCode;
 }) => {
-  const { availableCountries } = useProductEditContext();
-
   const addShippingDestination = () => {
-    if (!availableCountries[0]) return;
+    if (!available_countries[0]) return;
     onChange([
       ...shippingDestinations,
       {
-        country_code: availableCountries[0].code,
+        country_code: available_countries[0].code,
         one_item_rate_cents: null,
         multiple_items_rate_cents: null,
       },
@@ -48,6 +52,8 @@ export const ShippingDestinationsEditor = ({
               }
               onRemove={() => onChange(shippingDestinations.filter((_, i) => i !== index))}
               key={index}
+              available_countries={available_countries}
+              currency_type={currency_type}
             />
           ))}
           <CardContent>
@@ -77,12 +83,15 @@ const ShippingDestinationRow = ({
   shippingDestination,
   onChange,
   onRemove,
+  available_countries,
+  currency_type,
 }: {
   shippingDestination: ShippingDestination;
   onChange: (shippingDestination: ShippingDestination) => void;
   onRemove: () => void;
+  available_countries: ShippingCountry[];
+  currency_type: CurrencyCode;
 }) => {
-  const { availableCountries, currencyType } = useProductEditContext();
   const uid = React.useId();
 
   const updateDestination = (update: Partial<ShippingDestination>) => onChange({ ...shippingDestination, ...update });
@@ -101,7 +110,7 @@ const ShippingDestinationRow = ({
             value={shippingDestination.country_code}
             onChange={(evt) => updateDestination({ country_code: evt.target.value })}
           >
-            {availableCountries.map((country) => {
+            {available_countries.map((country) => {
               const shouldInsertDividerAfter = INSERT_DIVIDERS_AFTER_CODES.includes(country.code);
 
               return (
@@ -126,7 +135,7 @@ const ShippingDestinationRow = ({
           </legend>
           <PriceInput
             id={`${uid}-one-item`}
-            currencyCode={currencyType}
+            currencyCode={currency_type}
             cents={shippingDestination.one_item_rate_cents}
             placeholder="0"
             onChange={(one_item_rate_cents) => updateDestination({ one_item_rate_cents })}
@@ -138,7 +147,7 @@ const ShippingDestinationRow = ({
           </legend>
           <PriceInput
             id={`${uid}-multiple-items`}
-            currencyCode={currencyType}
+            currencyCode={currency_type}
             cents={shippingDestination.multiple_items_rate_cents}
             placeholder="0"
             onChange={(multiple_items_rate_cents) => updateDestination({ multiple_items_rate_cents })}

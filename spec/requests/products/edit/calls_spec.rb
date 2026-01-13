@@ -20,7 +20,7 @@ describe "Calls Edit", type: :system, js: true do
 
   it "supports attaching covers on calls without durations" do
     call = create(:call_product, user: seller, durations: [])
-    visit edit_link_path(call.unique_permalink)
+    visit edit_product_path(call)
     upload_image(["test.png"])
     wait_for_ajax
     sleep 1
@@ -37,7 +37,7 @@ describe "Calls Edit", type: :system, js: true do
 
   it "allows editing durations" do
     call = create(:call_product, user: seller, durations: [])
-    visit edit_link_path(call.unique_permalink)
+    visit edit_product_path(call)
 
     click_on "Add duration"
 
@@ -91,7 +91,7 @@ describe "Calls Edit", type: :system, js: true do
   end
 
   it "allows editing availabilities" do
-    visit edit_link_path(call.unique_permalink)
+    visit edit_product_path(call)
     click_on "Add day of availability"
 
     within "[aria-label='Availability 1']" do
@@ -149,7 +149,7 @@ describe "Calls Edit", type: :system, js: true do
   end
 
   it "allows editing call limitations" do
-    visit edit_link_path(call.unique_permalink)
+    visit edit_product_path(call)
 
     expect(page).to have_field("Notice period", with: 3)
     find_field("Units", with: "hours", visible: false).find(:option, "minutes").select_option

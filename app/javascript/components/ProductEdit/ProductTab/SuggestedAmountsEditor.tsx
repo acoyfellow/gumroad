@@ -1,20 +1,24 @@
 import * as React from "react";
 
+import { CurrencyCode } from "$app/utils/currency";
+
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { PriceInput } from "$app/components/PriceInput";
-import { Version, useProductEditContext } from "$app/components/ProductEdit/state";
-
-let newVersionId = 0;
+import type { VersionWithoutRichContent } from "$app/components/ProductEdit/state";
 
 export const SuggestedAmountsEditor = ({
   versions,
   onChange,
+  currency_type,
 }: {
-  versions: Version[];
-  onChange: (versions: Version[]) => void;
+  versions: VersionWithoutRichContent[];
+  onChange: (versions: VersionWithoutRichContent[]) => void;
+  currency_type: CurrencyCode;
 }) => {
-  const updateVersion = (id: string, update: Partial<Version>) => {
+  const nextIdRef = React.useRef(0);
+
+  const updateVersion = (id: string, update: Partial<VersionWithoutRichContent>) => {
     onChange(versions.map((version) => (version.id === id ? { ...version, ...update } : version)));
   };
 
@@ -25,7 +29,7 @@ export const SuggestedAmountsEditor = ({
         onChange([
           ...versions,
           {
-            id: (newVersionId++).toString(),
+            id: (nextIdRef.current++, nextIdRef.current.toString()),
             name: "",
             description: "",
             price_difference_cents: 0,
@@ -36,7 +40,6 @@ export const SuggestedAmountsEditor = ({
               google_calendar: false,
             },
             newlyAdded: true,
-            rich_content: [],
           },
         ]);
       }}
@@ -60,6 +63,7 @@ export const SuggestedAmountsEditor = ({
           onBlur={() =>
             onChange(versions.sort((a, b) => (a.price_difference_cents ?? 0) - (b.price_difference_cents ?? 0)))
           }
+          currency_type={currency_type}
         />
       ))}
       {addButton}
@@ -73,28 +77,26 @@ const SuggestedAmountEditor = ({
   onDelete,
   label,
   onBlur,
+  currency_type,
 }: {
-  version: Version;
-  updateVersion: (update: Partial<Version>) => void;
+  version: VersionWithoutRichContent;
+  updateVersion: (update: Partial<VersionWithoutRichContent>) => void;
   onDelete: (() => void) | null;
   label: string;
   onBlur: () => void;
-}) => {
-  const { currencyType } = useProductEditContext();
-
-  return (
-    <section className="flex gap-2">
-      <PriceInput
-        currencyCode={currencyType}
-        cents={version.price_difference_cents}
-        onChange={(price_difference_cents) => updateVersion({ price_difference_cents })}
-        placeholder="0"
-        ariaLabel={label}
-        onBlur={onBlur}
-      />
-      <Button aria-label="Delete" onClick={onDelete ?? undefined} disabled={!onDelete}>
-        <Icon name="trash2" />
-      </Button>
-    </section>
-  );
-};
+  currency_type: CurrencyCode;
+}) => (
+  <section className="flex gap-2">
+    <PriceInput
+      currencyCode={currency_type}
+      cents={version.price_difference_cents}
+      onChange={(price_difference_cents) => updateVersion({ price_difference_cents })}
+      placeholder="0"
+      ariaLabel={label}
+      onBlur={onBlur}
+    />
+    <Button aria-label="Delete" onClick={onDelete ?? undefined} disabled={!onDelete}>
+      <Icon name="trash2" />
+    </Button>
+  </section>
+);

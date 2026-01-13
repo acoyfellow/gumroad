@@ -46,7 +46,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
                     headers: { content_type: "application/json" })
 
         expect do
-          visit edit_link_url(@product, host: host_with_port)
+          visit edit_product_url(@product, host: host_with_port)
 
           check "Invite your customers to a Discord server", allow_label_click: true
           click_on "Connect to Discord"
@@ -71,7 +71,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
       it "shows error if oauth authorization fails" do
         proxy.stub("https://www.discord.com:443/api/oauth2/authorize").and_return(redirect_to: oauth_redirect_integrations_discord_index_url(error: "error_message", host: host_with_port))
 
-        visit edit_link_url(@product, host: host_with_port)
+        visit edit_product_url(@product, host: host_with_port)
         check "Invite your customers to a Discord server", allow_label_click: true
         click_on "Connect to Discord"
 
@@ -81,7 +81,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
       it "shows error if getting server info fails" do
         proxy.stub("https://www.discord.com:443/api/oauth2/authorize").and_return(redirect_to: oauth_redirect_integrations_discord_index_url(code: "test_code", host: host_with_port))
 
-        visit edit_link_url(@product, host: host_with_port)
+        visit edit_product_url(@product, host: host_with_port)
         check "Invite your customers to a Discord server", allow_label_click: true
         click_on "Connect to Discord"
 
@@ -105,7 +105,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
         product = create(:membership_product, user: seller)
 
         expect do
-          visit edit_link_url(product, host: host_with_port)
+          visit edit_product_url(product, host: host_with_port)
 
           check "Invite your customers to a Discord server", allow_label_click: true
           click_on "Connect to Discord"
@@ -162,7 +162,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
         product = create(:product_with_pdf_file, user: seller)
 
         expect do
-          visit edit_link_url(product, host: host_with_port)
+          visit edit_product_url(product, host: host_with_port)
 
           check "Invite your customers to a Discord server", allow_label_click: true
           click_on "Connect to Discord"
@@ -205,7 +205,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
       it "shows correct details if saved integration exists" do
         @product.active_integrations << discord_integration
 
-        visit edit_link_path(@product)
+        visit edit_product_path(@product)
 
         within_section "Integrations", section_element: :section do
           expect(page).to have_checked_field "Invite your customers to a Discord server"
@@ -223,7 +223,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
           to_return(status: 204)
 
         expect do
-          visit edit_link_path(@product)
+          visit edit_product_path(@product)
           click_on "Disconnect Discord"
           expect(page).to have_button "Connect to Discord"
           save_change
@@ -243,7 +243,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
           to_return(status: 404, body: { code: Discordrb::Errors::UnknownMember.code }.to_json)
 
         expect do
-          visit edit_link_path(@product)
+          visit edit_product_path(@product)
           click_on "Disconnect Discord"
           save_change(expect_message: "Could not disconnect the discord integration, please try again.")
         end.to change { Integration.count }.by(0)
@@ -259,11 +259,11 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
           to_return(status: 404)
 
         expect do
-          visit edit_link_path(@product)
+          visit edit_product_path(@product)
           click_on "Disconnect Discord"
           expect(page).to have_button "Connect to Discord"
           expect(page).to_not have_button "Disconnect Discord"
-          visit edit_link_path(@product)
+          visit edit_product_path(@product)
           expect(page).to have_button "Disconnect Discord"
         end.to change { @product.reload.active_integrations.count }.by(0)
       end
@@ -276,7 +276,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
           to_return(status: 204)
 
         expect do
-          visit edit_link_path(@product)
+          visit edit_product_path(@product)
           expect(page).to have_button "Disconnect Discord"
           uncheck "Invite your customers to a Discord server", allow_label_click: true
           expect(page).to have_unchecked_field "Invite your customers to a Discord server"
@@ -288,7 +288,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
         expect(ProductIntegration.first.deleted?).to eq(true)
         expect(@product.reload.live_product_integrations).to be_empty
 
-        visit edit_link_path(@product)
+        visit edit_product_path(@product)
         expect(page).to_not have_button "Disconnect Discord"
       end
 
@@ -302,20 +302,20 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
 
         it "shows the integration toggle if product has an integration" do
           @product.active_integrations << discord_integration
-          visit edit_link_path(@product)
+          visit edit_product_path(@product)
 
           expect(page).to have_text "Enable access to Discord server", count: 2
         end
 
         it "hides the integration toggle if product does not have an integration" do
-          visit edit_link_path(@product)
+          visit edit_product_path(@product)
 
           expect(page).to_not have_text "Enable access to Discord server"
         end
 
         it "enables integration for versions" do
           @product.active_integrations << discord_integration
-          visit edit_link_path(@product)
+          visit edit_product_path(@product)
           within_section "Integrations", section_element: :section do
             expect(page).to have_unchecked_field("Enable for all versions")
             expect(page).to have_status(text: "Your integration is not assigned to any version. Check your versions' settings.")
@@ -354,7 +354,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
           version_integration = @version_1.base_variant_integrations.first
 
           expect do
-            visit edit_link_path(@product)
+            visit edit_product_path(@product)
             within version_rows[0] do
               within version_option_rows[0] do
                 uncheck "Enable access to Discord server", allow_label_click: true
@@ -382,7 +382,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
             to_return(status: 204)
 
           expect do
-            visit edit_link_path(@product)
+            visit edit_product_path(@product)
             click_on "Disconnect Discord"
             expect(page).to have_button "Connect to Discord"
             save_change
@@ -410,7 +410,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
             to_return(status: 204)
 
           expect do
-            visit edit_link_path(@product)
+            visit edit_product_path(@product)
             uncheck "Invite your customers to a Discord server", allow_label_click: true
             expect(page).to have_unchecked_field "Invite your customers to a Discord server"
             save_change
@@ -436,13 +436,13 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
 
         it "shows the integration toggle if product has an integration" do
           @subscription_product.active_integrations << discord_integration
-          visit edit_link_path(@subscription_product)
+          visit edit_product_path(@subscription_product)
 
           expect(page).to have_text "Enable access to Discord server", count: 2
         end
 
         it "hides the integration toggle if product does not have an integration" do
-          visit edit_link_path(@subscription_product)
+          visit edit_product_path(@subscription_product)
 
           expect(page).to_not have_text "Enable access to Discord server"
         end
@@ -451,7 +451,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
           @subscription_product.active_integrations << discord_integration
 
           expect do
-            visit edit_link_path(@subscription_product)
+            visit edit_product_path(@subscription_product)
             within tier_rows[1] do
               check "Enable access to Discord server", allow_label_click: true
             end
@@ -473,7 +473,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
           tier_integration = @tier_1.base_variant_integrations.first
 
           expect do
-            visit edit_link_path(@subscription_product)
+            visit edit_product_path(@subscription_product)
             within tier_rows[0] do
               uncheck "Enable access to Discord server", allow_label_click: true
             end
@@ -499,7 +499,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
             to_return(status: 204)
 
           expect do
-            visit edit_link_path(@subscription_product)
+            visit edit_product_path(@subscription_product)
             click_on "Disconnect Discord"
             expect(page).to have_button "Connect to Discord"
             save_change
@@ -527,7 +527,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
             to_return(status: 204)
 
           expect do
-            visit edit_link_path(@subscription_product)
+            visit edit_product_path(@subscription_product)
             uncheck "Invite your customers to a Discord server", allow_label_click: true
             expect(page).to have_unchecked_field "Invite your customers to a Discord server"
             save_change
@@ -552,7 +552,7 @@ describe("Product Edit Integrations edit - Discord", type: :system, js: true) do
 
         product.active_integrations << discord_integration
 
-        visit edit_link_path(product)
+        visit edit_product_path(product)
         within_section "Integrations", section_element: :section do
           expect(page).to have_button("Disconnect Discord")
           expect(page).to_not have_text("Enable for all versions")

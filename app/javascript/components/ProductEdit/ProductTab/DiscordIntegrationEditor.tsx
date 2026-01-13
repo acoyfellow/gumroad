@@ -1,12 +1,13 @@
 import * as React from "react";
 
 import { fetchServerInfo } from "$app/data/discord_integration";
+import { ProductNativeType } from "$app/parsers/product";
 import { DISCORD_CLIENT_ID, DISCORD_OAUTH_URL } from "$app/utils/integrations";
 import { startOauthRedirectChecker } from "$app/utils/oauth";
 
 import { Button } from "$app/components/Button";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import type { VariantWithoutRichContent } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { Toggle } from "$app/components/Toggle";
@@ -20,12 +21,16 @@ export type DiscordIntegration = {
 export const DiscordIntegrationEditor = ({
   integration,
   onChange,
+  variants,
+  native_type,
+  setEnabledForOptions,
 }: {
   integration: DiscordIntegration;
   onChange: (integration: DiscordIntegration) => void;
+  variants: VariantWithoutRichContent[];
+  native_type: ProductNativeType;
+  setEnabledForOptions: (enabled: boolean) => void;
 }) => {
-  const { product, updateProduct } = useProductEditContext();
-
   const [isLoading, setIsLoading] = React.useState(false);
   const [isEnabled, setIsEnabled] = React.useState(!!integration);
 
@@ -39,11 +44,6 @@ export const DiscordIntegrationEditor = ({
 
     return url.toString();
   };
-
-  const setEnabledForOptions = (enabled: boolean) =>
-    updateProduct((product) => {
-      for (const variant of product.variants) variant.integrations = { ...variant.integrations, discord: enabled };
-    });
 
   return (
     <ToggleSettingRow
@@ -121,24 +121,24 @@ export const DiscordIntegrationEditor = ({
                   Disconnect Discord
                 </Button>
               </div>
-              {product.variants.length > 0 ? (
+              {variants.length > 0 ? (
                 <>
-                  {product.variants.every(({ integrations }) => !integrations.discord) ? (
+                  {variants.every(({ integrations }) => !integrations.discord) ? (
                     <Alert role="status" variant="warning">
-                      {product.native_type === "membership"
+                      {native_type === "membership"
                         ? "Your integration is not assigned to any tier. Check your tiers' settings."
                         : "Your integration is not assigned to any version. Check your versions' settings."}
                     </Alert>
                   ) : null}
                   <Toggle
-                    value={product.variants.every(({ integrations }) => integrations.discord)}
+                    value={variants.every(({ integrations }) => integrations.discord)}
                     onChange={setEnabledForOptions}
                   >
-                    {product.native_type === "membership" ? "Enable for all tiers" : "Enable for all versions"}
+                    {native_type === "membership" ? "Enable for all tiers" : "Enable for all versions"}
                   </Toggle>
                 </>
               ) : null}
-              {product.native_type === "membership" ? (
+              {native_type === "membership" ? (
                 <label>
                   <input
                     type="checkbox"

@@ -98,7 +98,7 @@ describe CollabProductsPagePresenter, :vcr do
     [
       {
         "id" => collab_1.id,
-        "edit_url" => edit_link_path(collab_1),
+        "edit_url" => edit_product_path(collab_1),
         "name" => collab_1.name,
         "permalink" => collab_1.unique_permalink,
         "price_formatted" => collab_1.price_formatted_including_rental_verbose,
@@ -118,7 +118,7 @@ describe CollabProductsPagePresenter, :vcr do
       },
       {
         "id" => collab_2.id,
-        "edit_url" => edit_link_path(collab_2),
+        "edit_url" => edit_product_path(collab_2),
         "name" => collab_2.name,
         "permalink" => collab_2.unique_permalink,
         "price_formatted" => collab_2.price_formatted_including_rental_verbose,
@@ -138,7 +138,7 @@ describe CollabProductsPagePresenter, :vcr do
       },
       {
         "id" => collab_3.id,
-        "edit_url" => edit_link_path(collab_3),
+        "edit_url" => edit_product_path(collab_3),
         "name" => collab_3.name,
         "permalink" => collab_3.unique_permalink,
         "price_formatted" => collab_3.price_formatted_including_rental_verbose,
@@ -163,7 +163,7 @@ describe CollabProductsPagePresenter, :vcr do
     [
       {
         "id" => membership_collab_1.id,
-        "edit_url" => edit_link_path(membership_collab_1),
+        "edit_url" => edit_product_path(membership_collab_1),
         "name" => membership_collab_1.name,
         "permalink" => membership_collab_1.unique_permalink,
         "price_formatted" => membership_collab_1.price_formatted_including_rental_verbose,
@@ -183,7 +183,7 @@ describe CollabProductsPagePresenter, :vcr do
       },
       {
         "id" => membership_collab_2.id,
-        "edit_url" => edit_link_path(membership_collab_2),
+        "edit_url" => edit_product_path(membership_collab_2),
         "name" => membership_collab_2.name,
         "permalink" => membership_collab_2.unique_permalink,
         "price_formatted" => membership_collab_2.price_formatted_including_rental_verbose,

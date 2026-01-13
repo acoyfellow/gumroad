@@ -49,7 +49,7 @@ describe("Product Edit Integrations edit - Google Calendar", type: :system, js: 
                     headers: { content_type: "application/json" })
 
         expect do
-          visit edit_link_url(@product, host: host_with_port)
+          visit edit_product_url(@product, host: host_with_port)
 
           check "Connect with Google Calendar to sync your calls", allow_label_click: true
           expect(page).to have_button "Disconnect Google Calendar"
@@ -72,7 +72,7 @@ describe("Product Edit Integrations edit - Google Calendar", type: :system, js: 
       it "shows error if oauth authorization fails" do
         proxy.stub("https://accounts.google.com:443/o/oauth2/auth").and_return(redirect_to: oauth_redirect_integrations_google_calendar_index_url(error: "error_message", host: host_with_port))
 
-        visit edit_link_url(@product, host: host_with_port)
+        visit edit_product_url(@product, host: host_with_port)
         check "Connect with Google Calendar to sync your calls", allow_label_click: true
         click_on "Connect to Google Calendar"
 
@@ -86,7 +86,7 @@ describe("Product Edit Integrations edit - Google Calendar", type: :system, js: 
       it "shows correct details if saved integration exists" do
         @product.active_integrations << google_calendar_integration
 
-        visit edit_link_path(@product)
+        visit edit_product_path(@product)
 
         within_section "Integrations", section_element: :section do
           expect(page).to have_checked_field "Connect with Google Calendar to sync your calls"
@@ -99,7 +99,7 @@ describe("Product Edit Integrations edit - Google Calendar", type: :system, js: 
         @product.active_integrations << google_calendar_integration
 
         expect do
-          visit edit_link_path(@product)
+          visit edit_product_path(@product)
           click_on "Disconnect Google Calendar"
           expect(page).to have_button "Connect to Google Calendar"
           save_change
@@ -114,7 +114,7 @@ describe("Product Edit Integrations edit - Google Calendar", type: :system, js: 
       it "does not show the checkbox when the feature flag is disabled" do
         Feature.deactivate(:google_calendar_link)
 
-        visit edit_link_path(@product)
+        visit edit_product_path(@product)
 
         within_section "Integrations", section_element: :section do
           expect(page).not_to have_field "Connect with Google Calendar to sync your calls"

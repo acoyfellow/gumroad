@@ -10,9 +10,9 @@
   </p>
   <p>
     <% if !@product.is_physical && !@product.has_content? %>
-      You will need to <%= link_to "upload files or specify a redirect URL", edit_link_url(@product) %> before its release, or we won't be able to release the product and charge your customers.
+      You will need to <%= link_to "upload files or specify a redirect URL", edit_product_url(@product) %> before its release, or we won't be able to release the product and charge your customers.
     <% else %>
-      To make changes or update the <%= @product.is_physical ? "product" : "file that will be released" %>, <%= link_to "click here", edit_link_url(@product) %>.
+      To make changes or update the <%= @product.is_physical ? "product" : "file that will be released" %>, <%= link_to "click here", edit_product_url(@product) %>.
     <% end %>
   </p>
 </div>

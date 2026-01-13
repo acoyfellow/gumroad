@@ -31,12 +31,12 @@ describe("Product Edit custom permalink edit", type: :system, js: true) do
   include_context "with switching account to user as admin for seller"
 
   it "has the correct domain prefix" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     expect(custom_permalink_field).to have_text("#{seller.username}.#{ROOT_DOMAIN}/l/")
   end
 
   it "links to the correct product page" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     prefix_from_page = custom_permalink_field.text
     custom_permalink_from_page = custom_permalink_input.value
     custom_permalink_url = "#{PROTOCOL}://#{prefix_from_page}#{custom_permalink_from_page}"
@@ -48,7 +48,7 @@ describe("Product Edit custom permalink edit", type: :system, js: true) do
   end
 
   it "allows copying the url" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     within(find("label", text: "URL").ancestor("section")) do
       expect(page).not_to have_content("Copy to Clipboard")
       copy_link = find_button("Copy URL")
@@ -73,7 +73,7 @@ describe("Product Edit custom permalink edit", type: :system, js: true) do
     end
 
     def visit_product_and_update_custom_permalink(product)
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_path(product)
       custom_permalink_input.set("").set(@new_custom_permalink)
       save_change
     end

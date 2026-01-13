@@ -18,7 +18,7 @@ describe("Product Edit Previews", type: :system, js: true) do
   include_context "with switching account to user as admin for seller"
 
   it "opens the full-screen preview only after the changes have been saved" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
 
     fill_in("You'll get...", with: "This should be saved automatically")
 
@@ -31,7 +31,7 @@ describe("Product Edit Previews", type: :system, js: true) do
   end
 
   it("instantly preview changes to product name and price") do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
 
     in_preview do
       expect(page).to have_content product.name
@@ -59,7 +59,7 @@ describe("Product Edit Previews", type: :system, js: true) do
   end
 
   it("instantly previews variants") do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
 
     click_on "Add version"
     within version_rows[0] do
@@ -102,7 +102,7 @@ describe("Product Edit Previews", type: :system, js: true) do
       product = create(:product, user: seller)
       create(:purchase, link: product, succeeded_at: 1.hour.ago)
 
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_path(product)
 
       check "Publicly show the number of sales on your product page"
       in_preview do
@@ -116,7 +116,7 @@ describe("Product Edit Previews", type: :system, js: true) do
       end
 
       create(:purchase, link: product, succeeded_at: 1.hour.ago)
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_path(product)
 
       # Sales count in preview should reflect the actual sales count
       check "Publicly show the number of sales on your product page"
@@ -131,7 +131,7 @@ describe("Product Edit Previews", type: :system, js: true) do
       product = create(:membership_product, user: seller)
       create(:membership_purchase, link: product, succeeded_at: 1.hour.ago, price_cents: 100)
 
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_path(product)
 
       check "Publicly show the number of members on your product page"
       in_preview do
@@ -139,7 +139,7 @@ describe("Product Edit Previews", type: :system, js: true) do
       end
 
       create(:membership_purchase, link: product, succeeded_at: 1.hour.ago, price_cents: 100)
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_path(product)
 
       check "Publicly show the number of members on your product page"
       in_preview do
@@ -154,7 +154,7 @@ describe("Product Edit Previews", type: :system, js: true) do
     end
 
     it "shows preview price tag at all times" do
-      visit "/products/#{product.unique_permalink}/edit"
+      visit edit_product_path(product)
       in_preview do
         expect(page).to have_content "$1"
       end
@@ -182,7 +182,7 @@ describe("Product Edit Previews", type: :system, js: true) do
     end
 
     it "does not hide the preview price tag when changed via PWYW setting" do
-      visit "/products/#{product.unique_permalink}/edit"
+      visit edit_product_path(product)
       in_preview do
         expect(page).to have_content "$0+"
       end
@@ -202,7 +202,7 @@ describe("Product Edit Previews", type: :system, js: true) do
 
     shared_examples_for "displaying collaborator" do
       it "shows the collaborator's name if they should be shown as a co-creator" do
-        visit edit_link_path(product.unique_permalink)
+        visit edit_product_path(product)
 
         in_preview do
           expect(page).to have_content affiliate_user.name
@@ -211,7 +211,7 @@ describe("Product Edit Previews", type: :system, js: true) do
 
       it "does not show the collaborator's name if they should not be shown as a co-creator" do
         collaborator.update!(dont_show_as_co_creator: true)
-        visit edit_link_path(product.unique_permalink)
+        visit edit_product_path(product)
 
         in_preview do
           expect(page).not_to have_content affiliate_user.name
@@ -237,7 +237,7 @@ describe("Product Edit Previews", type: :system, js: true) do
     end
 
     it "shows discounted price in preview when default discount code is set" do
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_path(product)
 
       in_preview do
         # Original price is $10.00, 10% off = $9.00; preview shows "$10 $9"

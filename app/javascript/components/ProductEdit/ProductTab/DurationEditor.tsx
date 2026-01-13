@@ -1,20 +1,24 @@
 import * as React from "react";
 
 import { NumberInput } from "$app/components/NumberInput";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { WithTooltip } from "$app/components/WithTooltip";
 
-export const DurationEditor = () => {
+export const DurationEditor = ({
+  value,
+  onChange,
+}: {
+  value: number | null;
+  onChange: (value: number | null) => void;
+}) => {
   const uid = React.useId();
-  const { product, updateProduct } = useProductEditContext();
-  const [isOpen, setIsOpen] = React.useState(product.duration_in_months != null);
+  const [isOpen, setIsOpen] = React.useState(value != null);
 
   return (
     <ToggleSettingRow
       value={isOpen}
       onChange={(open) => {
-        if (!open) updateProduct({ duration_in_months: null });
+        if (!open) onChange(null);
         setIsOpen(open);
       }}
       label="Automatically end memberships after a number of months"
@@ -27,10 +31,7 @@ export const DurationEditor = () => {
             tip="Any change in the length of your membership will only affect new members."
             position="bottom"
           >
-            <NumberInput
-              value={product.duration_in_months}
-              onChange={(duration_in_months) => updateProduct({ duration_in_months })}
-            >
+            <NumberInput value={value} onChange={onChange}>
               {(props) => <input id={uid} placeholder="∞" {...props} />}
             </NumberInput>
           </WithTooltip>

@@ -17,7 +17,7 @@ describe("Product edit multiple-preview Scenario", type: :system, js: true) do
   include_context "with switching account to user as admin for seller"
 
   it "uploads a preview image" do
-    visit(edit_link_path(product))
+    visit(edit_product_path(product))
     upload_image
     within "[role=tablist][aria-label='Product covers']" do
       img = first("img")
@@ -28,7 +28,7 @@ describe("Product edit multiple-preview Scenario", type: :system, js: true) do
   end
 
   it "uploads an image via URL" do
-    visit(edit_link_path(product))
+    visit(edit_product_path(product))
     click_on "Upload images or videos"
     select_tab "External link"
     fill_in placeholder: "https://", with: "https://picsum.photos/200/300"
@@ -43,7 +43,7 @@ describe("Product edit multiple-preview Scenario", type: :system, js: true) do
 
   it "uploads an image as a second preview" do
     create(:asset_preview, link: product)
-    visit(edit_link_path(product))
+    visit(edit_product_path(product))
     expect(page).to have_selector("img")
     expect do
       select_disclosure "Add cover" do
@@ -56,7 +56,7 @@ describe("Product edit multiple-preview Scenario", type: :system, js: true) do
 
   it "fails with informative error for too many previews" do
     Link::MAX_PREVIEW_COUNT.times { create(:asset_preview, link: product) }
-    visit(edit_link_path(product))
+    visit(edit_product_path(product))
     expect do
       button = find(:disclosure_button, "Add cover", disabled: true)
       button.hover
@@ -65,7 +65,7 @@ describe("Product edit multiple-preview Scenario", type: :system, js: true) do
   end
 
   it "fails gracefully for Internet error" do
-    visit(edit_link_path(product))
+    visit(edit_product_path(product))
     expect_any_instance_of(AssetPreview).to receive(:url_or_file).and_raise(URI::InvalidURIError)
     expect do
       upload_image
@@ -77,7 +77,7 @@ describe("Product edit multiple-preview Scenario", type: :system, js: true) do
   it "deletes previews" do
     create(:asset_preview, link: product)
     create(:asset_preview, link: product)
-    visit(edit_link_path(product))
+    visit(edit_product_path(product))
     expect(find(:section, "Cover", section_element: :section)).to have_selector("img")
     expect(product.asset_previews.alive.count).to eq(2)
     within "[role=tablist][aria-label='Product covers']" do

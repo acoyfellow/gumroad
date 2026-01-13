@@ -22,13 +22,13 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "displays the number of active supporters for each tier", :sidekiq_inline, :elasticsearch_wait_for_refresh do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       expect(tier_rows[0]).to have_text "1 supporter"
     end
 
     it "allows user to update product" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       new_name = "Slot machine"
       fill_in("Name", with: new_name, match: :first)
@@ -37,7 +37,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "allows creator to update duration" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       check "Automatically end memberships after a number of months"
       fill_in("Number of months", with: 18)
@@ -53,7 +53,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "allows creator to update duration of a membership product" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       check "Automatically end memberships after a number of months"
       fill_in("Number of months", with: 18)
@@ -64,7 +64,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "allows creator to share all posts with new members" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       check "New members will get access to all posts you have published"
       expect do
@@ -73,7 +73,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "allows creator to enable a free trial and defaults to one week" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       check "Offer a free trial"
 
@@ -90,7 +90,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "allows creator to enable a one month free trial" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       check "Offer a free trial"
       select "one month", from: "Charge members after"
@@ -113,7 +113,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
       end
 
       it "allows creator to disable a free trial" do
-        visit edit_link_path(@product.unique_permalink)
+        visit edit_product_path(@product)
 
         in_preview do
           expect(page).to have_text "All memberships include a 1 month free trial"
@@ -134,7 +134,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
       end
 
       it "allows creator to change the free trial duration" do
-        visit edit_link_path(@product.unique_permalink)
+        visit edit_product_path(@product)
 
         select "one week", from: "Charge members after"
 
@@ -159,7 +159,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
         end
 
         it "allows the seller to create a cancellation discount" do
-          visit edit_link_path(@product.unique_permalink)
+          visit edit_product_path(@product)
 
           find_field("Offer a cancellation discount", checked: false).check
           fill_in "Fixed amount", with: 1
@@ -198,7 +198,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
 
       context "when cancellation discounts are disabled" do
         it "does not show the cancellation discount selector" do
-          visit edit_link_path(@product.unique_permalink)
+          visit edit_product_path(@product)
 
           expect(page).not_to have_field "Offer a cancellation discount"
         end
@@ -212,7 +212,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "starts out with one tier, named Untitled" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       expect(tier_rows.size).to eq 1
       expect(tier_rows[0]).to have_text "Untitled"
@@ -222,7 +222,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
       first_tier = @product.tier_category.variants.first
       first_tier.update!(name: "First Tier")
 
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       within tier_rows[0] do
         new_window = window_opened_by { click_on "Share" }
@@ -235,7 +235,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "allows to create more tiers" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       click_on "Add tier"
 
@@ -252,7 +252,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "allows to edit quantity limit" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       within tier_rows[0] do
         fill_in "Maximum number of active supporters", with: "250"
@@ -272,7 +272,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
       end
 
       it "allows deleting a tier with a confirmation dialog" do
-        visit edit_link_path(membership_product.unique_permalink)
+        visit edit_product_path(membership_product)
 
         within tier_rows[0] do
           click_on "Remove"
@@ -329,7 +329,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
       end
 
       it "prohibits setting quantity limit lower than current active subscriptions + non-subscription purchases" do
-        visit edit_link_path(@product.unique_permalink)
+        visit edit_product_path(@product)
 
         within tier_rows[0] do
           fill_in "Maximum number of active supporters", with: "2"
@@ -340,7 +340,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
       end
 
       it "excludes inactive subscriptions and purchases of other tiers from the current purchase count" do
-        visit edit_link_path(@product.unique_permalink)
+        visit edit_product_path(@product)
 
         within tier_rows[0] do
           fill_in "Maximum number of active supporters", with: "3"
@@ -352,7 +352,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "allows to re-order tiers" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       click_on "Add tier"
 
@@ -370,7 +370,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "allows to delete tiers" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       click_on "Add tier"
 
@@ -398,7 +398,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
     end
 
     it "does not allow to save with zero tiers" do
-      visit edit_link_path(@product.unique_permalink)
+      visit edit_product_path(@product)
 
       within tier_rows[0] do
         click_on "Remove"
@@ -416,7 +416,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
 
     describe "pricing" do
       it "allows to enable, disable, and change recurrence values for each tier" do
-        visit edit_link_path(@product.unique_permalink)
+        visit edit_product_path(@product)
 
         within tier_rows[0] do
           fill_in "Amount monthly", with: 3
@@ -487,7 +487,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
       end
 
       it "does not allow to save if not all tiers have the same recurrences enabled" do
-        visit edit_link_path(@product.unique_permalink)
+        visit edit_product_path(@product)
 
         within tier_rows[0] do
           fill_in "Amount monthly", with: 3
@@ -509,7 +509,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
       end
 
       it "does not allow to save if any tier is missing a price for the product's default recurrence" do
-        visit edit_link_path(@product.unique_permalink)
+        visit edit_product_path(@product)
 
         within tier_rows[0] do
           uncheck "Toggle recurrence option: Monthly"
@@ -520,7 +520,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
 
       context "with pay-what-you-want enabled" do
         it "allows to enable pay-what-you-want on a per-tier basis and enter suggested values per each enabled recurrence" do
-          visit edit_link_path(@product.unique_permalink)
+          visit edit_product_path(@product)
 
           within tier_rows[0] do
             fill_in "Amount monthly", with: 3
@@ -578,7 +578,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
         end
 
         it "requires that suggested price is >= price" do
-          visit edit_link_path(@product.unique_permalink)
+          visit edit_product_path(@product)
 
           within tier_rows[0] do
             fill_in "Amount monthly", with: 10
@@ -591,7 +591,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
         end
 
         it "automatically enables PWYW and disables toggle when tier prices are 0" do
-          visit edit_link_path(@product.unique_permalink)
+          visit edit_product_path(@product)
 
           within tier_rows[0] do
             check "Toggle recurrence option: Monthly"
@@ -627,7 +627,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
       end
 
       it "allows to change default recurrence in settings" do
-        visit edit_link_path(@product.unique_permalink)
+        visit edit_product_path(@product)
 
         within tier_rows[0] do
           check "Toggle recurrence option: Monthly"
@@ -646,7 +646,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
 
         it "allows applying price changes to existing memberships on that tier" do
           freeze_time do
-            visit edit_link_path(@product.unique_permalink)
+            visit edit_product_path(@product)
 
             within tier_rows[0] do
               expect(page).not_to have_text "Effective date for existing customers"
@@ -663,7 +663,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
         end
 
         it "allows setting an effective date and custom message" do
-          visit edit_link_path(@product.unique_permalink)
+          visit edit_product_path(@product)
           effective_date = (7.days.from_now + 1.month).to_date.change(day: 12)
 
           within tier_rows[0] do
@@ -681,22 +681,22 @@ describe("Product Edit Memberships", type: :system, js: true) do
         end
 
         it "does not allow setting an effective date less than 7 days in the future" do
-          visit edit_link_path(@product.unique_permalink)
+          visit edit_product_path(@product)
 
           within tier_rows[0] do
             check "Apply price changes to existing customers"
-            fill_in "Effective date for existing customers", with: "01-01-2020\t"
+            fill_in "Effective date for existing customers", with: "01-01-2020\t\t"
           end
           expect(page).to have_text "The effective date must be at least 7 days from today"
 
           expect do
             click_on "Save changes"
             wait_for_ajax
+            expect(page).to have_alert(text: "Validation failed: The effective date must be at least 7 days from today")
           end.not_to change { tier.reload.subscription_price_change_effective_date }
-          expect(page).to have_alert(text: "Validation failed: The effective date must be at least 7 days from today")
 
           within tier_rows[0] do
-            fill_in "Effective date for existing customers", with: "01-01-#{Date.today.year + 2}\t"
+            fill_in "Effective date for existing customers", with: "01-01-#{Date.today.year + 2}\t\t"
           end
           expect(page).not_to have_text "The effective date must be at least 7 days from today"
         end
@@ -707,7 +707,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
                        subscription_price_change_message: "<p>hello this is a description</p>")
           formatted_date = tier.subscription_price_change_effective_date.strftime("%B %-d, %Y")
 
-          visit edit_link_path(@product.unique_permalink)
+          visit edit_product_path(@product)
 
           within tier_rows[0] do
             expect(page).to have_alert(text: "You have scheduled a pricing update for existing customers on #{formatted_date}")
@@ -743,7 +743,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
                                                        custom_message: nil).
                                                   and_return(mail)
 
-            visit edit_link_path(@product.unique_permalink)
+            visit edit_product_path(@product)
             within tier_rows[0] do
               click_on "Get a sample"
             end
@@ -761,9 +761,9 @@ describe("Product Edit Memberships", type: :system, js: true) do
                                                        recurrence: "monthly", new_price:, custom_message: "<p>hello</p>").
                                                   and_return(mail)
 
-            visit edit_link_path(@product.unique_permalink)
+            visit edit_product_path(@product)
             within tier_rows[0] do
-              fill_in "Amount monthly", with: new_price / 100
+              fill_in "Amount monthly", with: (new_price / 100).to_i
               fill_in "Effective date for existing customers", with: effective_date.strftime("%m%d%Y")
               set_rich_text_editor_input(find("[aria-label='Custom message']"), to_text: "hello")
               sleep(1)
@@ -780,7 +780,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
                                                        recurrence: "monthly", new_price: 10_00, custom_message: nil).
                                                   and_return(mail)
 
-            visit edit_link_path(@product.unique_permalink)
+            visit edit_product_path(@product)
             within tier_rows[0] do
               uncheck "Toggle recurrence option: Monthly"
               click_on "Get a sample"
@@ -791,7 +791,7 @@ describe("Product Edit Memberships", type: :system, js: true) do
           it "shows an error message if error is raised", :realistic_error_responses do
             allow(CustomerLowPriorityMailer).to receive(:sample_subscription_price_change_notification).and_raise(StandardError)
 
-            visit edit_link_path(@product.unique_permalink)
+            visit edit_product_path(@product)
             within tier_rows[0] do
               click_on "Get a sample"
             end

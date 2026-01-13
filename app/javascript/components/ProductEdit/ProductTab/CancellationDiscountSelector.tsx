@@ -1,12 +1,21 @@
 import * as React from "react";
 
+import { CurrencyCode } from "$app/utils/currency";
+
 import { InputtedDiscount, DiscountInput } from "$app/components/CheckoutDashboard/DiscountInput";
 import { NumberInput } from "$app/components/NumberInput";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import type { EditProduct } from "$app/components/ProductEdit/state";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 
-export const CancellationDiscountSelector = () => {
-  const { product, updateProduct, currencyType } = useProductEditContext();
+export const CancellationDiscountSelector = ({
+  product,
+  currency_type,
+  onChange,
+}: {
+  product: EditProduct;
+  currency_type: CurrencyCode;
+  onChange: (cancellation_discount: EditProduct["cancellation_discount"]) => void;
+}) => {
   const cancellationDiscount = product.cancellation_discount;
 
   const [isEnabled, setIsEnabled] = React.useState(!!cancellationDiscount);
@@ -24,7 +33,7 @@ export const CancellationDiscountSelector = () => {
 
   React.useEffect(() => {
     if (!isEnabled) {
-      updateProduct({ cancellation_discount: null });
+      onChange(null);
       return;
     }
 
@@ -32,16 +41,14 @@ export const CancellationDiscountSelector = () => {
       return;
     }
 
-    updateProduct({
-      cancellation_discount: {
-        discount:
-          discount.type === "cents"
-            ? { type: "fixed", cents: discount.value }
-            : { type: "percent", percents: discount.value },
-        duration_in_billing_cycles: durationInBillingCycles,
-      },
+    onChange({
+      discount:
+        discount.type === "cents"
+          ? { type: "fixed", cents: discount.value }
+          : { type: "percent", percents: discount.value },
+      duration_in_billing_cycles: durationInBillingCycles,
     });
-  }, [isEnabled, discount, durationInBillingCycles, updateProduct]);
+  }, [isEnabled, discount, durationInBillingCycles, onChange]);
 
   return (
     <ToggleSettingRow
@@ -50,7 +57,7 @@ export const CancellationDiscountSelector = () => {
       label="Offer a cancellation discount"
       dropdown={
         <section className="flex flex-col gap-4">
-          <DiscountInput discount={discount} setDiscount={setDiscount} currencyCode={currencyType} />
+          <DiscountInput discount={discount} setDiscount={setDiscount} currencyCode={currency_type} />
           <fieldset>
             <label htmlFor="billing-cycles">Duration in billing cycles</label>
             <NumberInput value={durationInBillingCycles} onChange={setDurationInBillingCycles}>

@@ -7,12 +7,7 @@ describe("ProductMoreOptionScenario", type: :system, js: true) do
   include ProductEditPageHelpers
 
   def visit_product_edit(link)
-    visit("/products/#{link.unique_permalink}/edit")
-    wait_for_ajax
-  end
-
-  def visit_product_edit_checkout_tab(link)
-    visit("/products/#{link.unique_permalink}/edit#checkout")
+    visit edit_product_path(link)
     wait_for_ajax
   end
 

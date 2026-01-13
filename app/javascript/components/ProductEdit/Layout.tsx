@@ -1,11 +1,7 @@
-import cx from "classnames";
+import { Link } from "@inertiajs/react";
 import * as React from "react";
-import { Link, useMatches, useNavigate } from "react-router-dom";
 
-import { saveProduct } from "$app/data/product_edit";
-import { setProductPublished } from "$app/data/publish_product";
 import { classNames } from "$app/utils/classNames";
-import { assertResponseError } from "$app/utils/request";
 
 import { Button, NavigationButton } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
@@ -16,167 +12,73 @@ import { Preview } from "$app/components/Preview";
 import { PreviewSidebar, WithPreviewSidebar } from "$app/components/PreviewSidebar";
 import { useImageUploadSettings } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
-import { SubtitleFile } from "$app/components/SubtitleList/Row";
-import { Alert } from "$app/components/ui/Alert";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
-import { useRefToLatest } from "$app/components/useRefToLatest";
 import { WithTooltip } from "$app/components/WithTooltip";
 
-import { FileEntry, useProductEditContext } from "./state";
+import type { ContentUpdates, EditProductBase } from "./state";
 
-export const useProductUrl = (params = {}) => {
-  const { product, uniquePermalink } = useProductEditContext();
+export type ProductEditTabs = "content" | "product" | "receipt" | "share";
+
+export const useProductUrl = (product: EditProductBase, params: Record<string, unknown> = {}) => {
   const currentSeller = useCurrentSeller();
   const { appDomain } = useDomains();
   return product.native_type === "coffee" && currentSeller
     ? Routes.custom_domain_coffee_url({ host: currentSeller.subdomain, ...params })
-    : Routes.short_link_url(product.custom_permalink ?? uniquePermalink, {
+    : Routes.short_link_url(product.custom_permalink ?? product.unique_permalink, {
         host: currentSeller?.subdomain ?? appDomain,
         ...params,
       });
 };
 
-const NotifyAboutProductUpdatesAlert = () => {
-  const { uniquePermalink, contentUpdates, setContentUpdates } = useProductEditContext();
-  const timerRef = React.useRef<number | null>(null);
-  const isVisible = !!contentUpdates;
-
-  const clearTimer = () => {
-    if (timerRef.current !== null) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  const startTimer = () => {
-    clearTimer();
-    timerRef.current = window.setTimeout(() => {
-      close();
-    }, 10_000);
-  };
-
-  const close = () => {
-    clearTimer();
-    setContentUpdates(null);
-  };
-
-  React.useEffect(() => {
-    if (isVisible) {
-      startTimer();
-    }
-
-    return clearTimer;
-  }, [isVisible]);
-
-  const handleMouseEnter = () => {
-    clearTimer();
-  };
-
-  const handleMouseLeave = () => {
-    startTimer();
-  };
-
-  return (
-    <div
-      className={cx("fixed top-4 right-1/2", isVisible ? "visible" : "invisible")}
-      style={{
-        transform: `translateX(50%) translateY(${isVisible ? 0 : "calc(-100% - var(--spacer-4))"})`,
-        transition: "all 0.3s ease-out 0.5s",
-        zIndex: "var(--z-index-tooltip)",
-        backgroundColor: "var(--body-bg)",
-      }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <Alert variant="info">
-        <div className="flex flex-col gap-4">
-          Changes saved! Would you like to notify your customers about those changes?
-          <div className="flex gap-2">
-            <Button color="primary" outline onClick={() => close()}>
-              Skip for now
-            </Button>
-            <NavigationButton
-              color="primary"
-              href={Routes.new_email_path({
-                template: "content_updates",
-                product: uniquePermalink,
-                bought: contentUpdates?.uniquePermalinkOrVariantIds ?? [],
-              })}
-              onClick={() => {
-                // NOTE: this is a workaround to make sure the alert closes after the tab is opened
-                // with correct URL params. Otherwise `bought` won't be set correctly.
-                setTimeout(() => close(), 100);
-              }}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Send notification
-            </NavigationButton>
-          </div>
-        </div>
-      </Alert>
-    </div>
-  );
-};
-
 export const Layout = ({
   children,
   preview,
+  product,
   isLoading = false,
   headerActions,
   previewScaleFactor = 0.4,
   showBorder = true,
   showNavigationButton = true,
+  selectedTab,
+  save,
+  processing,
+  isUploadingFiles = false,
+  isFormDirty,
 }: {
   children: React.ReactNode;
   preview?: React.ReactNode;
+  product: EditProductBase;
   isLoading?: boolean;
   headerActions?: React.ReactNode;
   previewScaleFactor?: number;
   showBorder?: boolean;
   showNavigationButton?: boolean;
+  selectedTab: ProductEditTabs;
+  save: (
+    options?: { onSuccess?: () => void; onFinish?: () => void },
+    data?: { next_url?: string; publish?: boolean },
+  ) => void;
+  processing: boolean;
+  contentUpdates?: ContentUpdates;
+  setContentUpdates?: React.Dispatch<React.SetStateAction<ContentUpdates>>;
+  isUploadingFiles?: boolean;
+  isFormDirty: boolean;
 }) => {
-  const { id, product, updateProduct, uniquePermalink, saving, save, currencyType } = useProductEditContext();
-  const rootPath = `/products/${uniquePermalink}/edit`;
+  const url = useProductUrl(product);
+  const checkoutUrl = useProductUrl(product, { wanted: true });
 
-  const url = useProductUrl();
-  const checkoutUrl = useProductUrl({ wanted: true });
+  const [saveFlowStatus, setSaveFlowStatus] = React.useState<"saving" | "publishing" | null>(null);
+  const processingStatus = saveFlowStatus ?? (processing ? "saving" : null);
 
-  const [match] = useMatches();
-  const tab = match?.handle ?? "product";
-
-  const navigate = useRefToLatest(useNavigate());
-
-  const [isPublishing, setIsPublishing] = React.useState(false);
-  const setPublished = async (published: boolean) => {
-    try {
-      setIsPublishing(true);
-      await saveProduct(uniquePermalink, id, product, currencyType);
-      await setProductPublished(uniquePermalink, published);
-      updateProduct({ is_published: published });
-      showAlert(published ? "Published!" : "Unpublished!", "success");
-      if (tab === "share") {
-        if (product.native_type === "coffee") navigate.current(rootPath);
-        else navigate.current(`${rootPath}/content`);
-      } else if (published) {
-        navigate.current(`${rootPath}/share`);
-      }
-    } catch (e) {
-      assertResponseError(e);
-      showAlert(e.message, "error", { html: true });
-    }
-    setIsPublishing(false);
+  const changeProductStateTo = (action: "publish" | "unpublish") => {
+    setSaveFlowStatus("publishing");
+    save({ onFinish: () => setSaveFlowStatus(null) }, { publish: action === "publish" });
   };
 
-  const isUploadingFile = (file: FileEntry | SubtitleFile) =>
-    file.status.type === "unsaved" && file.status.uploadStatus.type === "uploading";
-  const isUploadingFiles =
-    product.public_files.some((f) => f.status?.type === "unsaved" && f.status.uploadStatus.type === "uploading") ||
-    product.files.some((file) => isUploadingFile(file) || file.subtitle_files.some(isUploadingFile));
   const imageSettings = useImageUploadSettings();
   const isUploadingFilesOrImages = isLoading || isUploadingFiles || !!imageSettings?.isUploading;
-  const isBusy = isUploadingFilesOrImages || saving || isPublishing;
+  const isBusy = isUploadingFilesOrImages || !!processingStatus;
   const saveButtonTooltip = isUploadingFiles
     ? "Files are still uploading..."
     : isUploadingFilesOrImages
@@ -197,43 +99,55 @@ export const Layout = ({
 
   const saveButton = (
     <WithTooltip tip={saveButtonTooltip}>
-      <Button color="primary" disabled={isBusy} onClick={() => void save()}>
-        {saving ? "Saving changes..." : "Save changes"}
+      <Button color="primary" disabled={isBusy} onClick={() => save()}>
+        {processingStatus === "saving" ? "Saving changes..." : "Save changes"}
       </Button>
     </WithTooltip>
   );
 
-  const onTabClick = (e: React.MouseEvent<HTMLAnchorElement>, callback?: () => void) => {
+  const onTabClick = (event: React.MouseEvent) => {
+    if (!(event.target instanceof HTMLAnchorElement)) return;
+
     const message = isUploadingFiles
       ? "Some files are still uploading, please wait..."
       : isUploadingFilesOrImages
         ? "Some images are still uploading, please wait..."
         : undefined;
-
     if (message) {
-      e.preventDefault();
+      event.preventDefault();
       showAlert(message, "warning");
       return;
     }
 
-    callback?.();
+    const url = new URL(event.target.href);
+    if (url.pathname.startsWith(Routes.edit_product_share_path(product.unique_permalink)) && !product.is_published) {
+      event.preventDefault();
+      showAlert(
+        "Not yet! You've got to publish your awesome product before you can share it with your audience and the world.",
+        "warning",
+      );
+      return;
+    }
+
+    if (!isFormDirty) return;
+    event.preventDefault();
+    setSaveFlowStatus("saving");
+    save({ onFinish: () => setSaveFlowStatus(null) }, { next_url: event.target.href });
   };
 
   const isCoffee = product.native_type === "coffee";
 
   return (
     <>
-      <NotifyAboutProductUpdatesAlert />
-      {/* TODO: remove this legacy uploader stuff */}
-      <form hidden data-id={uniquePermalink} id="edit-link-basic-form" />
+      <form hidden data-id={product.unique_permalink} id="edit-link-basic-form" />
       <PageHeader
         className="sticky-top"
         title={product.name || "Untitled"}
         actions={
           product.is_published ? (
             <>
-              <Button disabled={isBusy} onClick={() => void setPublished(false)}>
-                {isPublishing ? "Unpublishing..." : "Unpublish"}
+              <Button disabled={isBusy} onClick={() => changeProductStateTo("unpublish")}>
+                {processingStatus === "publishing" ? "Unpublishing..." : "Unpublish"}
               </Button>
               {saveButton}
               <CopyToClipboard text={url} copyTooltip="Copy product URL">
@@ -247,23 +161,21 @@ export const Layout = ({
                 </Button>
               </CopyToClipboard>
             </>
-          ) : tab === "product" && !isCoffee ? (
-            <Button
-              color="primary"
-              disabled={isBusy}
-              onClick={() => void save().then(() => navigate.current(`${rootPath}/content`))}
-            >
-              {saving ? "Saving changes..." : "Save and continue"}
+          ) : selectedTab === "product" && !isCoffee ? (
+            <Button color="primary" disabled={isBusy} onClick={() => save()}>
+              {processingStatus === "saving" ? "Saving changes..." : "Save and continue"}
             </Button>
-          ) : (
+          ) : selectedTab === "content" || selectedTab === "receipt" ? (
             <>
               {saveButton}
               <WithTooltip tip={saveButtonTooltip}>
-                <Button color="accent" disabled={isBusy} onClick={() => void setPublished(true)}>
-                  {isPublishing ? "Publishing..." : "Publish and continue"}
+                <Button color="accent" disabled={isBusy} onClick={() => changeProductStateTo("publish")}>
+                  {processingStatus === "publishing" ? "Publishing..." : "Publish and continue"}
                 </Button>
               </WithTooltip>
             </>
+          ) : (
+            saveButton
           )
         }
       >
@@ -274,38 +186,25 @@ export const Layout = ({
           )}
         >
           <Tabs style={{ gridColumn: 1 }}>
-            <Tab asChild isSelected={tab === "product"}>
-              <Link to={rootPath} onClick={onTabClick}>
+            <Tab asChild isSelected={selectedTab === "product"}>
+              <Link href={Routes.edit_product_path(product.unique_permalink)} onClick={onTabClick}>
                 Product
               </Link>
             </Tab>
             {!isCoffee ? (
-              <Tab asChild isSelected={tab === "content"}>
-                <Link to={`${rootPath}/content`} onClick={onTabClick}>
+              <Tab asChild isSelected={selectedTab === "content"}>
+                <Link href={Routes.edit_product_content_path(product.unique_permalink)} onClick={onTabClick}>
                   Content
                 </Link>
               </Tab>
             ) : null}
-            <Tab asChild isSelected={tab === "receipt"}>
-              <Link to={`${rootPath}/receipt`} onClick={onTabClick}>
+            <Tab asChild isSelected={selectedTab === "receipt"}>
+              <Link href={Routes.edit_product_receipt_path(product.unique_permalink)} onClick={onTabClick}>
                 Receipt
               </Link>
             </Tab>
-            <Tab asChild isSelected={tab === "share"}>
-              <Link
-                to={`${rootPath}/share`}
-                onClick={(evt) => {
-                  onTabClick(evt, () => {
-                    if (!product.is_published) {
-                      evt.preventDefault();
-                      showAlert(
-                        "Not yet! You've got to publish your awesome product before you can share it with your audience and the world.",
-                        "warning",
-                      );
-                    }
-                  });
-                }}
-              >
+            <Tab asChild isSelected={selectedTab === "share"}>
+              <Link href={Routes.edit_product_share_path(product.unique_permalink)} onClick={onTabClick}>
                 Share
               </Link>
             </Tab>
@@ -325,7 +224,11 @@ export const Layout = ({
                   href={url}
                   onClick={(evt) => {
                     evt.preventDefault();
-                    void save().then(() => window.open(url, "_blank"));
+                    setSaveFlowStatus("saving");
+                    save({
+                      onFinish: () => setSaveFlowStatus(null),
+                      onSuccess: () => window.open(url, "_blank"),
+                    });
                   }}
                 />
               ),
