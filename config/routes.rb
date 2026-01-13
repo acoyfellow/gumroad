@@ -936,7 +936,6 @@ Rails.application.routes.draw do
     get "/button" => redirect("/widgets")
     get "/charge", to: "public#charge", as: "charge"
     get "/license-key-lookup", to: "public#license_key_lookup"
-    get "/thank-you", to: "public#thank_you", as: "thank_you"
     get "/charge_data", to: "public#charge_data", as: :charge_data
     get "/paypal_charge_data", to: "public#paypal_charge_data", as: :paypal_charge_data
     get "/CHARGE" => redirect("/charge")
