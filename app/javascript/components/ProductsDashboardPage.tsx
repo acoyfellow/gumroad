@@ -42,6 +42,10 @@ export const ProductsDashboardPage = ({
   const [query, setQuery] = React.useState<string | null>(null);
 
   React.useEffect(() => {
+    setEnableArchiveTab(archivedProductsCount > 0);
+  }, [archivedProductsCount]);
+
+  React.useEffect(() => {
     if (isSearchPopoverOpen) searchInputRef.current?.focus();
   }, [isSearchPopoverOpen]);
 

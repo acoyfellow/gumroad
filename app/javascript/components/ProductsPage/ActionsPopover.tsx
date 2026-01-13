@@ -1,6 +1,7 @@
+import { router } from "@inertiajs/react";
 import * as React from "react";
 
-import { deleteProduct, archiveProduct, unarchiveProduct, duplicateProduct } from "$app/data/product_dashboard";
+import { unarchiveProduct, duplicateProduct } from "$app/data/product_dashboard";
 import { Membership, Product } from "$app/data/products";
 import { assertResponseError } from "$app/utils/request";
 
@@ -13,8 +14,6 @@ import { showAlert } from "$app/components/server-components/Alert";
 const ActionsPopover = ({
   product,
   onDuplicate,
-  onDelete,
-  onArchive,
   onUnarchive,
 }: {
   product: Product | Membership;
@@ -45,34 +44,29 @@ const ActionsPopover = ({
     setIsDuplicating(false);
   };
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      await deleteProduct(product.permalink);
-      showAlert("Product deleted!", "success");
-      onDelete();
-    } catch (e) {
-      assertResponseError(e);
-      showAlert(e.message, "error");
-    }
-    setIsDeleting(false);
+  const handleDelete = () => {
+    router.delete(Routes.link_path(product.permalink), {
+      preserveScroll: true,
+      onStart: () => setIsDeleting(true),
+      onError: () => showAlert("Failed to delete product. Please try again.", "error"),
+      onFinish: () => {
+        setIsDeleting(false);
+        setConfirmingDelete(false);
+      },
+    });
   };
 
-  const handleArchive = async () => {
-    setIsArchiving(true);
-    try {
-      await archiveProduct(product.permalink);
-      const message =
-        product.status === "published"
-          ? "Product was archived and unpublished successfully"
-          : "Product was archived successfully";
-      showAlert(message, "success");
-      onArchive();
-    } catch (e) {
-      assertResponseError(e);
-      showAlert(e.message, "error");
-    }
-    setIsArchiving(false);
+  const handleArchive = () => {
+    router.post(
+      Routes.products_archived_index_path(),
+      { id: product.permalink },
+      {
+        preserveScroll: true,
+        onStart: () => setIsArchiving(true),
+        onError: () => showAlert("Failed to archive product. Please try again.", "error"),
+        onFinish: () => setIsArchiving(false),
+      },
+    );
   };
 
   const handleUnarchive = async () => {
