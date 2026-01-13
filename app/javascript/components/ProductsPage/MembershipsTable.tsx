@@ -54,7 +54,7 @@ export const ProductsPageMembershipsTable = (props: {
 
   const thProps = useSortingTableDriver<SortKey>(sort, onSetSort);
 
-  const loadMemberships = (page: number = 1) => {
+  const loadMemberships = (page = 1) => {
     router.reload({
       data: {
         memberships_page: page,
