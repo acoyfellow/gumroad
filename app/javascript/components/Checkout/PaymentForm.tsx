@@ -693,10 +693,7 @@ const CreditCard = ({ card }: { card?: boolean }) => {
   if (state.paymentMethod !== "card") return null;
 
   return (
-    <div
-      style={{ borderTop: "none", paddingTop: "0" }}
-      className={card ? "flex flex-wrap items-center justify-between gap-4 p-4" : ""}
-    >
+    <div className={card ? "flex flex-wrap items-center justify-between gap-4 p-4 pt-0!" : ""}>
       <div className={`flex flex-col gap-4 ${card ? "grow" : ""}`}>
         {!useSavedCard ? (
           <fieldset>
@@ -1240,7 +1237,7 @@ export const PaymentForm = ({
       <EmailAddress card />
       {!isFreePurchase ? (
         <>
-          <CardContent>
+          <CardContent className={state.paymentMethod === "card" ? "border-b-0" : ""}>
             <div className="flex grow flex-col gap-4">
               <h4 className="font-bold">Pay with</h4>
               {state.availablePaymentMethods.length > 1 ? (
