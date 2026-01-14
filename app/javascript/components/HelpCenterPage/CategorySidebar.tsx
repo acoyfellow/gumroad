@@ -1,9 +1,7 @@
 import { Link } from "@inertiajs/react";
 import * as React from "react";
 
-import { Meta, SidebarCategory } from "./types";
-
-export type { Meta, SidebarCategory };
+import { SidebarCategory } from "./types";
 
 export function CategorySidebar({ categories, activeSlug }: { categories: SidebarCategory[]; activeSlug: string }) {
   return (

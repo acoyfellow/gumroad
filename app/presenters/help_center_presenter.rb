@@ -94,7 +94,10 @@ class HelpCenterPresenter
     end
 
     def extract_description(html)
-      text = ActionView::Base.full_sanitizer.sanitize(html)
+      # Extract first paragraph text for meta description
+      doc = Nokogiri::HTML.fragment(html)
+      first_paragraph = doc.at_css("p")
+      text = first_paragraph ? first_paragraph.text : ActionView::Base.full_sanitizer.sanitize(html)
       text.squish.truncate(160)
     end
 

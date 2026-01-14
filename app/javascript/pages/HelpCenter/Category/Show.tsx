@@ -2,16 +2,12 @@ import { Head, Link, usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
-import { CategorySidebar, Meta, SidebarCategory } from "$app/components/HelpCenterPage/CategorySidebar";
+import { CategorySidebar } from "$app/components/HelpCenterPage/CategorySidebar";
+import { ArticleLink, Meta, SidebarCategory } from "$app/components/HelpCenterPage/types";
 
 import { HelpCenterLayout } from "../Layout";
 
 import articleIcon from "$assets/images/help-center/article-icon.svg";
-
-interface ArticleLink {
-  title: string;
-  url: string;
-}
 
 interface Category {
   title: string;

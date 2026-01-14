@@ -2,27 +2,16 @@ import { Head, router, usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
-import { CategorySidebar, SidebarCategory } from "$app/components/HelpCenterPage/CategorySidebar";
+import { CategorySidebar } from "$app/components/HelpCenterPage/CategorySidebar";
+import { ArticleCategory, Meta, SidebarCategory } from "$app/components/HelpCenterPage/types";
 
 import { HelpCenterLayout } from "../Layout";
-
-interface ArticleCategory {
-  title: string;
-  slug: string;
-  url: string;
-}
 
 interface Article {
   title: string;
   slug: string;
   content: string;
   category: ArticleCategory;
-}
-
-interface Meta {
-  title: string;
-  description: string;
-  canonical_url: string;
 }
 
 interface Props {
@@ -39,7 +28,8 @@ export default function HelpCenterArticle() {
     const container = contentRef.current;
     if (!container) return;
 
-    const handleClick = (e: MouseEvent) => {
+    // Intercept clicks on internal help links to use Inertia navigation instead of full page reload
+    const onLinkClick = (e: MouseEvent) => {
       if (!(e.target instanceof HTMLElement)) return;
       const anchor = e.target.closest("a");
       if (!anchor) return;
@@ -51,8 +41,8 @@ export default function HelpCenterArticle() {
       }
     };
 
-    container.addEventListener("click", handleClick);
-    return () => container.removeEventListener("click", handleClick);
+    container.addEventListener("click", onLinkClick);
+    return () => container.removeEventListener("click", onLinkClick);
   }, []);
 
   return (

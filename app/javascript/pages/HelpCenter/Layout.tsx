@@ -19,7 +19,7 @@ type HelperSession = {
   timestamp?: number | null;
 };
 
-type SharedProps = {
+type HelpCenterSharedProps = {
   helper_widget_host?: string | null;
   helper_session?: HelperSession | null;
   recaptcha_site_key?: string | null;
@@ -30,6 +30,22 @@ type HelpCenterLayoutProps = {
   showSearchButton?: boolean;
 };
 
+function ReportBugButton() {
+  return (
+    <NavigationButton
+      color="accent"
+      outline
+      href="https://github.com/antiwork/gumroad/issues/new"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2"
+    >
+      <img src={githubIcon} alt="" className="h-4 w-4" />
+      Report a bug
+    </NavigationButton>
+  );
+}
+
 function HelpCenterHeader({
   hasHelperSession,
   recaptchaSiteKey,
@@ -39,7 +55,7 @@ function HelpCenterHeader({
   hasHelperSession: boolean;
   recaptchaSiteKey: string | null;
   showSearchButton?: boolean | undefined;
-  onOpenNewTicket: () => void;
+  onOpenNewTicket?: () => void;
 }) {
   const originalLocation = useOriginalLocation();
   const originalUrl = new URL(originalLocation);
@@ -63,7 +79,7 @@ function HelpCenterHeader({
     if (isAnonymousUserOnHelpCenter && !isUnauthenticatedNewTicketOpen) {
       cleanupUrl();
     } else if (hasHelperSession && isHelpCenterHome) {
-      onOpenNewTicket();
+      onOpenNewTicket?.();
       cleanupUrl();
     }
   }, [
@@ -87,17 +103,7 @@ function HelpCenterHeader({
     if (isAnonymousUserOnHelpCenter) {
       return (
         <>
-          <NavigationButton
-            color="accent"
-            outline
-            href="https://github.com/antiwork/gumroad/issues/new"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2"
-          >
-            <img src={githubIcon} alt="" className="h-4 w-4" />
-            Report a bug
-          </NavigationButton>
+          <ReportBugButton />
           <Button color="accent" onClick={() => setIsUnauthenticatedNewTicketOpen(true)}>
             Contact support
           </Button>
@@ -105,20 +111,10 @@ function HelpCenterHeader({
       );
     }
 
-    if (hasHelperSession) {
+    if (hasHelperSession && onOpenNewTicket) {
       return (
         <>
-          <NavigationButton
-            color="accent"
-            outline
-            href="https://github.com/antiwork/gumroad/issues/new"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2"
-          >
-            <img src={githubIcon} alt="" className="h-4 w-4" />
-            Report a bug
-          </NavigationButton>
+          <ReportBugButton />
           <Button color="accent" onClick={onOpenNewTicket}>
             New ticket
           </Button>
@@ -165,12 +161,7 @@ function AuthenticatedHelpCenterContent({
   showSearchButton?: boolean | undefined;
   recaptchaSiteKey: string | null;
 }) {
-  const [isNewTicketOpen, setIsNewTicketOpen] = React.useState(() => {
-    if (typeof window === "undefined") return false;
-    const url = new URL(window.location.href);
-    const isHelpCenterHome = window.location.pathname === Routes.help_center_root_path();
-    return isHelpCenterHome && !!url.searchParams.get("new_ticket");
-  });
+  const [isNewTicketOpen, setIsNewTicketOpen] = React.useState(false);
 
   const handleTicketCreated = (_slug: string) => {
     setIsNewTicketOpen(false);
@@ -196,7 +187,7 @@ function AuthenticatedHelpCenterContent({
 }
 
 export function HelpCenterLayout({ children, showSearchButton }: HelpCenterLayoutProps) {
-  const { helper_widget_host, helper_session, recaptcha_site_key } = usePage<SharedProps>().props;
+  const { helper_widget_host, helper_session, recaptcha_site_key } = usePage<HelpCenterSharedProps>().props;
 
   const hasHelperSession = !!(helper_widget_host && helper_session);
 
@@ -219,7 +210,6 @@ export function HelpCenterLayout({ children, showSearchButton }: HelpCenterLayou
         hasHelperSession={false}
         recaptchaSiteKey={recaptcha_site_key ?? null}
         showSearchButton={showSearchButton}
-        onOpenNewTicket={() => {}}
       />
       <section className="p-4 md:p-8">{children}</section>
     </>

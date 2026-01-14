@@ -2,26 +2,16 @@ import { Head, usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
+import { ArticleLink, Meta } from "$app/components/HelpCenterPage/types";
 import { NavigationButtonInertia } from "$app/components/NavigationButton";
 
 import { HelpCenterLayout } from "./Layout";
-
-interface Article {
-  title: string;
-  url: string;
-}
 
 interface Category {
   url: string;
   title: string;
   audience: string;
-  articles: Article[];
-}
-
-interface Meta {
-  title: string;
-  description: string;
-  canonical_url: string;
+  articles: ArticleLink[];
 }
 
 interface ArticlesIndexPageProps {
@@ -88,6 +78,13 @@ export default function HelpCenterIndex() {
         <title>{meta.title}</title>
         <meta name="description" content={meta.description} />
         <link rel="canonical" href={meta.canonical_url} />
+        <meta property="og:title" content={meta.title} />
+        <meta property="og:description" content={meta.description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={meta.canonical_url} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={meta.title} />
+        <meta name="twitter:description" content={meta.description} />
       </Head>
       <input
         type="text"
