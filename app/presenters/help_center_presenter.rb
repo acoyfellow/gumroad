@@ -85,20 +85,12 @@ class HelpCenterPresenter
       view_context.render(article)
     end
 
-    def article_meta(article, content)
+    def article_meta(article, _content)
       {
         title: "#{article.title} - Gumroad Help Center",
-        description: extract_description(content),
+        description: view_context.instance_variable_get(:@description) || "Help article: #{article.title}",
         canonical_url: help_center_article_url(article)
       }
-    end
-
-    def extract_description(html)
-      # Extract first paragraph text for meta description
-      doc = Nokogiri::HTML.fragment(html)
-      first_paragraph = doc.at_css("p")
-      text = first_paragraph ? first_paragraph.text : ActionView::Base.full_sanitizer.sanitize(html)
-      text.squish.truncate(160)
     end
 
     def category_meta(category)
