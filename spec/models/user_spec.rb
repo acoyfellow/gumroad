@@ -2484,6 +2484,11 @@ describe User, :vcr do
       expect(user.google_analytics_id).to eq "G-12345678"
     end
 
+    it "strips tiktok_pixel_id" do
+      user = create(:user, tiktok_pixel_id: " C7FH83AJC77UUUGLE2TJG ")
+      expect(user.tiktok_pixel_id).to eq "C7FH83AJC77UUUGLE2TJG"
+    end
+
     it "strips name" do
       user = create(:user, name: " Sally Smith ")
       expect(user.name).to eq "Sally Smith"

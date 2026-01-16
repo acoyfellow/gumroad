@@ -104,6 +104,7 @@
   <% third_party_analytics_enabled = !@disable_third_party_analytics && is_third_party_analytics_enabled?(seller: @user, logged_in_seller: @on_checkout_page ? nil : current_seller) %>
   <meta property="gr:google_analytics:enabled" content="<%= third_party_analytics_enabled.to_s %>">
   <meta property="gr:fb_pixel:enabled" content="<%= third_party_analytics_enabled.to_s %>">
+  <meta property="gr:tiktok_pixel:enabled" content="<%= third_party_analytics_enabled.to_s %>">
   <meta property="gr:logged_in_user:id" content="<%= logged_in_user.present? ? logged_in_user.external_id : "" %>">
   <meta property="gr:environment" value="<%= Rails.env %>">
   <meta property="gr:page:type" content="<%= @is_on_product_page ? "product" : "" %>">

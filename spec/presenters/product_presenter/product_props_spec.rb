@@ -162,6 +162,14 @@ describe ProductPresenter::ProductProps do
           )
         end
 
+        it "includes the TikTok pixel id in analytics data" do
+          seller.update!(tiktok_pixel_id: "C7FH83AJC77UUUGLE2TJG")
+
+          props = presenter.props(seller_custom_domain_url: nil, request:, pundit_user:, recommended_by: "discover")
+
+          expect(props[:product][:analytics]).to include(tiktok_pixel_id: "C7FH83AJC77UUUGLE2TJG")
+        end
+
         context "when the user has read-only access" do
           let(:support_for_seller) { create(:user, username: "supportforseller") }
           let(:pundit_user) { SellerContext.new(user: support_for_seller, seller:) }

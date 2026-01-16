@@ -2522,6 +2522,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_24_133549) do
     t.string "google_analytics_domains"
     t.string "recommendation_type", null: false
     t.string "facebook_pixel_id", limit: 191
+    t.string "tiktok_pixel_id"
     t.integer "split_payment_by_cents"
     t.datetime "last_active_sessions_invalidated_at", precision: nil
     t.string "otp_secret_key"

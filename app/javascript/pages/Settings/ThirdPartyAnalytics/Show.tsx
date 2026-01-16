@@ -135,6 +135,21 @@ export default function ThirdPartyAnalyticsPage() {
                   onChange={(evt) => updateThirdPartyAnalytics({ facebook_pixel_id: evt.target.value })}
                 />
               </fieldset>
+              <fieldset>
+                <legend>
+                  <label htmlFor={`${uid}tiktokPixel`}>TikTok pixel</label>
+                  <a href="/help/article/174-third-party-analytics" target="_blank" rel="noreferrer">
+                    Learn more
+                  </a>
+                </legend>
+                <input
+                  id={`${uid}tiktokPixel`}
+                  type="text"
+                  placeholder="C7FH83AJC77UUUGLE2TJG"
+                  value={thirdPartyAnalytics.tiktok_pixel_id}
+                  onChange={(evt) => updateThirdPartyAnalytics({ tiktok_pixel_id: evt.target.value })}
+                />
+              </fieldset>
               <label>
                 <input
                   type="checkbox"
