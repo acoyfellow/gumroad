@@ -56,6 +56,8 @@ type FormErrors = {
     price_range?: string[];
     base?: string[];
   };
+  'link.name'?: string | undefined;
+  'link.price_range'?: string | undefined;
 };
 
 type NewProductPageProps = {
@@ -212,9 +214,49 @@ const NewProductPage = () => {
     }
   };
 
+  const nameInputRef = React.useRef<HTMLInputElement>(null);
+  const priceInputRef = React.useRef<HTMLInputElement>(null);
+
+  const getClientErrors = (attribute: string) => {
+    return [
+      ...(errors[`link.${attribute}` as keyof FormErrors] ? [errors[`link.${attribute}` as keyof FormErrors]] : []),
+    ] as string[];
+  };
+
+  const getServerErrors = (attribute: string) => {
+    return errors.link?.[attribute as keyof typeof errors.link] ? [errors.link?.[attribute as keyof typeof errors.link]] : [];
+  };
+
+  const getErrors = (attribute: string) => [...getClientErrors(attribute), ...getServerErrors(attribute)] as string[];
+
   const saveProduct = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    form.post(Routes.links_path());
+
+    let hasErrors = false;
+    let hasFocused = false;
+    if (form.data.link.name.trim() === "") {
+      form.setError("link.name", "is required");
+      nameInputRef.current?.focus();
+      hasErrors = true;
+      hasFocused = true;
+    } else {
+      form.clearErrors("link.name");
+    }
+
+    if (form.data.link.price_range.trim() === "") {
+      form.setError("link.price_range", "is required");
+      if (!hasFocused) {
+        priceInputRef.current?.focus();
+        hasFocused = true;
+      }
+      hasErrors = true;
+    } else {
+      form.clearErrors("link.price_range");
+    }
+
+    if (!hasErrors) {
+      form.post(Routes.links_path());
+    }
   };
 
   return (
@@ -325,9 +367,10 @@ const NewProductPage = () => {
                   placeholder="Name of product"
                   value={form.data.link.name}
                   onChange={(e) => form.setData("link.name", e.target.value)}
-                  aria-invalid={!!errors.link?.name}
+                  aria-invalid={!!getErrors("name").length}
+                  ref={nameInputRef}
                 />
-                <Errors errors={errors.link?.name} label="Name" />
+                <Errors errors={getErrors("name")} label="Name" />
               </fieldset>
 
               <fieldset>
@@ -395,7 +438,8 @@ const NewProductPage = () => {
                       form.clearErrors("link.price_range");
                     }}
                     autoComplete="off"
-                    aria-invalid={!!errors.link?.price_range || !!errors.link?.base}
+                    aria-invalid={!!getErrors("price_range").length || !!getErrors("base").length}
+                    ref={priceInputRef}
                   />
 
                   {isRecurringBilling ? (
@@ -419,8 +463,8 @@ const NewProductPage = () => {
                     </Pill>
                   ) : null}
                 </div>
-                <Errors errors={errors.link?.price_range} label="Price" />
-                <Errors errors={errors.link?.base} label="" />
+                <Errors errors={getErrors("price_range")} label="Price" />
+                <Errors errors={getErrors("base")} label="" />
               </fieldset>
             </section>
           </form>

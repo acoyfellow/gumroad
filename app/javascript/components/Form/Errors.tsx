@@ -1,11 +1,11 @@
 import React from "react";
 
-type Props = {
+type ErrorsProps = {
   errors: string[] | undefined;
   label: string;
 };
 
-const Errors = ({ errors, label }: Props) =>
+const Errors = ({ errors, label }: ErrorsProps) =>
   errors &&
   errors.length > 0 && (
     <ul className="list-none pl-0 text-red">
