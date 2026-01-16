@@ -111,7 +111,7 @@ class LinksController < ApplicationController
 
     create_user_event("add_product")
     if ai_generated
-      redirect_to edit_link_path(@product, anchor: "ai-generated"), status: :see_other
+      redirect_to edit_link_path(@product, ai_generated: true), status: :see_other
     else
       redirect_to edit_link_path(@product), status: :see_other
     end
@@ -288,7 +288,8 @@ class LinksController < ApplicationController
 
     @title = @product.name
 
-    @presenter = ProductPresenter.new(product: @product, pundit_user:)
+    ai_generated = params[:ai_generated] == "true"
+    @presenter = ProductPresenter.new(product: @product, pundit_user:, ai_generated:)
   end
 
   def update
