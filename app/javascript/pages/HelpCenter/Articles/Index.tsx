@@ -5,7 +5,7 @@ import { cast } from "ts-safe-cast";
 import { ArticleLink, Meta } from "$app/components/HelpCenterPage/types";
 import { NavigationButtonInertia } from "$app/components/NavigationButton";
 
-import { HelpCenterLayout } from "./Layout";
+import { HelpCenterLayout } from "../Layout";
 
 interface Category {
   url: string;
