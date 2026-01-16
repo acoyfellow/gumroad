@@ -16,8 +16,8 @@ import {
 } from "$app/utils/recurringPricing";
 import { assertResponseError, request } from "$app/utils/request";
 
-import Errors from "$app/components/Admin/Form/Errors";
 import { Button } from "$app/components/Button";
+import Errors from "$app/components/Form/Errors";
 import { Icon } from "$app/components/Icons";
 import { Popover } from "$app/components/Popover";
 import { showAlert } from "$app/components/server-components/Alert";
