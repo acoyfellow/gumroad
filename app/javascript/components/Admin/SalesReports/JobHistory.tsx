@@ -43,7 +43,7 @@ const AdminSalesReportsJobHistory = ({ countries, sales_types, jobHistory, authe
     return map;
   }, [sales_types]);
 
-  if (jobHistory.length >= 0) {
+  if (jobHistory.length === 0) {
     return showNewSalesReportForm ? (
       <AdminSalesReportsForm
         countries={countries}
