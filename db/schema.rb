@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_11_24_133549) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_16_090000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name", limit: 191, null: false
     t.string "record_type", limit: 191, null: false
@@ -1234,6 +1234,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_24_133549) do
     t.integer "minimum_amount_cents"
     t.bigint "flags", default: 0, null: false
     t.index ["code", "link_id"], name: "index_offer_codes_on_code_and_link_id"
+    t.index ["created_at"], name: "index_offer_codes_on_created_at"
     t.index ["link_id"], name: "index_offer_codes_on_link_id"
     t.index ["name", "link_id"], name: "index_offer_codes_on_name_and_link_id", length: { name: 191 }
     t.index ["universal"], name: "index_offer_codes_on_universal"
@@ -2522,7 +2523,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_24_133549) do
     t.string "google_analytics_domains"
     t.string "recommendation_type", null: false
     t.string "facebook_pixel_id", limit: 191
-    t.string "tiktok_pixel_id"
     t.integer "split_payment_by_cents"
     t.datetime "last_active_sessions_invalidated_at", precision: nil
     t.string "otp_secret_key"
@@ -2532,6 +2532,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_24_133549) do
     t.string "notification_content_type", default: "application/x-www-form-urlencoded"
     t.string "google_uid"
     t.integer "purchasing_power_parity_limit"
+    t.string "tiktok_pixel_id"
     t.index ["account_created_ip"], name: "index_users_on_account_created_ip"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", length: 191
     t.index ["created_at"], name: "index_users_on_created_at"
