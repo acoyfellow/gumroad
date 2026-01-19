@@ -51,11 +51,7 @@ type NewProductFormData = {
 };
 
 type FormErrors = {
-  link?: {
-    name?: string[];
-    price_range?: string[];
-    base?: string[];
-  };
+  "link.base"?: string | undefined;
   "link.name"?: string | undefined;
   "link.price_range"?: string | undefined;
 };
@@ -217,24 +213,6 @@ const NewProductPage = () => {
   const nameInputRef = React.useRef<HTMLInputElement>(null);
   const priceInputRef = React.useRef<HTMLInputElement>(null);
 
-  type LinkErrorAttribute = "name" | "price_range" | "base";
-
-  const getClientErrors = (attribute: LinkErrorAttribute): string[] => {
-    const clientErrors = cast<Record<string, string | undefined>>(errors);
-    const clientError = clientErrors[`link.${attribute}`];
-    return clientError ? [clientError] : [];
-  };
-
-  const getServerErrors = (attribute: LinkErrorAttribute): string[] => {
-    const linkErrors = cast<Record<string, string[] | undefined>>(errors.link ?? {});
-    return linkErrors[attribute] ?? [];
-  };
-
-  const getErrors = (attribute: LinkErrorAttribute): string[] => [
-    ...getClientErrors(attribute),
-    ...getServerErrors(attribute),
-  ];
-
   const saveProduct = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -272,10 +250,12 @@ const NewProductPage = () => {
         title={show_orientation_text ? "Publish your first product" : "What are you creating?"}
         actions={
           <>
-            <Link href={Routes.products_path()} className="button">
-              <Icon name="x-square" />
-              <span>Cancel</span>
-            </Link>
+            <Button asChild>
+              <Link href={Routes.products_path()}>
+                <Icon name="x-square" />
+                <span>Cancel</span>
+              </Link>
+            </Button>
             {ai_generation_enabled ? (
               <Popover
                 open={aiPopoverOpen}
@@ -307,7 +287,7 @@ const NewProductPage = () => {
                     />
                   </fieldset>
                   <div className="mt-3 flex justify-end gap-2">
-                    <Button onClick={() => setAiPopoverOpen(false)} disabled={isGeneratingUsingAi}>
+                    <Button onClick={() => void setAiPopoverOpen(false)} disabled={isGeneratingUsingAi}>
                       Cancel
                     </Button>
                     <Button
@@ -362,7 +342,7 @@ const NewProductPage = () => {
                 </Alert>
               ) : null}
 
-              <fieldset className={cx({ danger: errors.link?.name })}>
+              <fieldset className={cx({ danger: !!errors["link.name"] })}>
                 <legend>
                   <label htmlFor={`name-${formUID}`}>Name</label>
                 </legend>
@@ -373,10 +353,10 @@ const NewProductPage = () => {
                   placeholder="Name of product"
                   value={form.data.link.name}
                   onChange={(e) => form.setData("link.name", e.target.value)}
-                  aria-invalid={!!getErrors("name").length}
+                  aria-invalid={!!errors["link.name"]}
                   ref={nameInputRef}
                 />
-                <Errors errors={getErrors("name")} label="Name" />
+                <Errors errors={errors["link.name"]} label="Name" />
               </fieldset>
 
               <fieldset>
@@ -399,7 +379,7 @@ const NewProductPage = () => {
                 </fieldset>
               ) : null}
 
-              <fieldset className={cx({ danger: errors.link?.price_range || errors.link?.base })}>
+              <fieldset className={cx({ danger: !!errors["link.price_range"] || !!errors["link.base"] })}>
                 <legend>
                   <label htmlFor={`price-${formUID}`}>
                     {form.data.link.native_type === "coffee" ? "Suggested amount" : "Price"}
@@ -444,7 +424,7 @@ const NewProductPage = () => {
                       form.clearErrors("link.price_range");
                     }}
                     autoComplete="off"
-                    aria-invalid={!!getErrors("price_range").length || !!getErrors("base").length}
+                    aria-invalid={!!errors["link.price_range"] || !!errors["link.base"]}
                     ref={priceInputRef}
                   />
 
@@ -469,8 +449,8 @@ const NewProductPage = () => {
                     </Pill>
                   ) : null}
                 </div>
-                <Errors errors={getErrors("price_range")} label="Price" />
-                <Errors errors={getErrors("base")} label="" />
+                <Errors errors={errors["link.price_range"]} label="Price" />
+                <Errors errors={errors["link.base"]} label="" />
               </fieldset>
             </section>
           </form>
