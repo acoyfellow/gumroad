@@ -230,17 +230,8 @@ const CustomersPage = ({
     debouncedReloadCustomers();
   }, [query, includedItems, excludedItems]);
 
-  const [from, setFrom] = React.useState(() =>
-    createdAfter ? new Date(createdAfter) : subMonths(new Date(), 1)
-  );
-  const [to, setTo] = React.useState(() =>
-    createdBefore ? new Date(createdBefore) : new Date()
-  );
-
-  React.useEffect(() => {
-    if (createdAfter) setFrom(new Date(createdAfter));
-    if (createdBefore) setTo(new Date(createdBefore));
-  }, [createdAfter, createdBefore]);
+  const [from, setFrom] = React.useState(subMonths(new Date(), 1));
+  const [to, setTo] = React.useState(new Date());
 
   const exportNames = React.useMemo(
     () =>
