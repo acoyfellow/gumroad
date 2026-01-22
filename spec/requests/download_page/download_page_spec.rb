@@ -1021,16 +1021,16 @@ describe("Download Page", type: :system, js: true) do
     end
 
     context "with custom domain" do
+      let(:custom_domain) { create(:custom_domain, user: product.user, domain: "test-custom-domain.gumroad.com") }
+      let(:port) { Capybara.current_session.server.port }
+      let(:custom_domain_download_url) { "http://#{custom_domain.domain}:#{port}/d/#{url_redirect.token}" }
+
       before do
         allow(Resolv::DNS).to receive_message_chain(:new, :getresources).and_return([double(name: "domains.gumroad.com")])
-        custom_domain = CustomDomain.new(user: product.user, domain: "test-custom-domain.gumroad.com")
-        custom_domain.save!
+        custom_domain # trigger creation
       end
 
       it "remembers the last visited page when buyer returns via custom domain" do
-        port = Capybara.current_session.server.port
-        custom_domain_download_url = "http://test-custom-domain.gumroad.com:#{port}/d/#{url_redirect.token}"
-
         visit custom_domain_download_url
 
         expect(page).to have_text("Content for page 1")
