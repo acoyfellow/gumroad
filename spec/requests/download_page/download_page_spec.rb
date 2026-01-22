@@ -1019,5 +1019,34 @@ describe("Download Page", type: :system, js: true) do
       expect(page).to have_text("Content for page 3")
       expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 3")
     end
+
+    context "with custom domain" do
+      before do
+        allow(Resolv::DNS).to receive_message_chain(:new, :getresources).and_return([double(name: "domains.gumroad.com")])
+        custom_domain = CustomDomain.new(user: product.user, domain: "test-custom-domain.gumroad.com")
+        custom_domain.save!
+      end
+
+      it "remembers the last visited page when buyer returns via custom domain" do
+        port = Capybara.current_session.server.port
+        custom_domain_download_url = "http://test-custom-domain.gumroad.com:#{port}/d/#{url_redirect.token}"
+
+        visit custom_domain_download_url
+
+        expect(page).to have_text("Content for page 1")
+        expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 1")
+
+        click_on "Page 2"
+        wait_for_ajax
+
+        expect(page).to have_text("Content for page 2")
+        expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 2")
+
+        visit custom_domain_download_url
+
+        expect(page).to have_text("Content for page 2")
+        expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 2")
+      end
+    end
   end
 end

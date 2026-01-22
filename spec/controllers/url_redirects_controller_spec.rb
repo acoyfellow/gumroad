@@ -1820,6 +1820,34 @@ describe UrlRedirectsController do
         expect(response).to be_successful
         expect(response.parsed_body).to eq("success" => true)
       end
+
+      context "when access is revoked for purchase" do
+        before do
+          purchase.update!(is_access_revoked: true)
+        end
+
+        it "redirects to expired page" do
+          post "/r/#{url_redirect.token}/save_last_content_page",
+               params: { page_id: "page_123" },
+               headers: { "HOST" => custom_domain.domain }
+
+          expect(response).to redirect_to(url_redirect_expired_page_path(id: url_redirect.token))
+        end
+      end
+
+      context "when purchase is refunded" do
+        before do
+          purchase.update!(stripe_refunded: true)
+        end
+
+        it "returns 404" do
+          post "/r/#{url_redirect.token}/save_last_content_page",
+               params: { page_id: "page_123" },
+               headers: { "HOST" => custom_domain.domain }
+
+          expect(response).to have_http_status(:not_found)
+        end
+      end
     end
   end
 end
