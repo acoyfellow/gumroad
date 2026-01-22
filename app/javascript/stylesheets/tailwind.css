@@ -48,10 +48,9 @@
   --color-success-foreground: rgb(var(--contrast-success));
   --color-danger: rgb(var(--danger));
   --color-danger-foreground: rgb(var(--contrast-danger));
-  --color-primary: rgb(var(--primary));
-  --color-primary-foreground: rgb(var(--contrast-primary));
   --color-warning: rgb(var(--warning));
   --color-warning-foreground: rgb(var(--contrast-warning));
+  --color-info: rgb(var(--info));
 
   --shadow: 0.25rem 0.25rem 0 currentColor;
   --shadow-lg: 0.5rem 0.5rem 0 currentColor;
@@ -60,6 +59,7 @@
   --grid-cols-sidebar: 1fr 3fr;
 
   --loading-spinner: url("~images/loading-rainbow.svg");
+  --product-cover-placeholder: url("~images/placeholders/product-cover.png");
 }
 
 @layer base {
@@ -70,6 +70,13 @@
     * {
       border-color: var(--color-border);
     }
+  }
+}
+
+@utility all-unset {
+  /* Ensure low precedence so it doesn't override other styles */
+  :where(&) {
+    all: unset;
   }
 }
 

@@ -27,7 +27,8 @@ import { RichTextEditor } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
 import { Toggle } from "$app/components/Toggle";
-import Placeholder from "$app/components/ui/Placeholder";
+import { Alert } from "$app/components/ui/Alert";
+import { Placeholder } from "$app/components/ui/Placeholder";
 import { Row, RowActions, RowContent, RowDetails, Rows } from "$app/components/ui/Rows";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 import { useRunOnce } from "$app/components/useRunOnce";
@@ -288,9 +289,7 @@ const TierEditor = ({
               ))}
             </fieldset>
             {allEnabledPricesAreZero ? (
-              <div role="alert" className="info">
-                Free tiers require a pay what they want price.
-              </div>
+              <Alert variant="info">Free tiers require a pay what they want price.</Alert>
             ) : null}
             <Details
               summary={
@@ -451,9 +450,9 @@ You can modify or cancel your membership at any time.`;
       <div className="dropdown">
         <div className="grid gap-6">
           {initialEffectiveDate ? (
-            <div role="alert" className="warning">
+            <Alert variant="warning">
               You have scheduled a pricing update for existing customers on {format(initialEffectiveDate, "MMMM d, y")}
-            </div>
+            </Alert>
           ) : null}
           <div>
             <strong>
@@ -462,7 +461,7 @@ You can modify or cancel your membership at any time.`;
             </strong>{" "}
             <button
               type="button"
-              className="underline"
+              className="cursor-pointer underline all-unset"
               onClick={() =>
                 void sendSamplePriceChangeEmail({
                   productPermalink: uniquePermalink,

@@ -10,6 +10,7 @@ import { useProductEditContext } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { Toggle } from "$app/components/Toggle";
+import { Alert } from "$app/components/ui/Alert";
 
 export type DiscordIntegration = {
   keep_inactive_members: boolean;
@@ -66,7 +67,7 @@ export const DiscordIntegrationEditor = ({
           ) : !integration ? (
             <div>
               <Button
-                className="button-discord"
+                color="discord"
                 onClick={() => {
                   setIsLoading(true);
                   const oauthPopup = window.open(getDiscordUrl(), "discord", "popup=yes");
@@ -97,6 +98,7 @@ export const DiscordIntegrationEditor = ({
                   });
                 }}
               >
+                <span className="brand-icon brand-icon-discord" />
                 Connect to Discord
               </Button>
             </div>
@@ -122,11 +124,11 @@ export const DiscordIntegrationEditor = ({
               {product.variants.length > 0 ? (
                 <>
                   {product.variants.every(({ integrations }) => !integrations.discord) ? (
-                    <div role="status" className="warning">
+                    <Alert role="status" variant="warning">
                       {product.native_type === "membership"
                         ? "Your integration is not assigned to any tier. Check your tiers' settings."
                         : "Your integration is not assigned to any version. Check your versions' settings."}
-                    </div>
+                    </Alert>
                   ) : null}
                   <Toggle
                     value={product.variants.every(({ integrations }) => integrations.discord)}

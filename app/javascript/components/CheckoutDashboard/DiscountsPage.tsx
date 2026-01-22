@@ -16,7 +16,7 @@ import { asyncVoid } from "$app/utils/promise";
 import { AbortError, assertResponseError } from "$app/utils/request";
 import { writeQueryParams } from "$app/utils/url";
 
-import { Button } from "$app/components/Button";
+import { Button, buttonVariants } from "$app/components/Button";
 import { DiscountInput, InputtedDiscount } from "$app/components/CheckoutDashboard/DiscountInput";
 import { Layout, Page } from "$app/components/CheckoutDashboard/Layout";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
@@ -33,9 +33,11 @@ import { Select, Option } from "$app/components/Select";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Skeleton } from "$app/components/Skeleton";
 import { TypeSafeOptionSelect } from "$app/components/TypeSafeOptionSelect";
+import { Alert } from "$app/components/ui/Alert";
+import { Card, CardContent } from "$app/components/ui/Card";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Pill } from "$app/components/ui/Pill";
-import Placeholder from "$app/components/ui/Placeholder";
+import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
 import { Sheet, SheetHeader } from "$app/components/ui/Sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
@@ -43,6 +45,7 @@ import { useGlobalEventListener } from "$app/components/useGlobalEventListener";
 import { useOriginalLocation } from "$app/components/useOriginalLocation";
 import { useUserAgentInfo } from "$app/components/UserAgent";
 import { useSortingTableDriver, Sort } from "$app/components/useSortingTableDriver";
+import { WithTooltip } from "$app/components/WithTooltip";
 
 import blackFridayIllustration from "$assets/images/illustrations/black_friday.svg";
 import placeholder from "$assets/images/placeholders/discounts.png";
@@ -305,9 +308,11 @@ const DiscountsPage = ({
               onToggle={setIsSearchPopoverOpen}
               aria-label="Search"
               trigger={
-                <div className="button">
-                  <Icon name="solid-search" />
-                </div>
+                <WithTooltip tip="Search" position="bottom">
+                  <div className={buttonVariants({ size: "default" })}>
+                    <Icon name="solid-search" />
+                  </div>
+                </WithTooltip>
               }
             >
               <div className="input">
@@ -342,18 +347,16 @@ const DiscountsPage = ({
     >
       <section className="p-4 md:p-8">
         {show_black_friday_banner && !offerCodes.some((offerCode) => offerCode.code === black_friday_code) ? (
-          <div role="status" className="mb-8 border !border-pink bg-pink/20 px-4 py-3 md:px-8">
-            <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-              <div className="flex flex-1 flex-row items-center gap-2 md:gap-4">
-                <img src={blackFridayIllustration} alt="Black Friday" className="h-12 w-12 shrink-0" />
-                <div className="flex-1 text-sm md:text-base">
-                  <span className="font-bold">Black Friday is here!</span> Be part of it on Discover. Join Black Friday
-                  Deals to create your discount and get featured.
-                </div>
+          <Alert className="mb-8" role="status" variant="accent">
+            <div className="flex items-center gap-4">
+              <img src={blackFridayIllustration} alt="Black Friday" className="size-12" />
+              <div className="flex-1 text-sm md:text-base">
+                <span className="font-bold">Black Friday is here!</span> Be part of it on Discover. Join Black Friday
+                Deals to create your discount and get featured.
               </div>
               <Button
                 color="primary"
-                className="mt-2 shrink-0 md:mt-0"
+                className="w-max"
                 onClick={() => {
                   setIsBlackFridayMode(true);
                   setSelectedOfferCodeId(null);
@@ -363,7 +366,7 @@ const DiscountsPage = ({
                 Join Black Friday Deals
               </Button>
             </div>
-          </div>
+          </Alert>
         ) : null}
         {offerCodes.length > 0 ? (
           <section className="flex flex-col gap-4">
@@ -445,7 +448,7 @@ const DiscountsPage = ({
                             onToggle={(open) => setPopoverOfferCodeId(open ? offerCode.id : null)}
                             aria-label="Open discount action menu"
                             trigger={
-                              <div className="button">
+                              <div className={buttonVariants({ size: "default" })}>
                                 <Icon name="three-dots" />
                               </div>
                             }
@@ -501,9 +504,7 @@ const DiscountsPage = ({
           </section>
         ) : (
           <Placeholder>
-            <figure>
-              <img src={placeholder} />
-            </figure>
+            <PlaceholderImage src={placeholder} />
             <div>
               <h2>No discounts yet</h2>
               <p>Use discounts to create sweet deals for your customers</p>
@@ -518,92 +519,102 @@ const DiscountsPage = ({
         {selectedOfferCode ? (
           <Sheet open onOpenChange={() => setSelectedOfferCodeId(null)}>
             <SheetHeader>{selectedOfferCode.name || selectedOfferCode.code.toUpperCase()}</SheetHeader>
-            <section className="stack">
-              <h3>Details</h3>
-              <div>
-                <h5>Code</h5>
-                <Pill size="small">{selectedOfferCode.code.toUpperCase()}</Pill>
-              </div>
-              <div>
-                <h5>Discount</h5>
-                {formatAmount(selectedOfferCode)}
-              </div>
-              {selectedOfferCodeStatistics != null ? (
-                <>
-                  <div>
-                    <h5>Uses</h5>
-                    {formatUses(selectedOfferCodeStatistics.uses.total, selectedOfferCode.limit)}
-                  </div>
-                  <div>
-                    <h5>Revenue</h5>
-                    {formatRevenue(selectedOfferCodeStatistics.revenue_cents)}
-                  </div>
-                </>
-              ) : null}
-              {selectedOfferCode.valid_at ? (
-                <div>
-                  <h5>Start date</h5>
-                  {formatDateTime(new Date(selectedOfferCode.valid_at))}
-                </div>
-              ) : null}
-              {selectedOfferCode.expires_at ? (
-                <div>
-                  <h5>End date</h5>
-                  {formatDateTime(new Date(selectedOfferCode.expires_at))}
-                </div>
-              ) : null}
-              {selectedOfferCode.minimum_quantity !== null ? (
-                <div>
-                  <h5>Minimum quantity</h5>
-                  {selectedOfferCode.minimum_quantity}
-                </div>
-              ) : null}
-              {(selectedOfferCode.products ?? products).some(({ is_tiered_membership }) => is_tiered_membership) ? (
-                <div>
-                  <h5>Discount duration for memberships</h5>
-                  {selectedOfferCode.duration_in_billing_cycles === 1 ? "Once (first billing period only)" : "Forever"}
-                </div>
-              ) : null}
-              {selectedOfferCode.minimum_amount_cents !== null ? (
-                <div>
-                  <h5>Minimum amount</h5>
-                  {formatPriceCentsWithCurrencySymbol(
-                    selectedOfferCode.currency_type,
-                    selectedOfferCode.minimum_amount_cents,
-                    {
-                      symbolFormat: "short",
-                    },
-                  )}
-                </div>
-              ) : null}
-            </section>
-            {selectedOfferCode.products ? (
-              <section className="stack">
-                <h3>Products</h3>
-                {selectedOfferCode.products.map((product) => {
-                  const uses =
-                    selectedOfferCodeStatistics != null
-                      ? (selectedOfferCodeStatistics.uses.products[product.id] ?? 0)
-                      : null;
-                  return (
-                    <div key={product.id} className="grid grid-cols-[1fr_auto] gap-2">
-                      <div>
-                        <h5>{product.name}</h5>
-                        {uses != null ? `${uses} ${uses === 1 ? "use" : "uses"}` : null}
-                      </div>
-                      <CopyToClipboard
-                        tooltipPosition="bottom"
-                        copyTooltip="Copy link with discount"
-                        text={`${product.url}/${selectedOfferCode.code}`}
-                      >
-                        <Button aria-label="Copy link with discount">
-                          <Icon name="link" />
-                        </Button>
-                      </CopyToClipboard>
-                    </div>
-                  );
-                })}
+            <Card asChild>
+              <section>
+                <CardContent asChild>
+                  <h3>Details</h3>
+                </CardContent>
+                <CardContent>
+                  <h5 className="grow font-bold">Code</h5>
+                  <Pill size="small">{selectedOfferCode.code.toUpperCase()}</Pill>
+                </CardContent>
+                <CardContent>
+                  <h5 className="grow font-bold">Discount</h5>
+                  {formatAmount(selectedOfferCode)}
+                </CardContent>
+                {selectedOfferCodeStatistics != null ? (
+                  <>
+                    <CardContent>
+                      <h5 className="grow font-bold">Uses</h5>
+                      {formatUses(selectedOfferCodeStatistics.uses.total, selectedOfferCode.limit)}
+                    </CardContent>
+                    <CardContent>
+                      <h5 className="grow font-bold">Revenue</h5>
+                      {formatRevenue(selectedOfferCodeStatistics.revenue_cents)}
+                    </CardContent>
+                  </>
+                ) : null}
+                {selectedOfferCode.valid_at ? (
+                  <CardContent>
+                    <h5 className="grow font-bold">Start date</h5>
+                    {formatDateTime(new Date(selectedOfferCode.valid_at))}
+                  </CardContent>
+                ) : null}
+                {selectedOfferCode.expires_at ? (
+                  <CardContent>
+                    <h5 className="grow font-bold">End date</h5>
+                    {formatDateTime(new Date(selectedOfferCode.expires_at))}
+                  </CardContent>
+                ) : null}
+                {selectedOfferCode.minimum_quantity !== null ? (
+                  <CardContent>
+                    <h5 className="grow font-bold">Minimum quantity</h5>
+                    {selectedOfferCode.minimum_quantity}
+                  </CardContent>
+                ) : null}
+                {(selectedOfferCode.products ?? products).some(({ is_tiered_membership }) => is_tiered_membership) ? (
+                  <CardContent>
+                    <h5 className="grow font-bold">Discount duration for memberships</h5>
+                    {selectedOfferCode.duration_in_billing_cycles === 1
+                      ? "Once (first billing period only)"
+                      : "Forever"}
+                  </CardContent>
+                ) : null}
+                {selectedOfferCode.minimum_amount_cents !== null ? (
+                  <CardContent>
+                    <h5 className="grow font-bold">Minimum amount</h5>
+                    {formatPriceCentsWithCurrencySymbol(
+                      selectedOfferCode.currency_type,
+                      selectedOfferCode.minimum_amount_cents,
+                      {
+                        symbolFormat: "short",
+                      },
+                    )}
+                  </CardContent>
+                ) : null}
               </section>
+            </Card>
+            {selectedOfferCode.products ? (
+              <Card asChild>
+                <section>
+                  <CardContent asChild>
+                    <h3>Products</h3>
+                  </CardContent>
+                  {selectedOfferCode.products.map((product) => {
+                    const uses =
+                      selectedOfferCodeStatistics != null
+                        ? (selectedOfferCodeStatistics.uses.products[product.id] ?? 0)
+                        : null;
+                    return (
+                      <CardContent key={product.id} className="grid grid-cols-[1fr_auto] gap-2">
+                        <div className="grow">
+                          <h5 className="font-bold">{product.name}</h5>
+                          {uses != null ? `${uses} ${uses === 1 ? "use" : "uses"}` : null}
+                        </div>
+                        <CopyToClipboard
+                          tooltipPosition="bottom"
+                          copyTooltip="Copy link with discount"
+                          text={`${product.url}/${selectedOfferCode.code}`}
+                        >
+                          <Button aria-label="Copy link with discount">
+                            <Icon name="link" />
+                          </Button>
+                        </CopyToClipboard>
+                      </CardContent>
+                    );
+                  })}
+                </section>
+              </Card>
             ) : null}
             <section className="grid auto-cols-fr grid-flow-row gap-4 sm:grid-flow-col">
               <Button onClick={() => setView("create")} disabled={!selectedOfferCode.can_update || isLoading}>
@@ -939,9 +950,9 @@ const Form = ({
               </Button>
             </div>
             {isBlackFridayMode ? (
-              <div role="alert" className="info" style={{ marginTop: "var(--spacer-2)" }}>
+              <Alert className="mt-2" variant="info">
                 By using this discount, your product will be featured in Black Friday Deals on Discover.
-              </div>
+              </Alert>
             ) : null}
           </fieldset>
           <fieldset className={cx({ danger: selectedProductIds.error })}>

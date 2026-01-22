@@ -240,6 +240,9 @@ describe ProductPresenter do
       product.save_custom_button_text_option("pay_prompt")
       product.save_custom_summary("To summarize, I am a product.")
       product.save_custom_attributes({ "Detail 1" => "Value 1" })
+      product.custom_view_content_button_text = "Download Files"
+      product.custom_receipt_text = "Thank you for purchasing! Feel free to contact us any time for support."
+      product.save
       product.user.reload
     end
 
@@ -254,8 +257,13 @@ describe ProductPresenter do
             **ProductPresenter::InstallmentPlanProps.new(product: presenter.product).props,
             customizable_price: true,
             suggested_price_cents: 200,
+            default_offer_code: nil,
             custom_button_text_option: "pay_prompt",
             custom_summary: "To summarize, I am a product.",
+            custom_view_content_button_text: "Download Files",
+            custom_view_content_button_text_max_length: 26,
+            custom_receipt_text: "Thank you for purchasing! Feel free to contact us any time for support.",
+            custom_receipt_text_max_length: 500,
             custom_attributes: { "Detail 1" => "Value 1" },
             file_attributes: [
               {
@@ -370,6 +378,7 @@ describe ProductPresenter do
             native_type: "ebook",
             require_shipping: false,
             cancellation_discount: nil,
+            default_offer_code: nil,
             public_files: [],
             audio_previews_enabled: false,
             community_chat_enabled: nil,
@@ -424,8 +433,28 @@ describe ProductPresenter do
             fine_print: nil,
           },
           cancellation_discounts_enabled: false,
+          ai_generated: false,
         }
       )
+    end
+
+    context "with default offer code" do
+      let(:offer_code) { create(:offer_code, user: product.user, products: [product], code: "DEFAULT10", amount_percentage: 10) }
+
+      before do
+        product.update!(default_offer_code: offer_code)
+      end
+
+      it "includes default_offer_code with id in edit_props" do
+        expect(presenter.edit_props[:product][:default_offer_code][:id]).to eq(offer_code.external_id)
+      end
+
+      it "includes default_offer_code in product data" do
+        default_offer_code = presenter.edit_props[:product][:default_offer_code]
+        expect(default_offer_code).to be_a(Hash)
+        expect(default_offer_code[:id]).to eq(offer_code.external_id)
+        expect(default_offer_code[:code]).to eq(offer_code.code)
+      end
     end
 
     context "membership" do
@@ -476,8 +505,13 @@ describe ProductPresenter do
               **ProductPresenter::InstallmentPlanProps.new(product: presenter.product).props,
               customizable_price: false,
               suggested_price_cents: nil,
+              default_offer_code: nil,
               custom_button_text_option: nil,
               custom_summary: nil,
+              custom_view_content_button_text: nil,
+              custom_view_content_button_text_max_length: 26,
+              custom_receipt_text: nil,
+              custom_receipt_text_max_length: 500,
               custom_attributes: [],
               file_attributes: [],
               max_purchase_count: nil,
@@ -594,6 +628,7 @@ describe ProductPresenter do
                 },
                 duration_in_billing_cycles: 3
               },
+              default_offer_code: nil,
               public_files: [],
               audio_previews_enabled: false,
               community_chat_enabled: nil,
@@ -630,6 +665,7 @@ describe ProductPresenter do
               fine_print: nil,
             },
             cancellation_discounts_enabled: true,
+            ai_generated: false,
           }
         )
       end
@@ -724,8 +760,13 @@ describe ProductPresenter do
               **ProductPresenter::InstallmentPlanProps.new(product: presenter.product).props,
               customizable_price: false,
               suggested_price_cents: nil,
+              default_offer_code: nil,
               custom_button_text_option: nil,
               custom_summary: nil,
+              custom_view_content_button_text: nil,
+              custom_view_content_button_text_max_length: 26,
+              custom_receipt_text: nil,
+              custom_receipt_text_max_length: 500,
               custom_attributes: [],
               file_attributes: [],
               max_purchase_count: nil,
@@ -798,6 +839,7 @@ describe ProductPresenter do
               native_type: "digital",
               require_shipping: false,
               cancellation_discount: nil,
+              default_offer_code: nil,
               public_files: [],
               audio_previews_enabled: false,
               community_chat_enabled: nil,
@@ -834,6 +876,7 @@ describe ProductPresenter do
               fine_print: nil,
             },
             cancellation_discounts_enabled: false,
+            ai_generated: false,
           }
         )
       end

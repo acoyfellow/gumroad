@@ -10,6 +10,8 @@ import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useDomains, useDiscoverUrl } from "$app/components/DomainSettings";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
+import { Alert } from "$app/components/ui/Alert";
+import { Card, CardContent } from "$app/components/ui/Card";
 import { Pill } from "$app/components/ui/Pill";
 
 const DiscoverLinkSection = ({
@@ -112,9 +114,9 @@ const LinkGenerationSection = ({
           </Pill>
         </div>
         {hasError ? (
-          <div role="alert" className={cx({ danger: hasError })}>
+          <Alert variant="danger">
             Invalid URL. Make sure your URL is a Gumroad URL and starts with "http" or "https".
-          </div>
+          </Alert>
         ) : null}
       </fieldset>
       <fieldset>
@@ -230,9 +232,9 @@ const ProductEligibilitySection = ({
       </fieldset>
       {result.isLoading ? <LoadingSpinner /> : null}
       {result.product ? (
-        <div className="stack">
-          <div>
-            <a href={result.product.short_url} target="_blank" rel="noreferrer">
+        <Card>
+          <CardContent>
+            <a href={result.product.short_url} target="_blank" rel="noreferrer" className="grow">
               {result.product.name}
             </a>
             <span>{result.product.formatted_price}</span>
@@ -242,14 +244,10 @@ const ProductEligibilitySection = ({
                 Copy link
               </Button>
             </CopyToClipboard>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       ) : null}
-      {result.error ? (
-        <div role="alert" className={result.error.type}>
-          {result.error.message}
-        </div>
-      ) : null}
+      {result.error ? <Alert variant={result.error.type}>{result.error.message}</Alert> : null}
     </section>
   );
 };

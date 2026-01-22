@@ -133,7 +133,7 @@ export const Nav = ({ title, children, footer }: Props) => {
             <span className="logo-g" />
           </a>
           <h1 className="w-full truncate text-center text-base">{title}</h1>
-          <button aria-label="Toggle navigation" onClick={toggle}>
+          <button className="all-unset" aria-label="Toggle navigation" onClick={toggle}>
             <Icon name={open ? "x" : "outline-menu"} />
           </button>
         </div>
@@ -205,13 +205,13 @@ export const NavLinkDropdownMembershipItem = ({ teamMembership }: { teamMembersh
       href={Routes.sellers_switch_path()}
       onClick={onClick}
       aria-checked={teamMembership.is_selected}
-      className="flex items-center gap-2"
+      className="flex! min-w-0 items-center gap-2"
     >
-      <img className="user-avatar" src={teamMembership.seller_avatar_url} alt={teamMembership.seller_name} />
-      <span title={teamMembership.seller_name}>{teamMembership.seller_name}</span>
-      {teamMembership.is_selected ? (
-        <Icon name="solid-check-circle" className="float-right mr-3 ml-auto h-5 text-accent" />
-      ) : null}
+      <img className="user-avatar shrink-0" src={teamMembership.seller_avatar_url} alt={teamMembership.seller_name} />
+      <span className="min-w-0 flex-1 truncate" title={teamMembership.seller_name}>
+        {teamMembership.seller_name}
+      </span>
+      {teamMembership.is_selected ? <Icon name="solid-check-circle" className="h-5 shrink-0 text-accent" /> : null}
     </a>
   );
 };
