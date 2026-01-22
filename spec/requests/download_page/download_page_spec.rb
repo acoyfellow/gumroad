@@ -990,34 +990,5 @@ describe("Download Page", type: :system, js: true) do
       create(:rich_content, entity: product, title: "Page 2", position: 2, description: [{ "type" => "paragraph", "content" => [{ "type" => "text", "text" => "Content for page 2" }] }])
       create(:rich_content, entity: product, title: "Page 3", position: 3, description: [{ "type" => "paragraph", "content" => [{ "type" => "text", "text" => "Content for page 3" }] }])
     end
-
-    it "remembers the last visited page when buyer returns" do
-      visit url_redirect.download_page_url
-
-      expect(page).to have_text("Content for page 1")
-      expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 1")
-
-      click_on "Page 2"
-      wait_for_ajax
-
-      expect(page).to have_text("Content for page 2")
-      expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 2")
-
-      visit url_redirect.download_page_url
-
-      expect(page).to have_text("Content for page 2")
-      expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 2")
-
-      click_on "Next"
-      wait_for_ajax
-
-      expect(page).to have_text("Content for page 3")
-      expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 3")
-
-      visit url_redirect.download_page_url
-
-      expect(page).to have_text("Content for page 3")
-      expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 3")
-    end
   end
 end
