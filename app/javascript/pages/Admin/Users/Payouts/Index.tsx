@@ -1,10 +1,10 @@
 import { usePage, router } from "@inertiajs/react";
 import React from "react";
 
-import AdminEmptyState from "$app/components/Admin/EmptyState";
 import AdminPayouts from "$app/components/Admin/Payouts";
 import { type Payout } from "$app/components/Admin/Payouts/Payout";
 import { Pagination, PaginationProps } from "$app/components/Pagination";
+import EmptyState from "$app/components/ui/EmptyState";
 
 type PageProps = {
   payouts: Payout[];
@@ -19,7 +19,7 @@ const Index = () => {
   };
 
   if (payouts.length === 0 && pagination.page === 1) {
-    return <AdminEmptyState message="No payouts found." />;
+    return <EmptyState message="No payouts found." />;
   }
 
   return (

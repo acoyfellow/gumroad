@@ -1,30 +1,31 @@
+import { Channel } from "@anycable/web";
+import { router, usePage } from "@inertiajs/react";
 import { DirectUpload, Blob } from "@rails/activestorage";
 import cx from "classnames";
 import { lightFormat, subMonths } from "date-fns";
 import { format } from "date-fns-tz";
 import * as React from "react";
+import { cast, is } from "ts-safe-cast";
 
+import cable from "$app/channels/consumer";
 import {
   Address,
   Customer,
   CustomerEmail,
   Discount,
   License,
-  MissedPost,
   Query,
   Charge,
   SortKey,
   Tracking,
   cancelSubscription,
   changeCanContact,
-  getCustomerEmails,
-  getMissedPosts,
   getPagedCustomers,
-  getProductPurchases,
   markShipped,
   resendPing,
   refund,
   resendPost,
+  resendPosts,
   resendReceipt,
   updateLicense,
   updatePurchase,
@@ -79,6 +80,7 @@ import { showAlert } from "$app/components/server-components/Alert";
 import { Toggle } from "$app/components/Toggle";
 import { Alert } from "$app/components/ui/Alert";
 import { Card, CardContent } from "$app/components/ui/Card";
+import EmptyState from "$app/components/ui/EmptyState";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Pill } from "$app/components/ui/Pill";
 import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
@@ -96,19 +98,35 @@ import placeholder from "$assets/images/placeholders/customers.png";
 
 type Product = { id: string; name: string; variants: { id: string; name: string }[] };
 
+type MissedPost = { id: string; name: string; url: string; published_at: string };
+
+type Workflow = { id: string; label: string };
+
+type IncomingCustomersChannelMessage = {
+  type: "missed_posts_job_complete" | "missed_posts_job_failed";
+  purchase_id: string;
+  workflow_id?: string;
+  message: string;
+};
+
 export type CustomerPageProps = {
   customers: Customer[];
+  customer_emails?: CustomerEmail[];
+  missed_posts?: MissedPost[];
   pagination: PaginationProps | null;
   product_id: string | null;
   products: Product[];
+  product_purchases?: Customer[];
   count: number;
   currency_type: CurrencyCode;
   countries: string[];
   can_ping: boolean;
   show_refund_fee_notice: boolean;
+  workflows?: Workflow[];
 };
 
 const year = new Date().getFullYear();
+const CUSTOMERS_CHANNEL_NAME = "CustomersChannel";
 
 const formatPrice = (priceCents: number, currencyType: CurrencyCode, recurrence?: RecurrenceId | null) =>
   `${formatPriceCentsWithCurrencySymbol(currencyType, priceCents, { symbolFormat: "long" })}${
@@ -145,6 +163,7 @@ const CustomersPage = ({
       customers: prev.customers.map((customer) => (customer.id === id ? { ...customer, ...update } : customer)),
     }));
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoadingPurchaseData, setIsLoadingPurchaseData] = React.useState(false);
   const activeRequest = React.useRef<{ cancel: () => void } | null>(null);
 
   const uid = React.useId();
@@ -186,6 +205,27 @@ const CustomersPage = ({
 
   const [selectedCustomerId, setSelectedCustomerId] = React.useState<string | null>(null);
   const selectedCustomer = customers.find(({ id }) => id === selectedCustomerId);
+  const customersChannelRef = React.useRef<Channel | null>(null);
+  const missedPostsJobsInProcessRef = React.useRef<Set<string>>(new Set());
+
+  React.useEffect(
+    () => () => {
+      customersChannelRef.current?.disconnect();
+      customersChannelRef.current = null;
+    },
+    [],
+  );
+
+  const fetchAndDisplayCustomerDrawerData = (customerId: string) => {
+    router.reload({
+      data: { purchase_id: customerId },
+      only: ["workflows", "customer_emails", "missed_posts", "product_purchases"],
+      preserveUrl: true,
+      onStart: () => setIsLoadingPurchaseData(true),
+      onFinish: () => setIsLoadingPurchaseData(false),
+    });
+    setSelectedCustomerId(customerId);
+  };
 
   const thProps = useSortingTableDriver<SortKey>(sort, (sort) => updateQuery({ sort }));
 
@@ -481,7 +521,7 @@ const CustomersPage = ({
                     <TableRow
                       key={customer.id}
                       selected={selectedCustomerId === customer.id}
-                      onClick={() => setSelectedCustomerId(customer.id)}
+                      onClick={() => fetchAndDisplayCustomerDrawerData(customer.id)}
                     >
                       <TableCell>
                         {customer.shipping && !customer.shipping.tracking.shipped ? (
@@ -600,6 +640,9 @@ const CustomersPage = ({
             countries={countries}
             canPing={can_ping}
             showRefundFeeNotice={show_refund_fee_notice}
+            isLoadingPurchaseData={isLoadingPurchaseData}
+            customersChannelRef={customersChannelRef}
+            missedPostsJobsInProcessRef={missedPostsJobsInProcessRef}
           />
         ) : null}
       </section>
@@ -691,6 +734,9 @@ const CustomerDrawer = ({
   countries,
   canPing,
   showRefundFeeNotice,
+  isLoadingPurchaseData,
+  customersChannelRef,
+  missedPostsJobsInProcessRef,
 }: {
   customer: Customer;
   onChange: (update: Partial<Customer>) => void;
@@ -699,25 +745,127 @@ const CustomerDrawer = ({
   countries: string[];
   canPing: boolean;
   showRefundFeeNotice: boolean;
+  isLoadingPurchaseData: boolean;
+  customersChannelRef: React.MutableRefObject<Channel | null>;
+  missedPostsJobsInProcessRef: React.MutableRefObject<Set<string>>;
 }) => {
   const userAgentInfo = useUserAgentInfo();
 
   const [loadingId, setLoadingId] = React.useState<string | null>(null);
-  const [missedPosts, setMissedPosts] = React.useState<MissedPost[] | null>(null);
+  const [selectedWorkflowId, setSelectedWorkflowId] = React.useState<string>("");
   const [shownMissedPosts, setShownMissedPosts] = React.useState(PAGE_SIZE);
-  const [emails, setEmails] = React.useState<CustomerEmail[] | null>(null);
   const [shownEmails, setShownEmails] = React.useState(PAGE_SIZE);
   const sentEmailIds = React.useRef<Set<string>>(new Set());
-  useRunOnce(() => {
-    getMissedPosts(customer.id, customer.email).then(setMissedPosts, (e: unknown) => {
+
+  const {
+    customer_emails: emails,
+    missed_posts: missedPosts,
+    product_purchases: productPurchasesFromProps,
+    workflows,
+  } = cast<Pick<CustomerPageProps, "customer_emails" | "missed_posts" | "workflows" | "product_purchases">>(
+    usePage().props,
+  );
+
+  const workflowOptions = [{ id: "", label: "All missed emails" }, ...(workflows ?? [])];
+
+  const [isLoadingMissedPosts, setIsLoadingMissedPosts] = React.useState(false);
+
+  const workflowIdForQuery = (workflowId: string | undefined) => (workflowId === "" ? undefined : workflowId);
+
+  const isProcessingMissedPostsJobForPurchase = (purchaseExternalId: string) =>
+    Array.from(missedPostsJobsInProcessRef.current).some((jobKey) => {
+      const job = cast<{ customerId: string; workflowId?: string }>(JSON.parse(jobKey));
+      return job.customerId === purchaseExternalId;
+    });
+
+  const isProcessingAllOrSpecificJob = (purchaseExternalId: string, workflowId?: string) => {
+    if (workflowId === undefined) {
+      return isProcessingMissedPostsJobForPurchase(purchaseExternalId);
+    }
+
+    return (
+      missedPostsJobsInProcessRef.current.has(JSON.stringify({ customerId: purchaseExternalId, workflowId })) ||
+      missedPostsJobsInProcessRef.current.has(JSON.stringify({ customerId: purchaseExternalId }))
+    );
+  };
+
+  const [processingJobForWorkflow, setProcessingJobForWorkflow] = React.useState(
+    isProcessingAllOrSpecificJob(customer.id, workflowIdForQuery(selectedWorkflowId)),
+  );
+
+  const fetchAndDisplayMissedPostsByWorkflowId = (workflowId: string) => {
+    router.reload({
+      data: {
+        purchase_id: customer.id,
+        workflow_id: workflowIdForQuery(workflowId),
+      },
+      only: ["missed_posts"],
+      preserveUrl: true,
+      onStart: () => setIsLoadingMissedPosts(true),
+      onFinish: () => setIsLoadingMissedPosts(false),
+    });
+    setSelectedWorkflowId(workflowId);
+    setProcessingJobForWorkflow(isProcessingAllOrSpecificJob(customer.id, workflowIdForQuery(workflowId)));
+  };
+
+  const resendAllMissedPosts = async () => {
+    if (!cable) return;
+
+    const resendJobWorkflowId = workflowIdForQuery(selectedWorkflowId);
+    const resendJobKeyLocal = JSON.stringify({ customerId: customer.id, workflowId: resendJobWorkflowId });
+
+    let failedToSubscribeToCustomersChannel = false;
+
+    try {
+      if (!customersChannelRef.current) {
+        customersChannelRef.current = cable.subscribeTo(CUSTOMERS_CHANNEL_NAME, { purchase_id: customer.id });
+
+        customersChannelRef.current.on("message", (packet) => {
+          if (!is<IncomingCustomersChannelMessage>(packet)) return;
+          const resendJobKeyFromPacket = JSON.stringify({
+            customerId: packet.purchase_id,
+            workflowId: packet.workflow_id,
+          });
+
+          if (!missedPostsJobsInProcessRef.current.has(resendJobKeyFromPacket)) return;
+
+          missedPostsJobsInProcessRef.current.delete(resendJobKeyFromPacket);
+
+          switch (packet.type) {
+            case "missed_posts_job_complete":
+              showAlert(packet.message, "success");
+              break;
+            case "missed_posts_job_failed":
+              showAlert(packet.message, "error");
+              break;
+          }
+        });
+      }
+
+      await customersChannelRef.current.ensureSubscribed();
+    } catch {
+      failedToSubscribeToCustomersChannel = true;
+    }
+
+    try {
+      setProcessingJobForWorkflow(true);
+      missedPostsJobsInProcessRef.current.add(resendJobKeyLocal);
+      const response = await resendPosts(customer.id, resendJobWorkflowId);
+      if (failedToSubscribeToCustomersChannel) {
+        showAlert(
+          `${response.message} but we faced an issue subscribing to the delivery channel. Revisit in some time to check on the delivery status.`,
+          "warning",
+        );
+      } else {
+        showAlert(response.message, "success");
+      }
+    } catch (e) {
       assertResponseError(e);
       showAlert(e.message, "error");
-    });
-    getCustomerEmails(customer.id).then(setEmails, (e: unknown) => {
-      assertResponseError(e);
-      showAlert(e.message, "error");
-    });
-  });
+      missedPostsJobsInProcessRef.current.delete(resendJobKeyLocal);
+      setProcessingJobForWorkflow(false);
+    }
+  };
 
   const onSend = async (id: string, type: "receipt" | "post") => {
     setLoadingId(id);
@@ -732,16 +880,27 @@ const CustomerDrawer = ({
     setLoadingId(null);
   };
 
-  const [productPurchases, setProductPurchases] = React.useState<Customer[]>([]);
+  const [productPurchases, setProductPurchases] = React.useState<Customer[]>(() =>
+    customer.is_bundle_purchase ? (productPurchasesFromProps ?? []) : [],
+  );
   const [selectedProductPurchaseId, setSelectedProductPurchaseId] = React.useState<string | null>(null);
   const selectedProductPurchase = productPurchases.find(({ id }) => id === selectedProductPurchaseId);
-  useRunOnce(() => {
-    if (customer.is_bundle_purchase)
-      void getProductPurchases(customer.id).then(setProductPurchases, (e: unknown) => {
-        assertResponseError(e);
-        showAlert(e.message, "error");
-      });
-  });
+
+  const loadBundlePurchaseDrawerData = (purchaseId: string, workflowId?: string) => {
+    router.reload({
+      data: { purchase_id: purchaseId, workflow_id: workflowIdForQuery(workflowId) },
+      only: ["workflows", "customer_emails", "missed_posts", "product_purchases"],
+      preserveUrl: true,
+    });
+  };
+
+  React.useEffect(() => {
+    if (customer.is_bundle_purchase && productPurchasesFromProps) {
+      setProductPurchases(productPurchasesFromProps);
+    } else if (!customer.is_bundle_purchase) {
+      setProductPurchases([]);
+    }
+  }, [customer.is_bundle_purchase, productPurchasesFromProps]);
 
   const { subscription, commission, license, shipping } = customer;
 
@@ -765,23 +924,56 @@ const CustomerDrawer = ({
     }
   }, [commission?.status]);
 
+  React.useEffect(() => {
+    if (!customersChannelRef.current || !isProcessingMissedPostsJobForPurchase(customer.id)) return;
+
+    const localChannelUnsubscribe = customersChannelRef.current.on("message", (packet) => {
+      if (!is<IncomingCustomersChannelMessage>(packet)) return;
+      if (packet.purchase_id !== customer.id) return;
+
+      setProcessingJobForWorkflow(false);
+
+      if (packet.type === "missed_posts_job_complete" && !selectedProductPurchase) {
+        router.reload({
+          data: {
+            purchase_id: packet.purchase_id,
+            workflow_id: workflowIdForQuery(selectedWorkflowId),
+          },
+          only: ["customer_emails", "missed_posts", "product_purchases"],
+          preserveUrl: true,
+        });
+      }
+    });
+
+    return () => {
+      localChannelUnsubscribe();
+    };
+  }, [customer.id, selectedWorkflowId, selectedProductPurchase, isProcessingAllOrSpecificJob]);
+
   const isCoffee = customer.product.native_type === "coffee";
 
   if (selectedProductPurchase)
     return (
       <CustomerDrawer
         customer={selectedProductPurchase}
-        onChange={(update) =>
-          setProductPurchases((prev) => [
-            ...prev.filter(({ id }) => id !== selectedProductPurchase.id),
-            { ...selectedProductPurchase, ...update },
-          ])
-        }
+        onChange={(update) => {
+          setProductPurchases((prev) =>
+            prev.map((purchase) =>
+              purchase.id === selectedProductPurchase.id ? { ...purchase, ...update } : purchase,
+            ),
+          );
+        }}
         onClose={onClose}
-        onBack={() => setSelectedProductPurchaseId(null)}
+        onBack={() => {
+          setSelectedProductPurchaseId(null);
+          loadBundlePurchaseDrawerData(customer.id, selectedWorkflowId);
+        }}
         countries={countries}
         canPing={canPing}
         showRefundFeeNotice={showRefundFeeNotice}
+        isLoadingPurchaseData={isLoadingPurchaseData}
+        customersChannelRef={customersChannelRef}
+        missedPostsJobsInProcessRef={missedPostsJobsInProcessRef}
       />
     );
 
@@ -1243,62 +1435,83 @@ const CustomerDrawer = ({
       {commission ? (
         <CommissionSection commission={commission} onChange={(commission) => onChange({ commission })} />
       ) : null}
-      {missedPosts?.length !== 0 ? (
-        <Card asChild>
-          <section>
+      <Card asChild>
+        <section aria-label="Missed emails">
+          <CardContent asChild>
+            <header>
+              <h3 className="grow">Send missed posts</h3>
+            </header>
+          </CardContent>
+          <CardContent>
+            <Select
+              className="grow"
+              isMulti={false}
+              value={workflowOptions.find((w) => w.id === selectedWorkflowId) ?? null}
+              onChange={(option) => fetchAndDisplayMissedPostsByWorkflowId(option?.id ?? "")}
+              options={workflowOptions}
+            />
+          </CardContent>
+          {isLoadingPurchaseData || isLoadingMissedPosts || missedPosts === undefined ? (
             <CardContent asChild>
-              <header>
-                <h3 className="grow">Send missed posts</h3>
-              </header>
+              <section>
+                <div className="grow text-center">
+                  <LoadingSpinner className="size-8" />
+                </div>
+              </section>
             </CardContent>
-            {missedPosts ? (
-              <>
-                {missedPosts.slice(0, shownMissedPosts).map((post) => (
-                  <CardContent asChild key={post.id}>
-                    <section>
-                      <div className="grow">
-                        <h5 className="font-bold">
-                          <a href={post.url} target="_blank" rel="noreferrer">
-                            {post.name}
-                          </a>
-                        </h5>
-                        <small>{`Originally sent on ${formatDateWithoutTime(new Date(post.published_at))}`}</small>
-                      </div>
-                      <Button
-                        color="primary"
-                        disabled={!!loadingId || sentEmailIds.current.has(post.id)}
-                        onClick={() => void onSend(post.id, "post")}
-                      >
-                        {sentEmailIds.current.has(post.id) ? "Sent" : loadingId === post.id ? "Sending...." : "Send"}
-                      </Button>
-                    </section>
-                  </CardContent>
-                ))}
-                {shownMissedPosts < missedPosts.length ? (
-                  <CardContent asChild>
-                    <section>
-                      <Button
-                        onClick={() => setShownMissedPosts((prevShownMissedPosts) => prevShownMissedPosts + PAGE_SIZE)}
-                        className="grow basis-0"
-                      >
-                        Show more
-                      </Button>
-                    </section>
-                  </CardContent>
-                ) : null}
-              </>
-            ) : (
-              <CardContent asChild>
-                <section>
-                  <div className="grow text-center">
-                    <LoadingSpinner className="size-8" />
-                  </div>
-                </section>
+          ) : missedPosts.length > 0 ? (
+            <>
+              {missedPosts.slice(0, shownMissedPosts).map((post) => (
+                <CardContent asChild key={post.id}>
+                  <section>
+                    <div className="grow">
+                      <h5 className="font-bold">
+                        <a href={post.url} target="_blank" rel="noreferrer">
+                          {post.name}
+                        </a>
+                      </h5>
+                      <small>{`Originally sent on ${formatDateWithoutTime(new Date(post.published_at))}`}</small>
+                    </div>
+                    <Button
+                      color="primary"
+                      disabled={!!loadingId || sentEmailIds.current.has(post.id) || processingJobForWorkflow}
+                      onClick={() => void onSend(post.id, "post")}
+                    >
+                      {sentEmailIds.current.has(post.id) ? "Sent" : loadingId === post.id ? "Resending..." : "Resend"}
+                    </Button>
+                  </section>
+                </CardContent>
+              ))}
+              {shownMissedPosts < missedPosts.length ? (
+                <CardContent asChild>
+                  <section>
+                    <Button
+                      onClick={() => setShownMissedPosts((prevShownMissedPosts) => prevShownMissedPosts + PAGE_SIZE)}
+                      className="grow basis-0"
+                    >
+                      Show more
+                    </Button>
+                  </section>
+                </CardContent>
+              ) : null}
+              <CardContent>
+                <Button
+                  color="primary"
+                  disabled={!!loadingId || processingJobForWorkflow}
+                  onClick={() => void resendAllMissedPosts()}
+                  className="grow basis-0"
+                >
+                  {processingJobForWorkflow ? "Resending all..." : "Resend all"}
+                </Button>
               </CardContent>
-            )}
-          </section>
-        </Card>
-      ) : null}
+            </>
+          ) : (
+            <CardContent>
+              <EmptyState className="text-center" message="All caught up! No missed emails." />
+            </CardContent>
+          )}
+        </section>
+      </Card>
       {emails?.length !== 0 ? (
         <Card asChild>
           <section>
@@ -1307,7 +1520,7 @@ const CustomerDrawer = ({
                 <h3 className="grow">Emails received</h3>
               </header>
             </CardContent>
-            {emails ? (
+            {!isLoadingPurchaseData && emails ? (
               <>
                 {emails.slice(0, shownEmails).map((email) => (
                   <CardContent asChild key={email.id}>
@@ -1328,7 +1541,7 @@ const CustomerDrawer = ({
                         <Button
                           color="primary"
                           onClick={() => void onSend(email.id, "receipt")}
-                          disabled={!!loadingId || sentEmailIds.current.has(email.id)}
+                          disabled={!!loadingId || sentEmailIds.current.has(email.id) || processingJobForWorkflow}
                         >
                           {sentEmailIds.current.has(email.id)
                             ? "Receipt resent"
@@ -1340,7 +1553,7 @@ const CustomerDrawer = ({
                         <Button
                           color="primary"
                           onClick={() => void onSend(email.id, "post")}
-                          disabled={!!loadingId || sentEmailIds.current.has(email.id)}
+                          disabled={!!loadingId || sentEmailIds.current.has(email.id) || processingJobForWorkflow}
                         >
                           {sentEmailIds.current.has(email.id)
                             ? "Sent"
@@ -1352,7 +1565,7 @@ const CustomerDrawer = ({
                     </section>
                   </CardContent>
                 ))}
-                {shownMissedPosts < emails.length ? (
+                {shownEmails < emails.length ? (
                   <CardContent asChild>
                     <section>
                       <Button

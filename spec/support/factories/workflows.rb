@@ -8,6 +8,10 @@ FactoryBot.define do
     workflow_type { "product" }
     workflow_trigger { nil }
 
+    trait :published do
+      published_at { Time.current }
+    end
+
     factory :audience_workflow do
       workflow_type { Workflow::AUDIENCE_TYPE }
       link { nil }

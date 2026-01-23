@@ -3,7 +3,7 @@ import * as React from "react";
 
 import { formatPriceCentsWithCurrencySymbol } from "$app/utils/currency";
 
-import EmptyState from "$app/components/Admin/EmptyState";
+import EmptyState from "$app/components/ui/EmptyState";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$app/components/ui/Table";
 
 type RevenueSource = "sales" | "collaborator" | "affiliate" | "credit";
