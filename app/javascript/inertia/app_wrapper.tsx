@@ -3,6 +3,7 @@ import React from "react";
 import { DesignContextProvider, DesignSettings } from "$app/components/DesignSettings";
 import { DomainSettingsProvider } from "$app/components/DomainSettings";
 import { FeatureFlags, FeatureFlagsProvider } from "$app/components/FeatureFlags";
+import { LoggedInUser, LoggedInUserProvider, parseLoggedInUser } from "$app/components/LoggedInUser";
 import { SSRLocationProvider } from "$app/components/useOriginalLocation";
 import { UserAgentProvider } from "$app/components/UserAgent";
 
@@ -23,6 +24,7 @@ type GlobalProps = {
   href: string;
   locale: string;
   feature_flags: FeatureFlags;
+  logged_in_user?: LoggedInUser;
 };
 
 export default function AppWrapper({ children, global }: { children: React.ReactNode; global: GlobalProps }) {
@@ -46,7 +48,9 @@ export default function AppWrapper({ children, global }: { children: React.React
           }}
         >
           <FeatureFlagsProvider value={global.feature_flags}>
-            <SSRLocationProvider value={global.href}>{children}</SSRLocationProvider>
+            <SSRLocationProvider value={global.href}>
+              <LoggedInUserProvider value={parseLoggedInUser(global.logged_in_user)}>{children}</LoggedInUserProvider>
+            </SSRLocationProvider>
           </FeatureFlagsProvider>
         </UserAgentProvider>
       </DomainSettingsProvider>

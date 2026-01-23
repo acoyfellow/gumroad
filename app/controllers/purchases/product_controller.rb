@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class Purchases::ProductController < ApplicationController
+  layout "inertia"
   before_action :set_purchase
 
   def show
@@ -10,7 +11,7 @@ class Purchases::ProductController < ApplicationController
     @product_props = ProductPresenter.new(product: @purchase.link, request:, pundit_user:).product_props(seller_custom_domain_url:).deep_merge(@purchase_product_presenter.product_props)
     @user = @purchase_product_presenter.product.user
 
-    @hide_layouts = true
     set_noindex_header
+    render inertia: "PurchaseProductPage", props: @product_props
   end
 end

@@ -1,8 +1,9 @@
 # frozen_string_literal: false
 
 require "spec_helper"
+require "inertia_rails/rspec"
 
-describe Purchases::ProductController do
+describe Purchases::ProductController, type: :controller, inertia: true do
   let(:purchase) { create(:purchase) }
 
   describe "GET show" do
@@ -10,6 +11,7 @@ describe Purchases::ProductController do
       get :show, params: { purchase_id: purchase.external_id }
 
       expect(response).to be_successful
+      expect_inertia.to render_component "PurchaseProductPage"
       purchase_product_presenter = assigns(:purchase_product_presenter)
       expect(purchase_product_presenter.product).to eq(purchase.link)
       product_props = assigns(:product_props)

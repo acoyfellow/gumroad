@@ -1,7 +1,4 @@
 import * as React from "react";
-import { createCast } from "ts-safe-cast";
-
-import { register } from "$app/utils/serverComponentUtil";
 
 import { PoweredByFooter } from "$app/components/PoweredByFooter";
 import { Product, useSelectionFromUrl, Props as ProductProps } from "$app/components/Product";
@@ -21,4 +18,5 @@ const PurchaseProductPage = (props: ProductProps) => {
   );
 };
 
-export default register({ component: PurchaseProductPage, propParser: createCast() });
+PurchaseProductPage.disableLayout = true;
+export default PurchaseProductPage;
