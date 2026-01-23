@@ -990,5 +990,63 @@ describe("Download Page", type: :system, js: true) do
       create(:rich_content, entity: product, title: "Page 2", position: 2, description: [{ "type" => "paragraph", "content" => [{ "type" => "text", "text" => "Content for page 2" }] }])
       create(:rich_content, entity: product, title: "Page 3", position: 3, description: [{ "type" => "paragraph", "content" => [{ "type" => "text", "text" => "Content for page 3" }] }])
     end
+
+    it "remembers the last visited page when buyer returns" do
+      visit url_redirect.download_page_url
+
+      expect(page).to have_text("Content for page 1")
+      expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 1")
+
+      click_on "Page 2"
+      wait_for_ajax
+
+      expect(page).to have_text("Content for page 2")
+      expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 2")
+
+      visit url_redirect.download_page_url
+
+      expect(page).to have_text("Content for page 2")
+      expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 2")
+
+      click_on "Next"
+      wait_for_ajax
+
+      expect(page).to have_text("Content for page 3")
+      expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 3")
+
+      visit url_redirect.download_page_url
+
+      expect(page).to have_text("Content for page 3")
+      expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 3")
+    end
+
+    context "with custom domain" do
+      let(:custom_domain) { create(:custom_domain, user: product.user, domain: "test-custom-domain.gumroad.com") }
+      let(:port) { Capybara.current_session.server.port }
+      let(:custom_domain_download_url) { "http://#{custom_domain.domain}:#{port}/d/#{url_redirect.token}" }
+
+      before do
+        allow(Resolv::DNS).to receive_message_chain(:new, :getresources).and_return([double(name: "domains.gumroad.com")])
+        custom_domain # trigger creation
+      end
+
+      it "remembers the last visited page when buyer returns via custom domain" do
+        visit custom_domain_download_url
+
+        expect(page).to have_text("Content for page 1")
+        expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 1")
+
+        click_on "Page 2"
+        wait_for_ajax
+
+        expect(page).to have_text("Content for page 2")
+        expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 2")
+
+        visit custom_domain_download_url
+
+        expect(page).to have_text("Content for page 2")
+        expect(page).to have_selector("[role='tab'][aria-selected='true']", text: "Page 2")
+      end
+    end
   end
 end
