@@ -1,5 +1,5 @@
-import { DirectUpload } from "@rails/activestorage";
 import { useForm, usePage } from "@inertiajs/react";
+import { DirectUpload } from "@rails/activestorage";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
@@ -12,10 +12,11 @@ import {
   cancellationRebuttalOptions,
 } from "$app/data/purchase/dispute_evidence_data";
 import FileUtils from "$app/utils/file";
-import { showAlert } from "$app/components/server-components/Alert";
+
 import { Button, NavigationButton } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
+import { showAlert } from "$app/components/server-components/Alert";
 import { Alert } from "$app/components/ui/Alert";
 import { Card, CardContent } from "$app/components/ui/Card";
 import { Row, RowActions, RowContent, Rows } from "$app/components/ui/Rows";
@@ -101,8 +102,9 @@ export default function Show() {
 
   // Track selected options separately for UI
   const [reasonForWinningOption, setReasonForWinningOption] = React.useState<ReasonForWinningOption | null>(null);
-  const [cancellationRebuttalOption, setCancellationRebuttalOption] =
-    React.useState<CancellationRebuttalOption | null>(null);
+  const [cancellationRebuttalOption, setCancellationRebuttalOption] = React.useState<CancellationRebuttalOption | null>(
+    null,
+  );
 
   // Track blobs for display (can be updated when uploading)
   const [blobs, setBlobs] = React.useState<Blobs>(dispute_evidence.blobs);
