@@ -46,6 +46,22 @@ describe SecureRedirectController, type: :controller, inertia: true do
         expect(inertia.props[:encrypted_payload]).to eq(encrypted_payload)
       end
 
+      it "includes flash error in props when present" do
+        get :new, params: {
+          encrypted_payload: encrypted_payload
+        }, flash: { error: "Test error message" }
+
+        expect(inertia.props[:flash]).to eq({ message: "Test error message", status: "danger" })
+      end
+
+      it "does not include flash in props when not present" do
+        get :new, params: {
+          encrypted_payload: encrypted_payload
+        }
+
+        expect(inertia.props[:flash]).to be_nil
+      end
+
       it "uses default values when optional params are missing" do
         get :new, params: {
           encrypted_payload: encrypted_payload
