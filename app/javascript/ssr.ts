@@ -57,7 +57,6 @@ import SecureRedirectPage from "$app/components/server-components/SecureRedirect
 import SubscribePage from "$app/components/server-components/SubscribePage";
 import SubscribePreview from "$app/components/server-components/SubscribePreview";
 import SubscriptionManager from "$app/components/server-components/SubscriptionManager";
-import SubscriptionManagerMagicLink from "$app/components/server-components/SubscriptionManagerMagicLink";
 import SupportHeader from "$app/components/server-components/support/Header";
 import TaxesCollectionModal from "$app/components/server-components/TaxesCollectionModal";
 import VideoStreamPlayer from "$app/components/server-components/VideoStreamPlayer";
@@ -123,7 +122,6 @@ ReactOnRails.register({
   SubscribeReviewReminders,
   UnsubscribeReviewReminders,
   SubscriptionManager,
-  SubscriptionManagerMagicLink,
   TaxesCollectionModal,
   VideoStreamPlayer,
   WishlistPage,
