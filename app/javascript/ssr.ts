@@ -9,7 +9,6 @@ import CommunitiesPage from "$app/components/server-components/CommunitiesPage";
 import CustomersDownloadPopover from "$app/components/server-components/CustomersPage/DownloadPopover";
 import CustomersFilterPopover from "$app/components/server-components/CustomersPage/FilterPopover";
 import Discover from "$app/components/server-components/Discover";
-import DiscoverProductPage from "$app/components/server-components/Discover/ProductPage";
 import DownloadPageWithContent from "$app/components/server-components/DownloadPage/WithContent";
 import DownloadPageWithoutContent from "$app/components/server-components/DownloadPage/WithoutContent";
 import GenerateInvoiceConfirmationPage from "$app/components/server-components/GenerateInvoiceConfirmationPage";
@@ -18,12 +17,9 @@ import GumroadBlogIndexPage from "$app/components/server-components/GumroadBlog/
 import GumroadBlogPostPage from "$app/components/server-components/GumroadBlog/PostPage";
 import Nav from "$app/components/server-components/Nav";
 import PdfReaderPage from "$app/components/server-components/PdfReaderPage";
-import ProductPage from "$app/components/server-components/Product";
-import ProductIframePage from "$app/components/server-components/Product/IframePage";
 import ProductEditPage from "$app/components/server-components/ProductEditPage";
 import Profile from "$app/components/server-components/Profile";
 import ProfileCoffeePage from "$app/components/server-components/Profile/CoffeePage";
-import ProfileProductPage from "$app/components/server-components/Profile/ProductPage";
 import ProfileWishlistPage from "$app/components/server-components/Profile/WishlistPage";
 import DisputeEvidencePage from "$app/components/server-components/Purchase/DisputeEvidencePage";
 import SecureRedirectPage from "$app/components/server-components/SecureRedirectPage";
@@ -46,7 +42,6 @@ ReactOnRails.register({
   CustomersDownloadPopover,
   CustomersFilterPopover,
   Discover,
-  DiscoverProductPage,
   DisputeEvidencePage,
   DownloadPageWithContent,
   DownloadPageWithoutContent,
@@ -58,11 +53,8 @@ ReactOnRails.register({
   PdfReaderPage,
   Pill,
   ProductEditPage,
-  ProductIframePage,
-  ProductPage,
   Profile,
   ProfileCoffeePage,
-  ProfileProductPage,
   ProfileWishlistPage,
   SecureRedirectPage,
   SubscribePage,

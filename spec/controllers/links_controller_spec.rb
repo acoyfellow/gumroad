@@ -3161,6 +3161,44 @@ describe LinksController, :vcr, inertia: true do
         end
       end
 
+      describe "layout variants" do
+        it "renders Links/Show for default layout" do
+          link = create(:product, user: @user)
+          get :show, params: { id: link.to_param }
+          expect(response).to be_successful
+          expect(inertia.component).to eq("Links/Show")
+        end
+
+        it "renders Links/Profile/Show for profile layout" do
+          link = create(:product, user: @user)
+          get :show, params: { id: link.to_param, layout: "profile" }
+          expect(response).to be_successful
+          expect(inertia.component).to eq("Links/Profile/Show")
+          expect(inertia.props[:creator_profile]).to be_present
+        end
+
+        it "renders Links/Discover/Show for discover layout" do
+          link = create(:product, user: @user)
+          get :show, params: { id: link.to_param, layout: "discover" }
+          expect(response).to be_successful
+          expect(inertia.component).to eq("Links/Discover/Show")
+        end
+
+        it "renders Links/Iframe/Show for embed param" do
+          link = create(:product, user: @user)
+          get :show, params: { id: link.to_param, embed: "true" }
+          expect(response).to be_successful
+          expect(inertia.component).to eq("Links/Iframe/Show")
+        end
+
+        it "renders Links/Iframe/Show for overlay param" do
+          link = create(:product, user: @user)
+          get :show, params: { id: link.to_param, overlay: "true" }
+          expect(response).to be_successful
+          expect(inertia.component).to eq("Links/Iframe/Show")
+        end
+      end
+
       describe "wanted=true parameter" do
         it "passes pay_in_installments parameter to checkout when wanted=true" do
           get :show, params: { id: product.to_param, wanted: "true", pay_in_installments: "true" }
@@ -3525,11 +3563,11 @@ describe LinksController, :vcr, inertia: true do
         end
 
         context "when the custom domain matches a product's custom domain" do
-          it "assigns the product and renders the show template" do
+          it "assigns the product and renders the Inertia page" do
             get :show
             expect(response).to be_successful
             expect(assigns[:product]).to eq(product)
-            expect(response).to render_template(:show)
+            expect(inertia.component).to eq("Links/Show")
           end
         end
 
@@ -3549,11 +3587,11 @@ describe LinksController, :vcr, inertia: true do
             create(:custom_domain, domain: "www.example1.com", user: nil, product:)
           end
 
-          it "assigns the product and renders the show template" do
+          it "assigns the product and renders the Inertia page" do
             get :show
             expect(response).to be_successful
             expect(assigns[:product]).to eq(product)
-            expect(response).to render_template(:show)
+            expect(inertia.component).to eq("Links/Show")
           end
         end
 
@@ -3572,11 +3610,11 @@ describe LinksController, :vcr, inertia: true do
             custom_domain.update!(domain: "example1.com")
           end
 
-          it "assigns the product and renders the show template" do
+          it "assigns the product and renders the Inertia page" do
             get :show
             expect(response).to be_successful
             expect(assigns[:product]).to eq(product)
-            expect(response).to render_template(:show)
+            expect(inertia.component).to eq("Links/Show")
           end
         end
       end
@@ -3593,11 +3631,11 @@ describe LinksController, :vcr, inertia: true do
             @product = create(:product, user: @user)
           end
 
-          it "assigns the product and renders the show template" do
+          it "assigns the product and renders the Inertia page" do
             get :show, params: { id: @product.unique_permalink }
             expect(response).to be_successful
             expect(assigns[:product]).to eq(@product)
-            expect(response).to render_template(:show)
+            expect(inertia.component).to eq("Links/Show")
           end
         end
 
@@ -3617,11 +3655,11 @@ describe LinksController, :vcr, inertia: true do
             @product = create(:product, user: @user, custom_permalink: "test-link")
           end
 
-          it "assigns the product and renders the show template" do
+          it "assigns the product and renders the Inertia page" do
             get :show, params: { id: @product.custom_permalink }
             expect(response).to be_successful
             expect(assigns[:product]).to eq(@product)
-            expect(response).to render_template(:show)
+            expect(inertia.component).to eq("Links/Show")
           end
         end
 

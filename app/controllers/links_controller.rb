@@ -3,7 +3,8 @@
 class LinksController < ApplicationController
   include ProductsHelper, SearchProducts, PreorderHelper, ActionView::Helpers::TextHelper,
           ActionView::Helpers::AssetUrlHelper, CustomDomainConfig, AffiliateCookie,
-          CreateDiscoverSearch, DiscoverCuratedProducts, FetchProductByUniquePermalink
+          CreateDiscoverSearch, DiscoverCuratedProducts, FetchProductByUniquePermalink,
+          InertiaRendering
 
   include PageMeta::Favicon, PageMeta::Product
 
@@ -33,7 +34,7 @@ class LinksController < ApplicationController
   before_action :fetch_product_and_enforce_ownership, only: %i[destroy]
   before_action :fetch_product_and_enforce_access, only: %i[update publish unpublish release_preorder update_sections]
 
-  layout "inertia", only: [:index, :new, :cart_items_count]
+  layout "inertia", only: [:index, :new, :show, :cart_items_count]
 
   def index
     authorize Link
@@ -161,8 +162,28 @@ class LinksController < ApplicationController
     end
 
     set_noindex_header if !@product.alive?
+
+    @hide_layouts = false
+
+    seo_props = {
+      canonical_url: @product.long_url,
+      structured_data: @product.structured_data
+    }
+
     respond_to do |format|
-      format.html
+      format.html do
+        if params[:layout] == Product::Layout::PROFILE
+          render inertia: "Links/Profile/Show", props: @product_props.merge(seo_props).merge(
+            creator_profile: ProfilePresenter.new(pundit_user:, seller: @product.user).creator_profile
+          )
+        elsif params[:layout] == Product::Layout::DISCOVER
+          render inertia: "Links/Discover/Show", props: @product_props.merge(seo_props).merge(@discover_props)
+        elsif params[:embed] || params[:overlay]
+          render inertia: "Links/Iframe/Show", props: @product_props.merge(seo_props)
+        else
+          render inertia: "Links/Show", props: @product_props.merge(seo_props)
+        end
+      end
       format.json { render json: @product.as_json }
       format.any { e404 }
     end
