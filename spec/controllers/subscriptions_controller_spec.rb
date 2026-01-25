@@ -89,13 +89,12 @@ describe SubscriptionsController do
           cookies.encrypted[@subscription.cookie_key] = nil
         end
 
-        it "renders success false with redirect_to URL" do
+        it "redirects to magic link page" do
           expect do
-            post :unsubscribe_by_user, params: { id: @subscription.external_id }, format: :json
+            post :unsubscribe_by_user, params: { id: @subscription.external_id }
           end.to_not change { @subscription.reload.user_requested_cancellation_at }
 
-          expect(response.parsed_body["success"]).to be(false)
-          expect(response.parsed_body["redirect_to"]).to eq(magic_link_subscription_path(@subscription.external_id))
+          expect(response).to redirect_to(magic_link_subscription_path(@subscription.external_id))
         end
       end
     end
