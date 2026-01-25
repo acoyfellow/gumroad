@@ -1,4 +1,4 @@
-import { router, usePage } from "@inertiajs/react";
+import { router, useForm, usePage } from "@inertiajs/react";
 import { parseISO } from "date-fns";
 import * as React from "react";
 
@@ -268,7 +268,7 @@ export default function SubscriptionsManage() {
       if (result.next != null) {
         router.visit(result.next);
       } else {
-        router.get(window.location.href, {}, { preserveScroll: true });
+        router.reload();
       }
     } else if (result.type === "requires_card_action") {
       await confirmLineItem({
@@ -279,7 +279,7 @@ export default function SubscriptionsManage() {
       }).then((itemResult) => {
         if (itemResult.success) {
           showAlert(`Your ${subscriptionEntity} has been updated.`, "success");
-          router.get(window.location.href, {}, { preserveScroll: true });
+          router.reload();
         }
       });
     } else {
@@ -296,21 +296,14 @@ export default function SubscriptionsManage() {
     if (state.status.type === "offering") dispatchAction({ type: "validate" });
   }, [state.status.type]);
 
-  const [cancellationStatus, setCancellationStatus] = React.useState<"initial" | "processing">("initial");
+  const cancelForm = useForm({});
   const handleCancel = () => {
-    if (cancellationStatus === "processing") return;
-    setCancellationStatus("processing");
-    router.post(
-      Routes.unsubscribe_by_user_subscription_path(subscription.id),
-      {},
-      {
-        preserveScroll: true,
-        onError: () => {
-          setCancellationStatus("initial");
-          showAlert("Sorry, something went wrong.", "error");
-        },
+    cancelForm.post(Routes.unsubscribe_by_user_subscription_path(subscription.id), {
+      preserveScroll: true,
+      onError: () => {
+        showAlert("Sorry, something went wrong.", "error");
       },
-    );
+    });
   };
 
   const hasSavedCard = state.savedCreditCard != null;
@@ -377,7 +370,7 @@ export default function SubscriptionsManage() {
             color="danger"
             outline
             onClick={handleCancel}
-            disabled={cancellationStatus === "processing"}
+            disabled={cancelForm.processing}
             className="grow basis-0"
           >
             {`Cancel ${subscriptionEntity}`}
