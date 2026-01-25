@@ -297,18 +297,10 @@ export default function SubscriptionsManage() {
   }, [state.status.type]);
 
   const cancelForm = useForm({});
-  const [cancellationStatus, setCancellationStatus] = React.useState<"initial" | "processing" | "done">(
-    restartable ? "done" : "initial",
-  );
   const handleCancel = () => {
     cancelForm.post(Routes.unsubscribe_by_user_subscription_path(subscription.id), {
       preserveScroll: true,
-      onStart: () => setCancellationStatus("processing"),
-      onSuccess: () => setCancellationStatus("done"),
-      onError: () => {
-        setCancellationStatus("initial");
-        showAlert("Sorry, something went wrong.", "error");
-      },
+      onError: () => showAlert("Sorry, something went wrong.", "error"),
     });
   };
 
@@ -376,10 +368,10 @@ export default function SubscriptionsManage() {
             color="danger"
             outline
             onClick={handleCancel}
-            disabled={cancellationStatus === "processing" || cancellationStatus === "done"}
+            disabled={cancelForm.processing}
             className="grow basis-0"
           >
-            {cancellationStatus === "done" ? "Cancelled" : `Cancel ${subscriptionEntity}`}
+            {`Cancel ${subscriptionEntity}`}
           </Button>
         </CardContent>
       ) : null}

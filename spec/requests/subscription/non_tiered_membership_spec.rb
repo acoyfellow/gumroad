@@ -206,7 +206,6 @@ describe "Non Tiered Membership Subscriptions", type: :system, js: true do
       click_on "Cancel membership"
 
       expect(page).to have_alert(text: "Your membership has been cancelled.")
-      expect(page).to have_button("Cancelled", disabled: true)
       expect(page).to have_button("Restart membership")
       expect(page).not_to have_button("Cancel membership")
 
