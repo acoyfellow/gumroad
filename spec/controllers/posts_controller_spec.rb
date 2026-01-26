@@ -119,8 +119,18 @@ describe PostsController, type: :controller, inertia: true do
         expect(response).to be_successful
         expect(inertia).to render_component("Posts/Show")
         expect(inertia.props[:subject]).to eq(installment.subject)
-        expect(inertia.props[:slug]).to eq(installment.slug)
         expect(inertia.props[:external_id]).to eq(installment.external_id)
+        expect(inertia.props[:purchase_id]).to eq(@purchase.external_id)
+        expect(inertia.props[:published_at]).to eq(installment.published_at)
+        expect(inertia.props[:message]).to be_present
+        expect(inertia.props[:call_to_action]).to be_nil
+        expect(inertia.props[:download_url]).to be_nil
+        expect(inertia.props[:has_posts_on_profile]).to eq(false)
+        expect(inertia.props[:recent_posts]).to eq([])
+        expect(inertia.props[:paginated_comments]).to be_present
+        expect(inertia.props[:comments_max_allowed_depth]).to eq(Comment::MAX_ALLOWED_DEPTH)
+        expect(inertia.props[:creator_profile]).to be_present
+        expect(inertia.props[:custom_styles]).to eq(@user.seller_profile.custom_styles)
       end
 
       it "sets @on_posts_page instance variable to make nav item active" do
