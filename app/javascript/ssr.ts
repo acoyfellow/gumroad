@@ -46,8 +46,6 @@ import { Pill } from "$app/components/ui/Pill";
 
 ReactOnRails.register({
   Alert,
-  AdminAddCreditForm,
-  HelpCenterArticlesIndexPage,
   SupportHeader,
   BundleEditPage,
   CheckoutPage,
