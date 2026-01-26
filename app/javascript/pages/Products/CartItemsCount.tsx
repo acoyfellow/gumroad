@@ -1,8 +1,15 @@
+import { usePage } from "@inertiajs/react";
 import * as React from "react";
 
 import { CartState, newCartState } from "$app/components/Checkout/cartState";
 
-const CartItemsCount = ({ cart }: { cart: CartState | null }) => {
+type Props = {
+  cart: CartState | null;
+};
+
+const CartItemsCount = () => {
+  const { cart } = usePage<Props>().props;
+
   React.useEffect(() => {
     void document.hasStorageAccess().then((hasAccess) =>
       window.parent.postMessage({
