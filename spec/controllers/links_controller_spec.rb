@@ -3804,7 +3804,7 @@ describe LinksController, :vcr, inertia: true do
 
         expect(assigns(:hide_layouts)).to eq(true)
         expect(assigns(:disable_third_party_analytics)).to eq(true)
-        expect(inertia.component).to eq("Links/CartItemsCount")
+        expect(inertia.component).to eq("Products/CartItemsCount")
         expect(inertia.props[:cart]).to be_nil
 
         html = Nokogiri::HTML.parse(response.body)
