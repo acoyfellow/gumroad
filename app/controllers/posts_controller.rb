@@ -19,7 +19,6 @@ class PostsController < ApplicationController
     # Skip fetching post again if it's already fetched in check_if_needs_redirect
     @post || fetch_post(false)
 
-    @hide_layouts = true
     @body_class = "post-page"
     @body_id = "post_page"
 
