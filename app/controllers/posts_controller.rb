@@ -34,15 +34,12 @@ class PostsController < ApplicationController
       post: @post,
       purchase_id_param: params[:purchase_id]
     )
-    purchase = @post_presenter.purchase
 
-    if purchase
-      @subscription = purchase.subscription
-    end
+    e404 if post_presenter.e404?
 
-    e404 if @post_presenter.e404?
+    @post_presenter = post_presenter
 
-    render inertia: "Posts/Show", props: @post_presenter.post_component_props
+    render inertia: "Posts/Show", props: post_presenter.post_component_props
   end
 
   def redirect_from_purchase_id

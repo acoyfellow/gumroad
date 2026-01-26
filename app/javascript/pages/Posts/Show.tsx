@@ -1,4 +1,4 @@
-import { usePage } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { EditorContent } from "@tiptap/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
@@ -27,7 +27,6 @@ type RecentPost = {
 
 type PageProps = {
   subject: string;
-  slug: string;
   external_id: string;
   purchase_id: string | null;
   published_at: string | null;
@@ -74,7 +73,9 @@ export default function PostsShow() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: custom_styles }} />
+      <Head>
+        <style>{custom_styles}</style>
+      </Head>
       <Layout creatorProfile={creator_profile}>
         <header className="border-b border-border">
           <div className="mx-auto grid max-w-6xl gap-2 px-4 py-8 lg:px-0">
