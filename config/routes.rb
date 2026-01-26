@@ -619,7 +619,6 @@ Rails.application.routes.draw do
       resources :variants, only: [:index], controller: "products/variants"
       resource :mobile_tracking, only: [:show], path: "in_app", controller: "products/mobile_tracking"
       member do
-        post :update
         post :publish
         post :unpublish
         post :increment_views
@@ -669,8 +668,19 @@ Rails.application.routes.draw do
       end
     end
 
-    get "/products/:id/edit", to: "links#edit", as: :edit_link
-    get "/products/:id/edit/*other", to: "links#edit"
+    # Product Edit - Per-tab controllers
+    get "/products/:id/edit", to: "products/edit/product#edit", as: :edit_link
+    patch "/products/:id/edit", to: "products/edit/product#update"
+
+    get "/products/:id/edit/content", to: "products/edit/content#edit", as: :products_edit_content
+    patch "/products/:id/edit/content", to: "products/edit/content#update"
+
+    get "/products/:id/edit/receipt", to: "products/edit/receipt#edit", as: :products_edit_receipt
+    patch "/products/:id/edit/receipt", to: "products/edit/receipt#update"
+
+    get "/products/:id/edit/share", to: "products/edit/share#edit", as: :products_edit_share
+    patch "/products/:id/edit/share", to: "products/edit/share#update"
+
     get "/products/:id/card", to: "links#card", as: :product_card
     get "/products/search", to: "links#search"
 

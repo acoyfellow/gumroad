@@ -9,7 +9,7 @@ import { FileEmbed } from "$app/components/ProductEdit/ContentTab/FileEmbed";
 import { Product } from "$app/components/ProductEdit/state";
 import { baseEditorOptions } from "$app/components/RichTextEditor";
 
-export const saveProduct = async (permalink: string, id: string, product: Product, currencyType: CurrencyCode) => {
+export const saveProduct = async (permalink: string, id: string, product: Product, currencyType: CurrencyCode, url?: string) => {
   // TODO remove this once we have a better content uploader
   const editor = new Editor(baseEditorOptions(extensions(id)));
   const richContents =
@@ -27,10 +27,19 @@ export const saveProduct = async (permalink: string, id: string, product: Produc
   editor.destroy();
   product.files = product.files.filter((file) => fileIds.has(file.id));
 
+  let updateUrl = url;
+  if (!updateUrl) {
+    const inertiaUrl = window.location.pathname;
+    updateUrl = Routes.edit_link_path(permalink);
+    if (inertiaUrl.includes("/edit/content")) updateUrl = Routes.products_edit_content_path(permalink);
+    else if (inertiaUrl.includes("/edit/receipt")) updateUrl = Routes.products_edit_receipt_path(permalink);
+    else if (inertiaUrl.includes("/edit/share")) updateUrl = Routes.products_edit_share_path(permalink);
+  }
+
   const response = await request({
-    method: "POST",
+    method: "PATCH",
     accept: "json",
-    url: Routes.link_path(permalink),
+    url: updateUrl,
     data: {
       ...product,
       price_currency_type: currencyType,

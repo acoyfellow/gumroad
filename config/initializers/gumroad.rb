@@ -31,6 +31,6 @@ module GumroadAddress
   COUNTRY = ISO3166::Country[GlobalConfig.get("ADDRESS_COUNTRY", "US")]
 
   def self.full
-    "#{STREET}, #{CITY}, #{STATE} #{ZIP_PLUS_FOUR}, #{COUNTRY.alpha3}"
+    "#{STREET}, #{CITY}, #{STATE} #{ZIP_PLUS_FOUR}, #{COUNTRY&.alpha3 || 'USA'}"
   end
 end

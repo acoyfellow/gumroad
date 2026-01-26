@@ -1,0 +1,41 @@
+# frozen_string_literal: true
+
+module Products
+  module Edit
+    class ReceiptController < BaseController
+      def edit
+        @title = @product.name
+
+        render inertia: "Products/Edit/Receipt", props: Products::Edit::ReceiptTabPresenter.new(product: @product, pundit_user:).props
+      end
+
+      def update
+        begin
+          ActiveRecord::Base.transaction do
+            update_receipt_attributes
+          end
+        rescue ActiveRecord::RecordNotSaved, ActiveRecord::RecordInvalid, Link::LinkInvalid => e
+          error_message = @product.errors.full_messages.first || e.message
+          flash[:error] = error_message
+          return redirect_back fallback_location: products_edit_receipt_path(@product.external_id)
+        end
+
+        flash[:notice] = "Your changes have been saved!"
+        check_offer_codes_validity
+        redirect_to products_edit_receipt_path(id: @product.unique_permalink)
+      end
+
+      private
+
+        def update_receipt_attributes
+          # Receipt tab specific updates
+          @product.assign_attributes(product_permitted_params)
+          @product.save!
+        end
+
+        def product_permitted_params
+          params.permit(policy(@product).receipt_tab_permitted_attributes)
+        end
+    end
+  end
+end
