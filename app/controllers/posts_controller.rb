@@ -29,7 +29,7 @@ class PostsController < ApplicationController
       user: logged_in_user,
       seller: (logged_in_user && policy(@post).preview?) ? current_seller : logged_in_user
     )
-    @post_presenter = PostPresenter.new(
+    post_presenter = PostPresenter.new(
       pundit_user: seller_context,
       post: @post,
       purchase_id_param: params[:purchase_id]
