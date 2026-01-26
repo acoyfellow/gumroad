@@ -150,7 +150,7 @@ describe Purchases::DisputeEvidenceController do
         dispute_evidence = assigns(:dispute_evidence)
         expect(dispute_evidence.valid?).to be(false)
 
-        expect(response).to redirect_to(purchase_dispute_evidence_path(purchase))
+        expect(response).to redirect_to(purchase_dispute_evidence_path(purchase.external_id))
         expect(flash[:alert]).to eq("Cancellation rebuttal is too long (maximum is 3000 characters)")
       end
     end

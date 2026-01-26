@@ -152,6 +152,25 @@ describe("Dispute evidence page", type: :system, js: true) do
     end
   end
 
+  describe "validation errors" do
+    it "shows validation error message when submission fails" do
+      visit purchase_dispute_evidence_path(purchase.external_id)
+
+      within_fieldset("Why should you win this dispute?") do
+        choose("Other")
+      end
+
+      # Remove maxLength attribute to allow typing more than 3000 characters
+      page.execute_script("document.querySelector('textarea').removeAttribute('maxLength')")
+
+      fill_in("Why should you win this dispute?", with: "a" * 3001)
+      click_on("Submit")
+
+      # Validation error should be shown as a toast notification (matching original behavior)
+      expect(page).to have_alert(text: "Reason for winning is too long")
+    end
+  end
+
   describe "customer_communication_file field" do
     it "submits the form successfully" do
       # Purging in test ENV returns Aws::S3::Errors::AccessDenied

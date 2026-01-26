@@ -16,7 +16,8 @@ import FileUtils from "$app/utils/file";
 import { Button, NavigationButton } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { showAlert } from "$app/components/server-components/Alert";
+import { showAlert, type AlertPayload } from "$app/components/server-components/Alert";
+import { useFlashMessage } from "$app/components/useFlashMessage";
 import { Alert } from "$app/components/ui/Alert";
 import { Card, CardContent } from "$app/components/ui/Card";
 import { Row, RowActions, RowContent, Rows } from "$app/components/ui/Rows";
@@ -73,7 +74,35 @@ type FormData = {
 };
 
 export default function Show() {
-  const props = cast<Props>(usePage().props);
+  const { flash, ...pageProps } = usePage<{ flash?: AlertPayload }>().props;
+  const props = cast<Props>(pageProps);
+
+  useFlashMessage(flash);
+
+  const reasonForWinningUID = React.useId();
+  const cancellationRebuttalUID = React.useId();
+  const refundRefusalExplanationUID = React.useId();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const userAgentInfo = useUserAgentInfo();
+  const [reasonForWinningOption, setReasonForWinningOption] = React.useState<ReasonForWinningOption | null>(null);
+  const [cancellationRebuttalOption, setCancellationRebuttalOption] = React.useState<CancellationRebuttalOption | null>(
+    null,
+  );
+  const [blobs, setBlobs] = React.useState<Blobs>(
+    props.submitted
+      ? { receipt_image: null, policy_image: null, customer_communication_file: null }
+      : props.dispute_evidence.blobs,
+  );
+  const [isUploading, setIsUploading] = React.useState(false);
+
+  const form = useForm<FormData>({
+    dispute_evidence: {
+      reason_for_winning: "",
+      cancellation_rebuttal: "",
+      refund_refusal_explanation: "",
+      customer_communication_file_signed_blob_id: null,
+    },
+  });
 
   if (props.submitted) {
     return (
@@ -91,31 +120,8 @@ export default function Show() {
 
   const { dispute_evidence, disputable, products } = props;
 
-  const reasonForWinningUID = React.useId();
-  const cancellationRebuttalUID = React.useId();
-  const refundRefusalExplanationUID = React.useId();
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const userAgentInfo = useUserAgentInfo();
   const purchaseDate = new Date(dispute_evidence.purchased_at).toLocaleString(userAgentInfo.locale, {
     dateStyle: "medium",
-  });
-
-  // Track selected options separately for UI
-  const [reasonForWinningOption, setReasonForWinningOption] = React.useState<ReasonForWinningOption | null>(null);
-  const [cancellationRebuttalOption, setCancellationRebuttalOption] = React.useState<CancellationRebuttalOption | null>(
-    null,
-  );
-
-  // Track blobs for display (can be updated when uploading)
-  const [blobs, setBlobs] = React.useState<Blobs>(dispute_evidence.blobs);
-
-  const form = useForm<FormData>({
-    dispute_evidence: {
-      reason_for_winning: "",
-      cancellation_rebuttal: "",
-      refund_refusal_explanation: "",
-      customer_communication_file_signed_blob_id: null,
-    },
   });
 
   const updateFormData = (update: Partial<FormData["dispute_evidence"]>) => {
@@ -165,7 +171,6 @@ export default function Show() {
     form.put(Routes.purchase_dispute_evidence_path(disputable.purchase_for_dispute_evidence_id));
   };
 
-  const [isUploading, setIsUploading] = React.useState(false);
   const handleFileUpload = () => {
     const file = fileInputRef.current?.files?.[0];
     if (!file) return;

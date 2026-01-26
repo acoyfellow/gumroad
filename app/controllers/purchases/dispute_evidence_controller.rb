@@ -25,7 +25,7 @@ class Purchases::DisputeEvidenceController < ApplicationController
     FightDisputeJob.perform_async(@dispute_evidence.dispute.id)
     render inertia: "Purchases/DisputeEvidence/Show", props: { submitted: true }
   rescue ActiveRecord::RecordInvalid
-    redirect_to purchase_dispute_evidence_path(@purchase), alert: @dispute_evidence.errors.full_messages.to_sentence
+    redirect_to purchase_dispute_evidence_path(@purchase.external_id), alert: @dispute_evidence.errors.full_messages.to_sentence
   end
 
   private
