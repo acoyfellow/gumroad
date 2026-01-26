@@ -169,7 +169,6 @@ class LinksController < ApplicationController
   end
 
   def cart_items_count
-    @disable_third_party_analytics = true
 
     render inertia: "Products/CartItemsCount", props: {
       cart: CartPresenter.new(logged_in_user:, ip: request.remote_ip, browser_guid: cookies[:_gumroad_guid]).cart_props
