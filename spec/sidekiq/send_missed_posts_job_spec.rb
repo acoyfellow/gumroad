@@ -12,13 +12,14 @@ describe SendMissedPostsJob do
   describe "#perform" do
     it "finds purchase by external ID and calls service" do
       expect(CustomersService).to receive(:deliver_missed_posts_for!).with(purchase:, workflow_id: nil)
-      expect(CustomersChannel).to receive(:broadcast_missed_posts_message!).with(
-        purchase.external_id,
-        nil,
-        CustomersChannel::MISSED_POSTS_JOB_COMPLETE_TYPE
-      )
+      expect(CheckMissedPostsCompletionJob).to receive(:perform_async).with(purchase.external_id, nil)
 
       described_class.new.perform(purchase.external_id)
+
+      expect(CustomersService).to receive(:deliver_missed_posts_for!).with(purchase:, workflow_id: "workflow_id")
+      expect(CheckMissedPostsCompletionJob).to receive(:perform_async).with(purchase.external_id, "workflow_id")
+
+      described_class.new.perform(purchase.external_id, "workflow_id")
     end
 
     it "raises error when purchase is not found" do
@@ -73,43 +74,6 @@ describe SendMissedPostsJob do
       other_exception = StandardError.new("Some error")
       result = described_class::RetryHandler.call(0, other_exception, {})
       expect(result).to be_nil
-    end
-  end
-
-  describe "sidekiq_retries_exhausted" do
-    let(:job_info) { { "class" => "SendMissedPostsJob", "args" => [purchase.external_id, nil] } }
-
-    it "broadcasts failure message when retries are exhausted" do
-      expect(CustomersChannel).to receive(:broadcast_missed_posts_message!).with(
-        purchase.external_id,
-        nil,
-        CustomersChannel::MISSED_POSTS_JOB_FAILED_TYPE
-      )
-
-      described_class::FailureHandler.call(job_info, StandardError.new("Test error"))
-    end
-
-    it "includes workflow name in failure message when workflow_id is provided" do
-      workflow = create(:workflow, seller:, name: "My Workflow")
-      job_info = { "class" => "SendMissedPostsJob", "args" => [purchase.external_id, workflow.external_id] }
-
-      expect(CustomersChannel).to receive(:broadcast_missed_posts_message!).with(
-        purchase.external_id,
-        workflow.external_id,
-        CustomersChannel::MISSED_POSTS_JOB_FAILED_TYPE
-      )
-
-      described_class::FailureHandler.call(job_info, StandardError.new("Test error"))
-    end
-
-    it "raises error when purchase is not found" do
-      job_info = { "class" => "SendMissedPostsJob", "args" => ["invalid_external_id", nil] }
-
-      expect(CustomersChannel).to receive(:broadcast_missed_posts_message!).and_call_original
-
-      expect do
-        described_class::FailureHandler.call(job_info, StandardError.new("Test error"))
-      end.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 end

@@ -252,8 +252,6 @@ describe "Sales page", type: :system, js: true do
             {
               start_time: 1.month.ago.strftime("%Y-%m-%d"),
               end_time: Date.today.strftime("%Y-%m-%d"),
-              product_ids: [],
-              variant_ids: [],
             }
           )
         )
@@ -515,14 +513,14 @@ describe "Sales page", type: :system, js: true do
         within_section("Post 10") { expect(page).to have_button("Sent", disabled: true) }
       end
 
-      it "resends all missed emails for a workflow and notifies delivery status via socket" do
+      it "resends all missed emails for a workflow" do
         create(:payment_completed, user: seller)
         allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
         stripe_connect_account = create(:merchant_account_stripe_connect, user: seller)
         create(:purchase, seller:, link: product1, merchant_account: stripe_connect_account)
 
         workflow = create(:workflow, seller:, link: product1, name: "Test Workflow", published_at: Time.current)
-        workflow_post = create(:workflow_installment, workflow:, seller:, link: product1, name: "Workflow Post", published_at: Time.current)
+        create(:workflow_installment, workflow:, seller:, link: product1, name: "Workflow Post", published_at: Time.current)
 
         login_as seller
         visit customers_path
@@ -543,25 +541,15 @@ describe "Sales page", type: :system, js: true do
 
         expect(page).to have_alert(text: "Missed emails are queued for delivery")
 
-        Sidekiq::Testing.inline! do
-          job = SendMissedPostsJob.jobs.last
-          expect(job["args"]).to eq([purchase1.external_id, workflow.external_id])
-          SendMissedPostsJob.new.perform(*job["args"])
-        end
-
-        expect(page).to have_alert(
-          text: "Missed emails for workflow \"Test Workflow\" were sent to customer1@gumroad.com",
-        )
-
         within_modal "Product 1" do
-          within_section "Emails received", section_element: :section do
-            within_section "Workflow Post" do
-              expect(page).to have_text("Sent #{workflow_post.published_at.strftime("%b %-d")}")
-            end
+          within find("section[aria-label='Missed emails']") do
+            click_on "Resend all"
+            expect(page).to have_button("Resending all...", disabled: true)
           end
         end
 
-        expect(EmailInfo.last.installment).to eq(workflow_post)
+        expect(page).to have_alert(text: "Missed posts are being sent. Please wait for an hour before trying again.")
+        expect($redis.exists?(RedisKey.missed_posts_job(purchase1.external_id, workflow.external_id))).to be true
       end
 
       it "does not allow re-sending an email if the seller is not eligible to send emails" do

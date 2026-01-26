@@ -26,21 +26,12 @@ describe WorkflowsPresenter do
   end
 
   describe "#workflow_options_by_purchase_props" do
-    it "calls service and formats workflow options" do
-      purchase = create(:purchase, seller:, link: product)
-      create(:workflow_installment, workflow: workflow1, seller:, published_at: 1.day.ago, link_id: workflow1.link_id)
-      create(:workflow_installment, workflow: workflow2, seller:,  deleted_at: DateTime.current, link_id: workflow2.link_id)
+    it "formats workflow options" do
       create(:workflow_installment, workflow: workflow3, seller:, published_at: 1.day.ago, link_id: workflow3.link_id)
-      create(:workflow_installment, workflow: workflow4, seller:, published_at: 1.day.ago, link_id: workflow4.link_id)
 
-      expect(CustomersService).to receive(:find_workflow_options_for).with(purchase).and_call_original
+      workflow_options = described_class.new(seller:).workflow_options_by_purchase_props([workflow3])
 
-      workflow_options = described_class.new(seller:).workflow_options_by_purchase_props(purchase)
-
-      expect(workflow_options).to eq([
-                                       WorkflowPresenter.new(seller:, workflow: workflow3).workflow_option_props,
-                                       WorkflowPresenter.new(seller:, workflow: workflow4).workflow_option_props,
-                                     ])
+      expect(workflow_options).to eq([WorkflowPresenter.new(seller:, workflow: workflow3).workflow_option_props])
     end
   end
 end

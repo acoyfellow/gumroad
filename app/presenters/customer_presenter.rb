@@ -8,7 +8,7 @@ class CustomerPresenter
   end
 
   def missed_posts(workflow_id: nil)
-    posts = CustomersService.find_missed_posts_for(purchase:, workflow_id:).order(published_at: :desc)
+    posts = Installment.missed_for_purchase(purchase, workflow_id:).order(published_at: :desc)
 
     posts.map do |post|
       {
@@ -193,7 +193,13 @@ class CustomerPresenter
       }
     end
 
-    published_posts, unpublished_posts = CustomersService.find_sent_posts_for(purchase).partition do |sent_email|
+    latest_email_ids = CreatorContactingCustomersEmailInfo
+      .where(purchase:, installment_id: Installment.seller_or_audience_or_product_or_variant_type_for_purchase(purchase).alive.published.pluck(:id))
+      .group(:installment_id)
+      .maximum(:id)
+      .values
+
+    published_posts, unpublished_posts = CreatorContactingCustomersEmailInfo.where(id: latest_email_ids).order(sent_at: :desc).partition do |sent_email|
       sent_email.installment.published_at.present?
     end
 

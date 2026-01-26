@@ -4,7 +4,7 @@ require "spec_helper"
 require "shared_examples/customer_drawer_missed_posts_context"
 
 describe CustomersService do
-  include_context "customer drawer missed posts setup"
+  let(:seller) { create(:named_user) }
 
   RSpec.shared_context "with seller eligible to send emails" do
     before do
@@ -14,113 +14,8 @@ describe CustomersService do
     end
   end
 
-  describe ".find_missed_posts_for" do
-    it "returns missed posts" do
-      expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: nil).and_call_original
-      missed_posts = described_class.find_missed_posts_for(purchase:)
-      expect(missed_posts).to eq([
-                                   audience_post,
-                                   seller_post_to_all_customers,
-                                   seller_workflow_post_to_all_customers,
-                                   seller_post_with_bought_products_filter_product_a_and_c,
-                                   regular_post_product_a,
-                                   workflow_post_product_a
-                                 ])
-
-      expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: workflow_post_product_a.workflow.external_id).and_call_original
-      described_class.find_missed_posts_for(purchase:, workflow_id: workflow_post_product_a.workflow.external_id)
-    end
-  end
-
-  describe ".find_sent_posts_for" do
-    let!(:regular_post_product_a_email) { create(:creator_contacting_customers_email_info, installment: regular_post_product_a, purchase:) }
-    let!(:other_product_email) { create(:creator_contacting_customers_email_info, installment: regular_post_product_b, purchase:) }
-
-    it "returns only sent posts for the purchase's product, excludes other product posts" do
-      sent_posts = described_class.find_sent_posts_for(purchase)
-
-      expect(sent_posts).to eq([regular_post_product_a_email])
-      expect(sent_posts).not_to include(other_product_email)
-    end
-
-    it "returns only the latest email per installment when multiple emails exist" do
-      latest_email_regular_post_product_a = create(:creator_contacting_customers_email_info, installment: regular_post_product_a, purchase:, sent_at: 1.day.ago)
-      latest_email_workflow_post_product_a = create(:creator_contacting_customers_email_info, installment: workflow_post_product_a, purchase:, sent_at: 1.day.ago)
-
-      sent_posts = described_class.find_sent_posts_for(purchase)
-
-      expect(sent_posts).to eq([latest_email_regular_post_product_a, latest_email_workflow_post_product_a])
-      expect(sent_posts).not_to include(regular_post_product_a_email)
-    end
-
-    context "for bundle purchase" do
-      include_context "with bundle purchase setup", with_posts: true
-
-      let!(:bundle_email) { create(:creator_contacting_customers_email_info, installment: bundle_post, purchase: bundle_purchase) }
-      let!(:product_a_email) { create(:creator_contacting_customers_email_info, installment: regular_post_product_a, purchase: bundle_purchase.product_purchases.find_by(link: product_a)) }
-      let!(:product_b_email) { create(:creator_contacting_customers_email_info, installment: regular_post_product_b, purchase: bundle_purchase.product_purchases.find_by(link: product_b)) }
-
-      it "returns only sent posts for bundle purchase" do
-        result = described_class.find_sent_posts_for(bundle_purchase)
-
-        expect(result).to eq([bundle_email])
-        expect(result).not_to include(product_a_email, product_b_email)
-      end
-
-      it "returns only sent posts for bundle purchase product" do
-        result = described_class.find_sent_posts_for(bundle_purchase.product_purchases.find_by(link: product_a))
-
-        expect(result).to eq([product_a_email])
-        expect(result).not_to include(bundle_email, product_b_email)
-      end
-    end
-  end
-
-  describe ".find_workflow_options_for" do
-    let!(:_follower_workflow_post) { create(:follower_installment, published_at: Time.current, workflow: create(:follower_workflow, :published, seller:), seller:) }
-    let!(:_deleted_seller_workflow_post) { create(:seller_installment, workflow: create(:seller_workflow, seller:, deleted_at: DateTime.current), seller:, deleted_at: DateTime.current) }
-    let!(:audience_workflow_post) { create(:audience_installment, :published, workflow: create(:audience_workflow, :published, seller:), seller:) }
-
-    let!(:other_seller) { create(:named_seller, username: "othseller#{SecureRandom.alphanumeric(8).downcase}", email: "other_seller_#{SecureRandom.hex(4)}@example.com") }
-    let!(:other_seller_installment) { create(:seller_installment, :published, workflow: create(:seller_workflow, :published, seller: other_seller), seller: other_seller) }
-
-    before do
-      workflow_post_product_a.workflow.update!(name: "Alpha Workflow")
-      seller_workflow.update!(name: "Beta Workflow")
-      audience_workflow_post.workflow.update!(name: "Omega Workflow")
-    end
-
-    it "returns alive and published workflows sorted by name" do
-      workflow_options = described_class.find_workflow_options_for(purchase)
-
-      expect(workflow_options).to eq([workflow_post_product_a.workflow, seller_workflow, audience_workflow_post.workflow])
-    end
-
-    context "for bundle purchase" do
-      include_context "with bundle purchase setup", with_posts: true
-
-      before do
-        bundle_workflow.update!(name: "Gamma Workflow")
-        workflow_post_product_a_variant.workflow.update!(name: "Delta Workflow")
-      end
-
-      let!(:_workflow_installment_product_c) { create(:workflow_installment, :published, workflow: create(:workflow, :published, seller:, link: product_c), seller:, link: product_c) }
-
-      it "includes workflows for bundle" do
-        workflow_options = described_class.find_workflow_options_for(bundle_purchase)
-
-        expect(workflow_options).to eq([seller_workflow, bundle_workflow, audience_workflow_post.workflow])
-      end
-
-      it "includes workflows for bundle purchase product" do
-        workflow_options = described_class.find_workflow_options_for(bundle_purchase.product_purchases.find_by(link: product_a))
-
-        expect(workflow_options).to eq([workflow_post_product_a.workflow, seller_workflow, workflow_post_product_a_variant.workflow, audience_workflow_post.workflow])
-      end
-    end
-  end
-
   describe ".send_post!" do
+    include_context "customer drawer missed posts setup"
     include_context "with seller eligible to send emails"
 
     it "sends email and creates email record" do
@@ -155,57 +50,32 @@ describe CustomersService do
       expect(PostSendgridApi.mails.size).to eq(1)
       expect(PostSendgridApi.mails.keys).to include(purchase.email)
     end
-
-    it "raises SellerNotEligibleError when seller is not eligible to send emails" do
-      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE - 1)
-
-      expect do
-        described_class.send_post!(post: regular_post_product_a, purchase:)
-      end.to raise_error(CustomersService::SellerNotEligibleError, "You are not eligible to resend this email.")
-
-      expect(PostSendgridApi.mails).to be_empty
-      expect(CreatorContactingCustomersEmailInfo.where(purchase:, installment: regular_post_product_a)).to be_empty
-    end
-
-    it "raises CustomerDNDEnabledError when user can't be contacted for purchase" do
-      purchase.update!(can_contact: false)
-
-      expect do
-        described_class.send_post!(post: regular_post_product_a, purchase:)
-      end.to raise_error(CustomersService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
-
-      expect(PostSendgridApi.mails).to be_empty
-      expect(CreatorContactingCustomersEmailInfo.where(purchase:, installment: regular_post_product_a)).to be_empty
-    end
-
-    it "includes subscription for membership purchases" do
-      membership_purchase = create(:membership_purchase, link: create(:membership_product, user: seller))
-      membership_purchase.create_url_redirect!
-      Rails.cache.delete("post_email:#{regular_post_product_a.id}:#{membership_purchase.id}")
-
-      expect(PostEmailApi).to receive(:process).with(
-        post: regular_post_product_a,
-        recipients: [{
-          email: membership_purchase.email,
-          purchase: membership_purchase,
-          url_redirect: membership_purchase.url_redirect,
-          subscription: membership_purchase.subscription,
-        }.compact_blank]
-      ).and_call_original
-
-      expect do
-        described_class.send_post!(post: regular_post_product_a, purchase: membership_purchase)
-      end.to change { CreatorContactingCustomersEmailInfo.count }.by(1)
-
-      email_info = CreatorContactingCustomersEmailInfo.last
-      expect(email_info.purchase_id).to eq(membership_purchase.id)
-      expect(PostSendgridApi.mails.size).to eq(1)
-      expect(PostSendgridApi.mails.keys).to include(membership_purchase.email)
-    end
   end
 
   describe ".send_missed_posts_for!" do
+    include_context "customer drawer missed posts setup"
     include_context "with seller eligible to send emails"
+
+    before do
+      $redis.keys("missed_posts_job:#{purchase.external_id}:*").each { |k| $redis.del(k) }
+    end
+
+    it "sets Redis key with 'all' when workflow_id is nil" do
+      described_class.send_missed_posts_for!(purchase:)
+
+      expect($redis.exists?(RedisKey.missed_posts_job(purchase.external_id, "all"))).to be true
+      ttl = $redis.ttl(RedisKey.missed_posts_job(purchase.external_id, "all"))
+      expect(ttl).to be_between(3.days.to_i - 10, 3.days.to_i)
+    end
+
+    it "sets Redis key with specific workflow_id when provided" do
+      workflow_id = workflow_post_product_a.workflow.external_id
+      described_class.send_missed_posts_for!(purchase:, workflow_id:)
+
+      expect($redis.exists?(RedisKey.missed_posts_job(purchase.external_id, workflow_id))).to be true
+      ttl = $redis.ttl(RedisKey.missed_posts_job(purchase.external_id, workflow_id))
+      expect(ttl).to be_between(3.days.to_i - 10, 3.days.to_i)
+    end
 
     it "passes correct arguments to SendMissedPostsJob" do
       described_class.send_missed_posts_for!(purchase:)
@@ -223,6 +93,7 @@ describe CustomersService do
       end.to raise_error(CustomersService::SellerNotEligibleError, "You are not eligible to resend this email.")
 
       expect(SendMissedPostsJob.jobs).to be_empty
+      expect($redis.exists?(RedisKey.missed_posts_job(purchase.external_id, "all"))).to be false
     end
 
     it "raises CustomerDNDEnabledError when user can't be contacted for purchase" do
@@ -233,10 +104,12 @@ describe CustomersService do
       end.to raise_error(CustomersService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
 
       expect(SendMissedPostsJob.jobs).to be_empty
+      expect($redis.exists?(RedisKey.missed_posts_job(purchase.external_id, "all"))).to be false
     end
   end
 
   describe ".deliver_missed_posts_for!" do
+    include_context "customer drawer missed posts setup"
     include_context "with seller eligible to send emails"
 
     before do
@@ -254,19 +127,25 @@ describe CustomersService do
 
     it "sends emails for missed posts" do
       initial_count = CreatorContactingCustomersEmailInfo.count
+      expected_posts = [
+        audience_post,
+        seller_post_to_all_customers,
+        seller_workflow_post_to_all_customers,
+        seller_post_with_bought_products_filter_product_a_and_c,
+        workflow_post_product_a
+      ]
+      allow(described_class).to receive(:send_post!).and_call_original
 
       expect do
         described_class.deliver_missed_posts_for!(purchase:)
       end.to change { CreatorContactingCustomersEmailInfo.count }.by(5)
 
+      expected_posts.each do |post|
+        expect(described_class).to have_received(:send_post!).with(post:, purchase:)
+      end
+
       email_infos = CreatorContactingCustomersEmailInfo.where(purchase:).where("id > ?", initial_count).order(:id).last(5)
-      expect(email_infos.map(&:installment_id)).to contain_exactly(
-        audience_post.id,
-        seller_post_to_all_customers.id,
-        seller_workflow_post_to_all_customers.id,
-        seller_post_with_bought_products_filter_product_a_and_c.id,
-        workflow_post_product_a.id
-      )
+      expect(email_infos.map(&:installment_id)).to contain_exactly(*expected_posts.map(&:id))
 
       email_infos.each do |email_info|
         expect(email_info.attributes).to include(
@@ -284,44 +163,10 @@ describe CustomersService do
       expect(CreatorContactingCustomersEmailInfo.where(installment: regular_post_product_a, purchase:).count).to eq(1)
     end
 
-    it "passes workflow_id to find_missed_posts_for when provided" do
-      expect(described_class).to receive(:find_missed_posts_for).with(purchase:, workflow_id: workflow_post_product_a.workflow.external_id).and_call_original
+    it "passes workflow_id to missed_for_purchase when provided" do
+      expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: workflow_post_product_a.workflow.external_id).and_call_original
 
       described_class.deliver_missed_posts_for!(purchase:, workflow_id: workflow_post_product_a.workflow.external_id)
-    end
-
-    it "raises CustomerDNDEnabledError when user can't be contacted for purchase" do
-      purchase.update!(can_contact: false)
-
-      expect do
-        described_class.deliver_missed_posts_for!(purchase:)
-      end.to raise_error(CustomersService::CustomerDNDEnabledError, "Purchase #{purchase.id} has opted out of receiving emails")
-
-      expect(PostSendgridApi.mails).to be_empty
-      expect(CreatorContactingCustomersEmailInfo.where(purchase:).where(installment: [
-                                                                          audience_post,
-                                                                          seller_post_to_all_customers,
-                                                                          seller_workflow_post_to_all_customers,
-                                                                          seller_post_with_bought_products_filter_product_a_and_c,
-                                                                          workflow_post_product_a
-                                                                        ])).to be_empty
-    end
-
-    it "raises SellerNotEligibleError when seller is not eligible to send emails" do
-      allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE - 1)
-
-      expect do
-        described_class.deliver_missed_posts_for!(purchase:)
-      end.to raise_error(CustomersService::SellerNotEligibleError, "You are not eligible to resend this email.")
-
-      expect(PostSendgridApi.mails).to be_empty
-      expect(CreatorContactingCustomersEmailInfo.where(purchase:).where(installment: [
-                                                                          audience_post,
-                                                                          seller_post_to_all_customers,
-                                                                          seller_workflow_post_to_all_customers,
-                                                                          seller_post_with_bought_products_filter_product_a_and_c,
-                                                                          workflow_post_product_a
-                                                                        ])).to be_empty
     end
 
     it "raises PostNotSentError and aborts batch sending when send_post! raises a StandardError" do
@@ -345,6 +190,124 @@ describe CustomersService do
                                                                           seller_post_with_bought_products_filter_product_a_and_c,
                                                                           workflow_post_product_a
                                                                         ])).to be_empty
+    end
+  end
+
+  describe ".missed_posts_job_in_progress?" do
+    let(:purchase_id) { "test_purchase_123" }
+    let(:other_purchase_id) { "other_purchase_456" }
+    let(:workflow_id) { "workflow_789" }
+    let(:other_workflow_id) { "workflow_abc" }
+
+    before do
+      $redis.keys("missed_posts_job:#{purchase_id}:*").each { |k| $redis.del(k) }
+      $redis.keys("missed_posts_job:#{other_purchase_id}:*").each { |k| $redis.del(k) }
+    end
+
+    context "when workflow_id is blank" do
+      context "returns false" do
+        it "when no keys exist for the purchase_id" do
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, nil)).to be false
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, "")).to be false
+        end
+
+        it "when keys exist for a different purchase_id" do
+          $redis.setex(RedisKey.missed_posts_job(other_purchase_id, "all"), 100, "1")
+
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, nil)).to be false
+        end
+      end
+
+      context "returns true" do
+        it "when 'all' key exists for the purchase_id" do
+          $redis.setex(RedisKey.missed_posts_job(purchase_id, "all"), 100, "1")
+
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, nil)).to be true
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, "")).to be true
+        end
+
+        it "when specific workflow_id key exists for the purchase_id" do
+          $redis.setex(RedisKey.missed_posts_job(purchase_id, workflow_id), 100, "1")
+
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, nil)).to be true
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, "")).to be true
+        end
+      end
+    end
+
+    context "when workflow_id is present" do
+      context "returns false" do
+        it "when no keys exist" do
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, workflow_id)).to be false
+        end
+
+        it "when only a different workflow_id key exists" do
+          $redis.setex(RedisKey.missed_posts_job(purchase_id, other_workflow_id), 100, "1")
+
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, workflow_id)).to be false
+        end
+
+        it "when keys exist for a different purchase_id" do
+          $redis.setex(RedisKey.missed_posts_job(other_purchase_id, "all"), 100, "1")
+          $redis.setex(RedisKey.missed_posts_job(other_purchase_id, workflow_id), 100, "1")
+
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, workflow_id)).to be false
+        end
+      end
+
+      context "returns true" do
+        it "when 'all' key exists" do
+          $redis.setex(RedisKey.missed_posts_job(purchase_id, "all"), 100, "1")
+
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, workflow_id)).to be true
+        end
+
+        it "when specific workflow_id key exists" do
+          $redis.setex(RedisKey.missed_posts_job(purchase_id, workflow_id), 100, "1")
+
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, workflow_id)).to be true
+        end
+
+        it "when both 'all' and specific workflow_id keys exist" do
+          $redis.setex(RedisKey.missed_posts_job(purchase_id, "all"), 100, "1")
+          $redis.setex(RedisKey.missed_posts_job(purchase_id, workflow_id), 100, "1")
+
+          expect(described_class.missed_posts_job_in_progress?(purchase_id, workflow_id)).to be true
+        end
+      end
+    end
+  end
+
+  describe ".clear_missed_posts_job_key" do
+    let(:purchase_id) { "test_purchase_123" }
+    let(:workflow_id) { "workflow_456" }
+
+    it "removes the specific workflow_id key" do
+      $redis.setex(RedisKey.missed_posts_job(purchase_id, workflow_id), 100, "1")
+      expect($redis.exists?(RedisKey.missed_posts_job(purchase_id, workflow_id))).to be true
+
+      described_class.clear_missed_posts_job_key(purchase_id, workflow_id)
+
+      expect($redis.exists?(RedisKey.missed_posts_job(purchase_id, workflow_id))).to be false
+    end
+
+    it "defaults to 'all' when workflow_id is not provided" do
+      $redis.setex(RedisKey.missed_posts_job(purchase_id, "all"), 100, "1")
+      expect($redis.exists?(RedisKey.missed_posts_job(purchase_id, "all"))).to be true
+
+      described_class.clear_missed_posts_job_key(purchase_id)
+
+      expect($redis.exists?(RedisKey.missed_posts_job(purchase_id, "all"))).to be false
+    end
+
+    it "does not remove other keys for the same purchase_id" do
+      $redis.setex(RedisKey.missed_posts_job(purchase_id, "all"), 100, "1")
+      $redis.setex(RedisKey.missed_posts_job(purchase_id, workflow_id), 100, "1")
+
+      described_class.clear_missed_posts_job_key(purchase_id, workflow_id)
+
+      expect($redis.exists?(RedisKey.missed_posts_job(purchase_id, "all"))).to be true
+      expect($redis.exists?(RedisKey.missed_posts_job(purchase_id, workflow_id))).to be false
     end
   end
 end

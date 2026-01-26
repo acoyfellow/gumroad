@@ -2,11 +2,10 @@
 
 require "spec_helper"
 require "shared_examples/authorize_called"
+require "shared_examples/customer_drawer_missed_posts_context"
 require "inertia_rails/rspec"
 
 describe CustomersController, :vcr, type: :controller, inertia: true do
-  render_views
-
   let(:seller) { create(:named_user) }
 
   include_context "with user signed in as admin for seller"
@@ -52,52 +51,368 @@ describe CustomersController, :vcr, type: :controller, inertia: true do
 
     context "for partial visits" do
       let(:product) { create(:product, user: seller) }
-      let(:purchase) { create(:purchase, link: product, created_at: Time.current) }
+      let(:purchase) { create(:purchase, link: product, created_at: Time.current - 15.seconds) }
 
       before do
         request.headers["X-Inertia-Partial-Component"] = "Customers/Index"
       end
 
-      it "when customer is selected it loads customer_emails, missed_posts, and workflows together" do
-        create(:installment, :published, link: product, seller:)
-        workflow = create(:workflow, :published, link: product, seller:)
-        create(:workflow_installment, :published, workflow:, seller:, link_id: workflow.link_id)
-        request.headers["X-Inertia-Partial-Data"] = "customer_emails,missed_posts,workflows"
-        get :index, params: { purchase_id: purchase.external_id }
+      context "customer_emails" do
+        before do
+          request.headers["X-Inertia-Partial-Data"] = "customer_emails"
+        end
+        context "with classic product" do
+          it "returns success true with only receipt default values" do
+            get :index, params: { purchase_id: purchase.external_id }
 
-        expect(response).to be_successful
-        expect(inertia.props).not_to have_key(:customers_presenter)
+            expect(response).to be_successful
+            expect(inertia.props[:customer_emails].count).to eq 1
+            expect(inertia.props[:customer_emails][0][:type]).to eq("receipt")
+            expect(inertia.props[:customer_emails][0][:id]).to be_present
+            expect(inertia.props[:customer_emails][0][:name]).to eq "Receipt"
+            expect(inertia.props[:customer_emails][0][:state]).to eq "Delivered"
+            expect(inertia.props[:customer_emails][0][:state_at]).to be_present
+            expect(inertia.props[:customer_emails][0][:url]).to eq receipt_purchase_url(purchase.external_id, email: purchase.email)
+          end
 
-        expect(inertia.props[:customer_emails]).to be_an(Array)
-        expect(inertia.props[:customer_emails]).not_to be_empty
-        expect(inertia.props[:customer_emails].first).to have_key(:type)
-        expect(inertia.props[:customer_emails].first).to have_key(:id)
-        expect(inertia.props[:customer_emails].first).to have_key(:url)
+          it "returns success true with only receipt" do
+            create(:customer_email_info_opened, purchase: purchase)
+            get :index, params: { purchase_id: purchase.external_id }
 
-        expect(inertia.props[:missed_posts]).to be_an(Array)
-        expect(inertia.props[:missed_posts]).not_to be_empty
-        expect(inertia.props[:missed_posts].first).to have_key(:id)
-        expect(inertia.props[:missed_posts].first).to have_key(:name)
-        expect(inertia.props[:missed_posts].first).to have_key(:url)
-        expect(inertia.props[:missed_posts].first).to have_key(:published_at)
+            expect(response).to be_successful
+            expect(inertia.props[:customer_emails].count).to eq 1
+            expect(inertia.props[:customer_emails][0][:type]).to eq("receipt")
+            expect(inertia.props[:customer_emails][0][:id]).to eq purchase.external_id
+            expect(inertia.props[:customer_emails][0][:name]).to eq "Receipt"
+            expect(inertia.props[:customer_emails][0][:state]).to eq "Opened"
+            expect(inertia.props[:customer_emails][0][:state_at]).to be_present
+            expect(inertia.props[:customer_emails][0][:url]).to eq receipt_purchase_url(purchase.external_id, email: purchase.email)
+          end
 
-        expect(inertia.props[:workflows]).to be_an(Array)
-        expect(inertia.props[:workflows]).not_to be_empty
-        expect(inertia.props[:workflows].first).to have_key(:id)
-        expect(inertia.props[:workflows].first).to have_key(:label)
+          it "returns success true with receipt and posts" do
+            now = Time.current
+            post1 = create(:installment, link: product, published_at: now - 10.seconds)
+            post2 = create(:installment, link: product, published_at: now - 5.seconds)
+            post3 = create(:installment, link: product, published_at: now - 1.second)
+
+            create(:customer_email_info_opened, purchase: purchase)
+            create(:creator_contacting_customers_email_info_delivered, installment: post1, purchase: purchase)
+            create(:creator_contacting_customers_email_info_opened, installment: post2, purchase: purchase)
+            create(:creator_contacting_customers_email_info_delivered, installment: post3, purchase: purchase)
+            post_from_diff_user = create(:installment, link: product, seller: create(:user), published_at: Time.current)
+            create(:creator_contacting_customers_email_info_delivered, installment: post_from_diff_user, purchase: purchase)
+            get :index, params: { purchase_id: purchase.external_id }
+
+            expect(response).to be_successful
+            expect(inertia.props[:customer_emails].count).to eq 4
+
+            expect(inertia.props[:customer_emails][0][:type]).to eq("receipt")
+            expect(inertia.props[:customer_emails][0][:id]).to eq purchase.external_id
+            expect(inertia.props[:customer_emails][0][:state]).to eq "Opened"
+            expect(inertia.props[:customer_emails][0][:url]).to eq receipt_purchase_url(purchase.external_id, email: purchase.email)
+
+            expect(inertia.props[:customer_emails][1][:type]).to eq("post")
+            expect(inertia.props[:customer_emails][1][:id]).to eq post3.external_id
+            expect(inertia.props[:customer_emails][1][:state]).to eq "Delivered"
+
+            expect(inertia.props[:customer_emails][2][:type]).to eq("post")
+            expect(inertia.props[:customer_emails][2][:id]).to eq post2.external_id
+            expect(inertia.props[:customer_emails][2][:state]).to eq "Opened"
+
+            expect(inertia.props[:customer_emails][3][:type]).to eq("post")
+            expect(inertia.props[:customer_emails][3][:id]).to eq post1.external_id
+            expect(inertia.props[:customer_emails][3][:state]).to eq "Delivered"
+          end
+        end
+
+        context "with subscription product" do
+          it "returns all receipts and posts ordered by date" do
+            product = create(:membership_product, subscription_duration: "monthly", user: seller)
+            buyer = create(:user, credit_card: create(:credit_card))
+            subscription = create(:subscription, link: product, user: buyer)
+
+            travel_to 1.month.ago
+
+            original_purchase = create(:purchase_with_balance,
+                                       link: product,
+                                       seller: product.user,
+                                       subscription:,
+                                       purchaser: buyer,
+                                       is_original_subscription_purchase: true)
+            create(:customer_email_info_opened, purchase: original_purchase)
+
+            travel_back
+
+            first_post = create(:published_installment, link: product, name: "Thanks for buying!")
+
+            travel 1
+
+            recurring_purchase = create(:purchase_with_balance,
+                                        link: product,
+                                        seller: product.user,
+                                        subscription:,
+                                        purchaser: buyer)
+
+            travel 1
+
+            second_post = create(:published_installment, link: product, name: "Will you review my course?")
+            create(:creator_contacting_customers_email_info_opened, installment: second_post, purchase: original_purchase)
+
+            travel 1
+
+            # Second receipt email opened after the posts were published, should still be ordered by time of purchase
+            create(:customer_email_info_opened, purchase: recurring_purchase)
+            # First post delivered after second one; should still be ordered by publish time
+            create(:creator_contacting_customers_email_info_delivered, installment: first_post, purchase: original_purchase)
+
+            # A post sent to customers of the same product, but with filters that didn't match this purchase
+            unrelated_post = create(:published_installment, link: product, name: "Message to other folks!")
+            create(:creator_contacting_customers_email_info_delivered, installment: unrelated_post)
+
+            get :index, params: { purchase_id: original_purchase.external_id }
+
+            expect(response).to be_successful
+            expect(inertia.props[:customer_emails].count).to eq 4
+
+            expect(inertia.props[:customer_emails][0][:type]).to eq("receipt")
+            expect(inertia.props[:customer_emails][0][:id]).to eq original_purchase.external_id
+            expect(inertia.props[:customer_emails][0][:name]).to eq "Receipt"
+            expect(inertia.props[:customer_emails][0][:state]).to eq "Opened"
+            expect(inertia.props[:customer_emails][0][:url]).to eq receipt_purchase_url(original_purchase.external_id, email: original_purchase.email)
+
+            expect(inertia.props[:customer_emails][1][:type]).to eq("receipt")
+            expect(inertia.props[:customer_emails][1][:id]).to eq recurring_purchase.external_id
+            expect(inertia.props[:customer_emails][1][:name]).to eq "Receipt"
+            expect(inertia.props[:customer_emails][1][:state]).to eq "Opened"
+            expect(inertia.props[:customer_emails][1][:url]).to eq receipt_purchase_url(recurring_purchase.external_id, email: recurring_purchase.email)
+
+            expect(inertia.props[:customer_emails][2][:type]).to eq("post")
+            expect(inertia.props[:customer_emails][2][:id]).to eq second_post.external_id
+            expect(inertia.props[:customer_emails][2][:state]).to eq "Opened"
+
+            expect(inertia.props[:customer_emails][3][:type]).to eq("post")
+            expect(inertia.props[:customer_emails][3][:id]).to eq first_post.external_id
+            expect(inertia.props[:customer_emails][3][:state]).to eq "Delivered"
+          end
+
+          it "includes receipts for free trial original purchases" do
+            product = create(:membership_product, :with_free_trial_enabled, user: seller)
+            original_purchase = create(:membership_purchase, link: product, seller:, is_free_trial_purchase: true, purchase_state: "not_charged")
+            create(:customer_email_info_opened, purchase: original_purchase)
+
+            get :index, params: { purchase_id: original_purchase.external_id }
+
+            expect(response).to be_successful
+            expect(inertia.props[:customer_emails].count).to eq 1
+
+            email_info = inertia.props[:customer_emails][0]
+            expect(email_info[:type]).to eq("receipt")
+            expect(email_info[:id]).to eq original_purchase.external_id
+            expect(email_info[:name]).to eq "Receipt"
+            expect(email_info[:state]).to eq "Opened"
+            expect(email_info[:url]).to eq receipt_purchase_url(original_purchase.external_id, email: original_purchase.email)
+          end
+        end
+
+        context "when purchase uses a charge receipt" do
+          let(:product) { create(:product, user: seller) }
+          let(:purchase) { create(:purchase, link: product) }
+          let(:charge) { create(:charge, purchases: [purchase], seller:) }
+          let(:order) { charge.order }
+          let!(:email_info) do
+            create(
+              :customer_email_info,
+              purchase_id: nil,
+              state: :opened,
+              opened_at: Time.current,
+              email_name: SendgridEventInfo::RECEIPT_MAILER_METHOD,
+              email_info_charge_attributes: { charge_id: charge.id }
+            )
+          end
+
+          before do
+            order.purchases << purchase
+          end
+
+          it "returns EmailInfo from charge" do
+            get :index, params: { purchase_id: purchase.external_id }
+
+            expect(response).to be_successful
+            expect(inertia.props[:customer_emails].count).to eq 1
+
+            email_info = inertia.props[:customer_emails][0]
+            expect(email_info[:type]).to eq("receipt")
+            expect(email_info[:id]).to eq purchase.external_id
+            expect(email_info[:name]).to eq "Receipt"
+            expect(email_info[:state]).to eq "Opened"
+            expect(email_info[:url]).to eq receipt_purchase_url(purchase.external_id, email: purchase.email)
+          end
+        end
+
+        context "for bundle purchase" do
+          include_context "customer drawer missed posts setup"
+          include_context "with bundle purchase setup", with_posts: true
+
+          let!(:bundle_email) { create(:creator_contacting_customers_email_info_delivered, installment: bundle_post, purchase: bundle_purchase) }
+          let!(:product_a_email) { create(:creator_contacting_customers_email_info_delivered, installment: regular_post_product_a, purchase: bundle_purchase.product_purchases.find_by(link: product_a)) }
+          let!(:product_b_email) { create(:creator_contacting_customers_email_info_delivered, installment: regular_post_product_b, purchase: bundle_purchase.product_purchases.find_by(link: product_b)) }
+
+          it "returns receipt only for bundle purchase" do
+            get :index, params: { purchase_id: bundle_purchase.external_id }
+
+            expect(response).to be_successful
+            expect(inertia.props[:customer_emails].count).to eq 2
+            expect(inertia.props[:customer_emails].map { _1.values_at(:type, :id) }).to eq([["receipt", bundle_purchase.external_id], ["post", bundle_post.external_id]])
+          end
+
+          it "doesn't return receipt for bundle product purchase" do
+            product_a_purchase = bundle_purchase.product_purchases.find_by(link: product_a)
+            product_b_purchase = bundle_purchase.product_purchases.find_by(link: product_b)
+
+            get :index, params: { purchase_id: product_a_purchase.external_id }
+            expect(response).to be_successful
+            expect(inertia.props[:customer_emails].count).to eq 1
+            expect(inertia.props[:customer_emails].map { _1.values_at(:type, :id) }).to eq([["post", regular_post_product_a.external_id]])
+
+            get :index, params: { purchase_id: product_b_purchase.external_id }
+            expect(response).to be_successful
+            expect(inertia.props[:customer_emails].count).to eq 1
+            expect(inertia.props[:customer_emails].map { _1.values_at(:type, :id) }).to eq([["post", regular_post_product_b.external_id]])
+          end
+        end
       end
 
-      it "when workflow is changed it loads only missed_posts" do
-        request.headers["X-Inertia-Partial-Data"] = "missed_posts"
-        get :index, params: { purchase_id: purchase.external_id }
+      context "workflows" do
+        include_context "customer drawer missed posts setup"
+        include_context "with bundle purchase setup", with_posts: true
 
-        expect(response).to be_successful
-        expect(inertia.props).not_to have_key(:customer_emails)
-        expect(inertia.props).not_to have_key(:customers_presenter)
-        expect(inertia.props).to have_key(:missed_posts)
-        expect(inertia.props[:missed_posts]).to be_an(Array)
+        let!(:audience_workflow_post) { create(:audience_installment, :published, workflow: create(:audience_workflow, :published, seller:), seller:) }
 
-        expect(inertia.props).not_to have_key(:workflows)
+        before do
+          workflow_post_product_a.workflow.update!(name: "Alpha Workflow")
+          seller_workflow.update!(name: "Beta Workflow")
+          audience_workflow_post.workflow.update!(name: "Omega Workflow")
+          bundle_workflow.update!(name: "Gamma Workflow")
+          workflow_post_product_a_variant.workflow.update!(name: "Delta Workflow")
+          request.headers["X-Inertia-Partial-Data"] = "workflows"
+        end
+
+        it "returns alive and published sorted by name" do
+          get :index, params: { purchase_id: purchase.external_id }
+
+          expect(response).to be_successful
+          expect(inertia.props[:workflows].map { |w| w.values_at(:label, :id) }).to eq([["Alpha Workflow", workflow_post_product_a.workflow.external_id], ["Beta Workflow", seller_workflow.external_id], ["Omega Workflow", audience_workflow_post.workflow.external_id]])
+        end
+
+        it "returns variant workflows and published sorted by name" do
+          purchase_with_product_a_variant = create(:purchase, link: product_a, variant_attributes: [product_a_variant], seller:)
+          get :index, params: { purchase_id: purchase_with_product_a_variant.external_id }
+
+          expect(response).to be_successful
+          expect(inertia.props[:workflows].map { |w| w[:id] })
+          expect(inertia.props[:workflows].map { |w| w.values_at(:label, :id) }).to eq([["Alpha Workflow", workflow_post_product_a.workflow.external_id], ["Beta Workflow", seller_workflow.external_id], ["Delta Workflow", workflow_post_product_a_variant.workflow.external_id], ["Omega Workflow", audience_workflow_post.workflow.external_id]])
+        end
+
+        context "for bundle purchase" do
+          it "returns workflows for bundle" do
+            get :index, params: { purchase_id: bundle_purchase.external_id }
+
+            expect(response).to be_successful
+            expect(inertia.props[:workflows].map { |w| w[:id] }).to eq([seller_workflow.external_id, bundle_workflow.external_id, audience_workflow_post.workflow.external_id])
+          end
+
+          it "returns workflows for bundle purchase product" do
+            product_a_purchase = bundle_purchase.product_purchases.find_by(link: product_a)
+            get :index, params: { purchase_id: product_a_purchase.external_id }
+
+            expect(response).to be_successful
+            expect(inertia.props[:workflows].map { |w| w[:id] }).to eq([
+                                                                         workflow_post_product_a.workflow.external_id,
+                                                                         seller_workflow.external_id,
+                                                                         workflow_post_product_a_variant.workflow.external_id,
+                                                                         audience_workflow_post.workflow.external_id
+                                                                       ])
+          end
+        end
+      end
+
+      context "missed_posts" do
+        include_context "customer drawer missed posts setup"
+
+        before do
+          request.headers["X-Inertia-Partial-Data"] = "missed_posts"
+        end
+
+        it "returns only installments, not receipts" do
+          expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: nil).and_call_original
+          create(:customer_email_info, purchase:)
+
+          get :index, params: { purchase_id: purchase.external_id }
+
+          expect(response).to be_successful
+          expect(inertia.props[:missed_posts]).to be_an(Array)
+          expect(inertia.props[:missed_posts]).to all(include(:id, :name, :url, :published_at))
+          expect(inertia.props[:missed_posts].length).to eq(6)
+          expect(inertia.props[:missed_posts].map { _1.values_at(:id, :name) }).to eq([
+                                                                                           [workflow_post_product_a.external_id, workflow_post_product_a.name],
+                                                                                           [regular_post_product_a.external_id, regular_post_product_a.name],
+                                                                                           [seller_post_with_bought_products_filter_product_a_and_c.external_id, seller_post_with_bought_products_filter_product_a_and_c.name],
+                                                                                           [seller_workflow_post_to_all_customers.external_id, seller_workflow_post_to_all_customers.name],
+                                                                                           [seller_post_to_all_customers.external_id, seller_post_to_all_customers.name],
+                                                                                           [audience_post.external_id, audience_post.name]
+                                                                                         ])
+          expect(inertia.props[:missed_posts]).not_to include(hash_including(type: "receipt"))
+
+          expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: workflow_post_product_a.workflow.external_id).and_call_original
+          get :index, params: { purchase_id: purchase.external_id, workflow_id: workflow_post_product_a.workflow.external_id }
+
+          expect(inertia.props[:missed_posts].map { _1[:id] }).to eq([workflow_post_product_a.external_id])
+        end
+
+        context "for bundle purchase" do
+          include_context "with bundle purchase setup", with_posts: true
+
+          it "returns only posts for bundle purchase" do
+            expect(Installment).to receive(:missed_for_purchase).with(bundle_purchase, workflow_id: nil).and_call_original
+            get :index, params: { purchase_id: bundle_purchase.external_id }
+
+            expect(inertia.props[:missed_posts].map { _1[:id] }).to eq([
+                                                                            bundle_workflow_post.external_id,
+                                                                            bundle_post.external_id,
+                                                                            seller_workflow_post_to_all_customers.external_id,
+                                                                            seller_post_to_all_customers.external_id,
+                                                                            audience_post.external_id
+                                                                          ])
+
+            expect(Installment).to receive(:missed_for_purchase).with(bundle_purchase, workflow_id: bundle_workflow.external_id).and_call_original
+            get :index, params: { purchase_id: bundle_purchase.external_id, workflow_id: bundle_workflow.external_id }
+
+            expect(inertia.props[:missed_posts].map { _1[:id] }).to eq([bundle_workflow_post.external_id])
+          end
+
+          it "returns only posts for bundle purchase product" do
+            bundle_purchase_product_a = bundle_purchase.product_purchases.find_by(link: product_a)
+            expect(Installment).to receive(:missed_for_purchase).with(bundle_purchase_product_a, workflow_id: nil).and_call_original
+            get :index, params: { purchase_id: bundle_purchase_product_a.external_id }
+
+            expect(inertia.props[:missed_posts].map { _1[:id] }).to eq([
+                                                                            workflow_post_product_a_variant.external_id,
+                                                                            workflow_post_product_a.external_id,
+                                                                            regular_post_product_a_variant.external_id,
+                                                                            regular_post_product_a.external_id,
+                                                                            seller_post_with_bought_variants_filter_product_a_and_c_variant.external_id,
+                                                                            seller_post_with_bought_products_filter_product_a_and_c.external_id,
+                                                                            seller_workflow_post_to_all_customers.external_id,
+                                                                            seller_post_to_all_customers.external_id,
+                                                                            audience_post.external_id
+                                                                          ])
+
+            expect(Installment).to receive(:missed_for_purchase).with(bundle_purchase_product_a, workflow_id: workflow_post_product_a.workflow.external_id).and_call_original
+            get :index, params: { purchase_id: bundle_purchase_product_a.external_id, workflow_id: workflow_post_product_a.workflow.external_id }
+
+            expect(inertia.props[:missed_posts].map { _1[:id] }).to eq([workflow_post_product_a.external_id])
+          end
+        end
       end
 
       context "product_purchases" do

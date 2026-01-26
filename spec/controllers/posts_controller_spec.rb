@@ -52,6 +52,8 @@ describe PostsController do
       it "returns 403 with user-friendly message when seller is not eligible to send emails" do
         allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE - 1)
 
+        @purchase.create_url_redirect!
+        expect(PostSendgridApi).to_not receive(:process)
         post :send_for_purchase, params: { id: @post.external_id, purchase_id: @purchase.external_id }
         expect(response).to have_http_status(:forbidden)
         expect(response.parsed_body).to eq("message" => "You are not eligible to resend this email.")
@@ -59,26 +61,59 @@ describe PostsController do
 
       it "returns 422 with user-friendly message when customer has opted out of receiving emails for a purchase" do
         @purchase.update!(can_contact: false)
-
+        @purchase.create_url_redirect!
+        expect(PostSendgridApi).to_not receive(:process)
         post :send_for_purchase, params: { id: @post.external_id, purchase_id: @purchase.external_id }
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.parsed_body).to eq("message" => "This customer has opted out of receiving emails.")
       end
 
       it "returns 404 if no purchase" do
+        expect(PostSendgridApi).to_not receive(:process)
         post :send_for_purchase, params: { id: @post.external_id, purchase_id: "hello"  }
 
         expect(response).to have_http_status(:not_found)
         expect(response.parsed_body).to eq("success" => false, "error" => "Not found")
       end
 
-      it "returns success" do
-        allow(CustomersService).to receive(:send_post!)
-
+      it "returns success and redelivers the installment" do
+        @purchase.create_url_redirect!
+        allow(CustomersService).to receive(:send_post!).and_call_original
+        expect(PostSendgridApi).to receive(:process).with(
+          post: @post,
+          recipients: [{
+            email: @purchase.email,
+            purchase: @purchase,
+            url_redirect: @purchase.url_redirect,
+          }]
+        )
         post :send_for_purchase, params: { id: @post.external_id, purchase_id: @purchase.external_id }
-        expect(CustomersService).to have_received(:send_post!).with(post: @post, purchase: @purchase)
         expect(response).to be_successful
         expect(response).to have_http_status(:no_content)
+        expect(CustomersService).to have_received(:send_post!).with(post: @post, purchase: @purchase)
+
+        # when the purchase part of a subscription
+        membership_purchase = create(:membership_purchase, link: create(:membership_product, user: @post.seller))
+        membership_purchase.create_url_redirect!
+        expect(PostSendgridApi).to receive(:process).with(
+          post: @post,
+          recipients: [{
+            email: membership_purchase.email,
+            purchase: membership_purchase,
+            url_redirect: membership_purchase.url_redirect,
+            subscription: membership_purchase.subscription,
+          }]
+        ).and_call_original
+        expect do
+          post :send_for_purchase, params: { id: @post.external_id, purchase_id: membership_purchase.external_id }
+        end.to change { CreatorContactingCustomersEmailInfo.count }.by(1)
+        expect(response).to be_successful
+        expect(response).to have_http_status(:no_content)
+
+        email_info = CreatorContactingCustomersEmailInfo.last
+        expect(email_info.purchase_id).to eq(membership_purchase.id)
+        expect(PostSendgridApi.mails.size).to eq(1)
+        expect(PostSendgridApi.mails.keys).to include(membership_purchase.email)
       end
     end
 
@@ -125,6 +160,25 @@ describe PostsController do
         expect(SendMissedPostsJob.jobs.size).to eq(0)
       end
 
+      it "returns 422 when missed posts job is already in progress" do
+        post :send_missed_posts, params: { purchase_id: @purchase.external_id }
+        expect(response).to have_http_status(:ok)
+
+        post :send_missed_posts, params: { purchase_id: @purchase.external_id }
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body).to eq("message" => "Missed posts are being sent. Please wait for an hour before trying again.")
+      end
+
+      it "returns 422 when missed posts job is in progress for specific workflow" do
+        workflow_id = "workflow-123"
+        post :send_missed_posts, params: { purchase_id: @purchase.external_id, workflow_id: }
+        expect(response).to have_http_status(:ok)
+
+        post :send_missed_posts, params: { purchase_id: @purchase.external_id, workflow_id: }
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body).to eq("message" => "Missed posts are being sent. Please wait for an hour before trying again.")
+      end
+
       it "returns 404 if no purchase" do
         post :send_missed_posts, params: { purchase_id: "hello" }
 
@@ -141,6 +195,8 @@ describe PostsController do
     end
 
     describe "GET 'show'" do
+      render_views
+
       before do
         @user = create(:named_user)
         @product = create(:product, user: @user)
@@ -154,10 +210,19 @@ describe PostsController do
         expect(response).to be_successful
       end
 
-      it "sets @on_posts_page instance variable to make nav item active" do
+      it "sets the post page meta tags" do
         installment = create(:published_installment, link: @product, installment_type: "product", shown_on_profile: false)
         get :show, params: { username: @user.username, slug: installment.slug, purchase_id: @purchase.external_id }
-        expect(assigns(:on_posts_page)).to eq(true)
+        html = Nokogiri::HTML.parse(response.body)
+        post_presenter = PostPresenter.new(pundit_user: SellerContext.new(user: @user, seller:), post: installment, purchase_id_param: nil)
+        expect(html.xpath("//meta[@name='description']/@content").text).to eq(post_presenter.snippet)
+        expect(html.xpath("//meta[@property='og:title']/@value").text).to eq(installment.name)
+        expect(html.xpath("//meta[@property='og:description']/@value").text).to eq(post_presenter.snippet)
+        expect(html.xpath("//meta[@property='og:image']/@value").text).to include("opengraph_image.png")
+        expect(html.xpath("//meta[@property='twitter:title']/@value").text).to eq(installment.name)
+        expect(html.xpath("//meta[@property='twitter:description']/@value").text).to eq(post_presenter.snippet)
+        expect(html.xpath("//meta[@property='twitter:domain']/@value").text).to eq("Gumroad")
+        expect(html.xpath("//meta[@property='twitter:card']/@value").text).to eq("summary")
       end
 
       it "sets @user instance variable to load third-party analytics config" do

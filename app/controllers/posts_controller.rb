@@ -2,6 +2,8 @@
 
 class PostsController < ApplicationController
   include CustomDomainConfig
+  include PageMeta::Favicon
+  include PageMeta::Post
 
   before_action :authenticate_user!, only: %i[send_for_purchase send_missed_posts]
   after_action :verify_authorized, only: %i[send_for_purchase send_missed_posts]
@@ -27,13 +29,9 @@ class PostsController < ApplicationController
   end
 
   def show
-    @title = "#{@post.name} - #{@post.user.name_or_username}"
     @hide_layouts = true
-    @show_user_favicon = true
     @body_class = "post-page"
     @body_id = "post_page"
-
-    @on_posts_page = true
 
     # Set @user instance variable to apply third-party analytics config in layouts/_head partial.
     @user = @post.seller
@@ -46,6 +44,11 @@ class PostsController < ApplicationController
       post: @post,
       purchase_id_param: params[:purchase_id]
     )
+
+    set_meta_tag(title: "#{@post.name} - #{@post.user.name_or_username}")
+    set_post_page_meta(@post, @post_presenter)
+    set_favicon_meta_tags(@user)
+
     purchase = @post_presenter.purchase
 
     if purchase
@@ -71,14 +74,6 @@ class PostsController < ApplicationController
     head :no_content
   end
 
-  def send_missed_posts
-    authorize [:audience, @purchase], :send_missed_posts?
-
-    CustomersService.send_missed_posts_for!(purchase: @purchase, workflow_id: params[:workflow_id])
-
-    render json: { message: "Missed emails are queued for delivery" }, status: :ok
-  end
-
   def increment_post_views
     skip = is_bot?
     skip |= logged_in_user.present? && (@post.seller_id == current_seller.id || logged_in_user.is_team_member?)
@@ -87,6 +82,17 @@ class PostsController < ApplicationController
     create_post_event(@post) unless skip
 
     render json: { success: true }
+  end
+
+  def send_missed_posts
+    authorize [:audience, @purchase], :send_missed_posts?
+
+    return render json: { message: "Missed posts are being sent. Please wait for an hour before trying again." },
+                  status: :unprocessable_entity if CustomersService.missed_posts_job_in_progress?(@purchase.external_id, params[:workflow_id])
+
+    CustomersService.send_missed_posts_for!(purchase: @purchase, workflow_id: params[:workflow_id])
+
+    render json: { message: "Missed emails are queued for delivery" }, status: :ok
   end
 
   private

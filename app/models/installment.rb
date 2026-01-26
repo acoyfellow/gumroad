@@ -143,11 +143,8 @@ class Installment < ApplicationRecord
     if workflow_id.present?
       workflow = purchase.seller.workflows.alive.published.find_by_external_id(workflow_id)
       return none unless workflow&.applies_to_purchase?(purchase)
-
       workflow_id = workflow.id
     end
-
-    product_link_id = purchase.link.id
 
     installments_to_check = Installment
       .seller_or_audience_or_product_or_variant_type_for_purchase(purchase)
@@ -161,29 +158,23 @@ class Installment < ApplicationRecord
           scope.where(
             "(workflows.link_id IS NULL OR " \
             "(workflows.link_id = ? AND (workflows.base_variant_id IS NULL OR workflows.base_variant_id IN (?))))",
-            product_link_id,
+            purchase.link.id,
             purchase.variant_attributes.pluck(:id)
           )
         else
           scope.where(
             "(workflows.link_id IS NULL OR " \
             "(workflows.link_id = ? AND workflows.base_variant_id IS NULL))",
-            product_link_id
+            purchase.link.id
           )
         end
       end
 
-    product_or_variant_ids = if purchase.variant_attributes.present?
-      installments_to_check.product_or_variant_type.pluck(:id)
-    else
-      installments_to_check.product_type.pluck(:id)
+    product_or_variant_installments_ids = (purchase.variant_attributes.present? ? installments_to_check.product_or_variant_type : installments_to_check.product_type).find_each(batch_size: 100).filter_map do |post|
+      post.id if post.purchase_passes_filters(purchase)
     end
-
-    # product_installment_ids = purchase.link.installments.where(seller_id: purchase.seller_id).alive.published.filter_map do |post|
-    #   post.id if post.purchase_passes_filters(purchase)
-    # end
-    seller_or_audience_installment_ids = installments_to_check.seller_or_audience_type.select(:id, :json_data, :link_id, :seller_id).find_each(batch_size: 100).filter_map do |installment|
-      installment.id if installment.purchase_passes_filters(purchase)
+    seller_or_audience_installment_ids = installments_to_check.seller_or_audience_type.find_each(batch_size: 100).filter_map do |post|
+      post.id if post.purchase_passes_filters(purchase)
     end
 
     purchase_ids_with_same_email = Purchase.where(email: purchase.email, seller_id: purchase.seller_id)
@@ -203,7 +194,7 @@ class Installment < ApplicationRecord
     SQL
 
     send_emails.
-      where(id: product_or_variant_ids + seller_or_audience_installment_ids).
+      where(id: product_or_variant_installments_ids + seller_or_audience_installment_ids).
       where(where_sent_sql)
   }
 

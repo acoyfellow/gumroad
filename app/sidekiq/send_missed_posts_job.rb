@@ -6,14 +6,8 @@ class SendMissedPostsJob
 
   def perform(purchase_id, workflow_id = nil)
     purchase = Purchase.find_by_external_id!(purchase_id)
-
+    CheckMissedPostsCompletionJob.perform_async(purchase_id, workflow_id)
     CustomersService.deliver_missed_posts_for!(purchase:, workflow_id:)
-
-    CustomersChannel.broadcast_missed_posts_message!(
-      purchase.external_id,
-      workflow_id,
-      CustomersChannel::MISSED_POSTS_JOB_COMPLETE_TYPE
-    )
   end
 
   RetryHandler = ->(count, exception, msg) do
@@ -27,17 +21,5 @@ class SendMissedPostsJob
     end
   end
 
-  FailureHandler = ->(job, exception) do
-    purchase_id, workflow_id = job["args"]
-
-    CustomersChannel.broadcast_missed_posts_message!(
-      purchase_id,
-      workflow_id,
-      CustomersChannel::MISSED_POSTS_JOB_FAILED_TYPE
-    )
-  end
-
   sidekiq_retry_in(&RetryHandler)
-
-  sidekiq_retries_exhausted(&FailureHandler)
 end

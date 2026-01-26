@@ -1,13 +1,10 @@
-import { Channel } from "@anycable/web";
-import { router, usePage } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { DirectUpload, Blob } from "@rails/activestorage";
 import cx from "classnames";
 import { lightFormat, subMonths } from "date-fns";
 import { format } from "date-fns-tz";
 import * as React from "react";
-import { cast, is } from "ts-safe-cast";
 
-import cable from "$app/channels/consumer";
 import {
   Address,
   Customer,
@@ -59,7 +56,7 @@ import { asyncVoid } from "$app/utils/promise";
 import { RecurrenceId, recurrenceLabels } from "$app/utils/recurringPricing";
 import { AbortError, assertResponseError } from "$app/utils/request";
 
-import { Button, NavigationButton } from "$app/components/Button";
+import { Button, NavigationButton, buttonVariants } from "$app/components/Button";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { DateInput } from "$app/components/DateInput";
 import { DateRangePicker } from "$app/components/DateRangePicker";
@@ -102,31 +99,25 @@ type MissedPost = { id: string; name: string; url: string; published_at: string 
 
 type Workflow = { id: string; label: string };
 
-type IncomingCustomersChannelMessage = {
-  type: "missed_posts_job_complete" | "missed_posts_job_failed";
-  purchase_id: string;
-  workflow_id?: string;
-  message: string;
-};
-
 export type CustomerPageProps = {
-  customers: Customer[];
+  customers_presenter: {
+    customers: Customer[];
+    pagination: PaginationProps | null;
+    product_id: string | null;
+    products: Product[];
+    count: number;
+    currency_type: CurrencyCode;
+    countries: string[];
+    can_ping: boolean;
+    show_refund_fee_notice: boolean;
+  };
   customer_emails?: CustomerEmail[];
   missed_posts?: MissedPost[];
-  pagination: PaginationProps | null;
-  product_id: string | null;
-  products: Product[];
   product_purchases?: Customer[];
-  count: number;
-  currency_type: CurrencyCode;
-  countries: string[];
-  can_ping: boolean;
-  show_refund_fee_notice: boolean;
   workflows?: Workflow[];
 };
 
 const year = new Date().getFullYear();
-const CUSTOMERS_CHANNEL_NAME = "CustomersChannel";
 
 const formatPrice = (priceCents: number, currencyType: CurrencyCode, recurrence?: RecurrenceId | null) =>
   `${formatPriceCentsWithCurrencySymbol(currencyType, priceCents, { symbolFormat: "long" })}${
@@ -141,13 +132,19 @@ const formatDiscount = (discount: Discount, currencyType: CurrencyCode) =>
     : `${discount.percents}%`;
 
 const CustomersPage = ({
-  product_id,
-  products,
-  currency_type,
-  countries,
-  can_ping,
-  show_refund_fee_notice,
-  ...initialState
+  customers_presenter: {
+    product_id,
+    products,
+    currency_type,
+    countries,
+    can_ping,
+    show_refund_fee_notice,
+    ...initialState
+  },
+  customer_emails,
+  missed_posts,
+  workflows,
+  product_purchases,
 }: CustomerPageProps) => {
   const currentSeller = useCurrentSeller();
   const userAgentInfo = useUserAgentInfo();
@@ -205,16 +202,6 @@ const CustomersPage = ({
 
   const [selectedCustomerId, setSelectedCustomerId] = React.useState<string | null>(null);
   const selectedCustomer = customers.find(({ id }) => id === selectedCustomerId);
-  const customersChannelRef = React.useRef<Channel | null>(null);
-  const missedPostsJobsInProcessRef = React.useRef<Set<string>>(new Set());
-
-  React.useEffect(
-    () => () => {
-      customersChannelRef.current?.disconnect();
-      customersChannelRef.current = null;
-    },
-    [],
-  );
 
   const fetchAndDisplayCustomerDrawerData = (customerId: string) => {
     router.reload({
@@ -471,15 +458,13 @@ const CustomersPage = ({
                   <DateRangePicker from={from} to={to} setFrom={setFrom} setTo={setTo} />
                   <NavigationButtonInertia
                     color="primary"
-                    href={Routes.export_purchases_path()}
-                    method="post"
-                    preserveScroll
-                    data={{
+                    href={Routes.export_purchases_path({
                       start_time: lightFormat(from, "yyyy-MM-dd"),
                       end_time: lightFormat(to, "yyyy-MM-dd"),
                       product_ids: includedProductIds,
                       variant_ids: includedVariantIds,
-                    }}
+                    })}
+                    preserveScroll
                     onSuccess={() => close()}
                   >
                     Download
@@ -641,8 +626,10 @@ const CustomersPage = ({
             canPing={can_ping}
             showRefundFeeNotice={show_refund_fee_notice}
             isLoadingPurchaseData={isLoadingPurchaseData}
-            customersChannelRef={customersChannelRef}
-            missedPostsJobsInProcessRef={missedPostsJobsInProcessRef}
+            customer_emails={customer_emails}
+            missed_posts={missed_posts}
+            workflows={workflows}
+            product_purchases={product_purchases}
           />
         ) : null}
       </section>
@@ -726,6 +713,22 @@ const INSTALLMENT_PLAN_STATUS_LABELS = {
 };
 
 const PAGE_SIZE = 10;
+
+type CustomerDrawerProps = {
+  customer: Customer;
+  onChange: (update: Partial<Customer>) => void;
+  onClose: () => void;
+  onBack?: () => void;
+  countries: string[];
+  canPing: boolean;
+  showRefundFeeNotice: boolean;
+  isLoadingPurchaseData: boolean;
+  customer_emails: CustomerEmail[] | undefined;
+  missed_posts: MissedPost[] | undefined;
+  workflows: Workflow[] | undefined;
+  product_purchases: Customer[] | undefined;
+};
+
 const CustomerDrawer = ({
   customer,
   onChange,
@@ -735,20 +738,11 @@ const CustomerDrawer = ({
   canPing,
   showRefundFeeNotice,
   isLoadingPurchaseData,
-  customersChannelRef,
-  missedPostsJobsInProcessRef,
-}: {
-  customer: Customer;
-  onChange: (update: Partial<Customer>) => void;
-  onClose: () => void;
-  onBack?: () => void;
-  countries: string[];
-  canPing: boolean;
-  showRefundFeeNotice: boolean;
-  isLoadingPurchaseData: boolean;
-  customersChannelRef: React.MutableRefObject<Channel | null>;
-  missedPostsJobsInProcessRef: React.MutableRefObject<Set<string>>;
-}) => {
+  customer_emails,
+  missed_posts,
+  workflows,
+  product_purchases,
+}: CustomerDrawerProps) => {
   const userAgentInfo = useUserAgentInfo();
 
   const [loadingId, setLoadingId] = React.useState<string | null>(null);
@@ -757,41 +751,11 @@ const CustomerDrawer = ({
   const [shownEmails, setShownEmails] = React.useState(PAGE_SIZE);
   const sentEmailIds = React.useRef<Set<string>>(new Set());
 
-  const {
-    customer_emails: emails,
-    missed_posts: missedPosts,
-    product_purchases: productPurchasesFromProps,
-    workflows,
-  } = cast<Pick<CustomerPageProps, "customer_emails" | "missed_posts" | "workflows" | "product_purchases">>(
-    usePage().props,
-  );
-
   const workflowOptions = [{ id: "", label: "All missed emails" }, ...(workflows ?? [])];
 
   const [isLoadingMissedPosts, setIsLoadingMissedPosts] = React.useState(false);
 
   const workflowIdForQuery = (workflowId: string | undefined) => (workflowId === "" ? undefined : workflowId);
-
-  const isProcessingMissedPostsJobForPurchase = (purchaseExternalId: string) =>
-    Array.from(missedPostsJobsInProcessRef.current).some((jobKey) => {
-      const job = cast<{ customerId: string; workflowId?: string }>(JSON.parse(jobKey));
-      return job.customerId === purchaseExternalId;
-    });
-
-  const isProcessingAllOrSpecificJob = (purchaseExternalId: string, workflowId?: string) => {
-    if (workflowId === undefined) {
-      return isProcessingMissedPostsJobForPurchase(purchaseExternalId);
-    }
-
-    return (
-      missedPostsJobsInProcessRef.current.has(JSON.stringify({ customerId: purchaseExternalId, workflowId })) ||
-      missedPostsJobsInProcessRef.current.has(JSON.stringify({ customerId: purchaseExternalId }))
-    );
-  };
-
-  const [processingJobForWorkflow, setProcessingJobForWorkflow] = React.useState(
-    isProcessingAllOrSpecificJob(customer.id, workflowIdForQuery(selectedWorkflowId)),
-  );
 
   const fetchAndDisplayMissedPostsByWorkflowId = (workflowId: string) => {
     router.reload({
@@ -799,71 +763,24 @@ const CustomerDrawer = ({
         purchase_id: customer.id,
         workflow_id: workflowIdForQuery(workflowId),
       },
-      only: ["missed_posts"],
       preserveUrl: true,
+      only: ["missed_posts"],
       onStart: () => setIsLoadingMissedPosts(true),
       onFinish: () => setIsLoadingMissedPosts(false),
     });
     setSelectedWorkflowId(workflowId);
-    setProcessingJobForWorkflow(isProcessingAllOrSpecificJob(customer.id, workflowIdForQuery(workflowId)));
   };
 
   const resendAllMissedPosts = async () => {
-    if (!cable) return;
-
-    const resendJobWorkflowId = workflowIdForQuery(selectedWorkflowId);
-    const resendJobKeyLocal = JSON.stringify({ customerId: customer.id, workflowId: resendJobWorkflowId });
-
-    let failedToSubscribeToCustomersChannel = false;
-
     try {
-      if (!customersChannelRef.current) {
-        customersChannelRef.current = cable.subscribeTo(CUSTOMERS_CHANNEL_NAME, { purchase_id: customer.id });
-
-        customersChannelRef.current.on("message", (packet) => {
-          if (!is<IncomingCustomersChannelMessage>(packet)) return;
-          const resendJobKeyFromPacket = JSON.stringify({
-            customerId: packet.purchase_id,
-            workflowId: packet.workflow_id,
-          });
-
-          if (!missedPostsJobsInProcessRef.current.has(resendJobKeyFromPacket)) return;
-
-          missedPostsJobsInProcessRef.current.delete(resendJobKeyFromPacket);
-
-          switch (packet.type) {
-            case "missed_posts_job_complete":
-              showAlert(packet.message, "success");
-              break;
-            case "missed_posts_job_failed":
-              showAlert(packet.message, "error");
-              break;
-          }
-        });
-      }
-
-      await customersChannelRef.current.ensureSubscribed();
-    } catch {
-      failedToSubscribeToCustomersChannel = true;
-    }
-
-    try {
-      setProcessingJobForWorkflow(true);
-      missedPostsJobsInProcessRef.current.add(resendJobKeyLocal);
-      const response = await resendPosts(customer.id, resendJobWorkflowId);
-      if (failedToSubscribeToCustomersChannel) {
-        showAlert(
-          `${response.message} but we faced an issue subscribing to the delivery channel. Revisit in some time to check on the delivery status.`,
-          "warning",
-        );
-      } else {
-        showAlert(response.message, "success");
-      }
+      setLoadingId("all");
+      const response = await resendPosts(customer.id, workflowIdForQuery(selectedWorkflowId));
+      showAlert(response.message, "success");
     } catch (e) {
       assertResponseError(e);
       showAlert(e.message, "error");
-      missedPostsJobsInProcessRef.current.delete(resendJobKeyLocal);
-      setProcessingJobForWorkflow(false);
+    } finally {
+      setLoadingId(null);
     }
   };
 
@@ -881,7 +798,7 @@ const CustomerDrawer = ({
   };
 
   const [productPurchases, setProductPurchases] = React.useState<Customer[]>(() =>
-    customer.is_bundle_purchase ? (productPurchasesFromProps ?? []) : [],
+    customer.is_bundle_purchase ? (product_purchases ?? []) : [],
   );
   const [selectedProductPurchaseId, setSelectedProductPurchaseId] = React.useState<string | null>(null);
   const selectedProductPurchase = productPurchases.find(({ id }) => id === selectedProductPurchaseId);
@@ -895,12 +812,12 @@ const CustomerDrawer = ({
   };
 
   React.useEffect(() => {
-    if (customer.is_bundle_purchase && productPurchasesFromProps) {
-      setProductPurchases(productPurchasesFromProps);
+    if (customer.is_bundle_purchase && product_purchases) {
+      setProductPurchases(product_purchases);
     } else if (!customer.is_bundle_purchase) {
       setProductPurchases([]);
     }
-  }, [customer.is_bundle_purchase, productPurchasesFromProps]);
+  }, [customer.is_bundle_purchase, product_purchases]);
 
   const { subscription, commission, license, shipping } = customer;
 
@@ -924,35 +841,9 @@ const CustomerDrawer = ({
     }
   }, [commission?.status]);
 
-  React.useEffect(() => {
-    if (!customersChannelRef.current || !isProcessingMissedPostsJobForPurchase(customer.id)) return;
-
-    const localChannelUnsubscribe = customersChannelRef.current.on("message", (packet) => {
-      if (!is<IncomingCustomersChannelMessage>(packet)) return;
-      if (packet.purchase_id !== customer.id) return;
-
-      setProcessingJobForWorkflow(false);
-
-      if (packet.type === "missed_posts_job_complete" && !selectedProductPurchase) {
-        router.reload({
-          data: {
-            purchase_id: packet.purchase_id,
-            workflow_id: workflowIdForQuery(selectedWorkflowId),
-          },
-          only: ["customer_emails", "missed_posts", "product_purchases"],
-          preserveUrl: true,
-        });
-      }
-    });
-
-    return () => {
-      localChannelUnsubscribe();
-    };
-  }, [customer.id, selectedWorkflowId, selectedProductPurchase, isProcessingAllOrSpecificJob]);
-
   const isCoffee = customer.product.native_type === "coffee";
 
-  if (selectedProductPurchase)
+  if (selectedProductPurchase) {
     return (
       <CustomerDrawer
         customer={selectedProductPurchase}
@@ -972,10 +863,13 @@ const CustomerDrawer = ({
         canPing={canPing}
         showRefundFeeNotice={showRefundFeeNotice}
         isLoadingPurchaseData={isLoadingPurchaseData}
-        customersChannelRef={customersChannelRef}
-        missedPostsJobsInProcessRef={missedPostsJobsInProcessRef}
+        customer_emails={customer_emails}
+        missed_posts={missed_posts}
+        workflows={workflows}
+        product_purchases={product_purchases}
       />
     );
+  }
 
   const formatDateWithoutTime = (date: Date) =>
     date.toLocaleDateString(userAgentInfo.locale, {
@@ -1269,7 +1163,14 @@ const CustomerDrawer = ({
                 <CardContent asChild key={customer.id}>
                   <section>
                     <h5 className="grow font-bold">{customer.product.name}</h5>
-                    <Button onClick={() => setSelectedProductPurchaseId(customer.id)}>Manage</Button>
+                    <Button
+                      onClick={() => {
+                        setSelectedProductPurchaseId(customer.id);
+                        loadBundlePurchaseDrawerData(customer.id);
+                      }}
+                    >
+                      Manage
+                    </Button>
                   </section>
                 </CardContent>
               ))
@@ -1451,7 +1352,7 @@ const CustomerDrawer = ({
               options={workflowOptions}
             />
           </CardContent>
-          {isLoadingPurchaseData || isLoadingMissedPosts || missedPosts === undefined ? (
+          {isLoadingPurchaseData || isLoadingMissedPosts || missed_posts === undefined ? (
             <CardContent asChild>
               <section>
                 <div className="grow text-center">
@@ -1459,9 +1360,9 @@ const CustomerDrawer = ({
                 </div>
               </section>
             </CardContent>
-          ) : missedPosts.length > 0 ? (
+          ) : missed_posts.length > 0 ? (
             <>
-              {missedPosts.slice(0, shownMissedPosts).map((post) => (
+              {missed_posts.slice(0, shownMissedPosts).map((post) => (
                 <CardContent asChild key={post.id}>
                   <section>
                     <div className="grow">
@@ -1474,7 +1375,7 @@ const CustomerDrawer = ({
                     </div>
                     <Button
                       color="primary"
-                      disabled={!!loadingId || sentEmailIds.current.has(post.id) || processingJobForWorkflow}
+                      disabled={!!loadingId || sentEmailIds.current.has(post.id)}
                       onClick={() => void onSend(post.id, "post")}
                     >
                       {sentEmailIds.current.has(post.id) ? "Sent" : loadingId === post.id ? "Resending..." : "Resend"}
@@ -1482,7 +1383,7 @@ const CustomerDrawer = ({
                   </section>
                 </CardContent>
               ))}
-              {shownMissedPosts < missedPosts.length ? (
+              {shownMissedPosts < missed_posts.length ? (
                 <CardContent asChild>
                   <section>
                     <Button
@@ -1497,22 +1398,22 @@ const CustomerDrawer = ({
               <CardContent>
                 <Button
                   color="primary"
-                  disabled={!!loadingId || processingJobForWorkflow}
+                  disabled={!!loadingId}
                   onClick={() => void resendAllMissedPosts()}
                   className="grow basis-0"
                 >
-                  {processingJobForWorkflow ? "Resending all..." : "Resend all"}
+                  {loadingId === "all" ? "Resending all..." : "Resend all"}
                 </Button>
               </CardContent>
             </>
           ) : (
             <CardContent>
-              <EmptyState className="text-center" message="All caught up! No missed emails." />
+              <EmptyState className="grow text-center" message="All caught up! No missed emails." />
             </CardContent>
           )}
         </section>
       </Card>
-      {emails?.length !== 0 ? (
+      {customer_emails?.length !== 0 ? (
         <Card asChild>
           <section>
             <CardContent asChild>
@@ -1520,9 +1421,9 @@ const CustomerDrawer = ({
                 <h3 className="grow">Emails received</h3>
               </header>
             </CardContent>
-            {!isLoadingPurchaseData && emails ? (
+            {!isLoadingPurchaseData && customer_emails ? (
               <>
-                {emails.slice(0, shownEmails).map((email) => (
+                {customer_emails.slice(0, shownEmails).map((email) => (
                   <CardContent asChild key={email.id}>
                     <section>
                       <div className="grow">
@@ -1541,7 +1442,7 @@ const CustomerDrawer = ({
                         <Button
                           color="primary"
                           onClick={() => void onSend(email.id, "receipt")}
-                          disabled={!!loadingId || sentEmailIds.current.has(email.id) || processingJobForWorkflow}
+                          disabled={!!loadingId || sentEmailIds.current.has(email.id)}
                         >
                           {sentEmailIds.current.has(email.id)
                             ? "Receipt resent"
@@ -1553,7 +1454,7 @@ const CustomerDrawer = ({
                         <Button
                           color="primary"
                           onClick={() => void onSend(email.id, "post")}
-                          disabled={!!loadingId || sentEmailIds.current.has(email.id) || processingJobForWorkflow}
+                          disabled={!!loadingId || sentEmailIds.current.has(email.id)}
                         >
                           {sentEmailIds.current.has(email.id)
                             ? "Sent"
@@ -1565,7 +1466,7 @@ const CustomerDrawer = ({
                     </section>
                   </CardContent>
                 ))}
-                {shownEmails < emails.length ? (
+                {shownEmails < customer_emails.length ? (
                   <CardContent asChild>
                     <section>
                       <Button
@@ -2601,18 +2502,20 @@ const ChargeRow = ({
   onChange,
   showRefundFeeNotice,
   canPing,
+  className,
 }: {
   purchase: Charge;
   customerEmail: string;
   onChange: (update: Partial<Charge>) => void;
   showRefundFeeNotice: boolean;
   canPing: boolean;
+  className?: string;
 }) => {
   const [isRefunding, setIsRefunding] = React.useState(false);
   const userAgentInfo = useUserAgentInfo();
 
   return (
-    <>
+    <section className={className}>
       <section key={purchase.id}>
         <section style={{ display: "flex", gap: "var(--spacer-1)", alignItems: "center" }}>
           <h5>
@@ -2673,7 +2576,7 @@ const ChargeRow = ({
           onClose={() => setIsRefunding(false)}
         />
       ) : null}
-    </>
+    </section>
   );
 };
 
@@ -2955,7 +2858,7 @@ const CommissionSection = ({
                   ))}
                 </Rows>
               ) : null}
-              <label className="button">
+              <label className={buttonVariants()}>
                 <input
                   type="file"
                   onChange={handleFileChange}

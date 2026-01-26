@@ -27,11 +27,11 @@ class CustomersController < Sellers::BaseController
     purchase = current_seller.sales.find_by_external_id!(params[:purchase_id]) if params[:purchase_id].present?
 
     render inertia: "Customers/Index", props: {
-      customers_presenter: -> { customers_presenter.customers_props },
+      customers_presenter: (customers_presenter && -> { customers_presenter.customers_props }),
       customer_emails: InertiaRails.optional { CustomerPresenter.new(purchase:).customer_emails },
-      missed_posts: InertiaRails.optional { CustomerPresenter.new(purchase:).missed_posts(workflow_id: params[:workflow_id]) },
-      workflows: InertiaRails.optional { WorkflowsPresenter.new(seller: current_seller).workflow_options_by_purchase_props(purchase) },
       product_purchases: (purchase&.is_bundle_purchase? ? InertiaRails.optional { purchase.product_purchases.map { CustomerPresenter.new(purchase: _1).customer(pundit_user:) } } : nil),
+      missed_posts: InertiaRails.optional { CustomerPresenter.new(purchase:).missed_posts(workflow_id: params[:workflow_id]) },
+      workflows: InertiaRails.optional { WorkflowsPresenter.new(seller: current_seller, purchase:).workflow_options_by_purchase_props },
     }.compact
   end
 
@@ -134,8 +134,8 @@ class CustomersController < Sellers::BaseController
         .load
     end
 
-    def set_title
-      @title = "Sales"
+    def set_default_page_title
+      set_meta_tag(title: "Sales")
     end
 
     def set_on_page_type
