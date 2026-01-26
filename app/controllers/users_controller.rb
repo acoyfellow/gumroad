@@ -55,7 +55,8 @@ class UsersController < ApplicationController
 
     render inertia: "Users/Coffee", props: {
       **product_props,
-      creator_profile: profile_presenter.creator_profile
+      creator_profile: profile_presenter.creator_profile,
+      custom_styles: @user.seller_profile.custom_styles
     }
   end
 
