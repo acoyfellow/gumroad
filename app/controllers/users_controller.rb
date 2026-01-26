@@ -38,11 +38,23 @@ class UsersController < ApplicationController
 
   def coffee
     @show_user_favicon = true
-    @product = @user.products.visible_and_not_archived.find_by(native_type: Link::NATIVE_TYPE_COFFEE)
-    e404 if @product.nil?
+    product = @user.products.visible_and_not_archived.find_by(native_type: Link::NATIVE_TYPE_COFFEE)
+    e404 if product.nil?
 
-    @title = @product.name
-    @product_props = ProductPresenter.new(pundit_user:, product: @product, request:).product_props(seller_custom_domain_url:, recommended_by: params[:recommended_by])
+    @title = product.name
+
+    if params[:purchase_email].present?
+      flash.now[:notice] = "Your purchase was successful! We sent a receipt to #{params[:purchase_email]}."
+    end
+
+    profile_presenter = ProfilePresenter.new(pundit_user:, seller: @user)
+    product_presenter = ProductPresenter.new(pundit_user:, product:, request:)
+    product_props = product_presenter.product_props(seller_custom_domain_url:, recommended_by: params[:recommended_by])
+
+    render inertia: "Users/Coffee", props: {
+      **product_props,
+      creator_profile: profile_presenter.creator_profile
+    }
   end
 
   def subscribe

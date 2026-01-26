@@ -1,32 +1,41 @@
+import { usePage } from "@inertiajs/react";
 import * as React from "react";
-import { createCast } from "ts-safe-cast";
+import { cast } from "ts-safe-cast";
 
 import { CreatorProfile } from "$app/parsers/profile";
-import { classNames } from "$app/utils/classNames";
-import { register } from "$app/utils/serverComponentUtil";
 
-import { Product, Props as ProductProps, Purchase } from "$app/components/Product";
+import { Product, Purchase } from "$app/components/Product";
 import { ConfigurationSelector, PriceSelection } from "$app/components/Product/ConfigurationSelector";
 import { CtaButton, getCtaName } from "$app/components/Product/CtaButton";
 import { Layout as ProfileLayout } from "$app/components/Profile/Layout";
+import { WishlistForProduct } from "$app/components/Product";
+import { classNames } from "$app/utils/classNames";
 
-type Props = ProductProps & {
+type Props = {
+  product: Product;
+  purchase: Purchase | null;
+  wishlists: WishlistForProduct[];
+  discount_code: { valid: boolean; code?: string; discount?: unknown } | null;
   creator_profile: CreatorProfile;
-  selection?: Partial<PriceSelection>;
 };
 
-export const CoffeePage = ({ creator_profile, selection: selectionOverride, ...props }: Props) => (
-  <ProfileLayout creatorProfile={creator_profile} hideFollowForm>
-    <CoffeeProduct
-      product={props.product}
-      purchase={props.purchase}
-      selection={selectionOverride ?? null}
-      className="mx-auto w-full max-w-6xl lg:px-0"
-    />
-  </ProfileLayout>
-);
+export default function CoffeePage() {
+  const { product, purchase, creator_profile } = cast<Props>(usePage().props);
 
-export const CoffeeProduct = ({
+  return (
+    <ProfileLayout creatorProfile={creator_profile} hideFollowForm>
+      <CoffeeProduct
+        product={product}
+        purchase={purchase}
+        selection={null}
+        className="mx-auto w-full max-w-6xl lg:px-0"
+      />
+    </ProfileLayout>
+  );
+}
+CoffeePage.loggedInUserLayout = true;
+
+const CoffeeProduct = ({
   product,
   purchase,
   selection: selectionOverride,
@@ -69,6 +78,7 @@ export const CoffeeProduct = ({
       />
     </>
   );
+
   return (
     <section className={classNames("grid grow content-center gap-12 px-4", className)}>
       <section className="grid gap-8">
@@ -97,4 +107,3 @@ export const CoffeeProduct = ({
     </section>
   );
 };
-export default register({ component: CoffeePage, propParser: createCast() });
