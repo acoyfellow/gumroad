@@ -3,6 +3,7 @@
 class UrlRedirectsController < ApplicationController
   include SignedUrlHelper
   include ProductsHelper
+  include PageMeta::Favicon
 
   layout "inertia", only: %i[expired rental_expired_page membership_inactive_page]
 
@@ -57,7 +58,7 @@ class UrlRedirectsController < ApplicationController
     e404 unless @product_file&.readable?
 
     s3_retrievable = @product_file
-    @title = @product_file.with_product_files_owner.name
+    set_meta_tag(title: @product_file.with_product_files_owner.name)
     @read_id = @product_file.external_id
     @read_url = signed_download_url_for_s3_key_and_filename(s3_retrievable.s3_key, s3_retrievable.s3_filename, cache_group: "read")
 
@@ -75,8 +76,8 @@ class UrlRedirectsController < ApplicationController
     @hide_layouts = true
 
     @body_class = "download-page responsive responsive-nav"
-    @show_user_favicon = true
-    @title = @url_redirect.with_product_files.name == "Untitled" ? @url_redirect.referenced_link.name : @url_redirect.with_product_files.name
+    set_favicon_meta_tags(@url_redirect.seller)
+    set_meta_tag(title: @url_redirect.with_product_files.name == "Untitled" ? @url_redirect.referenced_link.name : @url_redirect.with_product_files.name)
     @react_component_props = UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).download_page_with_content_props(common_props)
     trigger_files_lifecycle_events
   end
@@ -154,7 +155,7 @@ class UrlRedirectsController < ApplicationController
 
   def confirm_page
     @content_unavailability_reason_code = UrlRedirectPresenter::CONTENT_UNAVAILABILITY_REASON_CODES[:email_confirmation_required]
-    @title = "#{@url_redirect.referenced_link.name} - Confirm email"
+    set_meta_tag(title: "#{@url_redirect.referenced_link.name} - Confirm email")
     extra_props = common_props.merge(
       confirmation_info: {
         id: @url_redirect.token,
@@ -228,7 +229,7 @@ class UrlRedirectsController < ApplicationController
 
   # Consumption event is created by front-end code
   def stream
-    @title = "Watch"
+    set_meta_tag(title: "Watch")
     @body_id = "stream_page"
     @body_class = "download-page responsive responsive-nav"
 
