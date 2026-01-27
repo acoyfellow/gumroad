@@ -21,12 +21,8 @@ export default function SubscriptionsMagicLink() {
 
   const [loading, setLoading] = React.useState(false);
   const hasSentEmail = email_sent !== null;
-
-  // Get selected email from email_sent param or default to first
-  const initialSelectedEmail = email_sent
-    ? (user_emails.find((e) => e.source === email_sent) ?? user_emails[0])
-    : user_emails[0];
-  const [selectedUserEmail, setSelectedUserEmail] = React.useState(initialSelectedEmail);
+  const defaultSelectedEmail = user_emails.find((e) => e.source === email_sent) ?? user_emails[0];
+  const [selectedEmail, setSelectedEmail] = React.useState(defaultSelectedEmail);
 
   const subscriptionEntity = is_installment_plan ? "installment plan" : "membership";
   const invalid = new URL(useOriginalLocation()).searchParams.get("invalid") === "true";
@@ -35,7 +31,7 @@ export default function SubscriptionsMagicLink() {
     setLoading(true);
     router.post(
       Routes.magic_link_subscription_path(subscription_id),
-      { email_source: selectedUserEmail.source },
+      { email_source: selectedEmail.source },
       {
         onFinish: () => setLoading(false),
       },
@@ -43,7 +39,7 @@ export default function SubscriptionsMagicLink() {
   };
 
   const title = hasSentEmail
-    ? `We've sent a link to ${selectedUserEmail.email}.`
+    ? `We've sent a link to ${selectedEmail.email}.`
     : invalid
       ? "Your magic link has expired."
       : "You're currently not signed in.";
@@ -51,7 +47,7 @@ export default function SubscriptionsMagicLink() {
     ? `Please check your inbox and click the link in your email to manage your ${subscriptionEntity}.`
     : user_emails.length > 1
       ? `To manage your ${subscriptionEntity} for ${product_name}, choose one of the emails associated with your account to receive a magic link.`
-      : `To manage your ${subscriptionEntity} for ${product_name}, click the button below to receive a magic link at ${selectedUserEmail.email}`;
+      : `To manage your ${subscriptionEntity} for ${product_name}, click the button below to receive a magic link at ${selectedEmail.email}`;
 
   return (
     <Layout
@@ -99,8 +95,8 @@ export default function SubscriptionsMagicLink() {
                         type="radio"
                         name="email_source"
                         value={userEmail.source}
-                        onChange={() => setSelectedUserEmail(userEmail)}
-                        checked={userEmail.source === selectedUserEmail.source}
+                        onChange={() => setSelectedEmail(userEmail)}
+                        checked={userEmail.source === selectedEmail.source}
                       />
                       {userEmail.email}
                     </label>
