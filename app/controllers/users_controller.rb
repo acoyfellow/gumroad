@@ -10,12 +10,12 @@ class UsersController < ApplicationController
 
   after_action :verify_authorized, only: %i[deactivate]
 
-  before_action :hide_layouts, only: %i[show coffee subscribe subscribe_preview unsubscribe_review_reminders subscribe_review_reminders]
+  before_action :hide_layouts, only: %i[coffee unsubscribe_review_reminders subscribe_review_reminders]
   before_action :set_as_modal, only: %i[show]
   before_action :set_user_and_custom_domain_config, only: %i[show coffee subscribe subscribe_preview]
-  before_action :set_page_attributes, only: %i[show]
+  before_action :set_page_attributes, only: %i[show subscribe]
   before_action :set_user_for_action, only: %i[email_unsubscribe]
-  before_action :check_if_needs_redirect, only: %i[show]
+  before_action :check_if_needs_redirect, only: %i[show subscribe]
   before_action :set_affiliate_cookie, only: %i[show]
 
   def show
@@ -30,6 +30,13 @@ class UsersController < ApplicationController
         @paypal_merchant_currency = @user.native_paypal_payment_enabled? ?
                                       @user.merchant_account_currency(PaypalChargeProcessor.charge_processor_id) :
                                       ChargeProcessor::DEFAULT_CURRENCY_CODE
+
+        # Render with Inertia
+        render inertia: "Users/Show", props: {
+          profile_props: InertiaRails.merge { @profile_props },
+          card_data_handling_mode: @card_data_handling_mode,
+          paypal_merchant_currency: @paypal_merchant_currency,
+        }
       end
       format.json { render json: @user.as_json }
       format.any { e404 }
@@ -46,11 +53,22 @@ class UsersController < ApplicationController
   end
 
   def subscribe
-    set_meta_tag(title: "Subscribe to #{@user.name.presence || @user.username}")
-    @profile_presenter = ProfilePresenter.new(
-      pundit_user:,
-      seller: @user
-    )
+    set_favicon_meta_tags(@user)
+
+    respond_to do |format|
+      format.html do
+        @profile_presenter = ProfilePresenter.new(
+          pundit_user:,
+          seller: @user
+        )
+
+        # Render with Inertia
+        render inertia: "Users/Subscribe", props: {
+          creator_profile: InertiaRails.merge { @profile_presenter.creator_profile },
+        }
+      end
+      format.json { render json: @profile_presenter.creator_profile }
+    end
   end
 
   def subscribe_preview
