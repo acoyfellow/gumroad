@@ -7,7 +7,8 @@ class Subscriptions::MagicLinksController < ApplicationController
 
   def new
     render inertia: "Subscriptions/MagicLink", props: {
-      **Subscriptions::MagicLinkPresenter.new(subscription: @subscription).magic_link_props
+      **Subscriptions::MagicLinkPresenter.new(subscription: @subscription).magic_link_props,
+      email_sent: params[:email_sent]
     }
   end
 
@@ -21,7 +22,9 @@ class Subscriptions::MagicLinksController < ApplicationController
 
     CustomerMailer.subscription_magic_link(@subscription.id, email).deliver_later(queue: "critical")
 
-    head :no_content
+    redirect_to magic_link_subscription_path(@subscription.external_id, email_sent: email_source),
+                status: :see_other,
+                notice: "Magic link sent to #{EmailRedactorService.redact(email)}"
   end
 
   private

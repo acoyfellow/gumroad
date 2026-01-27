@@ -1,13 +1,9 @@
-import { usePage } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import * as React from "react";
-
-import { sendMagicLink } from "$app/data/subscription_magic_link";
-import { assertResponseError } from "$app/utils/request";
 
 import { Layout } from "$app/components/Authentication/Layout";
 import { Button } from "$app/components/Button";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { showAlert } from "$app/components/server-components/Alert";
 import { useOriginalLocation } from "$app/components/useOriginalLocation";
 
 type UserEmail = { email: string; source: string };
@@ -17,31 +13,33 @@ type Props = {
   subscription_id: string;
   is_installment_plan: boolean;
   user_emails: [UserEmail, ...UserEmail[]];
+  email_sent: string | null;
 };
 
 export default function SubscriptionsMagicLink() {
-  const { product_name, subscription_id, is_installment_plan, user_emails } = usePage<Props>().props;
+  const { product_name, subscription_id, is_installment_plan, user_emails, email_sent } = usePage<Props>().props;
 
   const [loading, setLoading] = React.useState(false);
-  const [hasSentEmail, setHasSentEmail] = React.useState(false);
-  const [selectedUserEmail, setSelectedUserEmail] = React.useState(user_emails[0]);
+  const hasSentEmail = email_sent !== null;
+
+  // Get selected email from email_sent param or default to first
+  const initialSelectedEmail = email_sent
+    ? user_emails.find((e) => e.source === email_sent) ?? user_emails[0]
+    : user_emails[0];
+  const [selectedUserEmail, setSelectedUserEmail] = React.useState(initialSelectedEmail);
 
   const subscriptionEntity = is_installment_plan ? "installment plan" : "membership";
   const invalid = new URL(useOriginalLocation()).searchParams.get("invalid") === "true";
 
-  const handleSendMagicLink = async () => {
+  const handleSendMagicLink = () => {
     setLoading(true);
-    try {
-      await sendMagicLink({ emailSource: selectedUserEmail.source, subscriptionId: subscription_id });
-      if (hasSentEmail) {
-        showAlert(`Magic link resent to ${selectedUserEmail.email}.`, "success");
-      }
-      setHasSentEmail(true);
-    } catch (error) {
-      assertResponseError(error);
-      showAlert(error.message, "error");
-    }
-    setLoading(false);
+    router.post(
+      Routes.magic_link_subscription_path(subscription_id),
+      { email_source: selectedUserEmail.source },
+      {
+        onFinish: () => setLoading(false),
+      },
+    );
   };
 
   const title = hasSentEmail
@@ -69,7 +67,7 @@ export default function SubscriptionsMagicLink() {
         <section>
           {hasSentEmail ? (
             <>
-              <Button color="primary" onClick={() => void handleSendMagicLink()} disabled={loading}>
+              <Button color="primary" onClick={handleSendMagicLink} disabled={loading}>
                 {loading ? <LoadingSpinner /> : null}
                 Resend magic link
               </Button>
@@ -77,7 +75,10 @@ export default function SubscriptionsMagicLink() {
                 {user_emails.length > 1 ? (
                   <>
                     Can't see the email? Please check your spam folder.{" "}
-                    <button className="cursor-pointer underline all-unset" onClick={() => setHasSentEmail(false)}>
+                    <button
+                      className="cursor-pointer underline all-unset"
+                      onClick={() => router.get(Routes.magic_link_subscription_path(subscription_id))}
+                    >
                       Click here to choose another email
                     </button>{" "}
                     or try resending the link above.
@@ -99,14 +100,14 @@ export default function SubscriptionsMagicLink() {
                         name="email_source"
                         value={userEmail.source}
                         onChange={() => setSelectedUserEmail(userEmail)}
-                        checked={userEmail === selectedUserEmail}
+                        checked={userEmail.source === selectedUserEmail.source}
                       />
                       {userEmail.email}
                     </label>
                   ))}
                 </fieldset>
               ) : null}
-              <Button color="primary" onClick={() => void handleSendMagicLink()} disabled={loading}>
+              <Button color="primary" onClick={handleSendMagicLink} disabled={loading}>
                 {loading ? <LoadingSpinner /> : null}
                 Send magic link
               </Button>
@@ -118,4 +119,4 @@ export default function SubscriptionsMagicLink() {
   );
 }
 
-SubscriptionsMagicLink.disableLayout = true;
+SubscriptionsMagicLink.publicLayout = true;

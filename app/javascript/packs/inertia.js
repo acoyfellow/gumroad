@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 
 import AppWrapper from "../inertia/app_wrapper.tsx";
-import Layout, { AuthenticationLayout, LoggedInUserLayout } from "../inertia/layout.tsx";
+import Layout, { AuthenticationLayout, PublicLayout, LoggedInUserLayout } from "../inertia/layout.tsx";
 
 // Configure Inertia to send CSRF token with all requests
 router.on("before", (event) => {
@@ -50,6 +50,9 @@ async function resolvePageComponent(name) {
     if (page.authenticationLayout) {
       page.layout ||= (page) => createElement(AuthenticationLayout, { children: page });
       return page;
+    } else if (page.publicLayout) {
+      page.layout ||= (page) => createElement(PublicLayout, { children: page });
+      return page;
     } else if (page.loggedInUserLayout) {
       page.layout ||= (page) => createElement(LoggedInUserLayout, { children: page });
       return page;
@@ -62,6 +65,9 @@ async function resolvePageComponent(name) {
       const page = module.default;
       if (page.authenticationLayout) {
         page.layout ||= (page) => createElement(AuthenticationLayout, { children: page });
+        return page;
+      } else if (page.publicLayout) {
+        page.layout ||= (page) => createElement(PublicLayout, { children: page });
         return page;
       } else if (page.loggedInUserLayout) {
         page.layout ||= (page) => createElement(LoggedInUserLayout, { children: page });

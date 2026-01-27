@@ -22,6 +22,16 @@ describe Subscriptions::MagicLinksController, inertia: true do
 
       expected_props = Subscriptions::MagicLinkPresenter.new(subscription: @subscription).magic_link_props
       expect(inertia.props).to include(expected_props)
+      expect(inertia.props[:email_sent]).to be_nil
+    end
+
+    context "when email_sent param is present" do
+      it "passes email_sent prop to the page" do
+        get :new, params: { id: @subscription.external_id, email_sent: "user" }
+
+        expect(response).to be_successful
+        expect(inertia.props[:email_sent]).to eq("user")
+      end
     end
 
     context "when subscription does not exist" do
@@ -54,12 +64,14 @@ describe Subscriptions::MagicLinksController, inertia: true do
       expect(@subscription.reload.token_expires_at).to be_within(1.second).of(24.hours.from_now)
     end
 
-    it "sends the magic link email" do
+    it "sends the magic link email and redirects with flash" do
       mail_double = double
       allow(mail_double).to receive(:deliver_later)
       expect(CustomerMailer).to receive(:subscription_magic_link).and_return(mail_double)
       post :create, params: { id: @subscription.external_id, email_source: "user" }
-      expect(response).to be_successful
+
+      expect(response).to redirect_to(magic_link_subscription_path(@subscription.external_id, email_sent: "user"))
+      expect(flash[:notice]).to include("Magic link sent")
     end
 
     describe "email_source param" do
@@ -70,32 +82,35 @@ describe Subscriptions::MagicLinksController, inertia: true do
       end
 
       context "when the email source is `user`" do
-        it "sends the magic link email to the user's email" do
+        it "sends the magic link email to the user's email and redirects" do
           mail_double = double
           allow(mail_double).to receive(:deliver_later)
           expect(CustomerMailer).to receive(:subscription_magic_link).with(@subscription.id, @original_purchasing_user_email).and_return(mail_double)
           post :create, params: { id: @subscription.external_id, email_source: "user" }
-          expect(response).to be_successful
+
+          expect(response).to redirect_to(magic_link_subscription_path(@subscription.external_id, email_sent: "user"))
         end
       end
 
       context "when the email source is `purchase`" do
-        it "sends the magic link email to the email associated to the original purchase" do
+        it "sends the magic link email to the email associated to the original purchase and redirects" do
           mail_double = double
           allow(mail_double).to receive(:deliver_later)
           expect(CustomerMailer).to receive(:subscription_magic_link).with(@subscription.id, "purchase@email.com").and_return(mail_double)
           post :create, params: { id: @subscription.external_id, email_source: "purchase" }
-          expect(response).to be_successful
+
+          expect(response).to redirect_to(magic_link_subscription_path(@subscription.external_id, email_sent: "purchase"))
         end
       end
 
       context "when the email source is `subscription`" do
-        it "sends the magic link email to the email associated to the subscription" do
+        it "sends the magic link email to the email associated to the subscription and redirects" do
           mail_double = double
           allow(mail_double).to receive(:deliver_later)
           expect(CustomerMailer).to receive(:subscription_magic_link).with(@subscription.id, "subscriber@email.com").and_return(mail_double)
           post :create, params: { id: @subscription.external_id, email_source: "subscription" }
-          expect(response).to be_successful
+
+          expect(response).to redirect_to(magic_link_subscription_path(@subscription.external_id, email_sent: "subscription"))
         end
       end
 

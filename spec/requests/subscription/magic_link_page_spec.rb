@@ -74,9 +74,10 @@ describe "Membership magic link page", type: :system, js: true do
       expect(CustomerMailer).to receive(:subscription_magic_link).with(@subscription.id, @subscription.email).and_return(mail_double)
       click_on "Send magic link"
 
-      expect(page).to have_current_path(magic_link_subscription_path(@subscription.external_id))
+      expect(page).to have_current_path(magic_link_subscription_path(@subscription.external_id, email_sent: "subscription"))
       expect(page).to have_text "We've sent a link to"
       expect(page).to have_text "Resend magic link"
+      expect(page).to have_alert "Magic link sent to"
     end
 
     it "resends the magic link" do
@@ -87,14 +88,14 @@ describe "Membership magic link page", type: :system, js: true do
       expect(CustomerMailer).to receive(:subscription_magic_link).with(@subscription.id, @subscription.email).and_return(mail_double)
       click_on "Send magic link"
 
-      expect(page).to have_current_path(magic_link_subscription_path(@subscription.external_id))
+      expect(page).to have_current_path(magic_link_subscription_path(@subscription.external_id, email_sent: "subscription"))
       expect(page).to have_text "We've sent a link to"
       expect(page).to have_text "Resend magic link"
 
       expect(CustomerMailer).to receive(:subscription_magic_link).with(@subscription.id, @subscription.email).and_return(mail_double)
       click_on "Resend magic link"
 
-      expect(page).to have_alert "Magic link resent to"
+      expect(page).to have_alert "Magic link sent to"
     end
 
     context "when the token is expired" do
