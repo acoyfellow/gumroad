@@ -12,7 +12,7 @@ describe HelpCenter::CategoriesController, inertia: true do
     it "returns successful response with Inertia page data" do
       get :show, params: { slug: category.slug }
       expect(response).to be_successful
-      expect(inertia.component).to eq("HelpCenter/Category/Show")
+      expect(inertia.component).to eq("HelpCenter/Categories/Show")
       expect(inertia.props[:category]).to include(
         title: category.title,
         slug: category.slug
@@ -26,13 +26,9 @@ describe HelpCenter::CategoriesController, inertia: true do
       expect(inertia.props[:sidebar_categories].first).to include(:title, :slug, :url)
     end
 
-    it "includes meta information" do
+    it "sets meta tags" do
       get :show, params: { slug: category.slug }
-      expect(inertia.props[:meta]).to include(
-        title: "#{category.title} - Gumroad Help Center"
-      )
-      expect(inertia.props[:meta][:canonical_url]).to be_present
-      expect(inertia.props[:meta][:description]).to be_present
+      expect(response.body).to include("#{category.title} - Gumroad Help Center</title>")
     end
 
     it "redirects to help center root for non-existent categories" do

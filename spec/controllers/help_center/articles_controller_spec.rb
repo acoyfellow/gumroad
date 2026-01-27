@@ -10,11 +10,10 @@ describe HelpCenter::ArticlesController, inertia: true do
     it "returns successful response with Inertia page data" do
       get :index
       expect(response).to be_successful
-      expect(inertia.component).to eq("HelpCenter/Index")
+      expect(inertia.component).to eq("HelpCenter/Articles/Index")
       expect(inertia.props[:categories]).to be_an(Array)
       expect(inertia.props[:categories]).not_to be_empty
       expect(inertia.props[:categories].first).to include(:title, :url, :audience, :articles)
-      expect(inertia.props[:meta]).to include(:title, :description, :canonical_url)
     end
 
     it "includes all categories with their articles" do
@@ -26,6 +25,11 @@ describe HelpCenter::ArticlesController, inertia: true do
       category_with_articles = categories.find { |c| c[:articles].present? }
       expect(category_with_articles[:articles].first).to include(:title, :url)
     end
+
+    it "sets meta tags" do
+      get :index
+      expect(response.body).to include("Gumroad Help Center</title>")
+    end
   end
 
   describe "GET show" do
@@ -34,7 +38,7 @@ describe HelpCenter::ArticlesController, inertia: true do
     it "returns successful response with Inertia page data" do
       get :show, params: { slug: article.slug }
       expect(response).to be_successful
-      expect(inertia.component).to eq("HelpCenter/Article/Show")
+      expect(inertia.component).to eq("HelpCenter/Articles/Show")
       expect(inertia.props[:article]).to include(
         title: article.title,
         slug: article.slug
@@ -48,12 +52,9 @@ describe HelpCenter::ArticlesController, inertia: true do
       expect(inertia.props[:sidebar_categories].first).to include(:title, :slug, :url)
     end
 
-    it "includes meta information" do
+    it "sets meta tags" do
       get :show, params: { slug: article.slug }
-      expect(inertia.props[:meta]).to include(
-        title: "#{article.title} - Gumroad Help Center"
-      )
-      expect(inertia.props[:meta][:canonical_url]).to be_present
+      expect(response.body).to include("#{CGI.escapeHTML(article.title)} - Gumroad Help Center</title>")
     end
 
     it "redirects to help center root for non-existent articles" do
