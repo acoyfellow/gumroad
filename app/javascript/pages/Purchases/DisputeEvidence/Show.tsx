@@ -101,17 +101,7 @@ export default function Show() {
   });
 
   if (props.submitted) {
-    return (
-      <Card className="mx-auto my-8 max-w-2xl">
-        <CardContent asChild>
-          <header>
-            Dispute evidence
-            <h2 className="grow">Submit additional information</h2>
-          </header>
-        </CardContent>
-        <CardContent>Thank you!</CardContent>
-      </Card>
-    );
+    return <SubmissionSuccess />;
   }
 
   const { dispute_evidence, disputable, products } = props;
@@ -140,7 +130,7 @@ export default function Show() {
     form.data.dispute_evidence.customer_communication_file_signed_blob_id !== null ||
     form.data.dispute_evidence.refund_refusal_explanation !== "";
 
-  const handleSubmit = () => {
+  const submitDisputeEvidence = () => {
     // Transform the option values to text before submission
     const reasonForWinningText =
       reasonForWinningOption === "other"
@@ -199,7 +189,7 @@ export default function Show() {
     });
   };
 
-  const handleFileRemove = () => {
+  const removeEvidenceFile = () => {
     updateFormData({ customer_communication_file_signed_blob_id: null });
     setBlobs((prev) => ({
       ...prev,
@@ -341,7 +331,7 @@ export default function Show() {
             <label>Do you have additional evidence you'd like to provide?</label>
           </legend>
 
-          <Files blobs={blobs} onRemoveFile={handleFileRemove} isSubmitting={form.processing} />
+          <Files blobs={blobs} onRemoveFile={removeEvidenceFile} isSubmitting={form.processing} />
 
           {blobs.customer_communication_file === null ? (
             <>
@@ -378,7 +368,7 @@ export default function Show() {
         <Button
           color="primary"
           disabled={!isInfoProvided || form.processing}
-          onClick={handleSubmit}
+          onClick={submitDisputeEvidence}
           className="grow basis-0"
         >
           {form.processing ? (
@@ -393,6 +383,18 @@ export default function Show() {
     </Card>
   );
 }
+
+const SubmissionSuccess = () => (
+  <Card className="mx-auto my-8 max-w-2xl">
+    <CardContent asChild>
+      <header>
+        Dispute evidence
+        <h2 className="grow">Submit additional information</h2>
+      </header>
+    </CardContent>
+    <CardContent>Thank you!</CardContent>
+  </Card>
+);
 
 const Files = ({
   blobs,
