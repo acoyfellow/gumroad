@@ -7,21 +7,12 @@ describe HelpCenterPresenter do
   subject(:presenter) { described_class.new(view_context: view_context) }
 
   describe "#index_props" do
-    it "returns categories with articles and meta" do
+    it "returns categories with articles" do
       props = presenter.index_props
 
       expect(props[:categories]).to be_an(Array)
       expect(props[:categories]).not_to be_empty
       expect(props[:categories].first).to include(:title, :url, :audience, :articles)
-      expect(props[:meta]).to include(:title, :description, :canonical_url)
-    end
-
-    it "returns correct meta information" do
-      props = presenter.index_props
-
-      expect(props[:meta][:title]).to eq("Gumroad Help Center")
-      expect(props[:meta][:description]).to eq("Common questions and support documentation")
-      expect(props[:meta][:canonical_url]).to include("/help")
     end
   end
 
@@ -46,15 +37,6 @@ describe HelpCenterPresenter do
       expect(props[:sidebar_categories]).to be_an(Array)
       expect(props[:sidebar_categories].first).to include(:title, :slug, :url)
     end
-
-    it "returns meta information with description" do
-      props = presenter.article_props(article)
-
-      expect(props[:meta][:title]).to eq("#{article.title} - Gumroad Help Center")
-      expect(props[:meta][:description]).to be_a(String)
-      expect(props[:meta][:description].length).to be <= 160
-      expect(props[:meta][:canonical_url]).to include(article.slug)
-    end
   end
 
   describe "#category_props" do
@@ -75,14 +57,6 @@ describe HelpCenterPresenter do
 
       expect(props[:sidebar_categories]).to be_an(Array)
       expect(props[:sidebar_categories].first).to include(:title, :slug, :url)
-    end
-
-    it "returns meta information" do
-      props = presenter.category_props(category)
-
-      expect(props[:meta][:title]).to eq("#{category.title} - Gumroad Help Center")
-      expect(props[:meta][:description]).to include(category.title)
-      expect(props[:meta][:canonical_url]).to include(category.slug)
     end
   end
 end

@@ -15,22 +15,19 @@ class HelpCenterPresenter
 
   def index_props
     {
-      categories: categories_with_articles,
-      meta: index_meta
+      categories: categories_with_articles
     }
   end
 
   def article_props(article)
-    content = render_article_content(article)
     {
       article: {
         title: article.title,
         slug: article.slug,
-        content: content,
+        content: render_article_content(article),
         category: category_data(article.category)
       },
-      sidebar_categories: article.category.categories_for_same_audience.map { |cat| sidebar_category_data(cat) },
-      meta: article_meta(article, content)
+      sidebar_categories: article.category.categories_for_same_audience.map { |cat| sidebar_category_data(cat) }
     }
   end
 
@@ -41,8 +38,7 @@ class HelpCenterPresenter
         slug: category.slug,
         articles: category.articles.map { |article| article_link_data(article) }
       },
-      sidebar_categories: category.categories_for_same_audience.map { |cat| sidebar_category_data(cat) },
-      meta: category_meta(category)
+      sidebar_categories: category.categories_for_same_audience.map { |cat| sidebar_category_data(cat) }
     }
   end
 
@@ -83,29 +79,5 @@ class HelpCenterPresenter
 
     def render_article_content(article)
       view_context.render(article)
-    end
-
-    def article_meta(article, _content)
-      {
-        title: "#{article.title} - Gumroad Help Center",
-        description: view_context.instance_variable_get(:@description) || "Help article: #{article.title}",
-        canonical_url: help_center_article_url(article)
-      }
-    end
-
-    def category_meta(category)
-      {
-        title: "#{category.title} - Gumroad Help Center",
-        description: "Help articles for #{category.title}",
-        canonical_url: help_center_category_url(category)
-      }
-    end
-
-    def index_meta
-      {
-        title: "Gumroad Help Center",
-        description: "Common questions and support documentation",
-        canonical_url: help_center_root_url
-      }
     end
 end

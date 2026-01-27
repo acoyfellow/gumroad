@@ -4,12 +4,6 @@ export interface SidebarCategory {
   url: string;
 }
 
-export interface Meta {
-  title: string;
-  description?: string;
-  canonical_url: string;
-}
-
 export interface ArticleLink {
   title: string;
   url: string;
