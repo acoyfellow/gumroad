@@ -3,6 +3,7 @@
 class UrlRedirectsController < ApplicationController
   include SignedUrlHelper
   include ProductsHelper
+  include PageMeta::Favicon
 
   layout "inertia", only: [:read]
 
@@ -85,8 +86,8 @@ class UrlRedirectsController < ApplicationController
     @hide_layouts = true
 
     @body_class = "download-page responsive responsive-nav"
-    @show_user_favicon = true
-    @title = @url_redirect.with_product_files.name == "Untitled" ? @url_redirect.referenced_link.name : @url_redirect.with_product_files.name
+    set_favicon_meta_tags(@url_redirect.seller)
+    set_meta_tag(title: @url_redirect.with_product_files.name == "Untitled" ? @url_redirect.referenced_link.name : @url_redirect.with_product_files.name)
     @react_component_props = UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).download_page_with_content_props(common_props)
     trigger_files_lifecycle_events
   end
@@ -164,7 +165,7 @@ class UrlRedirectsController < ApplicationController
 
   def confirm_page
     @content_unavailability_reason_code = UrlRedirectPresenter::CONTENT_UNAVAILABILITY_REASON_CODES[:email_confirmation_required]
-    @title = "#{@url_redirect.referenced_link.name} - Confirm email"
+    set_meta_tag(title: "#{@url_redirect.referenced_link.name} - Confirm email")
     extra_props = common_props.merge(
       confirmation_info: {
         id: @url_redirect.token,
@@ -241,7 +242,7 @@ class UrlRedirectsController < ApplicationController
 
   # Consumption event is created by front-end code
   def stream
-    @title = "Watch"
+    set_meta_tag(title: "Watch")
     @body_id = "stream_page"
     @body_class = "download-page responsive responsive-nav"
 
@@ -415,7 +416,7 @@ class UrlRedirectsController < ApplicationController
     end
 
     def render_unavailable_page(title_suffix:)
-      @title = "#{@url_redirect.referenced_link.name} - #{title_suffix}"
+      set_meta_tag(title: "#{@url_redirect.referenced_link.name} - #{title_suffix}")
       @react_component_props = UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).download_page_without_content_props(common_props)
 
       render :unavailable
