@@ -2,11 +2,7 @@ import { usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
-import {
-  RentalExpiredContent,
-  UnavailablePageLayout,
-  type UnavailablePageProps,
-} from "./UnavailablePageLayout";
+import { RentalExpiredContent, UnavailablePageLayout, type UnavailablePageProps } from "./UnavailablePageLayout";
 
 type Props = UnavailablePageProps;
 
