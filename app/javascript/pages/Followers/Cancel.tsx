@@ -16,5 +16,5 @@ function FollowersCancelPage() {
   );
 }
 
-FollowersCancelPage.disableLayout = true;
+FollowersCancelPage.loggedInUserLayout = true;
 export default FollowersCancelPage;
