@@ -1,21 +1,15 @@
 import { Link } from "@inertiajs/react";
 import * as React from "react";
 
-import { classNames } from "$app/utils/classNames";
-
 import { useDomains } from "$app/components/DomainSettings";
-import LoadingSkeleton from "$app/components/LoadingSkeleton";
 import { Card, CardContent } from "$app/components/ui/Card";
-import useRouteLoading from "$app/components/useRouteLoading";
 
 export const Layout = ({ heading, children }: { heading: string; children: React.ReactNode }) => {
   const { rootDomain } = useDomains();
-  const isRouteLoading = useRouteLoading();
 
   return (
     <div id="inertia-shell" className="flex h-screen flex-col lg:flex-row">
-      {isRouteLoading ? <LoadingSkeleton /> : null}
-      <main className={classNames("flex-1 overflow-y-auto", { hidden: isRouteLoading })}>
+      <main className="flex-1 overflow-y-auto">
         <Card>
           <CardContent asChild>
             <header>
