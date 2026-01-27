@@ -24,7 +24,7 @@ export default function SubscriptionsMagicLink() {
 
   // Get selected email from email_sent param or default to first
   const initialSelectedEmail = email_sent
-    ? user_emails.find((e) => e.source === email_sent) ?? user_emails[0]
+    ? (user_emails.find((e) => e.source === email_sent) ?? user_emails[0])
     : user_emails[0];
   const [selectedUserEmail, setSelectedUserEmail] = React.useState(initialSelectedEmail);
 

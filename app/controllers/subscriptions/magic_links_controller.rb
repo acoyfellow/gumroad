@@ -24,7 +24,7 @@ class Subscriptions::MagicLinksController < ApplicationController
 
     redirect_to magic_link_subscription_path(@subscription.external_id, email_sent: email_source),
                 status: :see_other,
-                notice: "Magic link sent to #{EmailRedactorService.redact(email)}"
+                notice: "Magic link resent to #{EmailRedactorService.redact(email)}"
   end
 
   private
