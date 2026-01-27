@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 class Purchases::DisputeEvidenceController < ApplicationController
+  layout "inertia"
+
   before_action :set_purchase, :set_dispute_evidence, :check_if_needs_redirect
 
   def show
     @dispute_evidence_page_presenter = DisputeEvidencePagePresenter.new(@dispute_evidence)
     set_meta_tag(title: "Submit additional information")
 
-    @hide_layouts = true
     set_noindex_header
 
     render inertia: "Purchases/DisputeEvidence/Show", props: DisputeEvidencePagePresenter.new(@dispute_evidence).props
