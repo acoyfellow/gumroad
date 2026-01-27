@@ -3,7 +3,7 @@
 class SubscriptionsController < ApplicationController
   include PageMeta::Product
 
-  PUBLIC_ACTIONS = %i[manage unsubscribe_by_user magic_link send_magic_link].freeze
+  PUBLIC_ACTIONS = %i[manage unsubscribe_by_user].freeze
   before_action :authenticate_user!, except: PUBLIC_ACTIONS
   after_action :verify_authorized, except: PUBLIC_ACTIONS
 
