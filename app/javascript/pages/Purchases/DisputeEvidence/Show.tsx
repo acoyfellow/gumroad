@@ -16,8 +16,7 @@ import FileUtils from "$app/utils/file";
 import { Button, NavigationButton } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { showAlert, type AlertPayload } from "$app/components/server-components/Alert";
-import { useFlashMessage } from "$app/components/useFlashMessage";
+import { showAlert } from "$app/components/server-components/Alert";
 import { Alert } from "$app/components/ui/Alert";
 import { Card, CardContent } from "$app/components/ui/Card";
 import { Row, RowActions, RowContent, Rows } from "$app/components/ui/Rows";
@@ -74,10 +73,7 @@ type FormData = {
 };
 
 export default function Show() {
-  const { flash, ...pageProps } = usePage<{ flash?: AlertPayload }>().props;
-  const props = cast<Props>(pageProps);
-
-  useFlashMessage(flash);
+  const props = cast<Props>(usePage().props);
 
   const reasonForWinningUID = React.useId();
   const cancellationRebuttalUID = React.useId();
@@ -455,4 +451,4 @@ const Files = ({
   );
 };
 
-Show.disableLayout = true;
+Show.publicLayout = true;
