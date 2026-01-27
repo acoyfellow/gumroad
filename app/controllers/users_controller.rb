@@ -46,7 +46,7 @@ class UsersController < ApplicationController
     set_meta_tag(title: product.name)
 
     if params[:purchase_email].present?
-      flash.now[:notice] = "Your purchase was successful! We sent a receipt to #{params[:purchase_email]}."
+      flash[:notice] = "Your purchase was successful! We sent a receipt to #{params[:purchase_email]}."
     end
 
     profile_presenter = ProfilePresenter.new(pundit_user:, seller: @user)
