@@ -131,7 +131,6 @@ export default function Show() {
     form.data.dispute_evidence.refund_refusal_explanation !== "";
 
   const submitDisputeEvidence = () => {
-    // Transform the option values to text before submission
     const reasonForWinningText =
       reasonForWinningOption === "other"
         ? form.data.dispute_evidence.reason_for_winning
@@ -405,7 +404,6 @@ const Files = ({
   onRemoveFile: () => void;
   isSubmitting: boolean;
 }) => {
-  // Hooks must be called before any early returns (Rules of Hooks)
   const [isRemovingFile, setIsRemovingFile] = React.useState(false);
 
   const eligibleBlobs = Object.values(blobs).filter((b): b is BlobType => b !== null);
