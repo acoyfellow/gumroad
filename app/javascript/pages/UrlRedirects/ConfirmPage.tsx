@@ -31,7 +31,7 @@ function ConfirmPage() {
     add_to_library_option,
     installment,
     purchase,
-  } = cast<PageProps>(usePage().props); // use cast to enforce types
+  } = cast<PageProps>(usePage().props);
 
   return (
     <Layout
