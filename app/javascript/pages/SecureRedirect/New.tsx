@@ -30,7 +30,7 @@ const New = () => {
   };
 
   return (
-    <>
+    <div className="flex flex-col h-full">
       <Head title="Confirm access" />
       <Card className="single-page-form horizontal-form">
         <CardContent asChild>
@@ -60,8 +60,8 @@ const New = () => {
           </form>
         </CardContent>
       </Card>
-      <PoweredByFooter className="fixed bottom-0 w-full !p-6 lg:!py-6" />
-    </>
+      <PoweredByFooter className="mt-auto w-full !p-6 lg:!py-6" />
+    </div>
   );
 };
 
