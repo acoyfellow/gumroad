@@ -103,7 +103,7 @@ const FormPage = ({
 
   const updateUserData = (update: Partial<FormData["user"]>) => form.setData("user", { ...form.data.user, ...update });
 
-  const handleSave = () => {
+  const submitForm = () => {
     const newInvalidFields = new Set<string>();
 
     customFields.forEach((field) => {
@@ -160,7 +160,7 @@ const FormPage = ({
       actions={
         <Button
           color="accent"
-          onClick={handleSave}
+          onClick={submitForm}
           disabled={!loggedInUser?.policies.checkout_form.update || form.processing}
         >
           {form.processing ? "Saving changes..." : "Save changes"}
