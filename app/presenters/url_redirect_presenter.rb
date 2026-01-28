@@ -53,20 +53,25 @@ class UrlRedirectPresenter
     {
       content: content_props,
       product_has_third_party_analytics: purchase&.link&.has_third_party_analytics?("receipt"),
-      is_mobile_app_web_view:,
-      add_to_library_option:,
       content_unavailability_reason_code: nil,
-    }.merge(download_page_layout_props).merge(extra_props)
+    }.merge(download_page_layout_props).merge(common_props).merge(extra_props)
   end
 
   def download_page_without_content_props(extra_props = {})
     download_page_layout_props(email_confirmation_required: extra_props[:content_unavailability_reason_code] == CONTENT_UNAVAILABILITY_REASON_CODES[:email_confirmation_required])
-      .merge(is_mobile_app_web_view:, add_to_library_option:)
+      .merge(common_props)
       .merge(extra_props)
   end
 
   def unavailable_page_props
-    download_page_layout_props.merge(is_mobile_app_web_view:, add_to_library_option:)
+    download_page_layout_props.merge(common_props)
+  end
+
+  def common_props
+    {
+      is_mobile_app_web_view:,
+      add_to_library_option:,
+    }
   end
 
   def add_to_library_option
