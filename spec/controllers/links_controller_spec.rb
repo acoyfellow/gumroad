@@ -79,18 +79,18 @@ describe LinksController, :vcr, inertia: true do
         it "publishes and redirects with flash notice" do
           post :publish, params: { id: @disabled_link.unique_permalink }
 
-          expect(response).to redirect_to(edit_link_path(@disabled_link.unique_permalink))
+          expect(response).to redirect_to(product_edit_share_path(@disabled_link.unique_permalink))
           expect(flash[:notice]).to eq("Published!")
           expect(@disabled_link.reload.purchase_disabled_at).to be_nil
         end
 
-        it "sets flash error when publish fails" do
+        it "sets flash alert when publish fails" do
           allow_any_instance_of(Link).to receive(:publishable?) { false }
 
           post :publish, params: { id: @disabled_link.unique_permalink }
 
-          expect(response).to redirect_to(edit_link_path(@disabled_link.unique_permalink))
-          expect(flash[:error]).to be_present
+          expect(response).to redirect_to(edit_product_product_path(@disabled_link.unique_permalink))
+          expect(flash[:alert]).to be_present
           expect(@disabled_link.reload.purchase_disabled_at).to be_present
         end
       end

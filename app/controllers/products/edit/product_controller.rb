@@ -6,8 +6,6 @@ module Products
       def edit
         return redirect_to bundle_path(@product.external_id) if @product.is_bundle?
 
-        @title = @product.name
-
         render inertia: "Products/Edit/Product", props: Products::Edit::ProductTabPresenter.new(product: @product, pundit_user:).props
       end
 
@@ -22,14 +20,14 @@ module Products
           else
             error_message = @product.errors.full_messages.first || e.message
           end
-          flash[:error] = error_message
-          return redirect_back fallback_location: edit_link_path(@product.external_id)
+          flash[:alert] = error_message
+          return redirect_back fallback_location: edit_product_product_path(@product.external_id)
         end
 
         flash[:notice] = "Your changes have been saved!"
         check_offer_codes_validity
 
-        redirect_to edit_link_path(id: @product.unique_permalink)
+        redirect_to edit_product_product_path(@product.unique_permalink)
       end
 
       private
@@ -172,8 +170,7 @@ module Products
         end
 
         def product_permitted_params
-          scope = params[:product].present? ? params.require(:product) : params
-          scope.permit(policy(@product).product_tab_permitted_attributes)
+          params.require(:product).permit(policy(@product).product_tab_permitted_attributes)
         end
     end
   end

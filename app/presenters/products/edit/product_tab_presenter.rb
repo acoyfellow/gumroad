@@ -4,13 +4,7 @@ module Products
   module Edit
     class ProductTabPresenter < BasePresenter
       def props
-        {
-          **base_props,
-          product: {
-            **base_props[:product],
-            # Additional tab-specific overrides if any
-          }
-        }
+        base_props
       end
     end
   end

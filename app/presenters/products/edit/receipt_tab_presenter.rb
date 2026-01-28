@@ -4,12 +4,7 @@ module Products
   module Edit
     class ReceiptTabPresenter < BasePresenter
       def props
-        {
-          **base_props,
-          product: {
-            **base_props[:product],
-          }
-        }
+        base_props
       end
     end
   end

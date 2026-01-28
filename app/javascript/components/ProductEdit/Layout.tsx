@@ -135,46 +135,41 @@ export const Layout = ({
   showNavigationButton?: boolean;
 }) => {
   const { product, updateProduct, uniquePermalink, saving, save } = useProductEditContext();
-  const rootPath = `/products/${uniquePermalink}/edit`;
+  const rootPath = Routes.edit_product_product_path(uniquePermalink);
 
   const url = useProductUrl();
   const checkoutUrl = useProductUrl({ wanted: true });
 
-  const inertiaUrl = usePage().url;
+  const pageComponent = usePage().component;
   const tab = React.useMemo(() => {
-    if (inertiaUrl.includes("/edit/content")) return "content";
-    if (inertiaUrl.includes("/edit/receipt")) return "receipt";
-    if (inertiaUrl.includes("/edit/share")) return "share";
+    if (pageComponent === "Products/Edit/Content") return "content";
+    if (pageComponent === "Products/Edit/Receipt") return "receipt";
+    if (pageComponent === "Products/Edit/Share") return "share";
     return "product";
-  }, [inertiaUrl]);
+  }, [pageComponent]);
 
   const navigate = useRefToLatest((url: string) => {
-    router.visit(url);
+    router.get(url);
   });
 
   const [isPublishing, setIsPublishing] = React.useState(false);
   const setPublished = async (published: boolean) => {
     setIsPublishing(true);
-    try {
-      await save();
-    } catch {
-      setIsPublishing(false);
-      return;
+    if (published) {
+      try {
+        await save();
+      } catch {
+        setIsPublishing(false);
+        return;
+      }
     }
 
     const publishUrl = published ? Routes.publish_link_path(uniquePermalink) : Routes.unpublish_link_path(uniquePermalink);
-    let redirectUrl = rootPath;
-    if (tab === "share") {
-      redirectUrl = product.native_type === "coffee" ? rootPath : `${rootPath}/content`;
-    } else if (published) {
-      redirectUrl = `${rootPath}/share`;
-    }
 
     router.post(publishUrl, {}, {
       preserveScroll: true,
       onSuccess: () => {
         updateProduct({ is_published: published });
-        router.visit(redirectUrl);
       },
       onFinish: () => setIsPublishing(false),
     });
@@ -286,37 +281,24 @@ export const Layout = ({
         >
           <Tabs style={{ gridColumn: 1 }}>
             <Tab asChild isSelected={tab === "product"}>
-              <Link href={rootPath} onClick={onTabClick}>
+              <Link href={Routes.edit_product_product_path(uniquePermalink)} onClick={onTabClick}>
                 Product
               </Link>
             </Tab>
             {!isCoffee ? (
               <Tab asChild isSelected={tab === "content"}>
-                <Link href={`${rootPath}/content`} onClick={onTabClick}>
+                <Link href={Routes.product_edit_content_path(uniquePermalink)} onClick={onTabClick}>
                   Content
                 </Link>
               </Tab>
             ) : null}
             <Tab asChild isSelected={tab === "receipt"}>
-              <Link href={`${rootPath}/receipt`} onClick={onTabClick}>
+              <Link href={Routes.product_edit_receipt_path(uniquePermalink)} onClick={onTabClick}>
                 Receipt
               </Link>
             </Tab>
             <Tab asChild isSelected={tab === "share"}>
-              <Link
-                href={`${rootPath}/share`}
-                onClick={(evt) => {
-                  onTabClick(evt, () => {
-                    if (!product.is_published) {
-                      evt.preventDefault();
-                      showAlert(
-                        "Not yet! You've got to publish your awesome product before you can share it with your audience and the world.",
-                        "warning",
-                      );
-                    }
-                  });
-                }}
-              >
+              <Link href={Routes.product_edit_share_path(uniquePermalink)} onClick={onTabClick}>
                 Share
               </Link>
             </Tab>

@@ -5,40 +5,11 @@ module Products
     class BaseController < Sellers::BaseController
       before_action :fetch_product
       before_action :authorize_product
+      before_action :set_product_edit_title
 
       layout "inertia"
 
-      private
-        def fetch_product
-          @product = Link.fetch_leniently(params[:id], user: current_seller) || Link.fetch_leniently(params[:id])
-          raise(ActiveRecord::RecordNotFound) if @product.nil? || @product.archived? || @product.deleted_at.present?
-        end
-
-        def authorize_product
-          authorize @product
-        end
-
-        def presenter
-          @presenter ||= ProductPresenter.new(product: @product, pundit_user:)
-        end
-
-        def base_props
-          {
-            id: @product.external_id,
-            unique_permalink: @product.unique_permalink,
-            product: {
-              name: @product.name,
-              is_published: !@product.draft && @product.alive?,
-              native_type: @product.native_type,
-            },
-            seller: UserPresenter.new(user: @product.user).author_byline_props,
-          }
-        end
-
-        def product_permitted_params
-          params.permit(policy(@product).product_permitted_attributes)
-        end
-
+      protected
         def check_offer_codes_validity
           invalid_currency_offer_codes = @product.product_and_universal_offer_codes.reject do |offer_code|
             offer_code.is_currency_valid?(@product)
@@ -61,6 +32,21 @@ module Products
 
             flash[:warning] = "The following offer #{"code".pluralize(all_invalid_offer_codes.count)} #{issue_description}: #{all_invalid_offer_codes.join(", ")}. Please update #{all_invalid_offer_codes.length > 1 ? "them or they" : "it or it"} will not work at checkout."
           end
+        end
+
+      private
+        def set_product_edit_title
+          set_meta_tag(title: @product.name)
+        end
+
+        def fetch_product
+          product_id = params[:product_id] || params[:id]
+          @product = Link.fetch_leniently(product_id, user: current_seller) || Link.fetch_leniently(product_id)
+          raise(ActiveRecord::RecordNotFound) if @product.nil? || @product.archived? || @product.deleted_at.present?
+        end
+
+        def authorize_product
+          authorize @product
         end
     end
   end

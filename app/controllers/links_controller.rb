@@ -105,9 +105,9 @@ class LinksController < ApplicationController
 
     create_user_event("add_product")
     if ai_generated
-      redirect_to edit_link_path(@product, ai_generated: true), status: :see_other
+      redirect_to edit_product_product_path(@product, ai_generated: true), status: :see_other
     else
-      redirect_to edit_link_path(@product), status: :see_other
+      redirect_to edit_product_product_path(@product), status: :see_other
     end
   end
 
@@ -280,7 +280,7 @@ class LinksController < ApplicationController
 
     if request.inertia?
       flash[:notice] = "Unpublished!"
-      redirect_back fallback_location: edit_link_path(@product.unique_permalink)
+      redirect_to product_edit_redirect_url
     else
       render json: { success: true }
     end
@@ -292,8 +292,8 @@ class LinksController < ApplicationController
     if @product.user.email.blank?
       error_message = "<span>To publish a product, we need you to have an email. <a href=\"#{settings_main_url}\">Set an email</a> to continue.</span>"
       if request.inertia?
-        flash[:error] = error_message
-        return redirect_back fallback_location: edit_link_path(@product.unique_permalink)
+        flash[:alert] = error_message.html_safe
+        return redirect_back fallback_location: edit_product_product_path(@product.unique_permalink)
       else
         return render json: { success: false, error_message: }
       end
@@ -304,8 +304,8 @@ class LinksController < ApplicationController
     rescue Link::LinkInvalid, ActiveRecord::RecordInvalid
       error_message = @product.errors.full_messages[0]
       if request.inertia?
-        flash[:error] = error_message
-        return redirect_back fallback_location: edit_link_path(@product.unique_permalink)
+        flash[:alert] = error_message
+        return redirect_back fallback_location: edit_product_product_path(@product.unique_permalink)
       else
         return render json: { success: false, error_message: }
       end
@@ -313,8 +313,8 @@ class LinksController < ApplicationController
       Bugsnag.notify(e)
       error_message = "Something broke. We're looking into what happened. Sorry about this!"
       if request.inertia?
-        flash[:error] = error_message
-        return redirect_back fallback_location: edit_link_path(@product.unique_permalink)
+        flash[:alert] = error_message
+        return redirect_back fallback_location: edit_product_product_path(@product.unique_permalink)
       else
         return render json: { success: false, error_message: }
       end
@@ -322,7 +322,7 @@ class LinksController < ApplicationController
 
     if request.inertia?
       flash[:notice] = "Published!"
-      redirect_back fallback_location: edit_link_path(@product.unique_permalink)
+      redirect_to product_edit_share_path(@product.unique_permalink)
     else
       render json: { success: true }
     end
@@ -379,6 +379,20 @@ class LinksController < ApplicationController
   end
 
   private
+    def product_edit_redirect_url
+      referer = request.referer.to_s
+      permalink = @product.unique_permalink
+      if referer.include?("/edit/share")
+        @product.native_type == Link::NATIVE_TYPE_COFFEE ? edit_product_product_path(permalink) : product_edit_content_path(permalink)
+      elsif referer.include?("/edit/content")
+        product_edit_content_path(permalink)
+      elsif referer.include?("/edit/receipt")
+        product_edit_receipt_path(permalink)
+      else
+        edit_product_product_path(permalink)
+      end
+    end
+
     def fetch_product_for_show
       fetch_product_by_custom_domain || fetch_product_by_general_permalink
     end

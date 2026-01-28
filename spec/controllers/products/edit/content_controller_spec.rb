@@ -11,20 +11,27 @@ describe Products::Edit::ContentController, inertia: true do
   include_context "with user signed in as admin for seller"
 
   describe "GET edit" do
-    it "renders the Products/Edit/Content component" do
-      get :edit, params: { id: product.unique_permalink }
+    it "renders the Products/Edit/Content component with expected props" do
+      get :edit, params: { product_id: product.unique_permalink }
 
       expect(response).to be_successful
       expect(inertia).to render_component("Products/Edit/Content")
-      expect(inertia.props).to include(:product, :id, :unique_permalink)
+      expect(inertia.props.keys).to include(:id, :unique_permalink, :product, :seller)
+      expect(inertia.props[:id]).to eq(product.external_id)
+      expect(inertia.props[:unique_permalink]).to eq(product.unique_permalink)
+      expect(inertia.props[:product]).to be_a(Hash)
+      expect(inertia.props[:product][:name]).to eq(product.name)
+      expect(inertia.props[:product][:rich_content]).to be_a(Array)
     end
   end
 
   describe "PATCH update" do
     let(:params) do
       {
-        id: product.unique_permalink,
-        rich_content: [{ title: "New Page", description: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Hello" }] }] } }]
+        product_id: product.unique_permalink,
+        product: {
+          rich_content: [{ title: "New Page", description: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Hello" }] }] } }]
+        }
       }
     end
 
@@ -34,7 +41,7 @@ describe Products::Edit::ContentController, inertia: true do
       it "updates the product content and redirects" do
         patch :update, params: params
 
-        expect(response).to redirect_to(products_edit_content_path(id: product.unique_permalink))
+        expect(response).to redirect_to(product_edit_content_path(product.unique_permalink))
         expect(flash[:notice]).to eq("Your changes have been saved!")
         expect(product.reload.rich_contents.count).to eq(1)
       end

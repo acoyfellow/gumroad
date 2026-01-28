@@ -278,22 +278,22 @@ Rails.application.routes.draw do
   get "/s3_utility/generate_multipart_signature", to: "s3_utility#generate_multipart_signature"
 
   constraints GumroadDomainConstraint do
-    # Product Edit - Per-tab controllers
     get "/products/:id/edit", to: "products/edit/product#edit", as: :edit_link
-    patch "/products/:id/edit", to: "products/edit/product#update"
-    put "/products/:id/edit", to: "products/edit/product#update"
 
-    get "/products/:id/edit/content", to: "products/edit/content#edit", as: :products_edit_content
-    patch "/products/:id/edit/content", to: "products/edit/content#update"
-    put "/products/:id/edit/content", to: "products/edit/content#update"
-
-    get "/products/:id/edit/receipt", to: "products/edit/receipt#edit", as: :products_edit_receipt
-    patch "/products/:id/edit/receipt", to: "products/edit/receipt#update"
-    put "/products/:id/edit/receipt", to: "products/edit/receipt#update"
-
-    get "/products/:id/edit/share", to: "products/edit/share#edit", as: :products_edit_share
-    patch "/products/:id/edit/share", to: "products/edit/share#update"
-    put "/products/:id/edit/share", to: "products/edit/share#update"
+    resources :products, only: [], param: :id do
+      scope module: "products" do
+        resource :product, only: [:edit, :update], path: "", controller: "edit/product"
+        get "edit/content", to: "edit/content#edit", as: :edit_content
+        patch "edit/content", to: "edit/content#update"
+        put "edit/content", to: "edit/content#update"
+        get "edit/receipt", to: "edit/receipt#edit", as: :edit_receipt
+        patch "edit/receipt", to: "edit/receipt#update"
+        put "edit/receipt", to: "edit/receipt#update"
+        get "edit/share", to: "edit/share#edit", as: :edit_share
+        patch "edit/share", to: "edit/share#update"
+        put "edit/share", to: "edit/share#update"
+      end
+    end
 
     get "/about", to: "home#about"
     get "/features", to: "home#features"

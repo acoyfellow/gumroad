@@ -3,9 +3,9 @@
 module Products
   module Edit
     class ShareController < BaseController
-      def edit
-        @title = @product.name
+      before_action :ensure_published_for_share, only: [:edit]
 
+      def edit
         render inertia: "Products/Edit/Share", props: Products::Edit::ShareTabPresenter.new(product: @product, pundit_user:).props
       end
 
@@ -16,17 +16,25 @@ module Products
           end
         rescue ActiveRecord::RecordNotSaved, ActiveRecord::RecordInvalid, Link::LinkInvalid => e
           error_message = @product.errors.full_messages.first || e.message
-          flash[:error] = error_message
-          return redirect_back fallback_location: products_edit_share_path(@product.external_id)
+          flash[:alert] = error_message
+          return redirect_back fallback_location: product_edit_share_path(@product.external_id)
         end
 
         flash[:notice] = "Your changes have been saved!"
         check_offer_codes_validity
 
-        redirect_to products_edit_share_path(id: @product.unique_permalink)
+        redirect_to product_edit_share_path(@product.unique_permalink)
       end
 
       private
+
+        def ensure_published_for_share
+          return if !@product.draft && @product.alive?
+
+          flash[:alert] = "Not yet! You've got to publish your awesome product before you can share it with your audience and the world."
+          redirect_path = @product.native_type == Link::NATIVE_TYPE_COFFEE ? edit_product_product_path(@product.unique_permalink) : product_edit_content_path(@product.unique_permalink)
+          redirect_to redirect_path
+        end
 
         def update_share_attributes
           @product.assign_attributes(product_permitted_params.except(:tags))
@@ -47,8 +55,7 @@ module Products
         end
 
         def product_permitted_params
-          scope = params[:product].present? ? params.require(:product) : params
-          scope.permit(policy(@product).share_tab_permitted_attributes)
+          params.require(:product).permit(policy(@product).share_tab_permitted_attributes)
         end
     end
   end
