@@ -2,6 +2,7 @@ import { usePage } from "@inertiajs/react";
 import * as React from "react";
 
 import { CartState, newCartState } from "$app/components/Checkout/cartState";
+import { cast } from "ts-safe-cast";
 
 type Props = {
   cart: CartState | null;
