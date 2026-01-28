@@ -1658,7 +1658,7 @@ describe UrlRedirectsController do
       get :membership_inactive_page, params: { id: url_redirect.token }
 
       expect(response).to be_successful
-      expect(inertia).to render_component("UrlRedirects/MembershipInactive")
+      expect(inertia).to render_component("UrlRedirects/MembershipInactivePage")
       expect(inertia.props[:purchase][:membership][:is_alive_or_restartable]).to be(true)
       expect(inertia.props[:purchase][:membership][:subscription_id]).to eq(subscription.external_id)
     end
@@ -1669,7 +1669,7 @@ describe UrlRedirectsController do
       get :membership_inactive_page, params: { id: url_redirect.token }
 
       expect(response).to be_successful
-      expect(inertia).to render_component("UrlRedirects/MembershipInactive")
+      expect(inertia).to render_component("UrlRedirects/MembershipInactivePage")
       expect(inertia.props[:purchase][:membership][:is_alive_or_restartable]).to be(false)
       expect(inertia.props[:purchase][:product_long_url]).to eq(product.long_url)
     end
@@ -1680,7 +1680,7 @@ describe UrlRedirectsController do
       get :rental_expired_page, params: { id: @url_redirect.token }
 
       expect(response).to be_successful
-      expect(inertia).to render_component("UrlRedirects/RentalExpired")
+      expect(inertia).to render_component("UrlRedirects/RentalExpiredPage")
       expect(inertia.props[:purchase][:product_name]).to eq(@product.name)
     end
   end
@@ -1690,7 +1690,7 @@ describe UrlRedirectsController do
       get :expired, params: { id: @url_redirect.token }
 
       expect(response).to be_successful
-      expect(inertia).to render_component("UrlRedirects/Expired")
+      expect(inertia).to render_component("UrlRedirects/ExpiredPage")
       expect(inertia.props[:purchase][:product_name]).to eq(@product.name)
     end
   end

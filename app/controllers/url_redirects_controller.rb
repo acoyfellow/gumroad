@@ -170,15 +170,15 @@ class UrlRedirectsController < ApplicationController
   end
 
   def expired
-    render inertia: "UrlRedirects/Expired", props: unavailable_page_props
+    render inertia: "UrlRedirects/ExpiredPage", props: unavailable_page_props
   end
 
   def rental_expired_page
-    render inertia: "UrlRedirects/RentalExpired", props: unavailable_page_props
+    render inertia: "UrlRedirects/RentalExpiredPage", props: unavailable_page_props
   end
 
   def membership_inactive_page
-    render inertia: "UrlRedirects/MembershipInactive", props: unavailable_page_props
+    render inertia: "UrlRedirects/MembershipInactivePage", props: unavailable_page_props
   end
 
   def change_purchaser
