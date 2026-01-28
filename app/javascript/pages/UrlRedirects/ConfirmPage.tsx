@@ -1,5 +1,6 @@
 import { useForm, usePage } from "@inertiajs/react";
 import * as React from "react";
+import { cast } from "ts-safe-cast";
 
 import { StandaloneLayout } from "$app/inertia/layout";
 

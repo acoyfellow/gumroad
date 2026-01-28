@@ -166,7 +166,7 @@ class UrlRedirectsController < ApplicationController
     )
     props = UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).download_page_without_content_props(extra_props)
 
-    render inertia: "UrlRedirects/Confirm", props:
+    render inertia: "UrlRedirects/ConfirmPage", props:
   end
 
   def expired

@@ -1322,7 +1322,7 @@ describe UrlRedirectsController do
     it "renders the confirm page correctly" do
       get :confirm_page, params: { id: @url_redirect.token }
       expect(response).to be_successful
-      expect(inertia.component).to eq("UrlRedirects/Confirm")
+      expect(inertia.component).to eq("UrlRedirects/ConfirmPage")
       expect(inertia.props[:token]).to eq(@url_redirect.token)
       expect(inertia.props[:redirect_id]).to eq(@url_redirect.external_id)
       expect(inertia.props[:content_unavailability_reason_code]).to eq(UrlRedirectPresenter::CONTENT_UNAVAILABILITY_REASON_CODES[:email_confirmation_required])
