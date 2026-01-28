@@ -58,25 +58,17 @@ class UrlRedirectsController < ApplicationController
     e404 unless @product_file&.readable?
 
     s3_retrievable = @product_file
-    @title = @product_file.with_product_files_owner.name
-    read_id = @product_file.external_id
-    read_url = signed_download_url_for_s3_key_and_filename(s3_retrievable.s3_key, s3_retrievable.s3_filename, cache_group: "read")
-
-    # Used for tracking page turns:
-    url_redirect_id = @url_redirect.external_id
-    purchase_id = @url_redirect.purchase.try(:external_id)
-    product_file_id = @product_file.try(:external_id)
-    latest_media_location = @product_file.latest_media_location_for(@url_redirect.purchase)
+    set_meta_tag(title: @product_file.with_product_files_owner.name)
     trigger_files_lifecycle_events
 
     render inertia: "UrlRedirects/Read", props: {
-      read_id:,
-      url: read_url,
-      url_redirect_id:,
-      purchase_id:,
-      product_file_id:,
-      latest_media_location:,
-      title: @title,
+      read_id: @product_file.external_id,
+      url: signed_download_url_for_s3_key_and_filename(s3_retrievable.s3_key, s3_retrievable.s3_filename, cache_group: "read"),
+      url_redirect_id: @url_redirect.external_id,
+      purchase_id: @url_redirect.purchase.try(:external_id),
+      product_file_id: @product_file.try(:external_id),
+      latest_media_location: @product_file.latest_media_location_for(@url_redirect.purchase),
+      title: @product_file.with_product_files_owner.name,
     }
   rescue ArgumentError
     redirect_to(library_path)

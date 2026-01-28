@@ -1545,9 +1545,20 @@ describe UrlRedirectsController do
           get :read, params: { id: @token, product_file_id: @product.product_files.first.external_id }
           expect(response).to be_successful
           expect_inertia.to render_component("UrlRedirects/Read")
+
+          # Test meta tag title
+          html = Nokogiri::HTML.parse(response.body)
+          expect(html.at("title").text).to eq("The Works of Edgar Gumstein")
+
+          # Test all inertia props
           expect(inertia.props[:url]).to include("X-Amz-Signature=")
           expect(inertia.props[:url]).to include(S3_BUCKET)
           expect(inertia.props[:title]).to eq("The Works of Edgar Gumstein")
+          expect(inertia.props[:read_id]).to eq(@product.product_files.first.external_id)
+          expect(inertia.props[:url_redirect_id]).to eq(@url_redirect.external_id)
+          expect(inertia.props[:purchase_id]).to eq(@url_redirect.purchase.external_id)
+          expect(inertia.props[:product_file_id]).to eq(@product.product_files.first.external_id)
+          expect(inertia.props[:latest_media_location]).to be_nil
         end
 
         it "creates the proper consumption event" do

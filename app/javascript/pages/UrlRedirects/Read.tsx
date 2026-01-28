@@ -28,7 +28,7 @@ type PageProps = {
 
 function ReadPage() {
   const { read_id, url, url_redirect_id, purchase_id, product_file_id, latest_media_location, title } =
-    usePage<PageProps>().props;
+    cast<PageProps>(usePage().props);
 
   const [pageNumber, setPageNumber] = React.useState(1);
   const [pageCount, setPageCount] = React.useState(0);
@@ -272,5 +272,5 @@ function ReadPage() {
   );
 }
 
-ReadPage.disableLayout = true;
+ReadPage.layout = (page: React.ReactNode) => page;
 export default ReadPage;
