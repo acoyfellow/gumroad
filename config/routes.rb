@@ -671,8 +671,22 @@ Rails.application.routes.draw do
       end
     end
 
-    get "/products/:id/edit", to: "links#edit", as: :edit_link
-    get "/products/:id/edit/*other", to: "links#edit"
+    # Edit product tabs - Inertia routes
+    namespace :products do
+      namespace :edit do
+        get "/:id", to: "product#show", as: :product_edit_show
+        patch "/:id", to: "product#update"
+        get "/:id/content", to: "content#show", as: :content_edit_show
+        patch "/:id/content", to: "content#update"
+        get "/:id/receipt", to: "reciept#show", as: :receipt_edit_show
+        patch "/:id/receipt", to: "reciept#update"
+        get "/:id/share", to: "share#show", as: :share_edit_show
+        patch "/:id/share", to: "share#update"
+      end
+    end
+
+    # Legacy route for backward compatibility
+    get "/products/:id/edit", to: "products/edit/product#show", as: :edit_link
     get "/products/:id/card", to: "links#card", as: :product_card
     get "/products/search", to: "links#search"
 
