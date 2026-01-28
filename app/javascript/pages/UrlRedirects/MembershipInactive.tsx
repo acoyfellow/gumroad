@@ -2,6 +2,8 @@ import { usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
+import { StandaloneLayout } from "$app/inertia/layout";
+
 import {
   InstallmentPlanInactiveContent,
   MembershipInactiveContent,
@@ -50,6 +52,6 @@ const MembershipInactivePage = () => {
   );
 };
 
-MembershipInactivePage.loggedInUserLayout = true;
+MembershipInactivePage.layout = (page: React.ReactNode) => <StandaloneLayout>{page}</StandaloneLayout>;
 
 export default MembershipInactivePage;

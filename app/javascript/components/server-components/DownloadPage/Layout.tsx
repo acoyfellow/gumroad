@@ -239,7 +239,7 @@ export const Layout = ({
   );
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <>
       {loggedInUser && !is_mobile_app_web_view ? (
         <div className="font-size-base grid-row-[-3] text-singleline border-b border-border px-8 py-4">
           <a style={{ textDecoration: "none" }} href={Routes.library_url()} title="Back to Library">
@@ -263,7 +263,7 @@ export const Layout = ({
               </>
             }
           >
-            <div className="flex h-full flex-col gap-4">
+            <div className="flex flex-col gap-4">
               {children}
               {!isDesktop ? settings : null}
             </div>
@@ -272,7 +272,7 @@ export const Layout = ({
           <div className="flex flex-1 flex-col gap-4 p-4 md:p-8">{children}</div>
         )}
       </div>
-    </div>
+    </>
   );
 };
 

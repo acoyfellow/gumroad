@@ -2,6 +2,8 @@ import { usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
+import { StandaloneLayout } from "$app/inertia/layout";
+
 import { RentalExpiredContent, UnavailablePageLayout, type UnavailablePageProps } from "./UnavailablePageLayout";
 
 type Props = UnavailablePageProps;
@@ -20,6 +22,6 @@ const RentalExpiredPage = () => {
   );
 };
 
-RentalExpiredPage.loggedInUserLayout = true;
+RentalExpiredPage.layout = (page: React.ReactNode) => <StandaloneLayout>{page}</StandaloneLayout>;
 
 export default RentalExpiredPage;
