@@ -90,8 +90,24 @@ describe Purchases::DisputeEvidenceController, type: :controller, inertia: true 
     end
   end
 
+  describe "GET success" do
+    it "renders the success page" do
+      get :success, params: { purchase_id: purchase.external_id }
+
+      expect(response).to be_successful
+      expect(inertia.component).to eq("Purchases/DisputeEvidence/Success")
+    end
+
+    it "adds X-Robots-Tag response header to avoid page indexing" do
+      get :success, params: { purchase_id: purchase.external_id }
+
+      expect(response).to be_successful
+      expect(response.headers["X-Robots-Tag"]).to eq("noindex")
+    end
+  end
+
   describe "PUT update" do
-    it "updates the dispute evidence" do
+    it "updates the dispute evidence and redirects to success page" do
       put :update, params: {
         purchase_id: purchase.external_id,
         dispute_evidence: {
@@ -107,9 +123,7 @@ describe Purchases::DisputeEvidenceController, type: :controller, inertia: true 
       expect(dispute_evidence.refund_refusal_explanation).to eq("Refusal explanation")
       expect(dispute_evidence.seller_submitted?).to be(true)
 
-      expect(response).to be_successful
-      expect(inertia.component).to eq("Purchases/DisputeEvidence/Show")
-      expect(inertia.props[:submitted]).to be(true)
+      expect(response).to redirect_to(success_purchase_dispute_evidence_path(purchase.external_id))
     end
 
     context "when a signed_id for a PNG file is provided" do
@@ -127,9 +141,7 @@ describe Purchases::DisputeEvidenceController, type: :controller, inertia: true 
         expect(dispute_evidence.customer_communication_file.filename.to_s).to eq("receipt_image.jpg")
         expect(dispute_evidence.customer_communication_file.content_type).to eq("image/jpeg")
 
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Purchases/DisputeEvidence/Show")
-        expect(inertia.props[:submitted]).to be(true)
+        expect(response).to redirect_to(success_purchase_dispute_evidence_path(purchase.external_id))
       end
     end
 
@@ -146,9 +158,7 @@ describe Purchases::DisputeEvidenceController, type: :controller, inertia: true 
         expect(dispute_evidence.customer_communication_file.filename.to_s).to eq("test.pdf")
         expect(dispute_evidence.customer_communication_file.content_type).to eq("application/pdf")
 
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Purchases/DisputeEvidence/Show")
-        expect(inertia.props[:submitted]).to be(true)
+        expect(response).to redirect_to(success_purchase_dispute_evidence_path(purchase.external_id))
       end
     end
 

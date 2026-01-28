@@ -24,30 +24,25 @@ import { useUserAgentInfo } from "$app/components/UserAgent";
 
 const ALLOWED_EXTENSIONS = ["jpeg", "jpg", "png", "pdf"];
 
-type Props =
-  | {
-      submitted: true;
-    }
-  | {
-      submitted?: false;
-      dispute_evidence: {
-        dispute_reason: DisputeReason;
-        customer_email: string;
-        purchased_at: string;
-        duration_left_to_submit_evidence_formatted: string;
-        customer_communication_file_max_size: number;
-        blobs: Blobs;
-      };
-      disputable: {
-        purchase_for_dispute_evidence_id: string;
-        formatted_display_price: string;
-        is_subscription: boolean;
-      };
-      products: {
-        url: string;
-        name: string;
-      }[];
-    };
+type Props = {
+  dispute_evidence: {
+    dispute_reason: DisputeReason;
+    customer_email: string;
+    purchased_at: string;
+    duration_left_to_submit_evidence_formatted: string;
+    customer_communication_file_max_size: number;
+    blobs: Blobs;
+  };
+  disputable: {
+    purchase_for_dispute_evidence_id: string;
+    formatted_display_price: string;
+    is_subscription: boolean;
+  };
+  products: {
+    url: string;
+    name: string;
+  }[];
+};
 
 type Blobs = {
   receipt_image: BlobType | null;
@@ -73,7 +68,7 @@ type FormData = {
 };
 
 export default function Show() {
-  const props = cast<Props>(usePage().props);
+  const { dispute_evidence, disputable, products } = cast<Props>(usePage().props);
 
   const reasonForWinningUID = React.useId();
   const cancellationRebuttalUID = React.useId();
@@ -84,11 +79,7 @@ export default function Show() {
   const [cancellationRebuttalOption, setCancellationRebuttalOption] = React.useState<CancellationRebuttalOption | null>(
     null,
   );
-  const [blobs, setBlobs] = React.useState<Blobs>(
-    props.submitted
-      ? { receipt_image: null, policy_image: null, customer_communication_file: null }
-      : props.dispute_evidence.blobs,
-  );
+  const [blobs, setBlobs] = React.useState<Blobs>(dispute_evidence.blobs);
   const [isUploading, setIsUploading] = React.useState(false);
 
   const form = useForm<FormData>({
@@ -99,12 +90,6 @@ export default function Show() {
       customer_communication_file_signed_blob_id: null,
     },
   });
-
-  if (props.submitted) {
-    return <SubmissionSuccess />;
-  }
-
-  const { dispute_evidence, disputable, products } = props;
 
   const purchaseDate = new Date(dispute_evidence.purchased_at).toLocaleString(userAgentInfo.locale, {
     dateStyle: "medium",
@@ -382,18 +367,6 @@ export default function Show() {
     </Card>
   );
 }
-
-const SubmissionSuccess = () => (
-  <Card className="mx-auto my-8 max-w-2xl">
-    <CardContent asChild>
-      <header>
-        Dispute evidence
-        <h2 className="grow">Submit additional information</h2>
-      </header>
-    </CardContent>
-    <CardContent>Thank you!</CardContent>
-  </Card>
-);
 
 const Files = ({
   blobs,

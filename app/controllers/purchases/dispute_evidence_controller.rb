@@ -3,13 +3,21 @@
 class Purchases::DisputeEvidenceController < ApplicationController
   layout "inertia"
 
-  before_action :set_purchase, :set_dispute_evidence, :check_if_needs_redirect
+  before_action :set_purchase, :set_dispute_evidence
+  before_action :check_if_needs_redirect, except: [:success]
 
   def show
     set_meta_tag(title: "Submit additional information")
     set_noindex_header
 
     render inertia: "Purchases/DisputeEvidence/Show", props: DisputeEvidencePagePresenter.new(@dispute_evidence).props
+  end
+
+  def success
+    set_meta_tag(title: "Submit additional information")
+    set_noindex_header
+
+    render inertia: "Purchases/DisputeEvidence/Success"
   end
 
   def update
@@ -25,7 +33,7 @@ class Purchases::DisputeEvidenceController < ApplicationController
     @dispute_evidence.update_as_seller_submitted!
 
     FightDisputeJob.perform_async(@dispute_evidence.dispute.id)
-    render inertia: "Purchases/DisputeEvidence/Show", props: { submitted: true }
+    redirect_to success_purchase_dispute_evidence_path(@purchase.external_id)
   rescue ActiveRecord::RecordInvalid
     redirect_to purchase_dispute_evidence_path(@purchase.external_id), alert: @dispute_evidence.errors.full_messages.to_sentence
   end
