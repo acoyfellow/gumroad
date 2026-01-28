@@ -1546,11 +1546,9 @@ describe UrlRedirectsController do
           expect(response).to be_successful
           expect_inertia.to render_component("UrlRedirects/Read")
 
-          # Test meta tag title
           html = Nokogiri::HTML.parse(response.body)
           expect(html.at("title").text).to eq("The Works of Edgar Gumstein")
 
-          # Test all inertia props
           expect(inertia.props[:url]).to include("X-Amz-Signature=")
           expect(inertia.props[:url]).to include(S3_BUCKET)
           expect(inertia.props[:title]).to eq("The Works of Edgar Gumstein")
