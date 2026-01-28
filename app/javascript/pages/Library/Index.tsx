@@ -172,7 +172,7 @@ export const DeleteProductModal = ({
 
 type Props = {
   results: Result[];
-  creators: { id: string; name: string; count: number }[];
+  creators: { id: string; name: string }[];
   bundles: { id: string; label: string }[];
   reviews_page_enabled: boolean;
   following_wishlists_enabled: boolean;
@@ -276,6 +276,24 @@ export default function LibraryPage() {
     return filtered;
   }, [state.results, state.search]);
 
+  const creatorsWithProductCounts = React.useMemo(() => {
+    const productCountByCreatorId = state.results.reduce((counts, result) => {
+      if (result.purchase.is_archived === state.search.showArchivedOnly && !result.purchase.is_bundle_purchase) {
+        const creatorId = result.product.creator_id;
+        counts.set(creatorId, (counts.get(creatorId) ?? 0) + 1);
+      }
+      return counts;
+    }, new Map<string, number>());
+
+    return creators
+      .map((creator) => ({
+        ...creator,
+        count: productCountByCreatorId.get(creator.id) ?? 0,
+      }))
+      .filter((creator) => creator.count > 0)
+      .sort((a, b) => b.count - a.count);
+  }, [creators, state.results, state.search.showArchivedOnly]);
+
   const [resultsLimit, setResultsLimit] = React.useState(15);
   React.useEffect(() => setResultsLimit(15), [filteredResults]);
 
@@ -358,9 +376,9 @@ export default function LibraryPage() {
                 <PlaceholderImage src={placeholder} />
                 <h2 className="library-header">You haven't bought anything... yet!</h2>
                 Once you do, it'll show up here so you can download, watch, read, or listen to all your purchases.
-                <a href={discoverUrl} className="button accent">
-                  Discover products
-                </a>
+                <Button asChild color="accent">
+                  <a href={discoverUrl}>Discover products</a>
+                </Button>
               </>
             ) : (
               <>
@@ -383,7 +401,7 @@ export default function LibraryPage() {
             You have {archivedCount} archived purchase{archivedCount === 1 ? "" : "s"}.{" "}
             <button
               type="button"
-              className="underline"
+              className="cursor-pointer underline all-unset"
               onClick={() => dispatch({ type: "update-search", search: { showArchivedOnly: true } })}
             >
               Click here to view
@@ -406,7 +424,10 @@ export default function LibraryPage() {
                       : "No products found"}
                   </div>
                   {isDesktop ? null : (
-                    <button className="underline" onClick={() => setMobileFiltersExpanded(!mobileFiltersExpanded)}>
+                    <button
+                      className="cursor-pointer underline all-unset"
+                      onClick={() => setMobileFiltersExpanded(!mobileFiltersExpanded)}
+                    >
                       Filter
                     </button>
                   )}
@@ -484,30 +505,35 @@ export default function LibraryPage() {
                           readOnly
                         />
                       </label>
-                      {(showingAllCreators ? creators : creators.slice(0, 5)).map((creator) => (
-                        <label key={creator.id}>
-                          {creator.name}
-                          <span className="shrink-0 text-muted">{`(${creator.count})`}</span>
-                          <input
-                            type="checkbox"
-                            checked={state.search.creators.includes(creator.id)}
-                            onClick={() =>
-                              dispatch({
-                                type: "update-search",
-                                search: {
-                                  creators: state.search.creators.includes(creator.id)
-                                    ? state.search.creators.filter((id) => id !== creator.id)
-                                    : [...state.search.creators, creator.id],
-                                },
-                              })
-                            }
-                            readOnly
-                          />
-                        </label>
-                      ))}
+                      {(showingAllCreators ? creatorsWithProductCounts : creatorsWithProductCounts.slice(0, 5)).map(
+                        (creator) => (
+                          <label key={creator.id}>
+                            {creator.name}
+                            <span className="shrink-0 text-muted">{`(${creator.count})`}</span>
+                            <input
+                              type="checkbox"
+                              checked={state.search.creators.includes(creator.id)}
+                              onClick={() =>
+                                dispatch({
+                                  type: "update-search",
+                                  search: {
+                                    creators: state.search.creators.includes(creator.id)
+                                      ? state.search.creators.filter((id) => id !== creator.id)
+                                      : [...state.search.creators, creator.id],
+                                  },
+                                })
+                              }
+                              readOnly
+                            />
+                          </label>
+                        ),
+                      )}
                       <div>
-                        {creators.length > 5 && !showingAllCreators ? (
-                          <button className="underline" onClick={() => setShowingAllCreators(true)}>
+                        {creatorsWithProductCounts.length > 5 && !showingAllCreators ? (
+                          <button
+                            className="cursor-pointer underline all-unset"
+                            onClick={() => setShowingAllCreators(true)}
+                          >
                             Show more
                           </button>
                         ) : null}

@@ -58,7 +58,7 @@ import { asyncVoid } from "$app/utils/promise";
 import { RecurrenceId, recurrenceLabels } from "$app/utils/recurringPricing";
 import { AbortError, assertResponseError } from "$app/utils/request";
 
-import { Button, NavigationButton } from "$app/components/Button";
+import { Button, NavigationButton, buttonVariants } from "$app/components/Button";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { DateInput } from "$app/components/DateInput";
 import { DateRangePicker } from "$app/components/DateRangePicker";
@@ -265,9 +265,9 @@ const CustomersPage = ({
               onToggle={() => searchInputRef.current?.focus()}
               trigger={
                 <WithTooltip tip="Search">
-                  <div className="button">
+                  <Button>
                     <Icon name="solid-search" />
-                  </div>
+                  </Button>
                 </WithTooltip>
               }
             >
@@ -288,9 +288,9 @@ const CustomersPage = ({
               dropdownClassName="p-0!"
               trigger={
                 <WithTooltip tip="Filter">
-                  <div className="button">
+                  <Button>
                     <Icon name="filter" />
-                  </div>
+                  </Button>
                 </WithTooltip>
               }
             >
@@ -414,9 +414,9 @@ const CustomersPage = ({
               aria-label="Export"
               trigger={
                 <WithTooltip tip="Export">
-                  <div className="button">
+                  <Button>
                     <Icon name="download" />
-                  </div>
+                  </Button>
                 </WithTooltip>
               }
             >
@@ -431,15 +431,13 @@ const CustomersPage = ({
                   <DateRangePicker from={from} to={to} setFrom={setFrom} setTo={setTo} />
                   <NavigationButtonInertia
                     color="primary"
-                    href={Routes.export_purchases_path()}
-                    method="post"
-                    preserveScroll
-                    data={{
+                    href={Routes.export_purchases_path({
                       start_time: lightFormat(from, "yyyy-MM-dd"),
                       end_time: lightFormat(to, "yyyy-MM-dd"),
                       product_ids: includedProductIds,
                       variant_ids: includedVariantIds,
-                    }}
+                    })}
+                    preserveScroll
                     onSuccess={() => close()}
                   >
                     Download
@@ -797,7 +795,7 @@ const CustomerDrawer = ({
       <SheetHeader>
         <div className="flex gap-4">
           {onBack ? (
-            <button onClick={onBack} aria-label="Return to bundle">
+            <button onClick={onBack} aria-label="Return to bundle" className="cursor-pointer all-unset">
               <Icon name="arrow-left" style={{ fontSize: "var(--big-icon-size)" }} />
             </button>
           ) : null}
@@ -1535,7 +1533,7 @@ const AddressSection = ({
               <br />
               {currentAddress.country}
             </p>
-            <button className="underline" onClick={() => setIsEditing(true)}>
+            <button className="cursor-pointer underline all-unset" onClick={() => setIsEditing(true)}>
               Edit
             </button>
           </CardContent>
@@ -1680,7 +1678,7 @@ const EmailSection = ({
             <section>
               <h5 className="grow font-bold">{currentEmail}</h5>
               {onSave ? (
-                <button className="underline" onClick={() => setIsEditing(true)}>
+                <button className="cursor-pointer underline all-unset" onClick={() => setIsEditing(true)}>
                   Edit
                 </button>
               ) : (
@@ -1974,7 +1972,7 @@ const OptionSection = ({
               ) : (
                 <>
                   <h5>{option?.name ?? "None selected"}</h5>
-                  <button className="underline" onClick={() => setIsEditing(true)}>
+                  <button className="cursor-pointer underline all-unset" onClick={() => setIsEditing(true)}>
                     Edit
                   </button>
                 </>
@@ -2135,7 +2133,7 @@ const SeatSection = ({ seats: currentSeats, onSave }: { seats: number; onSave: (
           <CardContent asChild>
             <section>
               <h5 className="grow font-bold">{seats}</h5>
-              <button className="underline" onClick={() => setIsEditing(true)}>
+              <button className="cursor-pointer underline all-unset" onClick={() => setIsEditing(true)}>
                 Edit
               </button>
             </section>
@@ -2388,18 +2386,20 @@ const ChargeRow = ({
   onChange,
   showRefundFeeNotice,
   canPing,
+  className,
 }: {
   purchase: Charge;
   customerEmail: string;
   onChange: (update: Partial<Charge>) => void;
   showRefundFeeNotice: boolean;
   canPing: boolean;
+  className?: string;
 }) => {
   const [isRefunding, setIsRefunding] = React.useState(false);
   const userAgentInfo = useUserAgentInfo();
 
   return (
-    <>
+    <section className={className}>
       <section key={purchase.id}>
         <section style={{ display: "flex", gap: "var(--spacer-1)", alignItems: "center" }}>
           <h5>
@@ -2434,7 +2434,7 @@ const ChargeRow = ({
           {purchase.chargedback ? <Pill size="small">Chargedback</Pill> : null}
         </section>
         {!purchase.refunded && !purchase.chargedback && purchase.amount_refundable > 0 ? (
-          <button className="underline" onClick={() => setIsRefunding((prev) => !prev)}>
+          <button className="cursor-pointer underline all-unset" onClick={() => setIsRefunding((prev) => !prev)}>
             Refund Options
           </button>
         ) : null}
@@ -2460,7 +2460,7 @@ const ChargeRow = ({
           onClose={() => setIsRefunding(false)}
         />
       ) : null}
-    </>
+    </section>
   );
 };
 
@@ -2742,7 +2742,7 @@ const CommissionSection = ({
                   ))}
                 </Rows>
               ) : null}
-              <label className="button">
+              <label className={buttonVariants()}>
                 <input
                   type="file"
                   onChange={handleFileChange}
