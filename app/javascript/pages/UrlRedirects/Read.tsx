@@ -27,8 +27,9 @@ type PageProps = {
 };
 
 function ReadPage() {
-  const { read_id, url, url_redirect_id, purchase_id, product_file_id, latest_media_location, title } =
-    cast<PageProps>(usePage().props);
+  const { read_id, url, url_redirect_id, purchase_id, product_file_id, latest_media_location, title } = cast<PageProps>(
+    usePage().props,
+  );
 
   const [pageNumber, setPageNumber] = React.useState(1);
   const [pageCount, setPageCount] = React.useState(0);
