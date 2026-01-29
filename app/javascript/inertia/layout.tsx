@@ -62,20 +62,6 @@ export function AuthenticationLayout({ children }: { children: React.ReactNode }
   );
 }
 
-export function PublicLayout({ children }: { children: React.ReactNode }) {
-  const { flash } = usePage<{ flash?: AlertPayload | null }>().props;
-
-  useFlashMessage(flash);
-
-  return (
-    <div>
-      <MetaTags />
-      <Alert initial={null} />
-      {children}
-    </div>
-  );
-}
-
 export function LoggedInUserLayout({ children }: { children: React.ReactNode }) {
   const { flash, logged_in_user, current_seller } = usePage<PageProps>().props;
 

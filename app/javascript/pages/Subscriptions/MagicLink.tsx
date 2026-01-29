@@ -3,6 +3,7 @@ import * as React from "react";
 
 import { Layout } from "$app/components/Authentication/Layout";
 import { Button } from "$app/components/Button";
+import { StandaloneLayout } from "$app/inertia/layout";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { useOriginalLocation } from "$app/components/useOriginalLocation";
 
@@ -16,7 +17,7 @@ type Props = {
   email_sent: string | null;
 };
 
-export default function SubscriptionsMagicLink() {
+function SubscriptionsMagicLink() {
   const { product_name, subscription_id, is_installment_plan, user_emails, email_sent } = usePage<Props>().props;
 
   const hasSentEmail = email_sent !== null;
@@ -27,10 +28,12 @@ export default function SubscriptionsMagicLink() {
   const subscriptionEntity = is_installment_plan ? "installment plan" : "membership";
   const invalid = new URL(useOriginalLocation()).searchParams.get("invalid") === "true";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSendMagicLink = (e: React.FormEvent) => {
     e.preventDefault();
     form.post(Routes.send_magic_link_subscription_path(subscription_id));
   };
+
+  const handleChooseAnotherEmail = () => router.get(Routes.magic_link_subscription_path(subscription_id));
 
   const title = hasSentEmail
     ? `We've sent a link to ${selectedEmail.email}.`
@@ -53,7 +56,7 @@ export default function SubscriptionsMagicLink() {
       }
       headerActions={<a href={Routes.login_path()}>Log in</a>}
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSendMagicLink}>
         <section>
           {hasSentEmail ? (
             <>
@@ -67,7 +70,7 @@ export default function SubscriptionsMagicLink() {
                     Can't see the email? Please check your spam folder.{" "}
                     <button
                       className="cursor-pointer underline all-unset"
-                      onClick={() => router.get(Routes.magic_link_subscription_path(subscription_id))}
+                      onClick={handleChooseAnotherEmail}
                     >
                       Click here to choose another email
                     </button>{" "}
@@ -109,4 +112,6 @@ export default function SubscriptionsMagicLink() {
   );
 }
 
-SubscriptionsMagicLink.publicLayout = true;
+SubscriptionsMagicLink.layout = (page: React.ReactNode) => <StandaloneLayout>{page}</StandaloneLayout>;
+
+export default SubscriptionsMagicLink;
