@@ -329,7 +329,7 @@ export default function ContentPage() {
   );
 
   const handleSave = () => {
-    form.patch(`/products/edit/${id}/content`, {
+    form.patch(`/products/edit/${unique_permalink}/content`, {
       preserveScroll: true,
     });
   };

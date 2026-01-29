@@ -86,7 +86,7 @@ export default function ProductPage() {
       currency_type: currencyType, // Pass currency type if changed
     }));
 
-    form.patch(`/products/edit/${props.id}`, {
+    form.patch(`/products/edit/${props.unique_permalink}`, {
       preserveScroll: true,
     });
   };

@@ -1,4 +1,4 @@
-import { usePage } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import * as React from "react";
 
 import { classNames } from "$app/utils/classNames";
@@ -49,7 +49,7 @@ export const InertiaLayout = ({
   const uniquePermalink = props.unique_permalink;
 
   const isCoffee = product.native_type === "coffee";
-  const rootPath = `/products/${uniquePermalink}/edit`;
+  const rootPath = `/products/edit/${uniquePermalink}`;
 
   // Calculate product URL
   const productUrl =
@@ -95,7 +95,7 @@ export const InertiaLayout = ({
     </WithTooltip>
   );
 
-  const handleTabClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleTabClick = (e: React.MouseEvent) => {
     const message = isUploadingFilesOrImages ? "Some images are still uploading, please wait..." : undefined;
 
     if (message) {
@@ -104,7 +104,7 @@ export const InertiaLayout = ({
     }
   };
 
-  const handleShareTabClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleShareTabClick = (e: React.MouseEvent) => {
     if (!product.is_published) {
       e.preventDefault();
       showAlert(
@@ -149,26 +149,26 @@ export const InertiaLayout = ({
         >
           <Tabs style={{ gridColumn: 1 }}>
             <Tab asChild isSelected={currentTab === "product"}>
-              <a href={rootPath} onClick={handleTabClick}>
+              <Link href={rootPath} onClick={handleTabClick}>
                 Product
-              </a>
+              </Link>
             </Tab>
             {!isCoffee && (
               <Tab asChild isSelected={currentTab === "content"}>
-                <a href={`${rootPath}/content`} onClick={handleTabClick}>
+                <Link href={`${rootPath}/content`} onClick={handleTabClick}>
                   Content
-                </a>
+                </Link>
               </Tab>
             )}
             <Tab asChild isSelected={currentTab === "receipt"}>
-              <a href={`${rootPath}/receipt`} onClick={handleTabClick}>
+              <Link href={`${rootPath}/receipt`} onClick={handleTabClick}>
                 Receipt
-              </a>
+              </Link>
             </Tab>
             <Tab asChild isSelected={currentTab === "share"}>
-              <a href={`${rootPath}/share`} onClick={handleShareTabClick}>
+              <Link href={`${rootPath}/share`} onClick={handleShareTabClick}>
                 Share
-              </a>
+              </Link>
             </Tab>
           </Tabs>
           {headerActions}

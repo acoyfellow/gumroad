@@ -100,7 +100,7 @@ export default function SharePage() {
   });
 
   const handleSave = () => {
-    form.patch(`/products/edit/${props.id}/share`, {
+    form.patch(`/products/edit/${props.unique_permalink}/share`, {
       preserveScroll: true,
     });
   };
