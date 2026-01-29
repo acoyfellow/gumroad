@@ -176,7 +176,7 @@ const TierEditor = ({
   };
 
   const defaultRecurrencePriceValue = product.subscription_duration
-    ? tier.recurrence_price_values[product.subscription_duration]
+    ? tier.recurrence_price_values[product.subscription_duration as keyof typeof tier.recurrence_price_values]
     : null;
   React.useEffect(() => {
     if (product.subscription_duration) {
@@ -200,7 +200,7 @@ const TierEditor = ({
 
   const integrations = Object.entries(product.integrations)
     .filter(([_, enabled]) => enabled)
-    .map(([name]) => name);
+    .map(([name]) => name as string);
 
   const allEnabledPricesAreZero = areAllEnabledPricesZero(tier.recurrence_price_values);
 
@@ -368,9 +368,9 @@ const TierEditor = ({
             {integrations.length > 0 ? (
               <fieldset>
                 <legend>Integrations</legend>
-                {integrations.map((integration) => (
+                {integrations.map((integration: string) => (
                   <Toggle
-                    value={tier.integrations[integration]}
+                    value={tier.integrations[integration as keyof typeof tier.integrations]}
                     onChange={(enabled) =>
                       updateTier({ integrations: { ...tier.integrations, [integration]: enabled } })
                     }

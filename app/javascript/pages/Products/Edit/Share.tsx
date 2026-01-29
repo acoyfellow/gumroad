@@ -115,7 +115,22 @@ export default function SharePage() {
   discoverLink.searchParams.set("query", product.name);
 
   return (
-    <InertiaLayout preview={<ProductPreview />} currentTab="share" onSave={handleSave} isSaving={form.processing}>
+    <InertiaLayout
+      preview={
+        <ProductPreview
+          product={product}
+          id={props.id}
+          uniquePermalink={props.unique_permalink}
+          currencyType="usd"
+          ratings={null as any}
+          seller_refund_policy_enabled={false}
+          seller_refund_policy={{ title: "", fine_print: "" }}
+        />
+      }
+      currentTab="share"
+      onSave={handleSave}
+      isSaving={form.processing}
+    >
       <div className="squished">
         <form>
           <section className="p-4! md:p-8!">

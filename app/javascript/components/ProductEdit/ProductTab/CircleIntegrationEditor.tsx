@@ -208,7 +208,7 @@ export const CircleIntegrationEditor = ({
                 ) : null}
                 {product.variants.length > 0 ? (
                   <>
-                    {product.variants.every(({ integrations }) => !integrations.circle) ? (
+                    {product.variants.every(({ integrations }: any) => !integrations.circle) ? (
                       <Alert role="status" variant="warning">
                         {product.native_type === "membership"
                           ? "Your integration is not assigned to any tier. Check your tiers' settings."
@@ -216,7 +216,7 @@ export const CircleIntegrationEditor = ({
                       </Alert>
                     ) : null}
                     <Toggle
-                      value={product.variants.every(({ integrations }) => integrations.circle)}
+                      value={product.variants.every(({ integrations }: any) => integrations.circle)}
                       onChange={setEnabledForOptions}
                     >
                       {product.native_type === "membership" ? "Enable for all tiers" : "Enable for all versions"}

@@ -79,7 +79,23 @@ export const ProductTab = () => {
   if (!currentSeller) return null;
 
   return (
-    <Layout preview={<ProductPreview showRefundPolicyModal={showRefundPolicyPreview} />} isLoading={isUploading}>
+    <Layout
+      preview={
+        <ProductPreview
+          product={product}
+          id={id}
+          uniquePermalink={uniquePermalink}
+          currencyType={currencyType}
+          salesCountForInventory={0}
+          successfulSalesCount={0}
+          ratings={null as any}
+          seller_refund_policy_enabled={seller_refund_policy_enabled}
+          seller_refund_policy={{ title: "", fine_print: "" }}
+          showRefundPolicyModal={showRefundPolicyPreview}
+        />
+      }
+      isLoading={isUploading}
+    >
       <div className="squished">
         <form>
           <section className="p-4! md:p-8!">
@@ -100,7 +116,7 @@ export const ProductTab = () => {
                 </div>
               </Alert>
             ) : null}
-            <BundleConversionNotice />
+            <BundleConversionNotice product={product} id={id} />
             <fieldset>
               <label htmlFor={`${uid}-name`}>{isCoffee ? "Header" : "Name"}</label>
               <input

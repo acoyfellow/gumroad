@@ -32,7 +32,19 @@ export const ShareTab = () => {
   discoverLink.searchParams.set("query", product.name);
 
   return (
-    <Layout preview={<ProductPreview />}>
+    <Layout
+      preview={
+        <ProductPreview
+          product={product}
+          id={id}
+          uniquePermalink={product.custom_permalink || ""}
+          currencyType="usd"
+          ratings={null as any}
+          seller_refund_policy_enabled={false}
+          seller_refund_policy={{ title: "", fine_print: "" }}
+        />
+      }
+    >
       <div className="squished">
         <form>
           <section className="p-4! md:p-8!">

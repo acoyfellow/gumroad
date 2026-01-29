@@ -1,29 +1,51 @@
 import * as React from "react";
 
 import { recurrenceIds } from "$app/utils/recurringPricing";
+import { CurrencyCode } from "$app/utils/currency";
 
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Product, ProductDiscount } from "$app/components/Product";
-import { useProductUrl } from "$app/components/ProductEdit/Layout";
 import { RefundPolicyModalPreview } from "$app/components/ProductEdit/RefundPolicy";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
 import { CoffeePage } from "$app/components/server-components/Profile/CoffeePage";
+import { RatingsWithPercentages } from "$app/parsers/product";
+import { RefundPolicy } from "$app/components/ProductEdit/RefundPolicy";
 
-export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModal?: boolean }) => {
+type ProductPreviewProps = {
+  product: any;
+  id: string;
+  uniquePermalink: string;
+  currencyType: CurrencyCode;
+  salesCountForInventory?: number;
+  successfulSalesCount?: number;
+  ratings: RatingsWithPercentages;
+  seller_refund_policy_enabled: boolean;
+  seller_refund_policy: Pick<RefundPolicy, "title" | "fine_print">;
+  showRefundPolicyModal?: boolean;
+  url?: string;
+};
+
+export const ProductPreview = ({
+  product,
+  id,
+  uniquePermalink,
+  currencyType,
+  salesCountForInventory = 0,
+  successfulSalesCount = 0,
+  ratings,
+  seller_refund_policy_enabled,
+  seller_refund_policy,
+  showRefundPolicyModal,
+  url: urlProp,
+}: ProductPreviewProps) => {
   const currentSeller = useCurrentSeller();
-  const {
-    product,
-    id,
-    uniquePermalink,
-    currencyType,
-    salesCountForInventory,
-    successfulSalesCount,
-    ratings,
-    seller_refund_policy_enabled,
-    seller_refund_policy,
-  } = useProductEditContext();
 
-  const url = useProductUrl();
+  const url =
+    urlProp ||
+    (currentSeller
+      ? Routes.short_link_url(product.custom_permalink ?? uniquePermalink, {
+          host: currentSeller?.subdomain,
+        })
+      : "");
 
   if (!currentSeller) return null;
 
@@ -72,7 +94,7 @@ export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModa
     is_compliance_blocked: false,
     is_published: product.is_published,
     is_stream_only: false,
-    streamable: product.files.some((file) => file.is_streamable),
+    streamable: (product.files || []).some((file: any) => file.is_streamable),
     is_quantity_enabled: product.quantity_enabled,
     is_multiseat_license: false,
     hide_sold_out_variants: product.hide_sold_out_variants,
@@ -94,18 +116,19 @@ export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModa
       defaultRecurrence && product.variants[0] && "recurrence_price_values" in product.variants[0]
         ? {
             default: defaultRecurrence,
-            enabled: Object.entries(product.variants[0].recurrence_price_values).flatMap(([recurrence, value], idx) =>
-              value.enabled
-                ? {
-                    recurrence,
-                    price_cents: value.price_cents ?? 0,
-                    id: idx.toString(),
-                  }
-                : [],
+            enabled: Object.entries(product.variants[0].recurrence_price_values).flatMap(
+              ([recurrence, value]: [any, any], idx) =>
+                value.enabled
+                  ? {
+                      recurrence: recurrence as any,
+                      price_cents: value.price_cents ?? 0,
+                      id: idx.toString(),
+                    }
+                  : [],
             ),
           }
         : null,
-    options: product.variants.map((variant) => ({
+    options: product.variants.map((variant: any) => ({
       ...variant,
       price_difference_cents: "price_difference_cents" in variant ? variant.price_difference_cents : 0,
       is_pwyw: "customizable_price" in variant ? variant.customizable_price : product.customizable_price,
@@ -116,8 +139,9 @@ export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModa
       recurrence_price_values:
         "recurrence_price_values" in variant
           ? Object.fromEntries(
-              Object.entries(variant.recurrence_price_values).flatMap(([recurrence, value]) =>
-                value.enabled ? [[recurrence, { ...value, price_cents: value.price_cents ?? 0 }]] : [],
+              Object.entries(variant.recurrence_price_values as Record<string, any>).flatMap(
+                ([recurrence, value]: [string, any]) =>
+                  value.enabled ? [[recurrence, { ...value, price_cents: value.price_cents ?? 0 }]] : [],
               ),
             )
           : null,
@@ -140,7 +164,7 @@ export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModa
       : {
           title:
             product.refund_policy.allowed_refund_periods_in_days.find(
-              ({ key }) => key === product.refund_policy.max_refund_period_in_days,
+              ({ key }: any) => key === product.refund_policy.max_refund_period_in_days,
             )?.value ?? "",
           fine_print: product.refund_policy.fine_print ?? "",
           updated_at: "",
