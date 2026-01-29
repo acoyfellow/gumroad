@@ -211,6 +211,5 @@ describe SubscriptionsController do
         expect(response.headers["X-Robots-Tag"]).to eq "noindex"
       end
     end
-
   end
 end
