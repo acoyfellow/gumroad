@@ -10,6 +10,7 @@ import { CoffeePage } from "$app/components/server-components/Profile/CoffeePage
 import { RatingsWithPercentages } from "$app/parsers/product";
 import { RefundPolicy } from "$app/components/ProductEdit/RefundPolicy";
 import { type Product as ProductState } from "$app/components/ProductEdit/state";
+import { useProductUrl } from "./Layout";
 
 type ProductPreviewProps = {
   product: ProductState & Record<string, any>;
@@ -36,17 +37,10 @@ export const ProductPreview = ({
   seller_refund_policy_enabled,
   seller_refund_policy,
   showRefundPolicyModal,
-  url: urlProp,
 }: ProductPreviewProps) => {
   const currentSeller = useCurrentSeller();
 
-  const url =
-    urlProp ||
-    (currentSeller
-      ? Routes.short_link_url(product.custom_permalink ?? uniquePermalink, {
-          host: currentSeller?.subdomain,
-        })
-      : "");
+  const url = useProductUrl()
 
   if (!currentSeller) return null;
 
