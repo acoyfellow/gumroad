@@ -2,12 +2,13 @@ import { usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
-import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
 import { StandaloneLayout } from "$app/inertia/layout";
 
-import placeholderImage from "$assets/images/placeholders/comic-stars.png";
+import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
 
 import { UnavailablePageLayout, type UnavailablePageProps } from "./UnavailablePageLayout";
+
+import placeholderImage from "$assets/images/placeholders/comic-stars.png";
 
 type Props = UnavailablePageProps;
 
