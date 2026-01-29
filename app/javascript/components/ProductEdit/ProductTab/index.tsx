@@ -1,4 +1,4 @@
-// DELTE
+// DELETE
 import * as React from "react";
 
 import { COFFEE_CUSTOM_BUTTON_TEXT_OPTIONS, CUSTOM_BUTTON_TEXT_OPTIONS } from "$app/parsers/product";
