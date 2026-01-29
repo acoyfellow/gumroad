@@ -22,6 +22,10 @@ import { type Product } from "$app/components/ProductEdit/state";
 
 import { type FileEntry } from "./state";
 
+type ContentUpdate = {
+  uniquePermalinkOrVariantIds: string[];
+};
+
 type InertiaLayoutProps = {
   children: React.ReactNode;
   preview?: React.ReactNode;
@@ -33,6 +37,8 @@ type InertiaLayoutProps = {
   currentTab: "product" | "content" | "receipt" | "share";
   onSave: () => void;
   isSaving?: boolean;
+  contentUpdates?: ContentUpdate | null;
+  setContentUpdates?: (updates: ContentUpdate | null) => void;
 };
 
 type Props = {
@@ -58,8 +64,15 @@ export const useProductUrl = (params = {}) => {
       });
 };
 
-const NotifyAboutProductUpdatesAlert = () => {
-  const { contentUpdates, setContentUpdates } = useProductEditContext();
+const NotifyAboutProductUpdatesAlert = ({
+  contentUpdates,
+  setContentUpdates,
+  uniquePermalink,
+}: {
+  contentUpdates?: ContentUpdate | null | undefined;
+  setContentUpdates?: ((updates: ContentUpdate | null) => void) | undefined;
+  uniquePermalink: string;
+}) => {
   const timerRef = React.useRef<number | null>(null);
   const isVisible = !!contentUpdates;
 
@@ -79,7 +92,7 @@ const NotifyAboutProductUpdatesAlert = () => {
 
   const close = () => {
     clearTimer();
-    setContentUpdates(null);
+    setContentUpdates?.(null);
   };
 
   React.useEffect(() => {
@@ -152,6 +165,8 @@ export const Layout = ({
   currentTab,
   onSave,
   isSaving = false,
+  contentUpdates,
+  setContentUpdates,
 }: InertiaLayoutProps) => {
   const props = usePage<Props>().props;
   const currentSeller = useCurrentSeller();
@@ -178,16 +193,9 @@ export const Layout = ({
 
     router.post(
       published ? Routes.publish_link_path(uniquePermalink) : Routes.unpublish_link_path(uniquePermalink),
-      {},
+      { current_tab: currentTab },
       {
         onSuccess: () => {
-          if (currentTab === "share") {
-            if (product.native_type === "coffee")
-              router.visit(Routes.products_edit_product_edit_show_path(uniquePermalink));
-            else router.visit(Routes.products_edit_content_edit_show_path(uniquePermalink));
-          } else if (published) {
-            router.visit(Routes.products_edit_share_edit_show_path(uniquePermalink));
-          }
           setIsPublishing(false);
         },
         onError: () => {
@@ -245,21 +253,15 @@ export const Layout = ({
     }
   };
 
-  const handleShareTabClick = (e: React.MouseEvent) => {
-    if (!product.is_published) {
-      e.preventDefault();
-      showAlert(
-        "Not yet! You've got to publish your awesome product before you can share it with your audience and the world.",
-        "warning",
-      );
-      return;
-    }
-    handleTabClick(e);
-  };
-
   return (
     <>
-      <NotifyAboutProductUpdatesAlert />
+      {setContentUpdates && (
+        <NotifyAboutProductUpdatesAlert
+          contentUpdates={contentUpdates}
+          setContentUpdates={setContentUpdates}
+          uniquePermalink={uniquePermalink}
+        />
+      )}
       <PageHeader
         className="sticky-top"
         title={product.name || "Untitled"}
@@ -329,7 +331,7 @@ export const Layout = ({
               </Link>
             </Tab>
             <Tab asChild isSelected={currentTab === "share"}>
-              <Link href={Routes.products_edit_share_edit_show_path(uniquePermalink)} onClick={handleShareTabClick}>
+              <Link href={Routes.products_edit_share_edit_show_path(uniquePermalink)} onClick={handleTabClick}>
                 Share
               </Link>
             </Tab>
