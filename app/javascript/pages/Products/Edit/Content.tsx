@@ -311,7 +311,7 @@ const ContentTabContent = ({
 
 export default function ContentPage() {
   const props = usePage<ContentPageProps>().props;
-  const { product, existing_files, aws_access_key_id, s3_url, user_id, id } = props;
+  const { product, existing_files, aws_access_key_id, s3_url, user_id, id, unique_permalink } = props;
 
   const form = useForm({
     ...product,
@@ -339,7 +339,22 @@ export default function ContentPage() {
   return (
     <S3UploadConfigProvider value={s3UploadConfig}>
       <EvaporateUploaderProvider value={evaporateUploader}>
-        <InertiaLayout preview={<ProductPreview />} currentTab="content" onSave={handleSave} isSaving={form.processing}>
+        <InertiaLayout
+          preview={
+            <ProductPreview
+              product={product}
+              id={id}
+              uniquePermalink={unique_permalink}
+              currencyType="usd"
+              ratings={null as any}
+              seller_refund_policy_enabled={false}
+              seller_refund_policy={{ title: "", fine_print: "" }}
+            />
+          }
+          currentTab="content"
+          onSave={handleSave}
+          isSaving={form.processing}
+        >
           <div className="flex h-full flex-col">
             {product.variants.length > 0 && (
               <Tabs className="px-4 pt-4">
