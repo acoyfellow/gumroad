@@ -1,4 +1,4 @@
-import { Head, usePage } from "@inertiajs/react";
+import { usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
@@ -10,48 +10,41 @@ import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
 
 import placeholderImage from "$assets/images/placeholders/comic-stars.png";
 
-type PageProps = LayoutProps & {
-  product_name: string;
-};
+type PageProps = LayoutProps;
 
-const TITLE_SUFFIX = "Your membership is inactive";
 const fullHeightPlaceholderClassName = "flex-1 content-center";
 
 function MembershipInactivePage() {
   const pageProps = cast<PageProps>(usePage().props);
-  const { purchase, product_name } = pageProps;
+  const { purchase } = pageProps;
 
   const isInstallmentPlan = purchase?.membership?.is_installment_plan;
-  const title = product_name ? `${product_name} - ${TITLE_SUFFIX}` : TITLE_SUFFIX;
 
   return (
-    <>
-      <Head title={title} />
-      <Layout {...pageProps}>
-        {isInstallmentPlan ? (
-          <InstallmentPlanFailedOrCancelled
-            product_name={purchase?.product_name ?? ""}
-            installment_plan={{
-              is_alive_or_restartable: purchase?.membership?.is_alive_or_restartable ?? null,
-              subscription_id: purchase?.membership?.subscription_id ?? "",
-            }}
-          />
-        ) : (
-          <MembershipInactiveContent
-            product_name={purchase?.product_name ?? ""}
-            product_long_url={purchase?.product_long_url ?? null}
-            membership={
-              purchase?.email && purchase.membership
-                ? {
-                    is_alive_or_restartable: purchase.membership.is_alive_or_restartable,
-                    subscription_id: purchase.membership.subscription_id,
-                  }
-                : null
-            }
-          />
-        )}
-      </Layout>
-    </>
+    <Layout {...pageProps}>
+      {isInstallmentPlan ? (
+        <InstallmentPlanFailedOrCancelled
+          product_name={purchase?.product_name ?? ""}
+          installment_plan={{
+            is_alive_or_restartable: purchase?.membership?.is_alive_or_restartable ?? null,
+            subscription_id: purchase?.membership?.subscription_id ?? "",
+          }}
+        />
+      ) : (
+        <MembershipInactiveContent
+          product_name={purchase?.product_name ?? ""}
+          product_long_url={purchase?.product_long_url ?? null}
+          membership={
+            purchase?.email && purchase.membership
+              ? {
+                  is_alive_or_restartable: purchase.membership.is_alive_or_restartable,
+                  subscription_id: purchase.membership.subscription_id,
+                }
+              : null
+          }
+        />
+      )}
+    </Layout>
   );
 }
 

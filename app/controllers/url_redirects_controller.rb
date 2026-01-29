@@ -170,14 +170,17 @@ class UrlRedirectsController < ApplicationController
   end
 
   def expired
+    set_meta_tag(title: "#{@url_redirect.referenced_link.name} - Access expired")
     render inertia: "UrlRedirects/Expired", props: unavailable_page_props(:access_expired)
   end
 
   def rental_expired_page
+    set_meta_tag(title: "#{@url_redirect.referenced_link.name} - Your rental has expired")
     render inertia: "UrlRedirects/RentalExpired", props: unavailable_page_props(:rental_expired)
   end
 
   def membership_inactive_page
+    set_meta_tag(title: "#{@url_redirect.referenced_link.name} - Your membership is inactive")
     render inertia: "UrlRedirects/MembershipInactive", props: unavailable_page_props(:inactive_membership)
   end
 
@@ -406,7 +409,7 @@ class UrlRedirectsController < ApplicationController
 
     def unavailable_page_props(reason_code)
       content_unavailability_reason_code = UrlRedirectPresenter::CONTENT_UNAVAILABILITY_REASON_CODES[reason_code]
-      extra_props = common_props.merge(content_unavailability_reason_code:, product_name: @url_redirect.referenced_link.name)
+      extra_props = common_props.merge(content_unavailability_reason_code:)
       UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).download_page_without_content_props(extra_props)
     end
 

@@ -1654,13 +1654,12 @@ describe UrlRedirectsController do
                                         purchaser: create(:user), subscription:, created_at: 2.days.ago) end
     let(:url_redirect) { create(:url_redirect, purchase:, link: product) }
 
-    it "renders the Inertia component with product_name for title" do
+    it "renders the Inertia component" do
       get :membership_inactive_page, params: { id: url_redirect.token }
 
       expect(response).to be_successful
       expect(inertia.component).to eq("UrlRedirects/MembershipInactive")
       expect(inertia.props[:content_unavailability_reason_code]).to eq("inactive_membership")
-      expect(inertia.props[:product_name]).to eq(product.name)
     end
 
     it "includes purchase data for subscriptions that can be restarted" do
@@ -1683,24 +1682,22 @@ describe UrlRedirectsController do
   end
 
   describe "GET rental_expired_page", inertia: true do
-    it "renders the Inertia component with product_name for title" do
+    it "renders the Inertia component" do
       get :rental_expired_page, params: { id: @url_redirect.token }
 
       expect(response).to be_successful
       expect(inertia.component).to eq("UrlRedirects/RentalExpired")
       expect(inertia.props[:content_unavailability_reason_code]).to eq("rental_expired")
-      expect(inertia.props[:product_name]).to eq(@url_redirect.referenced_link.name)
     end
   end
 
   describe "GET expired", inertia: true do
-    it "renders the Inertia component with product_name for title" do
+    it "renders the Inertia component" do
       get :expired, params: { id: @url_redirect.token }
 
       expect(response).to be_successful
       expect(inertia.component).to eq("UrlRedirects/Expired")
       expect(inertia.props[:content_unavailability_reason_code]).to eq("access_expired")
-      expect(inertia.props[:product_name]).to eq(@url_redirect.referenced_link.name)
     end
   end
 
