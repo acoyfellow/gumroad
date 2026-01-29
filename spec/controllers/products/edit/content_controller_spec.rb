@@ -2,6 +2,7 @@
 
 require "spec_helper"
 require "shared_examples/authorize_called"
+require "shared_examples/collaborator_access"
 require "inertia_rails/rspec"
 
 describe Products::Edit::ContentController, inertia: true do
@@ -11,6 +12,11 @@ describe Products::Edit::ContentController, inertia: true do
   include_context "with user signed in as admin for seller"
 
   describe "GET edit" do
+    it_behaves_like "authorize called for action", :get, :edit do
+      let(:record) { product }
+      let(:request_params) { { product_id: product.unique_permalink } }
+    end
+
     it "renders the Products/Edit/Content component with expected props" do
       get :edit, params: { product_id: product.unique_permalink }
 
@@ -37,6 +43,11 @@ describe Products::Edit::ContentController, inertia: true do
 
     context "with Inertia request" do
       before { request.headers["X-Inertia"] = "true" }
+
+      it_behaves_like "collaborator can access", :patch, :update do
+        let(:request_params) { params }
+        let(:response_status) { 302 }
+      end
 
       it "updates the product content and redirects" do
         patch :update, params: params

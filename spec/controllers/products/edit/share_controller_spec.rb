@@ -11,6 +11,11 @@ describe Products::Edit::ShareController, inertia: true do
   include_context "with user signed in as admin for seller"
 
   describe "GET edit" do
+    it_behaves_like "authorize called for action", :get, :edit do
+      let(:record) { product }
+      let(:request_params) { { product_id: product.unique_permalink } }
+    end
+
     context "when product is published" do
       before { product.publish! }
 
@@ -61,6 +66,46 @@ describe Products::Edit::ShareController, inertia: true do
         expect(flash[:notice]).to eq("Your changes have been saved!")
         expect(product.reload.is_adult).to be(true)
         expect(product.display_product_reviews).to be(false)
+      end
+
+      it "sets is_adult to true when product is_adult is true" do
+        product.update!(is_adult: false)
+        patch :update, params: {
+          product_id: product.unique_permalink,
+          product: { is_adult: true }
+        }
+        expect(product.reload.is_adult).to be(true)
+        expect(response).to redirect_to(product_edit_share_path(product.unique_permalink))
+      end
+
+      it "sets is_adult to false when product is_adult is false" do
+        product.update!(is_adult: true)
+        patch :update, params: {
+          product_id: product.unique_permalink,
+          product: { is_adult: false }
+        }
+        expect(product.reload.is_adult).to be(false)
+        expect(response).to redirect_to(product_edit_share_path(product.unique_permalink))
+      end
+
+      it "sets display_product_reviews to true when display_product_reviews is true" do
+        product.update!(display_product_reviews: false)
+        patch :update, params: {
+          product_id: product.unique_permalink,
+          product: { display_product_reviews: true }
+        }
+        expect(product.reload.display_product_reviews).to be(true)
+        expect(response).to redirect_to(product_edit_share_path(product.unique_permalink))
+      end
+
+      it "sets display_product_reviews to false when display_product_reviews is false" do
+        product.update!(display_product_reviews: true)
+        patch :update, params: {
+          product_id: product.unique_permalink,
+          product: { display_product_reviews: false }
+        }
+        expect(product.reload.display_product_reviews).to be(false)
+        expect(response).to redirect_to(product_edit_share_path(product.unique_permalink))
       end
     end
 

@@ -59,7 +59,7 @@ class Product::VariantsUpdaterService
 
             # TODO: :product_edit_react cleanup
             if option[:price_difference_cents].present?
-              option[:price] = option[:price_difference_cents]
+              option[:price] = option[:price_difference_cents].to_i
               option[:price] /= 100.0 unless @product.single_unit_currency?
             end
 
