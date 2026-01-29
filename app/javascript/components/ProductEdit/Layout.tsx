@@ -37,8 +37,8 @@ type InertiaLayoutProps = {
   currentTab: "product" | "content" | "receipt" | "share";
   onSave: () => void;
   isSaving?: boolean;
-  contentUpdates?: ContentUpdate | null;
-  setContentUpdates?: (updates: ContentUpdate | null) => void;
+  contentUpdates?: ContentUpdate | null | undefined;
+  setContentUpdates?: ((updates: ContentUpdate | null) => void) | undefined;
 };
 
 type Props = {
@@ -255,13 +255,11 @@ export const Layout = ({
 
   return (
     <>
-      {setContentUpdates && (
-        <NotifyAboutProductUpdatesAlert
-          contentUpdates={contentUpdates}
-          setContentUpdates={setContentUpdates}
-          uniquePermalink={uniquePermalink}
-        />
-      )}
+      <NotifyAboutProductUpdatesAlert
+        contentUpdates={contentUpdates}
+        setContentUpdates={setContentUpdates}
+        uniquePermalink={uniquePermalink}
+      />
       <PageHeader
         className="sticky-top"
         title={product.name || "Untitled"}
