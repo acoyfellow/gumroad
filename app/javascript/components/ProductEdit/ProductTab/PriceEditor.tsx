@@ -8,6 +8,7 @@ import { DefaultDiscountCodeSelector } from "$app/components/ProductEdit/Product
 import { InstallmentPlanEditor } from "$app/components/ProductEdit/ProductTab/InstallmentPlanEditor";
 import { Toggle } from "$app/components/Toggle";
 import { Alert } from "$app/components/ui/Alert";
+import { type Product } from "$app/components/ProductEdit/state";
 
 export const PriceEditor = ({
   priceCents,
@@ -42,7 +43,7 @@ export const PriceEditor = ({
   onNumberOfInstallmentsChange: (numberOfInstallments: number) => void;
   currencyCodeSelector?: { options: CurrencyCode[]; onChange: (currencyCode: CurrencyCode) => void };
   showDefaultDiscountCodeSelector?: boolean;
-  product?: any;
+  product?: Product;
   updateProduct?: (data: Partial<any>) => void;
   uniquePermalink?: string;
 }) => {

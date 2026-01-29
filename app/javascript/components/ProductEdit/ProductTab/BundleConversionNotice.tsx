@@ -3,15 +3,12 @@ import * as React from "react";
 import { Button, NavigationButton } from "$app/components/Button";
 import { Modal } from "$app/components/Modal";
 import { Alert } from "$app/components/ui/Alert";
+import { type Product } from "$app/components/ProductEdit/state";
 
 const BUNDLE_WORDS = ["bundle", "pack"];
 
 type BundleConversionNoticeProps = {
-  product: {
-    name: string;
-    native_type: string;
-    variants: any[];
-  };
+  product: Product;
   id: string;
 };
 

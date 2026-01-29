@@ -10,6 +10,7 @@ import { ToggleSettingRow } from "$app/components/SettingRow";
 import { Toggle } from "$app/components/Toggle";
 import { Alert } from "$app/components/ui/Alert";
 import { useRunOnce } from "$app/components/useRunOnce";
+import { type Product } from "$app/components/ProductEdit/state";
 
 export type CircleIntegration = {
   name: "circle";
@@ -28,8 +29,8 @@ export const CircleIntegrationEditor = ({
 }: {
   integration: CircleIntegration;
   onChange: (integration: CircleIntegration) => void;
-  product: any;
-  updateProduct: (updater: (product: any) => void) => void;
+  product: Product;
+  updateProduct: (updater: (product: Product) => void) => void;
 }) => {
   const uid = React.useId();
   const [isEnabled, setIsEnabled] = React.useState(!!integration);

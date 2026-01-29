@@ -3,12 +3,13 @@ import * as React from "react";
 import { NumberInput } from "$app/components/NumberInput";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { WithTooltip } from "$app/components/WithTooltip";
+import { type Product } from "$app/components/ProductEdit/state";
 
 export const DurationEditor = ({
   product,
   updateProduct,
 }: {
-  product: any;
+  product: Product;
   updateProduct: (data: Partial<any>) => void;
 }) => {
   const uid = React.useId();

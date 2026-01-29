@@ -9,9 +9,10 @@ import { RefundPolicyModalPreview } from "$app/components/ProductEdit/RefundPoli
 import { CoffeePage } from "$app/components/server-components/Profile/CoffeePage";
 import { RatingsWithPercentages } from "$app/parsers/product";
 import { RefundPolicy } from "$app/components/ProductEdit/RefundPolicy";
+import { type Product as ProductState } from "$app/components/ProductEdit/state";
 
 type ProductPreviewProps = {
-  product: any;
+  product: ProductState;
   id: string;
   uniquePermalink: string;
   currencyType: CurrencyCode;

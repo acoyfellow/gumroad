@@ -4,13 +4,14 @@ import { InputtedDiscount, DiscountInput } from "$app/components/CheckoutDashboa
 import { NumberInput } from "$app/components/NumberInput";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { type CurrencyCode } from "$app/utils/currency";
+import { type Product } from "$app/components/ProductEdit/state";
 
 export const CancellationDiscountSelector = ({
   product,
   updateProduct,
   currencyType,
 }: {
-  product: any;
+  product: Product;
   updateProduct: (data: Partial<any>) => void;
   currencyType: CurrencyCode;
 }) => {

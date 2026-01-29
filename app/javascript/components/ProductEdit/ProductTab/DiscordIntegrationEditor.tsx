@@ -10,6 +10,7 @@ import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { Toggle } from "$app/components/Toggle";
 import { Alert } from "$app/components/ui/Alert";
+import { type Product } from "$app/components/ProductEdit/state";
 
 export type DiscordIntegration = {
   keep_inactive_members: boolean;
@@ -24,8 +25,8 @@ export const DiscordIntegrationEditor = ({
 }: {
   integration: DiscordIntegration;
   onChange: (integration: DiscordIntegration) => void;
-  product: any;
-  updateProduct: (updater: (product: any) => void) => void;
+  product: Product;
+  updateProduct: (updater: (product: Product) => void) => void;
 }) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isEnabled, setIsEnabled] = React.useState(!!integration);

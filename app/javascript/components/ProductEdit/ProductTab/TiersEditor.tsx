@@ -23,7 +23,7 @@ import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
 import { useProductUrl } from "$app/components/ProductEdit/Layout";
-import { RecurrencePriceValue, Tier } from "$app/components/ProductEdit/state";
+import { RecurrencePriceValue, Tier, type Product } from "$app/components/ProductEdit/state";
 import { RichTextEditor } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
@@ -50,7 +50,7 @@ export const TiersEditor = ({
 }: {
   tiers: Tier[];
   onChange: (tiers: Tier[]) => void;
-  product: any;
+  product: Product;
   currencyType: CurrencyCode;
 }) => {
   const updateVersion = (id: string, update: Partial<Tier>) => {
@@ -397,7 +397,7 @@ const PriceChangeSettings = ({
 }: {
   tier: Tier;
   updateTier: (update: Partial<Tier>) => void;
-  product: any;
+  product: Product;
   currencyType: CurrencyCode;
 }) => {
   const uid = React.useId();
