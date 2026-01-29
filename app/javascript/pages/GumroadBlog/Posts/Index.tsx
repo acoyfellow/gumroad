@@ -1,7 +1,8 @@
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import cx from "classnames";
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { cast } from "ts-safe-cast";
 
 import { formatPostDate } from "$app/components/server-components/Profile/PostPage";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
@@ -9,7 +10,7 @@ import { BlogLayout } from "$app/components/GumroadBlog/Layout";
 
 import placeholderFeatureImage from "../../../../assets/images/blog/post-placeholder.jpg";
 
-interface TagProps {
+type TagProps = {
   name: string;
   count?: number;
   showCount?: boolean;
@@ -230,7 +231,8 @@ const TagSelector = ({
   );
 };
 
-const IndexPage = ({ posts = [] }: IndexPageProps) => {
+const IndexPage = () => {
+  const { posts } = cast<IndexPageProps>(usePage().props);
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
   const featured_post = posts[0];
@@ -280,13 +282,13 @@ const IndexPage = ({ posts = [] }: IndexPageProps) => {
             </div>
           )}
 
-          {postsForGrid ? <PostsGrid posts={postsForGrid} /> : null}
+            {postsForGrid ? <PostsGrid posts={postsForGrid} /> : null}
         </div>
       </div>
     </BlogLayout>
   );
 };
 
-IndexPage.disableLayout = true;
+IndexPage.loggedInUserLayout = true;
 
 export default IndexPage;

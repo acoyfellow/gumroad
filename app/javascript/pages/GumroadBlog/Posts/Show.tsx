@@ -1,6 +1,7 @@
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { EditorContent } from "@tiptap/react";
 import * as React from "react";
+import { cast } from "ts-safe-cast";
 
 import { incrementPostViews } from "$app/data/view_event";
 import { formatPostDate } from "$app/components/server-components/Profile/PostPage";
@@ -12,7 +13,7 @@ import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { BlogLayout } from "$app/components/GumroadBlog/Layout";
 
-interface ShowPageProps {
+type ShowPageProps = {
   external_id: string;
   subject: string;
   published_at: string;
@@ -32,7 +33,8 @@ const BackToBlog = () => (
   </div>
 );
 
-function ShowPage({ external_id, subject, published_at, message, call_to_action }: ShowPageProps) {
+function ShowPage() {
+  const { external_id, subject, published_at, message, call_to_action } = cast<ShowPageProps>(usePage().props);
   const userAgentInfo = useUserAgentInfo();
   const [pageLoaded, setPageLoaded] = React.useState(false);
 
@@ -84,6 +86,6 @@ function ShowPage({ external_id, subject, published_at, message, call_to_action 
   );
 }
 
-ShowPage.disableLayout = true;
+ShowPage.loggedInUserLayout = true;
 
 export default ShowPage;

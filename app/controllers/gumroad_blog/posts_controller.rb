@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 class GumroadBlog::PostsController < GumroadBlog::BaseController
-  layout "gumroad_blog"
-
+  layout "inertia"
   before_action :set_blog_owner!
   before_action :set_post, only: [:show]
 
