@@ -37,7 +37,6 @@ type SharePageProps = {
   is_listed_on_discover: boolean;
 };
 
-
 export default function SharePage() {
   const props = usePage<SharePageProps>().props;
   const { product } = props;
@@ -53,14 +52,14 @@ export default function SharePage() {
   });
 
   const handleSave = () => {
-    form.patch(`/products/edit/${props.unique_permalink}/share`, {
+    form.patch(Routes.products_edit_share_edit_show_path(props.unique_permalink), {
       preserveScroll: true,
     });
   };
 
   if (!currentSeller) return null;
 
-  const productUrl = useProductUrl()
+  const productUrl = useProductUrl();
   const discoverLink = new URL(discoverUrl);
   discoverLink.searchParams.set("query", product.name);
 

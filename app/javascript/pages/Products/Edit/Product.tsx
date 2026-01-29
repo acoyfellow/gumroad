@@ -84,10 +84,10 @@ export default function ProductPage() {
   const handleSave = () => {
     form.transform((data) => ({
       ...data,
-      currency_type: currencyType, // Pass currency type if changed
+      currency_type: currencyType,
     }));
 
-    form.patch(`/products/edit/${props.unique_permalink}`, {
+    form.patch(Routes.products_edit_path(props.unique_permalink), {
       preserveScroll: true,
     });
   };

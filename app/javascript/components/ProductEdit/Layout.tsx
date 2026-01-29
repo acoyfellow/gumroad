@@ -160,8 +160,6 @@ export const Layout = ({
   const product = props.product;
   const uniquePermalink = props.unique_permalink;
 
-  const rootPath = `/products/edit/${uniquePermalink}`;
-
   const productUrl = useProductUrl();
 
   const isCoffee = product.native_type === "coffee";
@@ -184,10 +182,11 @@ export const Layout = ({
       {
         onSuccess: () => {
           if (currentTab === "share") {
-            if (product.native_type === "coffee") router.visit(rootPath);
-            else router.visit(`${rootPath}/content`);
+            if (product.native_type === "coffee")
+              router.visit(Routes.products_edit_product_edit_show_path(uniquePermalink));
+            else router.visit(Routes.products_edit_content_edit_show_path(uniquePermalink));
           } else if (published) {
-            router.visit(`${rootPath}/share`);
+            router.visit(Routes.products_edit_share_edit_show_path(uniquePermalink));
           }
           setIsPublishing(false);
         },
@@ -288,7 +287,7 @@ export const Layout = ({
               disabled={isBusy}
               onClick={() => {
                 onSave();
-                setTimeout(() => router.visit(`${rootPath}/content`), 0);
+                setTimeout(() => router.visit(Routes.products_edit_content_edit_show_path(uniquePermalink)), 0);
               }}
             >
               {isSaving ? "Saving changes..." : "Save and continue"}
@@ -313,24 +312,24 @@ export const Layout = ({
         >
           <Tabs style={{ gridColumn: 1 }}>
             <Tab asChild isSelected={currentTab === "product"}>
-              <Link href={rootPath} onClick={handleTabClick}>
+              <Link href={Routes.products_edit_product_edit_show_path(uniquePermalink)} onClick={handleTabClick}>
                 Product
               </Link>
             </Tab>
             {!isCoffee && (
               <Tab asChild isSelected={currentTab === "content"}>
-                <Link href={`${rootPath}/content`} onClick={handleTabClick}>
+                <Link href={Routes.products_edit_content_edit_show_path(uniquePermalink)} onClick={handleTabClick}>
                   Content
                 </Link>
               </Tab>
             )}
             <Tab asChild isSelected={currentTab === "receipt"}>
-              <Link href={`${rootPath}/receipt`} onClick={handleTabClick}>
+              <Link href={Routes.products_edit_receipt_edit_show_path(uniquePermalink)} onClick={handleTabClick}>
                 Receipt
               </Link>
             </Tab>
             <Tab asChild isSelected={currentTab === "share"}>
-              <Link href={`${rootPath}/share`} onClick={handleShareTabClick}>
+              <Link href={Routes.products_edit_share_edit_show_path(uniquePermalink)} onClick={handleShareTabClick}>
                 Share
               </Link>
             </Tab>

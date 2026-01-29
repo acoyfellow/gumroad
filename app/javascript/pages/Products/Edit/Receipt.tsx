@@ -28,7 +28,7 @@ export default function ReceiptPage() {
   });
 
   const handleSave = () => {
-    form.patch(`/products/edit/${props.unique_permalink}/receipt`, {
+    form.patch(Routes.products_edit_receipt_edit_show_path(props.unique_permalink), {
       preserveScroll: true,
     });
   };
