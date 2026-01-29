@@ -120,7 +120,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
           it "redirects to invoice page with success notice" do
             post :create, params: payload
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
             expect(session["invoice_file_url_#{purchase.external_id}"]).to eq(@s3_obj_public_url)
 
             request.headers["X-Inertia"] = "true"
@@ -138,7 +138,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
 
             post :create, params: payload
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
             expect(flash[:alert]).to eq("Sorry, something went wrong.")
           end
 
@@ -246,7 +246,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
           it "refunds tax" do
             post :create, params: payload.merge(vat_id: "IE6388047V", purchase_id: @purchase.external_id, email: @purchase.email)
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(@purchase.external_id, email: @purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(@purchase.external_id, email: @purchase.email))
             expect(flash[:notice]).to eq("The invoice will be downloaded automatically. VAT has also been refunded.")
             expect(session["invoice_file_url_#{@purchase.external_id}"]).to eq(@s3_obj_public_url)
             expect(Refund.last.total_transaction_cents).to be(20)
@@ -255,7 +255,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
           it "does not refund tax when provided an invalid vat id" do
             post :create, params: payload.merge(vat_id: "EU123456789", purchase_id: @purchase.external_id, email: @purchase.email)
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(@purchase.external_id, email: @purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(@purchase.external_id, email: @purchase.email))
             expect(flash[:notice]).to eq("The invoice will be downloaded automatically.")
             expect(session["invoice_file_url_#{@purchase.external_id}"]).to eq(@s3_obj_public_url)
             expect(Refund.last).to eq nil
@@ -267,7 +267,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
 
             post :create, params: payload.merge(vat_id: "51824753556", purchase_id: @purchase.external_id, email: @purchase.email)
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(@purchase.external_id, email: @purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(@purchase.external_id, email: @purchase.email))
             expect(flash[:notice]).to eq("The invoice will be downloaded automatically. GST has also been refunded.")
             expect(session["invoice_file_url_#{@purchase.external_id}"]).to eq(@s3_obj_public_url)
             expect(Refund.last.total_transaction_cents).to be(20)
@@ -279,7 +279,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
 
             post :create, params: payload.merge(vat_id: "11111111111", purchase_id: @purchase.external_id, email: @purchase.email)
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(@purchase.external_id, email: @purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(@purchase.external_id, email: @purchase.email))
             expect(flash[:notice]).to eq("The invoice will be downloaded automatically.")
             expect(session["invoice_file_url_#{@purchase.external_id}"]).to eq(@s3_obj_public_url)
             expect(Refund.last).to eq nil
@@ -291,7 +291,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
 
             post :create, params: payload.merge(vat_id: "T9100001B", purchase_id: @purchase.external_id, email: @purchase.email)
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(@purchase.external_id, email: @purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(@purchase.external_id, email: @purchase.email))
             expect(flash[:notice]).to eq("The invoice will be downloaded automatically. GST has also been refunded.")
             expect(session["invoice_file_url_#{@purchase.external_id}"]).to eq(@s3_obj_public_url)
             expect(Refund.last.total_transaction_cents).to be(20)
@@ -303,7 +303,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
 
             post :create, params: payload.merge(vat_id: "T9100001C", purchase_id: @purchase.external_id, email: @purchase.email)
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(@purchase.external_id, email: @purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(@purchase.external_id, email: @purchase.email))
             expect(flash[:notice]).to eq("The invoice will be downloaded automatically.")
             expect(session["invoice_file_url_#{@purchase.external_id}"]).to eq(@s3_obj_public_url)
             expect(Refund.last).to eq nil
@@ -315,7 +315,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
 
             post :create, params: payload.merge(vat_id: "1002092821TQ0001", purchase_id: @purchase.external_id, email: @purchase.email)
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(@purchase.external_id, email: @purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(@purchase.external_id, email: @purchase.email))
             expect(flash[:notice]).to eq("The invoice will be downloaded automatically. QST has also been refunded.")
             expect(session["invoice_file_url_#{@purchase.external_id}"]).to eq(@s3_obj_public_url)
             expect(Refund.last.total_transaction_cents).to be(20)
@@ -327,7 +327,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
 
             post :create, params: payload.merge(vat_id: "NR00005576", purchase_id: @purchase.external_id, email: @purchase.email)
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(@purchase.external_id, email: @purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(@purchase.external_id, email: @purchase.email))
             expect(flash[:notice]).to eq("The invoice will be downloaded automatically.")
             expect(session["invoice_file_url_#{@purchase.external_id}"]).to eq(@s3_obj_public_url)
             expect(Refund.last).to eq nil
@@ -339,7 +339,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
 
             post :create, params: payload.merge(vat_id: "IE6388047V", purchase_id: @purchase.external_id, email: @purchase.email)
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(@purchase.external_id, email: @purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(@purchase.external_id, email: @purchase.email))
             expect(flash[:notice]).to eq("The invoice will be downloaded automatically. VAT has also been refunded.")
             expect(session["invoice_file_url_#{@purchase.external_id}"]).to eq(@s3_obj_public_url)
             expect(Refund.count).to be(1)
@@ -385,7 +385,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
           it "redirects to invoice page with success notice" do
             post :create, params: payload
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
             expect(session["invoice_file_url_#{purchase.external_id}"]).to eq(@s3_obj_public_url)
 
             request.headers["X-Inertia"] = "true"
@@ -403,7 +403,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
 
             post :create, params: payload
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
             expect(flash[:alert]).to eq("Sorry, something went wrong.")
           end
 
@@ -472,7 +472,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
               post :create, params: payload.merge(vat_id: "IE6388047V", purchase_id: purchase.external_id)
             end.to change(Refund, :count).by(2)
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
             expect(flash[:notice]).to eq("The invoice will be downloaded automatically. VAT has also been refunded.")
             expect(session["invoice_file_url_#{purchase.external_id}"]).to eq(@s3_obj_public_url)
             expect(Refund.last(2).sum(&:total_transaction_cents)).to be(40)
@@ -483,7 +483,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
               post :create, params: payload.merge(vat_id: "EU123456789", purchase_id: purchase.external_id)
             end.to_not change(Refund, :count)
 
-            expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+            expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
             expect(flash[:notice]).to eq("The invoice will be downloaded automatically.")
             expect(session["invoice_file_url_#{purchase.external_id}"]).to eq(@s3_obj_public_url)
           end
@@ -500,7 +500,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
                 post :create, params: payload.merge(vat_id: "IE6388047V", purchase_id: purchase.external_id)
               end.to change(Refund, :count).by(2)
 
-              expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+              expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
               expect(flash[:notice]).to include("The invoice will be downloaded automatically.")
               expect(session["invoice_file_url_#{purchase.external_id}"]).to eq(@s3_obj_public_url)
               expect(Refund.last(2).sum(&:total_transaction_cents)).to be(40)
@@ -512,7 +512,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
                   post :create, params: payload.merge(vat_id: "11111111111", purchase_id: purchase.external_id)
                 end.to_not change(Refund, :count)
 
-                expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+                expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
                 expect(flash[:notice]).to eq("The invoice will be downloaded automatically.")
                 expect(session["invoice_file_url_#{purchase.external_id}"]).to eq(@s3_obj_public_url)
               end
@@ -530,7 +530,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
                 post :create, params: payload.merge(vat_id: "T9100001B", purchase_id: purchase.external_id)
               end.to change(Refund, :count).by(2)
 
-              expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+              expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
               expect(flash[:notice]).to eq("The invoice will be downloaded automatically. GST has also been refunded.")
               expect(session["invoice_file_url_#{purchase.external_id}"]).to eq(@s3_obj_public_url)
               expect(Refund.last(2).sum(&:total_transaction_cents)).to be(40)
@@ -542,7 +542,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
                   post :create, params: payload.merge(vat_id: "T9100001C", purchase_id: purchase.external_id)
                 end.to_not change(Refund, :count)
 
-                expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+                expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
                 expect(flash[:notice]).to eq("The invoice will be downloaded automatically.")
                 expect(session["invoice_file_url_#{purchase.external_id}"]).to eq(@s3_obj_public_url)
               end
@@ -561,7 +561,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
                 post :create, params: payload.merge(vat_id: "IE6388047V", purchase_id: purchase.external_id)
               end.to_not change(Refund, :count)
 
-              expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+              expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
               expect(flash[:notice]).to eq("The invoice will be downloaded automatically. VAT has also been refunded.")
               expect(session["invoice_file_url_#{purchase.external_id}"]).to eq(@s3_obj_public_url)
             end
@@ -576,7 +576,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
             it "returns error if purchase is not successful" do
               post :create, params: payload.merge(vat_id: "IE6388047V", purchase_id: purchase.external_id)
 
-              expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+              expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
               expect(flash[:alert]).to eq("Your purchase has not been completed by PayPal yet. Please try again soon.")
               expect(Refund.count).to be(0)
             end
@@ -602,7 +602,7 @@ describe Purchases::InvoicesController, :vcr, type: :controller, inertia: true d
       it "redirects to invoice page with correct email" do
         post :confirm_email, params: { purchase_id: purchase.external_id, email: purchase.email }
 
-        expect(response).to redirect_to(generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email))
+        expect(response).to redirect_to(purchase_invoice_path(purchase.external_id, email: purchase.email))
       end
 
       it "redirects back with error for incorrect email" do

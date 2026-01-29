@@ -8,7 +8,7 @@ describe "Generate invoice confirmation page", type: :system, js: true do
   end
 
   it "asks to confirm the email address before showing the generate invoice page" do
-    visit generate_invoice_by_buyer_path(@purchase.external_id)
+    visit purchase_invoice_path(@purchase.external_id)
 
     expect(page).to have_current_path(confirm_purchase_invoice_path(@purchase.external_id))
     expect(page).to have_text "Generate invoice"
@@ -23,7 +23,7 @@ describe "Generate invoice confirmation page", type: :system, js: true do
     fill_in "Email address", with: @purchase.email
     click_on "Confirm email"
 
-    expect(page).to have_current_path(generate_invoice_by_buyer_path(@purchase.external_id, email: @purchase.email))
+    expect(page).to have_current_path(purchase_invoice_path(@purchase.external_id, email: @purchase.email))
     expect(page).to have_text @purchase.link.name
 
     allow_any_instance_of(PDFKit).to receive(:to_pdf).and_return("")

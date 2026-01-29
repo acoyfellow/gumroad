@@ -13,11 +13,11 @@ class Purchases::InvoicesController < ApplicationController
   end
 
   def confirm_email
-    redirect_to generate_invoice_by_buyer_path(@purchase.external_id, email: params[:email]), status: :see_other
+    redirect_to purchase_invoice_path(@purchase.external_id, email: params[:email]), status: :see_other
   end
 
   def create
-    return redirect_to generate_invoice_by_buyer_path(@purchase.external_id, email: invoice_params[:email]), alert: "Your purchase has not been completed by PayPal yet. Please try again soon." if invoice_params["vat_id"].present? && !@purchase.successful?
+    return redirect_to purchase_invoice_path(@purchase.external_id, email: invoice_params[:email]), alert: "Your purchase has not been completed by PayPal yet. Please try again soon." if invoice_params["vat_id"].present? && !@purchase.successful?
 
     address_fields = invoice_params[:address_fields]
     address_fields[:country] = ISO3166::Country[invoice_params[:address_fields][:country_code]]&.common_name
@@ -53,13 +53,13 @@ class Purchases::InvoicesController < ApplicationController
         message << " " << notice
       end
       session[invoice_file_url_session_key] = s3_obj.presigned_url(:get, expires_in: SignedUrlHelper::SIGNED_S3_URL_VALID_FOR_MAXIMUM.to_i)
-      redirect_to generate_invoice_by_buyer_path(@purchase.external_id, email: invoice_params[:email]), notice: message
+      redirect_to purchase_invoice_path(@purchase.external_id, email: invoice_params[:email]), notice: message
     rescue StandardError => e
       Rails.logger.error("Chargeable #{@chargeable.class.name} (#{@chargeable.external_id}) invoice generation failed due to: #{e.inspect}")
       Rails.logger.error(e.message)
       Rails.logger.error(e.backtrace.join("\n"))
 
-      redirect_to generate_invoice_by_buyer_path(@purchase.external_id, email: invoice_params[:email]), alert: "Sorry, something went wrong."
+      redirect_to purchase_invoice_path(@purchase.external_id, email: invoice_params[:email]), alert: "Sorry, something went wrong."
     end
   end
 

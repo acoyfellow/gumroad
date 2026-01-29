@@ -76,17 +76,14 @@ Rails.application.routes.draw do
     end
   end
 
-  def purchases_invoice_routes(named_routes: true)
-    if named_routes
-      get "/purchases/:id/generate_invoice", to: "purchases/invoices#new", as: :generate_invoice_by_buyer
-    else
-      get "/purchases/:id/generate_invoice", to: "purchases/invoices#new"
-    end
-
-    resources :purchases, only: [] do
-      resource :invoice, only: [:create], path: "generate_invoice" do
-        get :confirm, to: "purchases/invoices#confirm"
-        post "confirm", to: "purchases/invoices#confirm_email"
+  def purchases_invoice_routes
+    scope module: :purchases do
+      resources :purchases, only: [] do
+        resource :invoice, only: [:create], path: "generate_invoice" do
+          get :new
+          get :confirm
+          post :confirm, action: :confirm_email
+        end
       end
     end
   end
@@ -109,7 +106,7 @@ Rails.application.routes.draw do
 
   def product_info_and_purchase_routes(named_routes: true)
     product_tracking_routes(named_routes:)
-    purchases_invoice_routes(named_routes:)
+    purchases_invoice_routes
 
     get "/offer_codes/compute_discount", to: "offer_codes#compute_discount"
     get "/products/search", to: "links#search"
@@ -775,7 +772,7 @@ Rails.application.routes.draw do
     get "/dashboard/consumption" => redirect("/dashboard/audience")
 
     # invoices
-    purchases_invoice_routes(named_routes: false)
+    purchases_invoice_routes
 
     # preorder
     post "/purchases/:id/cancel_preorder_by_seller", to: "purchases#cancel_preorder_by_seller", as: :cancel_preorder_by_seller
