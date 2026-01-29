@@ -19,6 +19,7 @@ import { Alert } from "$app/components/ui/Alert";
 import { useRunOnce } from "$app/components/useRunOnce";
 import { useDiscoverUrl } from "$app/components/DomainSettings";
 import { type Product } from "$app/components/ProductEdit/state";
+import { useProductUrl } from "$app/components/BundleEdit/Layout";
 
 type ProfileSection = {
   id: string;
@@ -36,45 +37,6 @@ type SharePageProps = {
   is_listed_on_discover: boolean;
 };
 
-const DiscoverEligibilityPromo = () => {
-  const [show, setShow] = React.useState(false);
-
-  useRunOnce(() => {
-    if (localStorage.getItem("showDiscoverEligibilityPromo") !== "false") setShow(true);
-  });
-
-  if (!show) return null;
-
-  return (
-    <Alert role="status">
-      <div className="flex items-center gap-2">
-        <div className="flex flex-1 flex-col gap-2">
-          <div>
-            To appear on Gumroad Discover, make sure to meet all the{" "}
-            <a href="/help/article/79-gumroad-discover" target="_blank" rel="noreferrer">
-              eligibility criteria
-            </a>
-            , which includes making at least one successful sale and completing the Risk Review process explained in
-            detail{" "}
-            <a href="/help/article/13-getting-paid" target="_blank" rel="noreferrer">
-              here
-            </a>
-            .
-          </div>
-          <button
-            className="w-max cursor-pointer underline all-unset"
-            onClick={() => {
-              localStorage.setItem("showDiscoverEligibilityPromo", "false");
-              setShow(false);
-            }}
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </Alert>
-  );
-};
 
 export default function SharePage() {
   const props = usePage<SharePageProps>().props;
@@ -98,10 +60,7 @@ export default function SharePage() {
 
   if (!currentSeller) return null;
 
-  const productUrl = Routes.short_link_url(product.custom_permalink ?? props.unique_permalink, {
-    host: currentSeller.subdomain,
-  });
-
+  const productUrl = useProductUrl()
   const discoverLink = new URL(discoverUrl);
   discoverLink.searchParams.set("query", product.name);
 
@@ -203,3 +162,43 @@ export default function SharePage() {
     </Layout>
   );
 }
+
+const DiscoverEligibilityPromo = () => {
+  const [show, setShow] = React.useState(false);
+
+  useRunOnce(() => {
+    if (localStorage.getItem("showDiscoverEligibilityPromo") !== "false") setShow(true);
+  });
+
+  if (!show) return null;
+
+  return (
+    <Alert role="status">
+      <div className="flex items-center gap-2">
+        <div className="flex flex-1 flex-col gap-2">
+          <div>
+            To appear on Gumroad Discover, make sure to meet all the{" "}
+            <a href="/help/article/79-gumroad-discover" target="_blank" rel="noreferrer">
+              eligibility criteria
+            </a>
+            , which includes making at least one successful sale and completing the Risk Review process explained in
+            detail{" "}
+            <a href="/help/article/13-getting-paid" target="_blank" rel="noreferrer">
+              here
+            </a>
+            .
+          </div>
+          <button
+            className="w-max cursor-pointer underline all-unset"
+            onClick={() => {
+              localStorage.setItem("showDiscoverEligibilityPromo", "false");
+              setShow(false);
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </Alert>
+  );
+};
