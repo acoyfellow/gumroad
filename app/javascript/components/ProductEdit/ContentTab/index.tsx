@@ -1,4 +1,5 @@
-// DELETE
+// DEPRECATED: This file's ContentTab component has been migrated to @app/javascript/pages/Products/Edit/Content.tsx
+// The extensions export below is still in use by product_edit.ts and should remain.
 import { findChildren, generateJSON, Node as TiptapNode } from "@tiptap/core";
 import { DOMSerializer } from "@tiptap/pm/model";
 import { EditorContent } from "@tiptap/react";
@@ -977,7 +978,9 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
   );
 };
 
-//TODO inline this once all the crazy providers are gone
+// DEPRECATED: ContentTab component is no longer used. It has been migrated to @app/javascript/pages/Products/Edit/Content.tsx
+// This export is kept for backwards compatibility only and should not be used.
+/*
 export const ContentTab = () => {
   const { id, awsKey, s3Url, seller, product, updateProduct, uniquePermalink } = useProductEditContext();
   const [selectedVariantId, setSelectedVariantId] = React.useState(product.variants[0]?.id ?? null);
@@ -1169,3 +1172,4 @@ export const ContentTab = () => {
     </PostsProvider>
   );
 };
+*/

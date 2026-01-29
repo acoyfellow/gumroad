@@ -20,7 +20,7 @@ import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { WithTooltip } from "$app/components/WithTooltip";
 import { type Product } from "$app/components/ProductEdit/state";
 
-import { FileEntry, useProductEditContext } from "./state";
+import { type FileEntry } from "./state";
 
 type InertiaLayoutProps = {
   children: React.ReactNode;
@@ -59,7 +59,7 @@ export const useProductUrl = (params = {}) => {
 };
 
 const NotifyAboutProductUpdatesAlert = () => {
-  const { uniquePermalink, contentUpdates, setContentUpdates } = useProductEditContext();
+  const { contentUpdates, setContentUpdates } = useProductEditContext();
   const timerRef = React.useRef<number | null>(null);
   const isVisible = !!contentUpdates;
 

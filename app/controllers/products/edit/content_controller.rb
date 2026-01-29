@@ -4,7 +4,7 @@ class Products::Edit::ContentController < Products::Edit::BaseController
   def show
     redirect_to bundle_path(@product.external_id) if @product.is_bundle?
 
-    set_meta_tag(title: @product.name)
+    set_product_title
 
     @presenter = ProductPresenter.new(product: @product, pundit_user:)
 

@@ -15,16 +15,20 @@ class Products::Edit::BaseController < ApplicationController
 
   layout "inertia", only: [:show]
 
-  protected
+  private
     def authorize_product
       authorize @product
     end
 
+  protected
     def product_permitted_params
       @_product_permitted_params ||= params.permit(policy(@product).product_permitted_attributes)
     end
 
-  private
+    def set_product_title
+      set_meta_tag(title: @product.name)
+    end
+
     # Helper methods shared across all edit controllers
     def update_removed_file_attributes
       current = @product.file_info_for_product_page.keys.map(&:to_s)
@@ -124,14 +128,15 @@ class Products::Edit::BaseController < ApplicationController
       raise Link::LinkInvalid, "Invalid offer code"
     end
 
-    def valid_for_product?(offer_code)
-      offer_code.universal? || @product.offer_codes.where(id: offer_code.id).exists?
-    end
-
     def toggle_community_chat!(enabled)
       return unless Feature.active?(:communities, current_seller)
       return if [Link::NATIVE_TYPE_COFFEE, Link::NATIVE_TYPE_BUNDLE].include?(@product.native_type)
 
       @product.toggle_community_chat!(enabled)
+    end
+
+  private
+    def valid_for_product?(offer_code)
+      offer_code.universal? || @product.offer_codes.where(id: offer_code.id).exists?
     end
 end
