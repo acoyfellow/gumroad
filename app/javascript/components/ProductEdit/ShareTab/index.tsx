@@ -1,3 +1,4 @@
+// DElTE
 import hands from "images/illustrations/hands.png";
 import * as React from "react";
 

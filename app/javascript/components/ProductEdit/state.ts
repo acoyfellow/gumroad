@@ -1,3 +1,4 @@
+// DELETE
 import * as React from "react";
 
 import { OtherRefundPolicy } from "$app/data/products/other_refund_policies";
