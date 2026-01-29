@@ -6,7 +6,7 @@ class Products::Edit::ShareController < Products::Edit::BaseController
 
     set_meta_tag(title: @product.name)
 
-    @presenter = ProductPresenter.new(product: @product, pundit_user:)
+    @presenter = ProductPresenter.new(product: @product, pundit_user:, ai_generated: params[:ai_generated] == "true")
 
     render inertia: "Products/Edit/Share", props: @presenter.edit_props
   end

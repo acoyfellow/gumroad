@@ -20,17 +20,9 @@ module InertiaRendering
 
   private
     def inertia_flash_props
-      return if (flash_message = flash[:alert] || flash[:error] || flash[:warning] || flash[:notice]).blank?
+      return if (flash_message = flash[:alert] || flash[:warning] || flash[:notice]).blank?
 
-      status = if flash[:alert] || flash[:error]
-        "danger"
-      elsif flash[:warning]
-        "warning"
-      else
-        "success"
-      end
-
-      { message: flash_message, status: status }
+      { message: flash_message, status: flash[:alert] ? "danger" : flash[:warning] ? "warning" : "success" }
     end
 
     def inertia_errors(model)
@@ -39,3 +31,4 @@ module InertiaRendering
       end }
     end
 end
+
