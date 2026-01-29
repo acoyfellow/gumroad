@@ -6,7 +6,6 @@ import { assertResponseError } from "$app/utils/request";
 
 import { Button } from "$app/components/Button";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 
@@ -23,9 +22,13 @@ export type GoogleCalendarIntegration = {
 export const GoogleCalendarIntegrationEditor = ({
   integration,
   onChange,
+  googleClientId,
+  updateProduct,
 }: {
   integration: GoogleCalendarIntegration;
   onChange: (integration: GoogleCalendarIntegration) => void;
+  googleClientId: string;
+  updateProduct: (updater: (product: any) => void) => void;
 }) => {
   const [isEnabled, setIsEnabled] = React.useState(!!integration);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -34,9 +37,6 @@ export const GoogleCalendarIntegrationEditor = ({
       ? [{ id: integration.integration_details.calendar_id, summary: integration.integration_details.calendar_summary }]
       : [],
   );
-
-  const { updateProduct, googleClientId } = useProductEditContext();
-
   React.useEffect(() => {
     if (integration?.integration_details) {
       const { access_token, refresh_token } = integration.integration_details;

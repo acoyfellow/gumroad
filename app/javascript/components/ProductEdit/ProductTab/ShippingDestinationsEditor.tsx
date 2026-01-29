@@ -3,20 +3,25 @@ import * as React from "react";
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { PriceInput } from "$app/components/PriceInput";
-import { ShippingDestination, useProductEditContext } from "$app/components/ProductEdit/state";
+import { ShippingDestination } from "$app/components/ProductEdit/state";
 import { Card, CardContent } from "$app/components/ui/Card";
 import { Placeholder } from "$app/components/ui/Placeholder";
 import { WithTooltip } from "$app/components/WithTooltip";
+import { CurrencyCode } from "$app/utils/currency";
+
+export type ShippingCountry = { code: string; name: string };
 
 export const ShippingDestinationsEditor = ({
   shippingDestinations,
   onChange,
+  availableCountries,
+  currencyType,
 }: {
   shippingDestinations: ShippingDestination[];
   onChange: (shippingDestinations: ShippingDestination[]) => void;
+  availableCountries: ShippingCountry[];
+  currencyType: CurrencyCode;
 }) => {
-  const { availableCountries } = useProductEditContext();
-
   const addShippingDestination = () => {
     if (!availableCountries[0]) return;
     onChange([
@@ -48,6 +53,8 @@ export const ShippingDestinationsEditor = ({
               }
               onRemove={() => onChange(shippingDestinations.filter((_, i) => i !== index))}
               key={index}
+              availableCountries={availableCountries}
+              currencyType={currencyType}
             />
           ))}
           <CardContent>
@@ -77,12 +84,15 @@ const ShippingDestinationRow = ({
   shippingDestination,
   onChange,
   onRemove,
+  availableCountries,
+  currencyType,
 }: {
   shippingDestination: ShippingDestination;
   onChange: (shippingDestination: ShippingDestination) => void;
   onRemove: () => void;
+  availableCountries: ShippingCountry[];
+  currencyType: CurrencyCode;
 }) => {
-  const { availableCountries, currencyType } = useProductEditContext();
   const uid = React.useId();
 
   const updateDestination = (update: Partial<ShippingDestination>) => onChange({ ...shippingDestination, ...update });

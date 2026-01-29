@@ -1,3 +1,4 @@
+// DELTE
 import * as React from "react";
 
 import { COFFEE_CUSTOM_BUTTON_TEXT_OPTIONS, CUSTOM_BUTTON_TEXT_OPTIONS } from "$app/parsers/product";
@@ -56,9 +57,11 @@ export const ProductTab = () => {
     isPhysical,
     customDomainVerificationStatus,
     googleCalendarEnabled,
+    googleClientId,
     seller_refund_policy_enabled,
     cancellationDiscountsEnabled,
     aiGenerated,
+    availableCountries,
   } = useProductEditContext();
   const [initialProduct] = React.useState(product);
 
@@ -157,6 +160,7 @@ export const ProductTab = () => {
                 <SuggestedAmountsEditor
                   versions={product.variants}
                   onChange={(variants) => updateProduct({ variants })}
+                  currencyType={currencyType}
                 />
               </section>
               <section className="p-4! md:p-8!">
@@ -226,6 +230,8 @@ export const ProductTab = () => {
                         },
                       })
                     }
+                    product={product}
+                    updateProduct={updateProduct}
                   />
                   <DiscordIntegrationEditor
                     integration={product.integrations.discord}
@@ -237,6 +243,8 @@ export const ProductTab = () => {
                         },
                       })
                     }
+                    product={product}
+                    updateProduct={updateProduct}
                   />
                   {product.native_type === "call" && googleCalendarEnabled ? (
                     <GoogleCalendarIntegrationEditor
@@ -249,6 +257,8 @@ export const ProductTab = () => {
                           },
                         })
                       }
+                      googleClientId={googleClientId}
+                      updateProduct={updateProduct}
                     />
                   ) : null}
                 </fieldset>
@@ -256,7 +266,12 @@ export const ProductTab = () => {
               {product.native_type === "membership" ? (
                 <section className="p-4! md:p-8!">
                   <h2>Tiers</h2>
-                  <TiersEditor tiers={product.variants} onChange={(variants) => updateProduct({ variants })} />
+                  <TiersEditor
+                    tiers={product.variants}
+                    onChange={(variants) => updateProduct({ variants })}
+                    product={product}
+                    currencyType={currencyType}
+                  />
                 </section>
               ) : (
                 <>
@@ -321,6 +336,7 @@ export const ProductTab = () => {
                         <DurationsEditor
                           durations={product.variants}
                           onChange={(variants) => updateProduct({ variants })}
+                          currencyType={currencyType}
                         />
                       </section>
                       <section className="p-4! md:p-8!">
@@ -364,6 +380,8 @@ export const ProductTab = () => {
                 <ShippingDestinationsEditor
                   shippingDestinations={product.shipping_destinations}
                   onChange={(shipping_destinations) => updateProduct({ shipping_destinations })}
+                  availableCountries={availableCountries}
+                  currencyType={currencyType}
                 />
               ) : null}
               <section className="p-4! md:p-8!">
@@ -371,8 +389,14 @@ export const ProductTab = () => {
                 <fieldset>
                   {product.native_type === "membership" ? (
                     <>
-                      <FreeTrialSelector />
-                      {cancellationDiscountsEnabled ? <CancellationDiscountSelector /> : null}
+                      <FreeTrialSelector product={product} updateProduct={updateProduct} />
+                      {cancellationDiscountsEnabled ? (
+                        <CancellationDiscountSelector
+                          product={product}
+                          updateProduct={updateProduct}
+                          currencyType={currencyType}
+                        />
+                      ) : null}
                       <Toggle
                         value={product.should_include_last_post}
                         onChange={(should_include_last_post) => updateProduct({ should_include_last_post })}
@@ -393,7 +417,7 @@ export const ProductTab = () => {
                       >
                         Members will lose access when their memberships end
                       </Toggle>
-                      <DurationEditor />
+                      <DurationEditor product={product} updateProduct={updateProduct} />
                     </>
                   ) : null}
                   {product.can_enable_quantity ? (
