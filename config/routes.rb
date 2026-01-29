@@ -671,7 +671,6 @@ Rails.application.routes.draw do
       end
     end
 
-    # Edit product tabs - Inertia routes
     namespace :products do
       namespace :edit do
         get "/:id", to: "product#show", as: :product_edit_show
@@ -685,8 +684,6 @@ Rails.application.routes.draw do
       end
     end
 
-    # Legacy route for backward compatibility
-    get "/products/:id/edit", to: "products/edit/product#show", as: :edit_link
     get "/products/:id/card", to: "links#card", as: :product_card
     get "/products/search", to: "links#search"
 

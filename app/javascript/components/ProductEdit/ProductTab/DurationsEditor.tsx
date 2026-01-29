@@ -5,7 +5,7 @@ import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
-import { Duration } from "$app/components/ProductEdit/state";
+import { type Duration } from "$app/components/ProductEdit/state";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
 import { Pill } from "$app/components/ui/Pill";
 import { Placeholder } from "$app/components/ui/Placeholder";

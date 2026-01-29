@@ -3,8 +3,8 @@ import * as React from "react";
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { PriceInput } from "$app/components/PriceInput";
-import { Version } from "$app/components/ProductEdit/state";
-import { CurrencyCode } from "$app/utils/currency";
+import { type Version } from "$app/components/ProductEdit/state";
+import { type CurrencyCode } from "$app/utils/currency";
 
 let newVersionId = 0;
 
