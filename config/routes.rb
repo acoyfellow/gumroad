@@ -286,7 +286,7 @@ Rails.application.routes.draw do
         resource :share, only: [:edit, :update], controller: "edit/share"
       end
 
-      # Backward compatibility redirects for old product edit URLs (like bundles)
+      # Backward compatibility redirects for old product edit URLs
       member do
         get :edit, to: redirect("/products/%{id}/product/edit"), as: nil
         get "edit/content", to: redirect("/products/%{id}/content/edit")
