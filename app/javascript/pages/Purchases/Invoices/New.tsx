@@ -65,6 +65,11 @@ const PurchaseNewInvoicePage = () => {
   const downloadInvoice = () => {
     if (!validateFields()) return;
 
+    form.transform((data) => ({
+      ...data,
+      vat_id: form_metadata.display_vat_id ? data.vat_id : null,
+    }));
+
     form.post(Routes.purchase_invoice_path(form.data.purchase_id), {
       only: ["flash", "invoice_file_url"],
       onSuccess: (page) => {

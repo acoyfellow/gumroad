@@ -6,7 +6,6 @@ class Purchases::InvoicesController < ApplicationController
   before_action :set_purchase, except: [:confirm]
   before_action :set_noindex_header, only: [:new, :confirm]
   before_action :require_email_confirmation, except: [:confirm]
-  before_action :check_for_successful_purchase_for_vat_refund, only: [:create]
   before_action :set_chargeable, only: [:create, :new]
 
   def confirm
@@ -18,6 +17,9 @@ class Purchases::InvoicesController < ApplicationController
   end
 
   def create
+    return redirect_to generate_invoice_by_buyer_path(@purchase.external_id, email: create_permitted_params[:email]),
+                       status: :see_other, alert: "Your purchase has not been completed by PayPal yet. Please try again soon." if create_permitted_params["vat_id"].present? && !@purchase.successful?
+
     address_fields = create_permitted_params[:address_fields]
     address_fields[:country] = ISO3166::Country[create_permitted_params[:address_fields][:country_code]]&.common_name
     business_vat_id = create_permitted_params[:vat_id] if is_vat_id_valid?(create_permitted_params[:vat_id])
@@ -66,14 +68,14 @@ class Purchases::InvoicesController < ApplicationController
     set_meta_tag(title: "Generate invoice")
 
     render inertia: "Purchases/Invoices/New", props: {
-      form_data: -> { invoice_presenter.invoice_generation_form_data_props },
-      form_metadata: -> { invoice_presenter.invoice_generation_form_metadata_props },
+      form_data: -> { new_invoice_presenter.invoice_generation_form_data_props },
+      form_metadata: -> { new_invoice_presenter.invoice_generation_form_metadata_props },
       invoice_file_url: InertiaRails.optional { session.delete("invoice_file_url_#{@purchase.external_id}") },
     }
   end
 
   private
-    def invoice_presenter
+    def new_invoice_presenter
       @_invoice_presenter ||= InvoicePresenter.new(@chargeable)
     end
 
@@ -85,13 +87,6 @@ class Purchases::InvoicesController < ApplicationController
       @chargeable = Charge::Chargeable.find_by_purchase_or_charge!(purchase: @purchase)
     end
 
-    def check_for_successful_purchase_for_vat_refund
-      return if params["vat_id"].blank? || @purchase.successful?
-
-      flash[:alert] = "Your purchase has not been completed by PayPal yet. Please try again soon."
-      redirect_to generate_invoice_by_buyer_path(@purchase.external_id, email: params[:email]), status: :see_other
-    end
-
     def is_vat_id_valid?(raw_vat_id)
       return false unless raw_vat_id.present?
       country_code, state_code = @chargeable.purchase_sales_tax_info&.values_at(:country_code, :state_code) || [nil, nil]
@@ -101,12 +96,6 @@ class Purchases::InvoicesController < ApplicationController
     def require_email_confirmation
       return if ActiveSupport::SecurityUtils.secure_compare(@purchase.email, params[:email].to_s)
 
-      if params[:email].blank?
-        flash[:warning] = "Please enter the purchase's email address to generate the invoice."
-      else
-        flash[:alert] = "Incorrect email address. Please try again."
-      end
-
-      redirect_to confirm_purchase_invoice_path(@purchase.external_id), status: :see_other
+      redirect_to confirm_purchase_invoice_path(@purchase.external_id), status: :see_other, **(params[:email].blank? ? { warning: "Please enter the purchase's email address to generate the invoice." } : { alert: "Incorrect email address. Please try again." })
     end
 end
