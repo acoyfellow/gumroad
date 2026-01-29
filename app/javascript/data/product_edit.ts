@@ -1,4 +1,3 @@
-// DELETE
 import { Editor, findChildren } from "@tiptap/core";
 import { cast } from "ts-safe-cast";
 
