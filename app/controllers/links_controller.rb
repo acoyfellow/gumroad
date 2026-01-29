@@ -277,7 +277,7 @@ class LinksController < ApplicationController
     authorize @product
 
     @product.unpublish!
-    redirect_to edit_link_path(@product), status: :see_other, notice: "Product unpublished successfully"
+    redirect_to determine_redirect_path_after_publish_toggle(@product), status: :see_other, notice: "Product unpublished successfully"
   end
 
   def publish
@@ -290,7 +290,7 @@ class LinksController < ApplicationController
 
     begin
       @product.publish!
-      redirect_to edit_link_path(@product), status: :see_other, notice: "Product published successfully"
+      redirect_to determine_redirect_path_after_publish_toggle(@product, published: true), status: :see_other, notice: "Product published successfully"
     rescue Link::LinkInvalid, ActiveRecord::RecordInvalid
       redirect_to edit_link_path(@product), status: :see_other, alert: @product.errors.full_messages[0]
     rescue => e
@@ -350,6 +350,22 @@ class LinksController < ApplicationController
   end
 
   private
+    def determine_redirect_path_after_publish_toggle(product, published: false)
+      current_tab = params[:current_tab]
+
+      if current_tab == "share"
+        if product.native_type == Link::NATIVE_TYPE_COFFEE
+          products_edit_product_edit_show_path(product.unique_permalink)
+        else
+          products_edit_content_edit_show_path(product.unique_permalink)
+        end
+      elsif published
+        products_edit_share_edit_show_path(product.unique_permalink)
+      else
+        edit_link_path(product)
+      end
+    end
+
     def fetch_product_for_show
       fetch_product_by_custom_domain || fetch_product_by_general_permalink
     end

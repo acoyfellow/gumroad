@@ -51,6 +51,8 @@ export default function SharePage() {
     is_adult: product.is_adult,
   });
 
+  const [contentUpdates, setContentUpdates] = React.useState<{ uniquePermalinkOrVariantIds: string[] } | null>(null);
+
   const handleSave = () => {
     form.patch(Routes.products_edit_share_edit_show_path(props.unique_permalink), {
       preserveScroll: true,
@@ -79,6 +81,8 @@ export default function SharePage() {
       currentTab="share"
       onSave={handleSave}
       isSaving={form.processing}
+      contentUpdates={contentUpdates}
+      setContentUpdates={setContentUpdates}
     >
       <div className="squished">
         <form>

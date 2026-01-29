@@ -72,6 +72,7 @@ export default function ProductPage() {
   const [currencyType, setCurrencyType] = React.useState<CurrencyCode>(props.currency_type);
   const [thumbnail, setThumbnail] = React.useState(props.thumbnail);
   const [showAiNotification, setShowAiNotification] = React.useState(props.ai_generated);
+  const [contentUpdates, setContentUpdates] = React.useState<{ uniquePermalinkOrVariantIds: string[] } | null>(null);
   const { isUploading, setImagesUploading } = useImageUpload();
   const [showRefundPolicyPreview, setShowRefundPolicyPreview] = React.useState(false);
 
@@ -117,6 +118,8 @@ export default function ProductPage() {
       currentTab="product"
       onSave={handleSave}
       isSaving={form.processing}
+      contentUpdates={contentUpdates}
+      setContentUpdates={setContentUpdates}
     >
       <div className="squished">
         <form onSubmit={(e) => e.preventDefault()}>

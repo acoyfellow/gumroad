@@ -27,6 +27,8 @@ export default function ReceiptPage() {
     custom_view_content_button_text: product.custom_view_content_button_text ?? "",
   });
 
+  const [contentUpdates, setContentUpdates] = React.useState<{ uniquePermalinkOrVariantIds: string[] } | null>(null);
+
   const handleSave = () => {
     form.patch(Routes.products_edit_receipt_edit_show_path(props.unique_permalink), {
       preserveScroll: true,
@@ -48,6 +50,8 @@ export default function ReceiptPage() {
       currentTab="receipt"
       onSave={handleSave}
       isSaving={form.processing}
+      contentUpdates={contentUpdates}
+      setContentUpdates={setContentUpdates}
     >
       <div className="squished">
         <form>

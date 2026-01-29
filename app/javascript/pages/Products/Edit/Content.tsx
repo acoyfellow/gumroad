@@ -1032,6 +1032,8 @@ export default function ContentPage() {
     files: product.files || [],
   });
 
+  const [contentUpdates, setContentUpdates] = React.useState<{ uniquePermalinkOrVariantIds: string[] } | null>(null);
+
   const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(
     product.variants.length > 0 && !product.has_same_rich_content_for_all_variants && product.variants[0]
       ? product.variants[0].id
@@ -1149,6 +1151,8 @@ export default function ContentPage() {
               currentTab="content"
               onSave={handleSave}
               isSaving={form.processing}
+              contentUpdates={contentUpdates}
+              setContentUpdates={setContentUpdates}
               headerActions={
                 product.variants.length > 0 ? (
                   <>
