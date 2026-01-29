@@ -217,7 +217,7 @@ export const CircleIntegrationEditor = ({
                       </Alert>
                     ) : null}
                     <Toggle
-                      value={product.variants.every(({ integrations }: any) => integrations.circle)}
+                      value={product.variants.every(({ integrations }) => integrations.circle)}
                       onChange={setEnabledForOptions}
                     >
                       {product.native_type === "membership" ? "Enable for all tiers" : "Enable for all versions"}

@@ -5,7 +5,7 @@ import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
-import { useProductUrl } from "$app/components/ProductEdit/Layout";
+import { useProductUrl } from "$app/components/ProductEdit/InertiaLayout";
 import { Version } from "$app/components/ProductEdit/state";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
 import { Toggle } from "$app/components/Toggle";
@@ -136,7 +136,7 @@ const VersionEditor = ({
 
   const availableIntegrations = Object.entries(integrations || {})
     .filter(([_, enabled]) => enabled)
-    .map(([name]) => name as string);
+    .map(([name]) => name);
 
   return (
     <Row role="listitem">

@@ -29,6 +29,24 @@ type InertiaLayoutProps = {
   isSaving?: boolean;
 };
 
+export const useProductUrl = (params = {}) => {
+  const props = usePage<any>().props;
+  const currentSeller = useCurrentSeller();
+  const { appDomain } = useDomains();
+
+  const product = props.product;
+  const uniquePermalink = props.unique_permalink;
+
+  const isCoffee = product.native_type === "coffee";
+
+  return isCoffee && currentSeller
+    ? Routes.custom_domain_coffee_url({ host: currentSeller.subdomain, ...params })
+    : Routes.short_link_url(product.custom_permalink ?? uniquePermalink, {
+        host: currentSeller?.subdomain ?? appDomain,
+        ...params,
+      });
+};
+
 export const InertiaLayout = ({
   children,
   preview,
@@ -51,13 +69,7 @@ export const InertiaLayout = ({
   const isCoffee = product.native_type === "coffee";
   const rootPath = `/products/edit/${uniquePermalink}`;
 
-  // Calculate product URL
-  const productUrl =
-    isCoffee && currentSeller
-      ? Routes.custom_domain_coffee_url({ host: currentSeller.subdomain })
-      : Routes.short_link_url(product.custom_permalink ?? uniquePermalink, {
-          host: currentSeller?.subdomain ?? appDomain,
-        });
+  const productUrl = useProductUrl();
 
   const checkoutUrl =
     isCoffee && currentSeller

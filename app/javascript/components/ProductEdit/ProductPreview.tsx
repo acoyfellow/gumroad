@@ -95,7 +95,7 @@ export const ProductPreview = ({
     is_compliance_blocked: false,
     is_published: product.is_published,
     is_stream_only: false,
-    streamable: (product.files || []).some((file: any) => file.is_streamable),
+    streamable: (product.files || []).some((file) => file.is_streamable),
     is_quantity_enabled: product.quantity_enabled,
     is_multiseat_license: false,
     hide_sold_out_variants: product.hide_sold_out_variants,
@@ -118,7 +118,7 @@ export const ProductPreview = ({
         ? {
             default: defaultRecurrence,
             enabled: Object.entries(product.variants[0].recurrence_price_values).flatMap(
-              ([recurrence, value]: [any, any], idx) =>
+              ([recurrence, value], idx) =>
                 value.enabled
                   ? {
                       recurrence: recurrence as any,
@@ -140,9 +140,8 @@ export const ProductPreview = ({
       recurrence_price_values:
         "recurrence_price_values" in variant
           ? Object.fromEntries(
-              Object.entries(variant.recurrence_price_values as Record<string, any>).flatMap(
-                ([recurrence, value]: [string, any]) =>
-                  value.enabled ? [[recurrence, { ...value, price_cents: value.price_cents ?? 0 }]] : [],
+                Object.entries(variant.recurrence_price_values).flatMap(([recurrence, value]) =>
+                value.enabled ? [[recurrence, { ...value, price_cents: value.price_cents ?? 0 }]] : [],
               ),
             )
           : null,
@@ -165,7 +164,7 @@ export const ProductPreview = ({
       : {
           title:
             product.refund_policy.allowed_refund_periods_in_days.find(
-              ({ key }: any) => key === product.refund_policy.max_refund_period_in_days,
+              ({ key }) => key === product.refund_policy.max_refund_period_in_days,
             )?.value ?? "",
           fine_print: product.refund_policy.fine_print ?? "",
           updated_at: "",

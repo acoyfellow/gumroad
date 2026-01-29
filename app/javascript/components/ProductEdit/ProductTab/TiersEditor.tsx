@@ -22,7 +22,7 @@ import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
-import { useProductUrl } from "$app/components/ProductEdit/Layout";
+import { useProductUrl } from "$app/components/ProductEdit/InertiaLayout";
 import { RecurrencePriceValue, Tier, type Product } from "$app/components/ProductEdit/state";
 import { RichTextEditor } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -175,7 +175,7 @@ const TierEditor = ({
     });
   };
 
-  const defaultRecurrencePriceValue = product.subscription_duration
+const defaultRecurrencePriceValue = product.subscription_duration
     ? tier.recurrence_price_values[product.subscription_duration as keyof typeof tier.recurrence_price_values]
     : null;
   React.useEffect(() => {
@@ -200,7 +200,7 @@ const TierEditor = ({
 
   const integrations = Object.entries(product.integrations)
     .filter(([_, enabled]) => enabled)
-    .map(([name]) => name as string);
+    .map(([name]) => name );
 
   const allEnabledPricesAreZero = areAllEnabledPricesZero(tier.recurrence_price_values);
 
@@ -368,13 +368,13 @@ const TierEditor = ({
             {integrations.length > 0 ? (
               <fieldset>
                 <legend>Integrations</legend>
-                {integrations.map((integration: string) => (
+                {integrations.map((integration, idx) => (
                   <Toggle
                     value={tier.integrations[integration as keyof typeof tier.integrations]}
                     onChange={(enabled) =>
                       updateTier({ integrations: { ...tier.integrations, [integration]: enabled } })
                     }
-                    key={integration}
+                    key={idx}
                   >
                     {integration === "circle" ? "Enable access to Circle community" : "Enable access to Discord server"}
                   </Toggle>

@@ -125,7 +125,7 @@ export const DiscordIntegrationEditor = ({
               </div>
               {product.variants.length > 0 ? (
                 <>
-                  {product.variants.every(({ integrations }: any) => !integrations.discord) ? (
+                  {product.variants.every(({ integrations }) => !integrations.discord) ? (
                     <Alert role="status" variant="warning">
                       {product.native_type === "membership"
                         ? "Your integration is not assigned to any tier. Check your tiers' settings."
@@ -133,7 +133,7 @@ export const DiscordIntegrationEditor = ({
                     </Alert>
                   ) : null}
                   <Toggle
-                    value={product.variants.every(({ integrations }: any) => integrations.discord)}
+                    value={product.variants.every(({ integrations }) => integrations.discord)}
                     onChange={setEnabledForOptions}
                   >
                     {product.native_type === "membership" ? "Enable for all tiers" : "Enable for all versions"}
