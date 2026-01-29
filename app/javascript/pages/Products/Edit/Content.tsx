@@ -1,6 +1,6 @@
 import { useForm, usePage } from "@inertiajs/react";
 import * as React from "react";
-import { findChildren, generateJSON } from "@tiptap/core";
+import { findChildren, generateJSON, Node as TiptapNode } from "@tiptap/core";
 import { DOMSerializer } from "@tiptap/pm/model";
 import { EditorContent } from "@tiptap/react";
 import { parseISO } from "date-fns";
@@ -31,7 +31,7 @@ import { Modal } from "$app/components/Modal";
 import { Popover } from "$app/components/Popover";
 import { FileEmbedGroup } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
 import { Layout } from "$app/components/ProductEdit/Layout";
-import { ExistingFileEntry, FileEntry, Variant } from "$app/components/ProductEdit/state";
+import { type ExistingFileEntry, type FileEntry, type Variant } from "$app/components/ProductEdit/state";
 import { ReviewForm } from "$app/components/ReviewForm";
 import {
   baseEditorOptions,
@@ -50,7 +50,7 @@ import { TestimonialSelectModal } from "$app/components/TestimonialSelectModal";
 import { uploadImages } from "$app/components/TiptapExtensions/Image";
 import { LicenseKey, LicenseProvider } from "$app/components/TiptapExtensions/LicenseKey";
 import { LinkMenuItem } from "$app/components/TiptapExtensions/Link";
-import { EmbedMediaForm, insertMediaEmbed } from "$app/components/TiptapExtensions/MediaEmbed";
+import { EmbedMediaForm, insertMediaEmbed, ExternalMediaFileEmbed } from "$app/components/TiptapExtensions/MediaEmbed";
 import { MoreLikeThis } from "$app/components/TiptapExtensions/MoreLikeThis";
 import { Posts, PostsProvider } from "$app/components/TiptapExtensions/Posts";
 import { Card, CardContent } from "$app/components/ui/Card";
@@ -64,16 +64,37 @@ import { WithTooltip } from "$app/components/WithTooltip";
 
 import { FileEmbed, FileEmbedConfig } from "$app/components/ProductEdit/ContentTab/FileEmbed";
 import { Page, PageTab, titleWithFallback } from "$app/components/ProductEdit/ContentTab/PageTab";
-import { extensions } from "$app/components/ProductEdit/ContentTab/index";
 import { type Product as ProductType } from "$app/components/ProductEdit/state";
 import { getDownloadUrl } from "$app/components/ProductEdit/ContentTab/FileEmbed";
 import { ProductPreview } from "$app/components/ProductEdit/ProductPreview";
+import { FileUpload } from "$app/components/TiptapExtensions/FileUpload";
+import { LongAnswer } from "$app/components/TiptapExtensions/LongAnswer";
+import { MoveNode } from "$app/components/TiptapExtensions/MoveNode";
+import { ShortAnswer } from "$app/components/TiptapExtensions/ShortAnswer";
+import { UpsellCard } from "$app/components/TiptapExtensions/UpsellCard";
 
 declare global {
   interface Window {
     ___dropbox_files_picked: DropboxFile[] | null;
   }
 }
+
+export const extensions = (productId: string, extraExtensions: TiptapNode[] = []) => [
+  ...extraExtensions,
+  ...[
+    FileEmbed,
+    FileEmbedGroup,
+    ExternalMediaFileEmbed,
+    Posts,
+    LicenseKey,
+    ShortAnswer,
+    LongAnswer,
+    FileUpload,
+    MoveNode,
+    UpsellCard,
+    MoreLikeThis.configure({ productId }),
+  ].filter((ext) => !extraExtensions.some((existing) => existing.name === ext.name)),
+];
 
 type ContentPageProps = {
   product: ProductType;
@@ -1073,8 +1094,13 @@ export default function ContentPage() {
   );
 
   const handleSave = () => {
-    form.patch(Routes.products_edit_content_edit_show_path(unique_permalink), {
+    form.patch(Routes.products_edit_content_path(unique_permalink), {
       preserveScroll: true,
+      onSuccess: () => {
+        setContentUpdates({
+          uniquePermalinkOrVariantIds: [unique_permalink],
+        });
+      },
     });
   };
 

@@ -673,14 +673,12 @@ Rails.application.routes.draw do
 
     namespace :products do
       namespace :edit do
-        get "/:id", to: "product#show", as: :product_edit_show
-        patch "/:id", to: "product#update"
-        get "/:id/content", to: "content#show", as: :content_edit_show
-        patch "/:id/content", to: "content#update"
-        get "/:id/receipt", to: "reciept#show", as: :receipt_edit_show
-        patch "/:id/receipt", to: "reciept#update"
-        get "/:id/share", to: "share#show", as: :share_edit_show
-        patch "/:id/share", to: "share#update"
+        scope module: "products" do
+          resource :product, only: [:show, :update], path: ":id"
+          resource :content, only: [:show, :update], path: ":id/content"
+          resource :receipt, only: [:show, :update], path: ":id/receipt"
+          resource :share, only: [:show, :update], path: ":id/share"
+        end
       end
     end
 

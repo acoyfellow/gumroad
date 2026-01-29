@@ -30,8 +30,13 @@ export default function ReceiptPage() {
   const [contentUpdates, setContentUpdates] = React.useState<{ uniquePermalinkOrVariantIds: string[] } | null>(null);
 
   const handleSave = () => {
-    form.patch(Routes.products_edit_receipt_edit_show_path(props.unique_permalink), {
+    form.patch(Routes.products_edit_receipt_path(props.unique_permalink), {
       preserveScroll: true,
+      onSuccess: () => {
+        setContentUpdates({
+          uniquePermalinkOrVariantIds: [props.unique_permalink],
+        });
+      },
     });
   };
 

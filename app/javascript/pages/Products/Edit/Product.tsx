@@ -90,6 +90,11 @@ export default function ProductPage() {
 
     form.patch(Routes.products_edit_path(props.unique_permalink), {
       preserveScroll: true,
+      onSuccess: () => {
+        setContentUpdates({
+          uniquePermalinkOrVariantIds: [props.unique_permalink],
+        });
+      },
     });
   };
 
