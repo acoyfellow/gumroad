@@ -5,17 +5,24 @@ require "inertia_rails/rspec"
 
 describe Purchases::ProductController, type: :controller, inertia: true do
   let(:purchase) { create(:purchase) }
+  let(:product) { purchase.link }
+  let(:seller) { product.user }
 
   describe "GET show" do
-    it "shows the product for the purchase" do
+    it "renders the Inertia component with all required props" do
       get :show, params: { purchase_id: purchase.external_id }
 
       expect(response).to be_successful
-      expect_inertia.to render_component "PurchaseProductPage"
+      expect_inertia.to render_component "Purchases/Product/Show"
 
-      expected_custom_css = purchase.link.user.seller_profile.custom_styles.to_s
-      expect(inertia.props[:custom_css]).to eq(expected_custom_css)
-      expect(inertia.props[:product][:id]).to eq(purchase.link.external_id)
+      expect(inertia.props[:custom_styles]).to eq(seller.seller_profile.custom_styles.to_s)xs
+      expect(inertia.props[:product][:id]).to eq(product.external_id)
+      expect(inertia.props[:product][:name]).to eq(product.name)
+      expect(inertia.props[:product][:long_url]).to eq(product.long_url)
+      expect(inertia.props[:product][:currency_code]).to eq(product.price_currency_type.downcase)
+      expect(inertia.props[:product][:price_cents]).to eq(product.price_cents)
+
+      expect(inertia.props[:product][:seller][:name]).to eq(seller.display_name)
     end
 
     it "404s for an invalid purchase id" do
