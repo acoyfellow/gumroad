@@ -12,7 +12,7 @@ import { RefundPolicy } from "$app/components/ProductEdit/RefundPolicy";
 import { type Product as ProductState } from "$app/components/ProductEdit/state";
 
 type ProductPreviewProps = {
-  product: ProductState;
+  product: ProductState & Record<string, any>;
   id: string;
   uniquePermalink: string;
   currencyType: CurrencyCode;

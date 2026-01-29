@@ -7,7 +7,7 @@ import { CurrencyCode, currencyCodeList } from "$app/utils/currency";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Icon } from "$app/components/Icons";
-import { Layout } from "$app/components/ProductEdit/Layout";
+import { Layout, useProductUrl } from "$app/components/ProductEdit/Layout";
 import { ProductPreview } from "$app/components/ProductEdit/ProductPreview";
 import { AttributesEditor } from "$app/components/ProductEdit/ProductTab/AttributesEditor";
 import { AvailabilityEditor } from "$app/components/ProductEdit/ProductTab/AvailabilityEditor";
@@ -36,9 +36,10 @@ import { RefundPolicySelector } from "$app/components/ProductEdit/RefundPolicy";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { Toggle } from "$app/components/Toggle";
 import { Alert } from "$app/components/ui/Alert";
+import { type Product, type Version, type Duration, type Tier } from "$app/components/ProductEdit/state";
 
 type Props = {
-  product: any; // Ideally strictly typed, but using any for migration speed as requested
+  product: Product;
   id: string;
   unique_permalink: string;
   currency_type: CurrencyCode;
@@ -93,20 +94,14 @@ export default function ProductPage() {
 
   const isCoffee = props.product.native_type === "coffee";
 
-  const url =
-    isCoffee && currentSeller
-      ? Routes.custom_domain_coffee_url({ host: currentSeller.subdomain })
-      : Routes.short_link_url(props.product.custom_permalink ?? props.unique_permalink, {
-          host: currentSeller?.subdomain ?? null,
-        });
-
+  const url = useProductUrl();
   if (!currentSeller) return null;
 
   return (
     <Layout
       preview={
         <ProductPreview
-          product={form.data}
+          product={form.data as Product}
           id={props.id}
           uniquePermalink={props.unique_permalink}
           currencyType={currencyType}
@@ -144,7 +139,7 @@ export default function ProductPage() {
                 </div>
               </Alert>
             ) : null}
-            <BundleConversionNotice product={form.data} id={props.id} />
+            <BundleConversionNotice product={form.data as Product} id={props.id} />
             <fieldset>
               <label htmlFor={`${uid}-name`}>{isCoffee ? "Header" : "Name"}</label>
               <input
@@ -185,7 +180,11 @@ export default function ProductPage() {
                   onChange={(description) => form.setData("description", description)}
                   setImagesUploading={setImagesUploading}
                   publicFiles={form.data.public_files}
-                  updatePublicFiles={(updater) => form.setData("public_files", updater(form.data.public_files))}
+                  updatePublicFiles={(updater) => {
+                    const updated = [...form.data.public_files];
+                    updater(updated);
+                    form.setData("public_files", updated);
+                  }}
                   audioPreviewsEnabled={form.data.audio_previews_enabled}
                 />
                 <CustomPermalinkInput
@@ -202,7 +201,7 @@ export default function ProductPage() {
               <section className="p-4! md:p-8!">
                 <h2>Pricing</h2>
                 <SuggestedAmountsEditor
-                  versions={form.data.variants}
+                  versions={form.data.variants as Version[]}
                   onChange={(variants) => form.setData("variants", variants)}
                   currencyType={currencyType}
                 />
@@ -272,9 +271,13 @@ export default function ProductPage() {
                         circle: newIntegration,
                       })
                     }
-                    product={form.data}
+                    product={form.data as Product}
                     updateProduct={(updater) => {
-                      updater(form.data);
+                      const updated = { ...form.data } as Product;
+                      updater(updated);
+                      Object.entries(updated).forEach(([key, value]) => {
+                        form.setData(key as any, value);
+                      });
                     }}
                   />
                   <DiscordIntegrationEditor
@@ -285,9 +288,13 @@ export default function ProductPage() {
                         discord: newIntegration,
                       })
                     }
-                    product={form.data}
+                    product={form.data as Product}
                     updateProduct={(updater) => {
-                      updater(form.data);
+                      const updated = { ...form.data } as Product;
+                      updater(updated);
+                      Object.entries(updated).forEach(([key, value]) => {
+                        form.setData(key as any, value);
+                      });
                     }}
                   />
                   {props.product.native_type === "call" && props.google_calendar_enabled ? (
@@ -311,9 +318,9 @@ export default function ProductPage() {
                 <section className="p-4! md:p-8!">
                   <h2>Tiers</h2>
                   <TiersEditor
-                    tiers={form.data.variants}
+                    tiers={form.data.variants as Tier[]}
                     onChange={(variants) => form.setData("variants", variants)}
-                    product={form.data}
+                    product={form.data as Product}
                     currencyType={currencyType}
                   />
                 </section>
@@ -375,7 +382,7 @@ export default function ProductPage() {
                           </a>
                         </div>
                         <DurationsEditor
-                          durations={form.data.variants}
+                          durations={form.data.variants as Duration[]}
                           onChange={(variants) => form.setData("variants", variants)}
                           currencyType={currencyType}
                         />
@@ -412,7 +419,7 @@ export default function ProductPage() {
                         </a>
                       </div>
                       <VersionsEditor
-                        versions={form.data.variants}
+                        versions={form.data.variants as Version[]}
                         onChange={(variants) => form.setData("variants", variants)}
                         currencyType={currencyType}
                       />
@@ -433,10 +440,10 @@ export default function ProductPage() {
                 <fieldset>
                   {props.product.native_type === "membership" ? (
                     <>
-                      <FreeTrialSelector product={form.data} updateProduct={updateProduct} />
+                      <FreeTrialSelector product={form.data as Product} updateProduct={updateProduct} />
                       {props.cancellation_discounts_enabled ? (
                         <CancellationDiscountSelector
-                          product={form.data}
+                          product={form.data as Product}
                           updateProduct={updateProduct}
                           currencyType={currencyType}
                         />
@@ -468,7 +475,7 @@ export default function ProductPage() {
                       >
                         Members will lose access when their memberships end
                       </Toggle>
-                      <DurationEditor product={form.data} updateProduct={updateProduct} />
+                      <DurationEditor product={form.data as Product} updateProduct={updateProduct} />
                     </>
                   ) : null}
                   {form.data.can_enable_quantity ? (
