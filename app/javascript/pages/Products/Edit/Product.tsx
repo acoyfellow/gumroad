@@ -7,7 +7,7 @@ import { CurrencyCode, currencyCodeList } from "$app/utils/currency";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Icon } from "$app/components/Icons";
-import { InertiaLayout } from "$app/components/ProductEdit/InertiaLayout";
+import { Layout } from "$app/components/ProductEdit/Layout";
 import { ProductPreview } from "$app/components/ProductEdit/ProductPreview";
 import { AttributesEditor } from "$app/components/ProductEdit/ProductTab/AttributesEditor";
 import { AvailabilityEditor } from "$app/components/ProductEdit/ProductTab/AvailabilityEditor";
@@ -103,7 +103,7 @@ export default function ProductPage() {
   if (!currentSeller) return null;
 
   return (
-    <InertiaLayout
+    <Layout
       preview={
         <ProductPreview
           product={form.data}
@@ -523,6 +523,6 @@ export default function ProductPage() {
           )}
         </form>
       </div>
-    </InertiaLayout>
+    </Layout>
   );
 }

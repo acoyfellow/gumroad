@@ -5,7 +5,7 @@ import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
-import { useProductUrl } from "$app/components/ProductEdit/InertiaLayout";
+import { useProductUrl } from "$app/components/ProductEdit/Layout";
 import { Version } from "$app/components/ProductEdit/state";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
 import { Toggle } from "$app/components/Toggle";

@@ -22,7 +22,7 @@ import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
-import { useProductUrl } from "$app/components/ProductEdit/InertiaLayout";
+import { useProductUrl } from "$app/components/ProductEdit/Layout";
 import { RecurrencePriceValue, Tier, type Product } from "$app/components/ProductEdit/state";
 import { RichTextEditor } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -175,7 +175,7 @@ const TierEditor = ({
     });
   };
 
-const defaultRecurrencePriceValue = product.subscription_duration
+  const defaultRecurrencePriceValue = product.subscription_duration
     ? tier.recurrence_price_values[product.subscription_duration as keyof typeof tier.recurrence_price_values]
     : null;
   React.useEffect(() => {
@@ -200,7 +200,7 @@ const defaultRecurrencePriceValue = product.subscription_duration
 
   const integrations = Object.entries(product.integrations)
     .filter(([_, enabled]) => enabled)
-    .map(([name]) => name );
+    .map(([name]) => name);
 
   const allEnabledPricesAreZero = areAllEnabledPricesZero(tier.recurrence_price_values);
 

@@ -5,7 +5,7 @@ import { DOMSerializer } from "@tiptap/pm/model";
 import { EditorContent } from "@tiptap/react";
 import { ReactSortable } from "react-sortablejs";
 
-import { InertiaLayout } from "$app/components/ProductEdit/InertiaLayout";
+import { Layout } from "$app/components/ProductEdit/Layout";
 import { ProductPreview } from "$app/components/ProductEdit/ProductPreview";
 import { ExistingFileEntry, FileEntry, Variant } from "$app/components/ProductEdit/state";
 import {
@@ -32,17 +32,7 @@ import { FileEmbed, FileEmbedConfig } from "$app/components/ProductEdit/ContentT
 import { FileEmbedGroup } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
 import { Page, PageTab } from "$app/components/ProductEdit/ContentTab/PageTab";
 import { extensions } from "$app/components/ProductEdit/ContentTab/index";
-
-type Product = {
-  id: string;
-  name: string;
-  native_type: string;
-  rich_content: Page[];
-  variants: Variant[];
-  files: FileEntry[];
-  has_same_rich_content_for_all_variants: boolean;
-  custom_permalink: string;
-};
+import { type Product} from "$app/components/ProductEdit/state";
 
 type ContentPageProps = {
   product: Product;
@@ -339,7 +329,7 @@ export default function ContentPage() {
   return (
     <S3UploadConfigProvider value={s3UploadConfig}>
       <EvaporateUploaderProvider value={evaporateUploader}>
-        <InertiaLayout
+        <Layout
           preview={
             <ProductPreview
               product={product}
@@ -385,7 +375,7 @@ export default function ContentPage() {
               />
             </div>
           </div>
-        </InertiaLayout>
+        </Layout>
       </EvaporateUploaderProvider>
     </S3UploadConfigProvider>
   );

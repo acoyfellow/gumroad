@@ -7,7 +7,7 @@ import { Button, NavigationButton } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Icon } from "$app/components/Icons";
-import { InertiaLayout } from "$app/components/ProductEdit/InertiaLayout";
+import { Layout } from "$app/components/ProductEdit/Layout";
 import { ProductPreview } from "$app/components/ProductEdit/ProductPreview";
 import { ProfileSectionsEditor } from "$app/components/ProductEdit/ShareTab/ProfileSectionsEditor";
 import { TagSelector } from "$app/components/ProductEdit/ShareTab/TagSelector";
@@ -18,6 +18,7 @@ import { Toggle } from "$app/components/Toggle";
 import { Alert } from "$app/components/ui/Alert";
 import { useRunOnce } from "$app/components/useRunOnce";
 import { useDiscoverUrl } from "$app/components/DomainSettings";
+import { type Product } from "$app/components/ProductEdit/state";
 
 type ProfileSection = {
   id: string;
@@ -27,17 +28,7 @@ type ProfileSection = {
 };
 
 type SharePageProps = {
-  product: {
-    name: string;
-    custom_permalink: string | null;
-    section_ids: string[];
-    taxonomy_id: string | null;
-    tags: string[];
-    display_product_reviews: boolean;
-    is_adult: boolean;
-    is_listed_on_discover: boolean;
-    native_type: string;
-  };
+  product: Product;
   id: string;
   unique_permalink: string;
   profile_sections: ProfileSection[];
@@ -115,7 +106,7 @@ export default function SharePage() {
   discoverLink.searchParams.set("query", product.name);
 
   return (
-    <InertiaLayout
+    <Layout
       preview={
         <ProductPreview
           product={product}
@@ -209,6 +200,6 @@ export default function SharePage() {
           </section>
         </form>
       </div>
-    </InertiaLayout>
+    </Layout>
   );
 }

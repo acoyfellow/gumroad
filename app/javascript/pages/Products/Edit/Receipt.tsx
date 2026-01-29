@@ -1,7 +1,7 @@
 import { useForm, usePage } from "@inertiajs/react";
 import * as React from "react";
 
-import { InertiaLayout } from "$app/components/ProductEdit/InertiaLayout";
+import { Layout } from "$app/components/ProductEdit/Layout";
 import { ReceiptPreview } from "$app/components/ProductEdit/ReceiptPreview";
 import { CustomViewContentButtonTextInput } from "$app/components/ProductEdit/ReceiptTab/CustomViewContentButtonTextInput";
 import { CustomReceiptTextInput } from "$app/components/ProductEdit/ReceiptTab/CustomReceiptTextInput";
@@ -34,7 +34,7 @@ export default function ReceiptPage() {
   };
 
   return (
-    <InertiaLayout
+    <Layout
       preview={
         <ReceiptPreview
           uniquePermalink={props.unique_permalink}
@@ -65,6 +65,6 @@ export default function ReceiptPage() {
           </section>
         </form>
       </div>
-    </InertiaLayout>
+    </Layout>
   );
 }
