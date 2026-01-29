@@ -31,4 +31,3 @@ module InertiaRendering
       end }
     end
 end
-

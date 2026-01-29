@@ -3,7 +3,7 @@ import * as React from "react";
 import { InputtedDiscount, DiscountInput } from "$app/components/CheckoutDashboard/DiscountInput";
 import { NumberInput } from "$app/components/NumberInput";
 import { ToggleSettingRow } from "$app/components/SettingRow";
-import { CurrencyCode } from "$app/utils/currency";
+import { type CurrencyCode } from "$app/utils/currency";
 
 export const CancellationDiscountSelector = ({
   product,
