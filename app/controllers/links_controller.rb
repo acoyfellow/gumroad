@@ -277,26 +277,26 @@ class LinksController < ApplicationController
     authorize @product
 
     @product.unpublish!
-    render json: { success: true }
+    redirect_to edit_link_path(@product), status: :see_other, notice: "Product unpublished successfully"
   end
 
   def publish
     authorize @product
 
     if @product.user.email.blank?
-      return render json: { success: false, error_message: "<span>To publish a product, we need you to have an email. <a href=\"#{settings_main_url}\">Set an email</a> to continue.</span>" }
+      return redirect_to edit_link_path(@product), status: :see_other, alert: "To publish a product, we need you to have an email. Set an email in your settings to continue."
+
     end
 
     begin
       @product.publish!
+      redirect_to edit_link_path(@product), status: :see_other, notice: "Product published successfully"
     rescue Link::LinkInvalid, ActiveRecord::RecordInvalid
-      return render json: { success: false, error_message: @product.errors.full_messages[0] }
+      redirect_to edit_link_path(@product), status: :see_other, alert: @product.errors.full_messages[0]
     rescue => e
       Bugsnag.notify(e)
-      return render json: { success: false, error_message: "Something broke. We're looking into what happened. Sorry about this!" }
+      redirect_to edit_link_path(@product), status: :see_other, alert: "Something broke. We're looking into what happened. Sorry about this!"
     end
-
-    render json: { success: true }
   end
 
   def destroy
