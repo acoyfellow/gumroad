@@ -4,10 +4,10 @@ import { recurrenceIds } from "$app/utils/recurringPricing";
 
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Product, ProductDiscount } from "$app/components/Product";
+import { CoffeeProduct } from "$app/components/Product/CoffeeProduct";
 import { useProductUrl } from "$app/components/ProductEdit/Layout";
 import { RefundPolicyModalPreview } from "$app/components/ProductEdit/RefundPolicy";
 import { useProductEditContext } from "$app/components/ProductEdit/state";
-import { CoffeeProduct } from "$app/components/Product/CoffeeProduct";
 import { Layout as ProfileLayout } from "$app/components/Profile/Layout";
 
 export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModal?: boolean }) => {

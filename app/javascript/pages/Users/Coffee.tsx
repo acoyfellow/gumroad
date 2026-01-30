@@ -5,8 +5,8 @@ import { cast } from "ts-safe-cast";
 import { CreatorProfile } from "$app/parsers/profile";
 
 import { Product, Purchase } from "$app/components/Product";
-import { Layout as ProfileLayout } from "$app/components/Profile/Layout";
 import { CoffeeProduct } from "$app/components/Product/CoffeeProduct";
+import { Layout as ProfileLayout } from "$app/components/Profile/Layout";
 
 type Props = {
   product: Product;
