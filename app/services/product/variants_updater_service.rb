@@ -57,6 +57,7 @@ class Product::VariantsUpdaterService
           options: options&.map do |option|
             new_option = option.slice(:id, :temp_id, :name, :description, :url, :customizable_price, :recurrence_price_values, :max_purchase_count, :integrations, :rich_content, :apply_price_changes_to_existing_memberships, :subscription_price_change_effective_date, :subscription_price_change_message, :duration_in_minutes)
 
+            # price_difference_cents can be nil when not sent (e.g. non-coffee variant) or blank; .to_i coerces string params from forms.
             # TODO: :product_edit_react cleanup
             if option[:price_difference_cents].present?
               option[:price] = option[:price_difference_cents].to_i

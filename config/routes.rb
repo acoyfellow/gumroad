@@ -280,7 +280,7 @@ Rails.application.routes.draw do
   constraints GumroadDomainConstraint do
     resources :products, only: [], param: :id do
       scope module: "products" do
-        resource :product, only: [:edit, :update], path: "product", controller: "edit/product"
+        resource :product, only: [:edit, :update], controller: "edit/product"
         resource :content, only: [:edit, :update], controller: "edit/content"
         resource :receipt, only: [:edit, :update], controller: "edit/receipt"
         resource :share, only: [:edit, :update], controller: "edit/share"

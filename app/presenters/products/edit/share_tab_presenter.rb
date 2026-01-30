@@ -4,7 +4,7 @@ module Products
   module Edit
     class ShareTabPresenter < BasePresenter
       def props
-        base_props
+        layout_props.merge(product: share_tab_product_props)
       end
     end
   end

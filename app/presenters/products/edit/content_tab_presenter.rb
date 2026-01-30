@@ -4,7 +4,7 @@ module Products
   module Edit
     class ContentTabPresenter < BasePresenter
       def props
-        base_props
+        layout_props.merge(product: content_tab_product_props)
       end
     end
   end
