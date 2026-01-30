@@ -6,6 +6,8 @@ class UsersController < ApplicationController
 
   include PageMeta::Favicon, PageMeta::User
 
+  layout "inertia", only: %i[show subscribe]
+
   before_action :authenticate_user!, except: %i[show coffee subscribe subscribe_preview email_unsubscribe add_purchase_to_library session_info current_user_data]
 
   after_action :verify_authorized, only: %i[deactivate]
@@ -30,6 +32,7 @@ class UsersController < ApplicationController
         @paypal_merchant_currency = @user.native_paypal_payment_enabled? ?
                                       @user.merchant_account_currency(PaypalChargeProcessor.charge_processor_id) :
                                       ChargeProcessor::DEFAULT_CURRENCY_CODE
+        render inertia: "Profile/Show", props: @profile_props.merge(use_inertia_form: true)
       end
       format.json { render json: @user.as_json }
       format.any { e404 }
@@ -51,6 +54,7 @@ class UsersController < ApplicationController
       pundit_user:,
       seller: @user
     )
+    render inertia: "Profile/Subscribe", props: { creator_profile: @profile_presenter.creator_profile }
   end
 
   def subscribe_preview
