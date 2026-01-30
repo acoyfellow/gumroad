@@ -17,6 +17,7 @@ export const RecommendedWishlists = ({
       {wishlists ? (
         <CardGrid>
           {wishlists.map((wishlist) => (
+            // recommended wishlists are in the bottom of the page (off-screen), so we can use lazy loading
             <Card key={wishlist.id} wishlist={wishlist} eager={false} />
           ))}
         </CardGrid>

@@ -1,4 +1,4 @@
-import { Link, usePage } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import { range } from "lodash-es";
 import * as React from "react";
 import { is } from "ts-safe-cast";
@@ -13,7 +13,7 @@ import { classNames } from "$app/utils/classNames";
 import { CurrencyCode, formatPriceCentsWithCurrencySymbol } from "$app/utils/currency";
 import { discoverTitleGenerator, Taxonomy } from "$app/utils/discover";
 
-import { Footer } from "$app/components/Discover/Footer";
+import { Footer } from "$app/components/Shared/Footer";
 import { Layout } from "$app/components/Discover/Layout";
 import { RecommendedWishlists } from "$app/components/Discover/RecommendedWishlists";
 import { Icon } from "$app/components/Icons";
@@ -231,8 +231,6 @@ function DiscoverIndex() {
 
   const resultsRef = useScrollToElement(isBlackFridayPage && props.show_black_friday_hero, undefined, [state.params]);
 
-  const isFromPopstate = React.useRef(false);
-
   React.useEffect(() => {
     const url = new URL(window.location.href);
     if (state.params.taxonomy) {
@@ -256,27 +254,14 @@ function DiscoverIndex() {
 
     const urlString = url.pathname + url.search;
     const currentUrlString = window.location.pathname + window.location.search;
-    if (isFromPopstate.current || urlString === currentUrlString) {
-      window.history.replaceState(state.params, "", url);
-      isFromPopstate.current = false;
-    } else {
-      window.history.pushState(state.params, "", url);
+    if (urlString !== currentUrlString) {
+      router.visit(url.toString(), {
+        preserveState: true,
+        preserveScroll: true,
+      });
     }
     document.title = discoverTitleGenerator(state.params, props.taxonomies_for_nav);
   }, [state.params, props.taxonomies_for_nav, defaultSortOrder]);
-
-  React.useEffect(() => {
-    const parseUrl = () => {
-      isFromPopstate.current = true;
-      const newParams = parseUrlParams(window.location.href, props.curated_product_ids, defaultSortOrder);
-      dispatch({
-        type: "set-params",
-        params: addInitialOffset(newParams),
-      });
-    };
-    window.addEventListener("popstate", parseUrl);
-    return () => window.removeEventListener("popstate", parseUrl);
-  }, [state.params.taxonomy, props.curated_product_ids, defaultSortOrder]);
 
   const taxonomyPath = state.params.taxonomy;
 
