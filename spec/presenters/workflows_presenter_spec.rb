@@ -27,9 +27,10 @@ describe WorkflowsPresenter do
 
   describe "#workflow_options_by_purchase_props" do
     it "formats workflow options" do
+      purchase = create(:purchase, link: product, seller:)
       create(:workflow_installment, workflow: workflow3, seller:, published_at: 1.day.ago, link_id: workflow3.link_id)
 
-      workflow_options = described_class.new(seller:).workflow_options_by_purchase_props([workflow3])
+      workflow_options = described_class.new(seller:, purchase:).workflow_options_by_purchase_props
 
       expect(workflow_options).to eq([WorkflowPresenter.new(seller:, workflow: workflow3).workflow_option_props])
     end

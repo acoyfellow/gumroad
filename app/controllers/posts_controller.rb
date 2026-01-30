@@ -32,8 +32,6 @@ class PostsController < ApplicationController
   end
 
   def show
-     # Skip fetching post again if it's already fetched in check_if_needs_redirect
-     @post || fetch_post(false)
     # Set @user instance variable to apply third-party analytics config in layouts/_head partial.
     @user = @post.seller
     seller_context = SellerContext.new(
