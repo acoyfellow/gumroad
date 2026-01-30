@@ -2,7 +2,7 @@ import * as React from "react";
 import { Head, usePage } from "@inertiajs/react";
 
 import { CreatorProfile } from "$app/parsers/profile";
-import { FollowFormBlock } from "$app/components/Profile/FollowForm";
+import { FollowFormBlockInertia } from "$app/components/Profile/FollowFormInertia";
 import { Layout } from "$app/components/Profile/Layout";
 
 type Props = {
@@ -21,7 +21,7 @@ export default function SubscribePage() {
         </Head>
       ) : null}
       <Layout hideFollowForm creatorProfile={props.creator_profile}>
-        <FollowFormBlock creatorProfile={props.creator_profile} className="px-4" />
+        <FollowFormBlockInertia creatorProfile={props.creator_profile} className="px-4" />
       </Layout>
     </>
   );
