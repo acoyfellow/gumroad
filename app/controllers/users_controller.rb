@@ -6,7 +6,6 @@ class UsersController < ApplicationController
 
   include PageMeta::Favicon, PageMeta::User
 
-  layout "inertia", only: %i[show subscribe]
   before_action :authenticate_user!, except: %i[show coffee subscribe subscribe_preview email_unsubscribe add_purchase_to_library session_info current_user_data]
 
   after_action :verify_authorized, only: %i[deactivate]
@@ -19,7 +18,7 @@ class UsersController < ApplicationController
   before_action :check_if_needs_redirect, only: %i[show]
   before_action :set_affiliate_cookie, only: %i[show]
 
-  layout "inertia", only: [:subscribe_preview]
+  layout "inertia", only: %i[subscribe_preview show subscribe]
 
   def show
     format_search_params!
