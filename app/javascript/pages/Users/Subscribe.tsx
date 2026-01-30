@@ -1,6 +1,5 @@
 import * as React from "react";
-import { usePage } from "@inertiajs/react";
-import { createCast } from "ts-safe-cast";
+import { Head, usePage } from "@inertiajs/react";
 
 import { CreatorProfile } from "$app/parsers/profile";
 import { FollowFormBlock } from "$app/components/Profile/FollowForm";
@@ -8,15 +7,23 @@ import { Layout } from "$app/components/Profile/Layout";
 
 type Props = {
   creator_profile: CreatorProfile;
+  custom_styles?: string;
 };
 
-export default function Subscribe() {
-  const { props } = usePage();
-  const { creator_profile } = createCast<Props>()(props);
+export default function SubscribePage() {
+  const props = usePage<Props>().props;
 
   return (
-    <Layout hideFollowForm creatorProfile={creator_profile}>
-      <FollowFormBlock creatorProfile={creator_profile} className="px-4" />
-    </Layout>
+    <>
+      {props.custom_styles ? (
+        <Head>
+          <style>{props.custom_styles}</style>
+        </Head>
+      ) : null}
+      <Layout hideFollowForm creatorProfile={props.creator_profile}>
+        <FollowFormBlock creatorProfile={props.creator_profile} className="px-4" />
+      </Layout>
+    </>
   );
 }
+SubscribePage.loggedInUserLayout = true;

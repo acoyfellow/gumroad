@@ -46,34 +46,13 @@ class FollowersController < ApplicationController
 
   def create
     follower = create_follower(params)
-    return render json: { success: false, message: "Sorry, something went wrong." } if follower.nil?
-    return render json: { success: false, message: follower.errors.full_messages.to_sentence } if follower.errors.present?
+    return redirect_back alert: "Sorry, something went wrong."  if follower.nil?
+    return redirect_back alert: follower.errors.full_messages.to_sentence  if follower.errors.present?
 
-    message = if follower.confirmed?
-      "You are now following #{follower.user.name_or_username}!"
+    if follower.confirmed?
+      redirect_back notice: "You are now following #{follower.user.name_or_username}!"
     else
-      "Check your inbox to confirm your follow request."
-    end
-
-    # Determine redirect location
-    redirect_back = params[:redirect_back]
-    follower_user = follower.user
-
-    if redirect_back == "subscribe"
-      # Redirect to subscribe page
-      redirect_url = "#{follower_user.profile_url}/subscribe"
-    else
-      # Default: redirect to user profile
-      redirect_url = follower_user.profile_url
-    end
-
-    respond_to do |format|
-      format.html do
-        redirect_to redirect_url, notice: message, allow_other_host: true, status: :see_other
-      end
-      format.json do
-        render json: { success: true, message:, redirect_url: }
-      end
+      redirect_back notice: "Check your inbox to confirm your follow request."
     end
   end
 

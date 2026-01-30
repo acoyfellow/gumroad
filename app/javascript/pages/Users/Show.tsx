@@ -1,18 +1,27 @@
 import * as React from "react";
-import { usePage } from "@inertiajs/react";
-import { createCast } from "ts-safe-cast";
+import { Head, usePage } from "@inertiajs/react";
 
-import { Profile } from "$app/components/server-components/Profile";
+import { Profile, Props as ProfileProps } from "$app/components/server-components/Profile";
 
-type Props = {
-  profile_props: Record<string, any>;
+type Props = ProfileProps & {
   card_data_handling_mode: string;
   paypal_merchant_currency: string;
+  custom_styles?: string;
 };
 
-export default function Show() {
-  const { props } = usePage();
-  const { profile_props } = createCast<Props>()(props);
+export default function UserShowPage() {
+  const props = usePage<Props>().props;
 
-  return <Profile {...profile_props} />;
+  return (
+    <div className="flex h-screen flex-col overflow-y-auto">
+      {props.custom_styles ? (
+        <Head>
+            <style>{props.custom_styles}</style>
+        </Head>
+      ) : null}
+      <Profile {...props} />
+    </div>
+  );
 }
+
+UserShowPage.loggedInUserLayout = true;
