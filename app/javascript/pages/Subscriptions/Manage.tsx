@@ -1,6 +1,7 @@
 import { router, useForm, usePage } from "@inertiajs/react";
 import { parseISO } from "date-fns";
 import * as React from "react";
+import { cast } from "ts-safe-cast";
 
 import { confirmLineItem } from "$app/data/purchase";
 import { updateSubscription } from "$app/data/subscription";
@@ -105,7 +106,7 @@ export default function SubscriptionsManage() {
     us_states,
     ca_provinces,
     used_card,
-  } = usePage<Props>().props;
+  } = cast<Props>(usePage().props);
 
   const url = new URL(useOriginalLocation());
 
@@ -297,7 +298,7 @@ export default function SubscriptionsManage() {
   }, [state.status.type]);
 
   const cancelForm = useForm({});
-  const handleCancel = () => {
+  const unsubscribe = () => {
     cancelForm.post(Routes.unsubscribe_by_user_subscription_path(subscription.id), {
       preserveScroll: true,
       onError: () => showAlert("Sorry, something went wrong.", "error"),
@@ -367,7 +368,7 @@ export default function SubscriptionsManage() {
           <Button
             color="danger"
             outline
-            onClick={handleCancel}
+            onClick={unsubscribe}
             disabled={cancelForm.processing}
             className="grow basis-0"
           >
