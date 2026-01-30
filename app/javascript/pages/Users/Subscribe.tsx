@@ -26,4 +26,4 @@ export default function SubscribePage() {
     </>
   );
 }
-SubscribePage.loggedInUserLayout = true;
+SubscribePage.StandaloneLayout= true;

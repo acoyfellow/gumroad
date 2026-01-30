@@ -24,4 +24,4 @@ export default function UserShowPage() {
   );
 }
 
-UserShowPage.loggedInUserLayout = true;
+UserShowPage.StandaloneLayout = true
