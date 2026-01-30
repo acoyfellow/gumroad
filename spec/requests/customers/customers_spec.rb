@@ -513,14 +513,14 @@ describe "Sales page", type: :system, js: true do
         within_section("Post 10") { expect(page).to have_button("Sent", disabled: true) }
       end
 
-      it "resends all missed emails for a workflow" do
+      it "resends all missed posts for a workflow" do
         create(:payment_completed, user: seller)
         allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
         stripe_connect_account = create(:merchant_account_stripe_connect, user: seller)
         create(:purchase, seller:, link: product1, merchant_account: stripe_connect_account)
 
         workflow = create(:workflow, seller:, link: product1, name: "Test Workflow", published_at: Time.current)
-        create(:workflow_installment, workflow:, seller:, link: product1, name: "Workflow Post", published_at: Time.current)
+        workflow_post = create(:workflow_installment, workflow:, seller:, link: product1, name: "Workflow Post", published_at: Time.current)
 
         login_as seller
         visit customers_path
@@ -550,6 +550,15 @@ describe "Sales page", type: :system, js: true do
 
         expect(page).to have_alert(text: "Missed posts are being sent. Please wait for an hour before trying again.")
         expect($redis.exists?(RedisKey.missed_posts_job(purchase1.external_id, workflow.external_id))).to be true
+
+        Sidekiq::Testing.inline! do
+          missed_posts_job = SendMissedPostsJob.jobs.last
+          expect(missed_posts_job["args"]).to eq([purchase1.external_id, workflow.external_id])
+          SendMissedPostsJob.new.perform(*missed_posts_job["args"])
+        end
+
+        expect($redis.exists?(RedisKey.missed_posts_job(purchase1.external_id, workflow.external_id))).to be false
+        expect(EmailInfo.last.installment).to eq(workflow_post)
       end
 
       it "does not allow re-sending an email if the seller is not eligible to send emails" do

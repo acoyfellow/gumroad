@@ -6,7 +6,7 @@ class SendMissedPostsJob
 
   def perform(purchase_id, workflow_id = nil)
     purchase = Purchase.find_by_external_id!(purchase_id)
-    CheckMissedPostsCompletionJob.perform_async(purchase_id, workflow_id)
+    CheckMissedPostsCompletionJob.perform_in(60.seconds, purchase_id, workflow_id)
     CustomersService.deliver_missed_posts_for!(purchase:, workflow_id:)
   end
 

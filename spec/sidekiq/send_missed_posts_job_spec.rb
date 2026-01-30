@@ -12,12 +12,12 @@ describe SendMissedPostsJob do
   describe "#perform" do
     it "finds purchase by external ID and calls service" do
       expect(CustomersService).to receive(:deliver_missed_posts_for!).with(purchase:, workflow_id: nil)
-      expect(CheckMissedPostsCompletionJob).to receive(:perform_async).with(purchase.external_id, nil)
+      expect(CheckMissedPostsCompletionJob).to receive(:perform_in).with(60, purchase.external_id, nil)
 
       described_class.new.perform(purchase.external_id)
 
       expect(CustomersService).to receive(:deliver_missed_posts_for!).with(purchase:, workflow_id: "workflow_id")
-      expect(CheckMissedPostsCompletionJob).to receive(:perform_async).with(purchase.external_id, "workflow_id")
+      expect(CheckMissedPostsCompletionJob).to receive(:perform_in).with(60, purchase.external_id, "workflow_id")
 
       described_class.new.perform(purchase.external_id, "workflow_id")
     end

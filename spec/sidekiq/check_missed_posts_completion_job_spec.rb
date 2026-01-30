@@ -42,34 +42,23 @@ describe CheckMissedPostsCompletionJob do
         allow(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: nil).and_return([double])
       end
 
-      it "schedules with 60s backoff when retry_count is 0" do
-        expect(described_class).to receive(:perform_in).with(
-          60,
-          purchase.external_id,
-          nil,
-          1
-        )
-
+      it "schedules with 180s backoff when retry_count is 0" do
+        expect(described_class).to receive(:perform_in).with(180, purchase.external_id, nil, 1)
         described_class.new.perform(purchase.external_id, nil, 0)
       end
 
-      it "schedules with 180s backoff when retry_count is 1" do
-        expect(described_class).to receive(:perform_in).with(180, purchase.external_id, nil, 2)
+      it "schedules with 600s backoff when retry_count is 1" do
+        expect(described_class).to receive(:perform_in).with(600, purchase.external_id, nil, 2)
         described_class.new.perform(purchase.external_id, nil, 1)
       end
 
-      it "schedules with 600s backoff when retry_count is 2" do
-        expect(described_class).to receive(:perform_in).with(600, purchase.external_id, nil, 3)
+      it "schedules with 3600s backoff when retry_count is 2" do
+        expect(described_class).to receive(:perform_in).with(3600, purchase.external_id, nil, 3)
         described_class.new.perform(purchase.external_id, nil, 2)
       end
 
-      it "schedules with 3600s backoff when retry_count is 3" do
-        expect(described_class).to receive(:perform_in).with(3600, purchase.external_id, nil, 4)
-        described_class.new.perform(purchase.external_id, nil, 3)
-      end
-
-      it "schedules with 7200s backoff when retry_count is 4" do
-        expect(described_class).to receive(:perform_in).with(3600, purchase.external_id, nil, 4)
+      it "schedules with 7200s backoff when retry_count is 3" do
+        expect(described_class).to receive(:perform_in).with(7200, purchase.external_id, nil, 4)
         described_class.new.perform(purchase.external_id, nil, 3)
       end
 
@@ -77,7 +66,7 @@ describe CheckMissedPostsCompletionJob do
         workflow_id = "workflow_xyz"
         allow(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id:).and_return([double])
 
-        expect(described_class).to receive(:perform_in).with(60, purchase.external_id, workflow_id, 1)
+        expect(described_class).to receive(:perform_in).with(180, purchase.external_id, workflow_id, 1)
 
         described_class.new.perform(purchase.external_id, workflow_id, 0)
       end
