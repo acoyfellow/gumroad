@@ -123,7 +123,7 @@ const AuthButtons = ({
   );
 };
 
-export const BlogNav = () => {
+export const HomeNav = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [stars, setStars] = React.useState<string | null>(null);
   const { url, props } = usePage<PageProps>();

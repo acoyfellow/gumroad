@@ -15,7 +15,7 @@ const SocialLink = ({ href, children }: { href: string; children: React.ReactNod
   </a>
 );
 
-export const BlogFooter = () => {
+export const HomeFooter = () => {
   return (
     <div className="flex flex-col justify-between gap-16 bg-black text-white py-16 px-8 lg:flex-row lg:px-[4vw] lg:py-24 leading-relaxed">
       <div className="max-w-3xl flex flex-col gap-16 w-full">
