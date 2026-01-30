@@ -55,6 +55,21 @@ class ProductPresenter
     ProductPresenter::ProductProps.new(product:).props(request:, pundit_user:, **kwargs)
   end
 
+  def show_page_props(layout:, embed: false, discover_props: {}, **kwargs)
+    base_props = embed ? product_props(**kwargs) : product_page_props(**kwargs)
+    base_props = base_props.merge(custom_styles: product.user.seller_profile.custom_styles.to_s)
+    case layout
+    when Product::Layout::PROFILE
+      base_props.merge(
+        creator_profile: ProfilePresenter.new(pundit_user:, seller: product.user).creator_profile
+      )
+    when Product::Layout::DISCOVER
+      base_props.merge(discover_props)
+    else
+      base_props
+    end
+  end
+
   def product_page_props(seller_custom_domain_url:, **kwargs)
     sections_props = ProfileSectionsPresenter.new(seller: user, query: product.seller_profile_sections).props(request:, pundit_user:, seller_custom_domain_url:)
     {

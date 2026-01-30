@@ -25,7 +25,6 @@ class LinksController < ApplicationController
 
   before_action :set_affiliate_cookie, only: [:show]
 
-  before_action :hide_layouts, only: %i[show]
   before_action :fetch_product, only: %i[increment_views track_user_action]
   before_action :ensure_seller_is_not_deleted, only: [:show]
   before_action :check_if_needs_redirect, only: [:show]
@@ -146,7 +145,6 @@ class LinksController < ApplicationController
     @pay_with_card_enabled = @product.user.pay_with_card_enabled?
     presenter = ProductPresenter.new(pundit_user:, product: @product, request:)
     presenter_props = { recommended_by: params[:recommended_by], discount_code: params[:offer_code] || params[:code], quantity: (params[:quantity] || 1).to_i, layout: params[:layout], seller_custom_domain_url: }
-    @product_props = params[:embed] || params[:overlay] ? presenter.product_props(**presenter_props) : presenter.product_page_props(**presenter_props)
     @body_class = "iframe" if params[:overlay] || params[:embed]
 
     if ["search", "discover"].include?(params[:recommended_by])
@@ -157,32 +155,19 @@ class LinksController < ApplicationController
       )
     end
 
-    if params[:layout] == Product::Layout::DISCOVER
-      @discover_props = { taxonomy_path: @product.taxonomy&.ancestry_path&.join("/"), taxonomies_for_nav: }
-    end
+    discover_props = params[:layout] == Product::Layout::DISCOVER ?
+      { taxonomy_path: @product.taxonomy&.ancestry_path&.join("/"), taxonomies_for_nav: } : {}
 
     set_noindex_header if !@product.alive?
 
-    @hide_layouts = false
-
-    seo_props = {
-      canonical_url: @product.long_url,
-      structured_data: @product.structured_data
-    }
-
     respond_to do |format|
       format.html do
-        if params[:layout] == Product::Layout::PROFILE
-          render inertia: "Links/Profile/Show", props: @product_props.merge(seo_props).merge(
-            creator_profile: ProfilePresenter.new(pundit_user:, seller: @product.user).creator_profile
-          )
-        elsif params[:layout] == Product::Layout::DISCOVER
-          render inertia: "Links/Discover/Show", props: @product_props.merge(seo_props).merge(@discover_props)
-        elsif params[:embed] || params[:overlay]
-          render inertia: "Links/Iframe/Show", props: @product_props.merge(seo_props)
-        else
-          render inertia: "Links/Show", props: @product_props.merge(seo_props)
-        end
+        render inertia: product_inertia_template, props: presenter.show_page_props(
+          layout: params[:layout],
+          embed: params[:embed].present? || params[:overlay].present?,
+          discover_props:,
+          **presenter_props
+        )
       end
       format.json { render json: @product.as_json }
       format.any { e404 }
@@ -577,6 +562,18 @@ class LinksController < ApplicationController
     def ensure_domain_belongs_to_seller
       if @is_user_custom_domain
         e404_page unless @product.user == user_by_domain(request.host)
+      end
+    end
+
+    def product_inertia_template
+      if params[:layout] == Product::Layout::PROFILE
+        "Products/Profile/Show"
+      elsif params[:layout] == Product::Layout::DISCOVER
+        "Products/Discover/Show"
+      elsif params[:embed] || params[:overlay]
+        "Products/Iframe/Show"
+      else
+        "Products/Show"
       end
     end
 

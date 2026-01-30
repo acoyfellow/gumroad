@@ -1,10 +1,8 @@
 import React from "react";
 
-import { CurrentSellerProvider, parseCurrentSeller } from "$app/components/CurrentSeller";
 import { DesignContextProvider, DesignSettings } from "$app/components/DesignSettings";
 import { DomainSettingsProvider } from "$app/components/DomainSettings";
 import { FeatureFlags, FeatureFlagsProvider } from "$app/components/FeatureFlags";
-import { type LoggedInUser, LoggedInUserProvider, parseLoggedInUser } from "$app/components/LoggedInUser";
 import { SSRLocationProvider } from "$app/components/useOriginalLocation";
 import { UserAgentProvider } from "$app/components/UserAgent";
 
@@ -25,20 +23,6 @@ type GlobalProps = {
   href: string;
   locale: string;
   feature_flags: FeatureFlags;
-  logged_in_user: LoggedInUser | null;
-  current_seller: {
-    id: number;
-    email: string;
-    name: string;
-    avatar_url: string;
-    has_published_products: boolean;
-    subdomain: string;
-    is_buyer: boolean;
-    time_zone: {
-      name: string;
-      offset: number;
-    };
-  } | null;
 };
 
 export default function AppWrapper({ children, global }: { children: React.ReactNode; global: GlobalProps }) {
@@ -62,11 +46,7 @@ export default function AppWrapper({ children, global }: { children: React.React
           }}
         >
           <FeatureFlagsProvider value={global.feature_flags}>
-            <LoggedInUserProvider value={parseLoggedInUser(global.logged_in_user)}>
-              <CurrentSellerProvider value={parseCurrentSeller(global.current_seller)}>
-                <SSRLocationProvider value={global.href}>{children}</SSRLocationProvider>
-              </CurrentSellerProvider>
-            </LoggedInUserProvider>
+            <SSRLocationProvider value={global.href}>{children}</SSRLocationProvider>
           </FeatureFlagsProvider>
         </UserAgentProvider>
       </DomainSettingsProvider>
