@@ -267,7 +267,7 @@ export default function SubscriptionsManage() {
     if (result.type === "done") {
       showAlert(result.message, "success");
       if (result.next != null) {
-        router.visit(result.next);
+        router.get(result.next);
       } else {
         router.reload();
       }

@@ -33,9 +33,6 @@ class SubscriptionsController < ApplicationController
 
   def manage
     @product = @subscription.link
-    @card = @subscription.credit_card_to_charge
-    @card_data_handling_mode = CardDataHandlingMode.get_card_data_handling_mode(@product.user)
-
     @body_id = "product_page"
 
     set_meta_tag(title: @subscription.is_installment_plan ? "Manage installment plan" : "Manage membership")
