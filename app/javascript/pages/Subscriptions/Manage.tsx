@@ -350,7 +350,7 @@ export default function SubscriptionsManage() {
 
       <StateContext.Provider value={reducer}>
         <CardContent>
-          <PaymentForm className="borderless" notice={paymentNotice} showCustomFields={false} />
+          <PaymentForm className="w-full" borderless notice={paymentNotice} showCustomFields={false} />
           {totalPrice > 0 ? (
             <div>
               <div className="text-center">
