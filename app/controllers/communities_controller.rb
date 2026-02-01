@@ -39,8 +39,8 @@ class CommunitiesController < ApplicationController
     settings = current_seller.community_notification_settings.find_or_initialize_by(seller: @community.seller)
     settings.update!(permitted_notification_params)
 
-    flash[:notice] = "Changes saved!"
     redirect_to community_path(@community.seller.external_id, @community.external_id),
+                notice: "Changes saved!",
                 status: :see_other
   end
 
