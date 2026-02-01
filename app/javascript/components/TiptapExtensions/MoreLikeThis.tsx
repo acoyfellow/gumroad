@@ -134,7 +134,7 @@ const MoreLikeThisNodeView = ({ editor, node, extension, selected }: NodeViewPro
         {isLoading ? (
           <ProductCardGrid narrow>
             {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="dummy h-128" />
+              <Skeleton key={index} className="h-128" />
             ))}
           </ProductCardGrid>
         ) : recommendedProducts && recommendedProducts.length > 0 ? (

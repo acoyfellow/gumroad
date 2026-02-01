@@ -103,7 +103,7 @@ const ReviewCardNodeView = ({ node, selected, editor }: NodeViewProps) => {
           />
         </article>
       ) : (
-        <div className="dummy h-32"></div>
+        <Skeleton className="h-32" />
       )}
     </NodeViewWrapper>
   );

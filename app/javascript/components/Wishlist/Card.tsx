@@ -147,7 +147,7 @@ export const DummyCardGrid = ({ count }: { count: number }) => (
     {Array(count)
       .fill(0)
       .map((_, i) => (
-        <div key={i} className="dummy" style={{ aspectRatio: "3 / 1", paddingBottom: 0 }} />
+        <Skeleton key={i} style={{ aspectRatio: "3 / 1", paddingBottom: 0 }} />
       ))}
   </CardGrid>
 );
