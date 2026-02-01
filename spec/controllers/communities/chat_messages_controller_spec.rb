@@ -18,17 +18,22 @@ describe Communities::ChatMessagesController do
 
       before do
         sign_in(buyer)
+        # Set Inertia headers to get JSON response
+        request.headers["X-Inertia"] = "true"
+        request.headers["X-Inertia-Version"] = "1"
       end
 
       it "returns chat messages" do
         create(:community_chat_message, community: community, user: seller, content: "Hello!")
 
-        get :index, params: { community_id: community.external_id, timestamp: Time.current.iso8601, fetch_type: "older" }
+        # Use a timestamp after the message was created to fetch it
+        get :index, params: { community_id: community.external_id, timestamp: 1.minute.from_now.iso8601, fetch_type: "older" }
 
         expect(response).to have_http_status(:ok)
-        json = JSON.parse(response.body)
-        expect(json["messages"].length).to eq(1)
-        expect(json["messages"][0]["content"]).to eq("Hello!")
+        body = response.parsed_body
+        expect(body["component"]).to eq("Communities/Index")
+        expect(body["props"]["messages"]["messages"].length).to eq(1)
+        expect(body["props"]["messages"]["messages"][0]["content"]).to eq("Hello!")
       end
     end
 
@@ -39,10 +44,11 @@ describe Communities::ChatMessagesController do
         sign_in(other_user)
       end
 
-      it "returns not found" do
+      it "redirects unauthorized users" do
         get :index, params: { community_id: community.external_id }
 
-        expect(response).to have_http_status(:not_found)
+        # Pundit redirects unauthorized users to dashboard
+        expect(response).to have_http_status(:redirect)
       end
     end
   end
@@ -115,14 +121,16 @@ describe Communities::ChatMessagesController do
         sign_in(other_buyer)
       end
 
-      it "returns not found" do
+      it "redirects unauthorized users" do
         put :update, params: {
           community_id: community.external_id,
           id: message.external_id,
           community_chat_message: { content: "Updated content" }
         }
 
-        expect(response).to have_http_status(:not_found)
+        # Pundit redirects unauthorized users
+        expect(response).to have_http_status(:redirect)
+        expect(message.reload.content).to eq("Original") # Message should not be updated
       end
     end
   end

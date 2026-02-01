@@ -4,7 +4,7 @@ require "spec_helper"
 
 describe Communities::NotificationSettingsController do
   let(:seller) { create(:user) }
-  let(:product) { create(:product, user: seller, community_chat_enabled: true) }
+  let(:product) { create(:product, user: seller, community_chat_enabled: true, price_cents: 0) }
   let!(:community) { create(:community, resource: product, seller: seller) }
 
   before do
@@ -14,7 +14,7 @@ describe Communities::NotificationSettingsController do
   describe "PUT #update" do
     context "when logged in as a user with access" do
       let(:buyer) { create(:user) }
-      let!(:purchase) { create(:purchase, seller: seller, purchaser: buyer, link: product) }
+      let!(:purchase) { create(:free_purchase, seller: seller, purchaser: buyer, link: product) }
 
       before do
         sign_in(buyer)
@@ -28,13 +28,11 @@ describe Communities::NotificationSettingsController do
           }
         end.to change(CommunityNotificationSetting, :count).by(1)
 
-        expect(response).to have_http_status(:ok)
+        expect(response).to redirect_to(community_path(seller.external_id, community.external_id))
+        expect(response).to have_http_status(:see_other)
 
         settings = buyer.community_notification_settings.find_by(seller: seller)
         expect(settings.recap_frequency).to eq("weekly")
-
-        json = JSON.parse(response.body)
-        expect(json["settings"]["recap_frequency"]).to eq("weekly")
       end
 
       it "updates existing notification settings" do
@@ -45,7 +43,8 @@ describe Communities::NotificationSettingsController do
           settings: { recap_frequency: "weekly" }
         }
 
-        expect(response).to have_http_status(:ok)
+        expect(response).to redirect_to(community_path(seller.external_id, community.external_id))
+        expect(response).to have_http_status(:see_other)
         expect(existing_settings.reload.recap_frequency).to eq("weekly")
       end
 
@@ -57,7 +56,8 @@ describe Communities::NotificationSettingsController do
           settings: { recap_frequency: nil }
         }
 
-        expect(response).to have_http_status(:ok)
+        expect(response).to redirect_to(community_path(seller.external_id, community.external_id))
+        expect(response).to have_http_status(:see_other)
         expect(existing_settings.reload.recap_frequency).to be_nil
       end
     end
@@ -69,13 +69,14 @@ describe Communities::NotificationSettingsController do
         sign_in(other_user)
       end
 
-      it "returns not found" do
+      it "redirects unauthorized users" do
         put :update, params: {
           community_id: community.external_id,
           settings: { recap_frequency: "weekly" }
         }
 
-        expect(response).to have_http_status(:not_found)
+        # Pundit redirects unauthorized users
+        expect(response).to have_http_status(:redirect)
       end
     end
   end
