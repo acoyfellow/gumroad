@@ -88,7 +88,7 @@ export default function ProductPage() {
       currency_type: currencyType,
     }));
 
-    form.patch(Routes.edit_link_path(props.unique_permalink), {
+    form.patch(Routes.products_edit_product_path(props.unique_permalink), {
       preserveScroll: true,
       onSuccess: () => {
         setContentUpdates({
