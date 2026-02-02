@@ -49,9 +49,9 @@ import type {
 import { checkFilesUploading } from "$app/components/ProductEdit/utils";
 import { ImageUploadSettingsContext } from "$app/components/RichTextEditor";
 import { ToggleSettingRow } from "$app/components/SettingRow";
-import { Toggle } from "$app/components/Toggle";
 import { TypeSafeOptionSelect } from "$app/components/TypeSafeOptionSelect";
 import { Alert } from "$app/components/ui/Alert";
+import { Switch } from "$app/components/ui/Switch";
 
 const ALLOWED_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp"];
 
@@ -549,33 +549,23 @@ const EditProductPage = () => {
                             }
                           />
                         ) : null}
-                        <Toggle
-                          value={form.data.product.should_include_last_post}
-                          onChange={(should_include_last_post) =>
-                            form.setData("product.should_include_last_post", should_include_last_post)
+                        <Switch
+                          checked={form.data.product.should_include_last_post}
+                          onChange={(e) => form.setData("product.should_include_last_post", e.target.checked)}
+                          label="New members will be emailed this product's last published post"
+                        />
+                        <Switch
+                          checked={form.data.product.should_show_all_posts}
+                          onChange={(e) => form.setData("product.should_show_all_posts", e.target.checked)}
+                          label="New members will get access to all posts you have published"
+                        />
+                        <Switch
+                          checked={product.block_access_after_membership_cancellation}
+                          onChange={(e) =>
+                            form.setData("product.block_access_after_membership_cancellation", e.target.checked)
                           }
-                        >
-                          New members will be emailed this product's last published post
-                        </Toggle>
-                        <Toggle
-                          value={form.data.product.should_show_all_posts}
-                          onChange={(should_show_all_posts) =>
-                            form.setData("product.should_show_all_posts", should_show_all_posts)
-                          }
-                        >
-                          New members will get access to all posts you have published
-                        </Toggle>
-                        <Toggle
-                          value={form.data.product.block_access_after_membership_cancellation}
-                          onChange={(block_access_after_membership_cancellation) =>
-                            form.setData(
-                              "product.block_access_after_membership_cancellation",
-                              block_access_after_membership_cancellation,
-                            )
-                          }
-                        >
-                          Members will lose access when their memberships end
-                        </Toggle>
+                          label="Members will lose access when their memberships end"
+                        />
                         <DurationEditor
                           value={form.data.product.duration_in_months}
                           onChange={(duration_in_months) =>
@@ -590,40 +580,42 @@ const EditProductPage = () => {
                           maxPurchaseCount={form.data.product.max_purchase_count}
                           setMaxPurchaseCount={(value) => form.setData("product.max_purchase_count", value)}
                         />
-                        <Toggle
-                          value={form.data.product.quantity_enabled}
-                          onChange={(newValue) => form.setData("product.quantity_enabled", newValue)}
-                        >
-                          Allow customers to choose a quantity
-                        </Toggle>
+                        <Switch
+                          checked={form.data.product.quantity_enabled}
+                          onChange={(e) => form.setData("product.quantity_enabled", e.target.checked)}
+                          label="Allow customers to choose a quantity"
+                        />
                       </>
                     ) : null}
                     {form.data.product.variants.length > 0 ? (
-                      <Toggle
-                        value={form.data.product.hide_sold_out_variants}
-                        onChange={(newValue) => form.setData("product.hide_sold_out_variants", newValue)}
-                      >
-                        Hide sold out versions
-                      </Toggle>
+                      <Switch
+                        checked={form.data.product.hide_sold_out_variants}
+                        onChange={(e) => form.setData("product.hide_sold_out_variants", e.target.checked)}
+                        label="Hide sold out versions"
+                      />
                     ) : null}
-                    <Toggle
-                      value={form.data.product.should_show_sales_count}
-                      onChange={(newValue) => form.setData("product.should_show_sales_count", newValue)}
-                    >
-                      {form.data.product.native_type === "membership"
-                        ? "Publicly show the number of members on your product page"
-                        : "Publicly show the number of sales on your product page"}
-                    </Toggle>
+                    <Switch
+                      checked={form.data.product.should_show_sales_count}
+                      onChange={(e) => form.setData("product.should_show_sales_count", e.target.checked)}
+                      label={
+                        form.data.product.native_type === "membership"
+                          ? "Publicly show the number of members on your product page"
+                          : "Publicly show the number of sales on your product page"
+                      }
+                    />
                     {form.data.product.native_type !== "physical" ? (
-                      <Toggle
-                        value={form.data.product.is_epublication}
-                        onChange={(newValue) => form.setData("product.is_epublication", newValue)}
-                      >
-                        Mark product as e-publication for VAT purposes{" "}
-                        <a href="/help/article/10-dealing-with-vat" target="_blank" rel="noreferrer">
-                          Learn more
-                        </a>
-                      </Toggle>
+                      <Switch
+                        checked={form.data.product.is_epublication}
+                        onChange={(e) => form.setData("product.is_epublication", e.target.checked)}
+                        label={
+                          <>
+                            Mark product as e-publication for VAT purposes{" "}
+                            <a href="/help/article/10-dealing-with-vat" target="_blank" rel="noreferrer">
+                              Learn more
+                            </a>
+                          </>
+                        }
+                      />
                     ) : null}
                     {!page_metadata.seller_refund_policy_enabled ? (
                       <RefundPolicySelector
@@ -635,12 +627,11 @@ const EditProductPage = () => {
                         setShowPreview={setShowRefundPolicyPreview}
                       />
                     ) : null}
-                    <Toggle
-                      value={form.data.product.require_shipping}
-                      onChange={(newValue) => form.setData("product.require_shipping", newValue)}
-                    >
-                      Require shipping information
-                    </Toggle>
+                    <Switch
+                      checked={form.data.product.require_shipping}
+                      onChange={(e) => form.setData("product.require_shipping", e.target.checked)}
+                      label="Require shipping information"
+                    />
                   </fieldset>
                   {form.data.product.native_type === "membership" ? (
                     <fieldset>

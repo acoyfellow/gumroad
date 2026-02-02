@@ -28,10 +28,10 @@ import { RecurrencePriceValue, TierWithoutRichContent } from "$app/components/Pr
 import { RichTextEditor } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
-import { Toggle } from "$app/components/Toggle";
 import { Alert } from "$app/components/ui/Alert";
 import { Placeholder } from "$app/components/ui/Placeholder";
 import { Row, RowActions, RowContent, RowDetails, Rows } from "$app/components/ui/Rows";
+import { Switch } from "$app/components/ui/Switch";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 import { useRunOnce } from "$app/components/useRunOnce";
 import { WithTooltip } from "$app/components/WithTooltip";
@@ -319,13 +319,12 @@ const TierEditor = ({
             ) : null}
             <Details
               summary={
-                <Toggle
-                  value={tier.customizable_price}
-                  onChange={(customizable_price) => updateTier({ customizable_price })}
+                <Switch
+                  checked={tier.customizable_price}
+                  onChange={(e) => updateTier({ customizable_price: e.target.checked })}
                   disabled={allEnabledPricesAreZero}
-                >
-                  Allow customers to pay what they want
-                </Toggle>
+                  label="Allow customers to pay what they want"
+                />
               }
               className="toggle"
               open={tier.customizable_price}
@@ -386,15 +385,16 @@ const TierEditor = ({
               <fieldset>
                 <legend>Integrations</legend>
                 {integrations.map((integration) => (
-                  <Toggle
-                    value={tier.integrations[integration]}
-                    onChange={(enabled) =>
-                      updateTier({ integrations: { ...tier.integrations, [integration]: enabled } })
+                  <Switch
+                    checked={tier.integrations[integration]}
+                    onChange={(e) =>
+                      updateTier({ integrations: { ...tier.integrations, [integration]: e.target.checked } })
                     }
                     key={integration}
-                  >
-                    {integration === "circle" ? "Enable access to Circle community" : "Enable access to Discord server"}
-                  </Toggle>
+                    label={
+                      integration === "circle" ? "Enable access to Circle community" : "Enable access to Discord server"
+                    }
+                  />
                 ))}
               </fieldset>
             ) : null}
@@ -477,17 +477,16 @@ You can modify or cancel your membership at any time.`;
   return (
     <Details
       summary={
-        <Toggle
-          value={tier.apply_price_changes_to_existing_memberships}
-          onChange={(apply_price_changes_to_existing_memberships) =>
+        <Switch
+          checked={tier.apply_price_changes_to_existing_memberships}
+          onChange={(e) =>
             updateTier({
-              apply_price_changes_to_existing_memberships,
+              apply_price_changes_to_existing_memberships: e.target.checked,
               subscription_price_change_effective_date: effectiveDate.value.toISOString(),
             })
           }
-        >
-          Apply price changes to existing customers
-        </Toggle>
+          label="Apply price changes to existing customers"
+        />
       }
       className="toggle"
       open={tier.apply_price_changes_to_existing_memberships}

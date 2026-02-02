@@ -18,9 +18,9 @@ import { ProfileSectionsEditor } from "$app/components/ProductEdit/ShareTab/Prof
 import { TagSelector } from "$app/components/ProductEdit/ShareTab/TagSelector";
 import { TaxonomyEditor } from "$app/components/ProductEdit/ShareTab/TaxonomyEditor";
 import type { EditProductShare, ProfileSection } from "$app/components/ProductEdit/state";
-import { Toggle } from "$app/components/Toggle";
 import { TwitterShareButton } from "$app/components/TwitterShareButton";
 import { Alert } from "$app/components/ui/Alert";
+import { Switch } from "$app/components/ui/Switch";
 import { useRunOnce } from "$app/components/useRunOnce";
 
 type EditProductSharePageProps = {
@@ -183,22 +183,24 @@ const EditProductSharePage = () => {
             />
             <TagSelector tags={form.data.product.tags} onChange={(tags) => form.setData("product.tags", tags)} />
             <fieldset>
-              <Toggle
-                value={form.data.product.display_product_reviews}
-                onChange={(newValue) => form.setData("product.display_product_reviews", newValue)}
-              >
-                Display your product's 1-5 star rating to prospective customers
-              </Toggle>
-              <Toggle
-                value={form.data.product.is_adult}
-                onChange={(newValue) => form.setData("product.is_adult", newValue)}
-              >
-                This product contains content meant{" "}
-                <a href="/help/article/156-gumroad-and-adult-content" target="_blank" rel="noreferrer">
-                  only for adults,
-                </a>{" "}
-                including the preview
-              </Toggle>
+              <Switch
+                checked={form.data.product.display_product_reviews}
+                onChange={(e) => form.setData("product.display_product_reviews", e.target.checked)}
+                label="Display your product's 1-5 star rating to prospective customers"
+              />
+              <Switch
+                checked={form.data.product.is_adult}
+                onChange={(e) => form.setData("product.is_adult", e.target.checked)}
+                label={
+                  <>
+                    This product contains content meant{" "}
+                    <a href="/help/article/156-gumroad-and-adult-content" target="_blank" rel="noreferrer">
+                      only for adults,
+                    </a>{" "}
+                    including the preview
+                  </>
+                }
+              />
             </fieldset>
           </section>
         </form>

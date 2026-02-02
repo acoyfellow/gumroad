@@ -9,8 +9,8 @@ import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import type { VariantWithoutRichContent } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
-import { Toggle } from "$app/components/Toggle";
 import { Alert } from "$app/components/ui/Alert";
+import { Switch } from "$app/components/ui/Switch";
 import { useRunOnce } from "$app/components/useRunOnce";
 
 export type CircleIntegration = {
@@ -45,6 +45,11 @@ export const CircleIntegrationEditor = ({
   const [selectedCommunityId, setSelectedCommunityId] = React.useState<number | null>(
     integration ? parseInt(integration.integration_details.community_id, 10) : null,
   );
+  const [spaceGroups, setSpaceGroups] = React.useState<FetchState<CircleSpaceGroup>>(null);
+  const [selectedSpaceGroupId, setSelectedSpaceGroupId] = React.useState<number | null>(
+    integration ? parseInt(integration.integration_details.space_group_id, 10) : null,
+  );
+
   const loadCommunities = async () => {
     if (apiKey) {
       setCommunities({ status: "fetching" });
@@ -76,11 +81,6 @@ export const CircleIntegrationEditor = ({
   };
 
   React.useEffect(() => void loadSpaceGroups(), [selectedCommunityId]);
-
-  const [spaceGroups, setSpaceGroups] = React.useState<FetchState<CircleSpaceGroup>>(null);
-  const [selectedSpaceGroupId, setSelectedSpaceGroupId] = React.useState<number | null>(
-    integration ? parseInt(integration.integration_details.space_group_id, 10) : null,
-  );
 
   React.useEffect(() => {
     if (!apiKey || !selectedCommunityId || !selectedSpaceGroupId) return;
@@ -215,12 +215,11 @@ export const CircleIntegrationEditor = ({
                           : "Your integration is not assigned to any version. Check your versions' settings."}
                       </Alert>
                     ) : null}
-                    <Toggle
-                      value={variants.every(({ integrations }) => integrations.circle)}
-                      onChange={setEnabledForOptions}
-                    >
-                      {native_type === "membership" ? "Enable for all tiers" : "Enable for all versions"}
-                    </Toggle>
+                    <Switch
+                      checked={variants.every(({ integrations }) => integrations.circle)}
+                      onChange={(e) => setEnabledForOptions(e.target.checked)}
+                      label={native_type === "membership" ? "Enable for all tiers" : "Enable for all versions"}
+                    />
                   </>
                 ) : null}
               </>
