@@ -131,12 +131,8 @@ const EditProductPage = () => {
       onSuccess: (data) => {
         options?.onSuccess?.();
         options?.onFinish?.();
-        try {
-          form.setData("product", cast<EditProduct>(data.props.product));
-          form.setDefaults();
-        } catch {
-          // Re-directing to another tab type mismatch
-        }
+        form.setData("product", cast<EditProduct>(data.props.product));
+        form.setDefaults();
       },
       ...(options?.onFinish && { onError: options.onFinish }),
     });

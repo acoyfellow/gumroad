@@ -12,7 +12,7 @@ module Product
     end
 
     def process(intent, disallow_publish: false)
-      was_published_before = was_published
+      was_published_before = !@product.draft && @product.alive?
 
       begin
         ActiveRecord::Base.transaction do
@@ -189,13 +189,9 @@ module Product
         update_product_publish_status!(disallow_publish)
       end
 
-      def was_published
-        !@product.draft && @product.alive?
-      end
-
       def update_product_publish_status!(disallow_publish = false)
         return unless @params.key?(:publish)
-        return if @params[:publish] == was_published
+        return if @params[:publish] == (!@product.draft && @product.alive?)
         raise Link::LinkInvalid, "You cannot publish this product yet." if disallow_publish && @params[:publish]
         raise Link::LinkInvalid, "<span>To publish a product, we need you to have an email. <a href=\"#{settings_main_url}\">Set an email</a> to continue.</span>" if @params[:publish] && @product.user.email.blank?
 
@@ -203,10 +199,9 @@ module Product
       end
 
       def determine_status(was_published_before)
-        is_now_published = was_published
-
-        if was_published_before != is_now_published
-          is_now_published ? :published : :unpublished
+        is_published = !@product.draft && @product.alive?
+        if was_published_before != is_published
+          is_published ? :published : :unpublished
         else
           :saved
         end

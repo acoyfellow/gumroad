@@ -40,11 +40,11 @@ describe Products::ShareController, inertia: true do
       expect(inertia.props[:product][:display_product_reviews]).to eq(product.display_product_reviews)
       expect(inertia.props[:product][:is_adult]).to eq(product.is_adult)
       expect(inertia.props[:product][:is_published]).to eq(product.published?)
+      expect(inertia.props[:product][:is_listed_on_discover]).to eq(product.recommendable?)
       expect(inertia.props[:page_metadata][:taxonomies]).to be_present
       expect(inertia.props[:page_metadata][:profile_sections]).to be_an(Array)
       expect(inertia.props[:page_metadata][:successful_sales_count]).to eq(product.successful_sales_count)
       expect(inertia.props[:page_metadata][:sales_count_for_inventory]).to eq(product.max_purchase_count? ? product.sales_count_for_inventory : 0)
-      expect(inertia.props[:page_metadata][:is_listed_on_discover]).to eq(product.recommendable?)
     end
 
     context "when product is unpublished" do
