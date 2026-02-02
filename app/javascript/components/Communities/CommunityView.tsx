@@ -541,15 +541,15 @@ export function CommunityView({
                     {stickyDate ? <DateSeparator date={stickyDate} showDividerLine={false} /> : null}
                   </div>
 
-                    <ChatMessageList
-                      key={selectedCommunity.id}
-                      community={selectedCommunity}
-                      messages={allMessages}
-                      hasOlderMessages={hasOlderMessages}
-                      setStickyDate={setStickyDate}
-                      unreadSeparatorVisibility={showScrollToBottomButton}
-                      markMessageAsRead={markMessageAsRead}
-                    />
+                  <ChatMessageList
+                    key={selectedCommunity.id}
+                    community={selectedCommunity}
+                    messages={allMessages}
+                    hasOlderMessages={hasOlderMessages}
+                    setStickyDate={setStickyDate}
+                    unreadSeparatorVisibility={showScrollToBottomButton}
+                    markMessageAsRead={markMessageAsRead}
+                  />
                   {showScrollToBottomButton ? (
                     <ScrollToBottomButton
                       hasUnreadMessages={selectedCommunity.unread_count > 0}
