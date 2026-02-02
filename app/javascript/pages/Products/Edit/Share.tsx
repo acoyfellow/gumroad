@@ -1,3 +1,4 @@
+import hands from "images/illustrations/hands.png";
 import { useForm, usePage } from "@inertiajs/react";
 import * as React from "react";
 
@@ -77,7 +78,7 @@ export default function SharePage() {
           id={props.id}
           uniquePermalink={props.unique_permalink}
           currencyType="usd"
-          ratings={null as any}
+          ratings={{ count: 0, average: 0, percentages: [0, 0, 0, 0, 0] }}
           seller_refund_policy_enabled={false}
           seller_refund_policy={{ title: "", fine_print: "" }}
         />
@@ -187,6 +188,7 @@ const DiscoverEligibilityPromo = () => {
   return (
     <Alert role="status">
       <div className="flex items-center gap-2">
+        <img src={hands} alt="" className="size-12" />
         <div className="flex flex-1 flex-col gap-2">
           <div>
             To appear on Gumroad Discover, make sure to meet all the{" "}

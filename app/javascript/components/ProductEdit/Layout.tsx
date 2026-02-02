@@ -162,8 +162,8 @@ export const Layout = ({
   currentTab,
   onSave,
   isSaving = false,
-  contentUpdates,
-  setContentUpdates,
+  contentUpdates = null,
+  setContentUpdates = (_: ContentUpdate | null) => {},
 }: InertiaLayoutProps) => {
   const { product, unique_permalink: uniquePermalink } = usePage<Props>().props;
   const currentSeller = useCurrentSeller();

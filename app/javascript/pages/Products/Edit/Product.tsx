@@ -1,6 +1,8 @@
 import { useForm, usePage } from "@inertiajs/react";
 import * as React from "react";
 
+import { type OtherRefundPolicy } from "$app/data/products/other_refund_policies";
+import { type Thumbnail } from "$app/data/thumbnails";
 import { COFFEE_CUSTOM_BUTTON_TEXT_OPTIONS, CUSTOM_BUTTON_TEXT_OPTIONS } from "$app/parsers/product";
 import { CurrencyCode, currencyCodeList } from "$app/utils/currency";
 
@@ -43,8 +45,8 @@ type Props = {
   id: string;
   unique_permalink: string;
   currency_type: CurrencyCode;
-  thumbnail: any;
-  refund_policies: any[];
+  thumbnail: Thumbnail | null;
+  refund_policies: OtherRefundPolicy[];
   is_physical: boolean;
   google_calendar_enabled: boolean;
   seller_refund_policy_enabled: boolean;
@@ -70,7 +72,7 @@ export default function ProductPage() {
   });
 
   const [currencyType, setCurrencyType] = React.useState<CurrencyCode>(props.currency_type);
-  const [thumbnail, setThumbnail] = React.useState(props.thumbnail);
+  const [thumbnail, setThumbnail] = React.useState<Thumbnail | null>(props.thumbnail);
   const [showAiNotification, setShowAiNotification] = React.useState(props.ai_generated);
   const [contentUpdates, setContentUpdates] = React.useState<{ uniquePermalinkOrVariantIds: string[] } | null>(null);
   const { isUploading, setImagesUploading } = useImageUpload();
@@ -78,7 +80,7 @@ export default function ProductPage() {
 
   const updateProduct = (data: Partial<typeof form.data>) => {
     Object.keys(data).forEach((key) => {
-      form.setData(key as any, (data as any)[key]);
+      form.setData(key, data[key]);
     });
   };
 
@@ -114,7 +116,7 @@ export default function ProductPage() {
           showRefundPolicyModal={showRefundPolicyPreview}
           salesCountForInventory={0}
           successfulSalesCount={0}
-          ratings={null as any}
+          ratings={{ count: 0, average: 0, percentages: [0, 0, 0, 0, 0] }}
           seller_refund_policy_enabled={props.seller_refund_policy_enabled}
           seller_refund_policy={{ title: "", fine_print: "" }}
         />
@@ -284,7 +286,7 @@ export default function ProductPage() {
                       const updated = { ...form.data } as Product;
                       updater(updated);
                       Object.entries(updated).forEach(([key, value]) => {
-                        form.setData(key as any, value);
+                        form.setData(key, value);
                       });
                     }}
                   />
@@ -301,7 +303,7 @@ export default function ProductPage() {
                       const updated = { ...form.data } as Product;
                       updater(updated);
                       Object.entries(updated).forEach(([key, value]) => {
-                        form.setData(key as any, value);
+                        form.setData(key, value);
                       });
                     }}
                   />
@@ -317,7 +319,7 @@ export default function ProductPage() {
                         })
                       }
                       googleClientId={props.google_calendar_enabled ? "some_id" : ""}
-                      updateProduct={(updater) => updater(form.data)}
+                      updateProduct={(updater) => updater(form.data as Product)}
                     />
                   ) : null}
                 </fieldset>
