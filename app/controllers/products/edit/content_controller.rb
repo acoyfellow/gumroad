@@ -137,6 +137,6 @@ class Products::Edit::ContentController < Products::Edit::BaseController
       return redirect_to products_edit_content_edit_show_path(@product.unique_permalink), warning: "The following offer #{"code".pluralize(all_invalid_offer_codes.count)} #{issue_description}: #{all_invalid_offer_codes.join(", ")}. Please update #{all_invalid_offer_codes.length > 1 ? "them or they" : "it or it"} will not work at checkout."
     end
 
-    redirect_to products_edit_content_edit_show_path(@product.unique_permalink), notice: "Changes saved successfully!"
+    redirect_to products_edit_content_edit_show_path(@product.unique_permalink), notice: "Changes saved successfully!", status: :see_other
   end
 end

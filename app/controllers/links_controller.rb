@@ -277,7 +277,7 @@ class LinksController < ApplicationController
     authorize @product
 
     @product.unpublish!
-    redirect_to determine_redirect_path_after_publish_toggle(@product), status: :see_other, notice: "Product unpublished successfully"
+    redirect_to determine_redirect_path_after_publish_toggle(@product),  notice: "Product unpublished successfully", status: :see_other
   end
 
   def publish
@@ -290,12 +290,12 @@ class LinksController < ApplicationController
 
     begin
       @product.publish!
-      redirect_to determine_redirect_path_after_publish_toggle(@product, published: true), status: :see_other, notice: "Product published successfully"
+      redirect_to determine_redirect_path_after_publish_toggle(@product, published: true), notice: "Product published successfully", status: :see_other
     rescue Link::LinkInvalid, ActiveRecord::RecordInvalid
       redirect_to edit_link_path(@product), status: :see_other, alert: @product.errors.full_messages[0]
     rescue => e
       Bugsnag.notify(e)
-      redirect_to edit_link_path(@product), status: :see_other, alert: "Something broke. We're looking into what happened. Sorry about this!"
+      redirect_to edit_link_path(@product), alert: "Something broke. We're looking into what happened. Sorry about this!"
     end
   end
 
