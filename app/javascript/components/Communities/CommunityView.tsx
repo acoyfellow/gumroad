@@ -31,7 +31,6 @@ import {
   type Community,
   type CommunityChatMessage,
   type CommunityDraft,
-  type CommunityNotificationSettings,
   type CommunitiesPageProps,
   type NotificationSettings,
   type Seller,
@@ -61,7 +60,7 @@ const sortByName = <T extends { name: string }>(items: readonly T[]) =>
 export const CommunityView = () => ({
   hasProducts,
   communities: initialCommunities,
-  notificationSettings: initialNotificationSettings,
+  notificationSettings ,
   selectedCommunityId,
   messages,
 }: CommunitiesPageProps) => {
@@ -70,8 +69,6 @@ export const CommunityView = () => ({
 
   // State management
   const [communities, setCommunities] = React.useState<Community[]>(sortByName(initialCommunities));
-  const [notificationSettings, setNotificationSettings] =
-    React.useState<CommunityNotificationSettings>(initialNotificationSettings);
   const [communityDrafts, setCommunityDrafts] = React.useState<Record<string, CommunityDraft>>({});
 
   // Local messages from WebSocket - merged with Inertia messages
@@ -215,30 +212,6 @@ export const CommunityView = () => ({
   React.useEffect(() => {
     if (!sidebarOpen) setSidebarOpen(true);
   }, [isAboveBreakpoint]);
-
-  // Handle scroll for showing/hiding scroll to bottom button
-  const handleScroll = useDebouncedCallback(() => {
-    if (!chatContainerRef.current || !selectedCommunity) return;
-
-    const container = chatContainerRef.current;
-    const { scrollTop, scrollHeight, clientHeight } = container;
-
-    // Check if we should show the scroll to bottom button
-    const scrollPosition = scrollTop + clientHeight;
-    const isNearBottom = scrollHeight - scrollPosition < 50;
-    setShowScrollToBottomButton(!isNearBottom);
-  }, 100);
-
-  // Attach scroll listener
-  React.useEffect(() => {
-    const chatContainer = chatContainerRef.current;
-    if (chatContainer) {
-      chatContainer.addEventListener("scroll", handleScroll);
-      return () => {
-        chatContainer.removeEventListener("scroll", handleScroll);
-      };
-    }
-  }, [handleScroll]);
 
   // Insert or update message from WebSocket
   const insertOrUpdateMessage = React.useCallback(
@@ -445,7 +418,6 @@ export const CommunityView = () => ({
           preserveState: true,
           preserveScroll: true,
           onSuccess: () => {
-            setNotificationSettings((prev) => ({ ...prev, [community.seller.id]: settings }));
             showAlert("Changes saved!", "success");
             setShowNotificationsSettings(false);
             resolve({ settings });
