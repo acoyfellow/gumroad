@@ -793,11 +793,10 @@ Rails.application.routes.draw do
 
     # communities
     get "/communities", to: "communities#index", as: :communities
-    get "/communities/:seller_id/:community_id", to: "communities#show", as: :community
 
     # community nested resources
     scope module: "communities" do
-      resources :chat_messages, path: "communities/:community_id/chat_messages", only: [:index, :create, :update, :destroy] do
+      resources :chat_messages, path: "communities/:community_id/chat_messages", only: [:create, :update, :destroy] do
         collection do
           post :mark_read
         end
@@ -805,6 +804,8 @@ Rails.application.routes.draw do
 
       resource :notification_settings, path: "communities/:community_id/notification_settings", only: [:update]
     end
+
+    get "/communities/:seller_id/:community_id", to: "communities#show", as: :community
 
     # emails
     resources :emails, only: [:index, :new, :create, :edit, :update, :destroy] do

@@ -1,6 +1,5 @@
 import { usePage } from "@inertiajs/react";
 import React from "react";
-import { cast } from "ts-safe-cast";
 
 import { CommunityView } from "$app/components/Communities/CommunityView";
 import type { Community, CommunityChatMessage, CommunityNotificationSettings } from "$app/components/Communities/types";
@@ -17,8 +16,8 @@ type Props = {
   } | null;
 };
 
-export default function CommunitiesIndex() {
-  const props = cast<Props>(usePage().props);
+function CommunitiesIndex() {
+  const props = usePage<Props>().props;
 
   return (
     <CommunityView
@@ -26,7 +25,10 @@ export default function CommunitiesIndex() {
       communities={props.communities}
       notificationSettings={props.notification_settings}
       selectedCommunityId={props.selected_community_id}
-      initialMessages={props.messages}
+      messages={props.messages}
     />
   );
 }
+
+CommunitiesIndex.loggedInUserLayout = true;
+export default CommunitiesIndex;

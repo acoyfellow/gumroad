@@ -38,19 +38,12 @@ export type CommunityDraft = {
   isSending: boolean;
 };
 
-export type CommunityChat = {
-  messages: CommunityChatMessage[];
-  nextOlderTimestamp: string | null;
-  nextNewerTimestamp: string | null;
-  isLoading: boolean;
-};
-
 export type CommunitiesPageProps = {
   hasProducts: boolean;
   communities: Community[];
   notificationSettings: CommunityNotificationSettings;
   selectedCommunityId: string | null;
-  initialMessages: {
+  messages: {
     messages: CommunityChatMessage[];
     next_older_timestamp: string | null;
     next_newer_timestamp: string | null;

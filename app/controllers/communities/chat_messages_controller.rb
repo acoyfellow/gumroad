@@ -6,20 +6,6 @@ class Communities::ChatMessagesController < ApplicationController
   before_action :set_message, only: [:update, :destroy]
   after_action :verify_authorized
 
-  def index
-    authorize @community, :show?
-
-    messages_presenter = PaginatedCommunityChatMessagesPresenter.new(
-      community: @community,
-      timestamp: params[:timestamp] || Time.current.iso8601,
-      fetch_type: params[:fetch_type] || "older"
-    )
-
-    render inertia: "Communities/Index", props: {
-      messages: messages_presenter.props
-    }
-  end
-
   def create
     authorize @community, :show?
 
@@ -58,7 +44,7 @@ class Communities::ChatMessagesController < ApplicationController
     mark_read_params = { user_id: current_user.id, community_id: @community.id, community_chat_message_id: message.id }
     LastReadCommunityChatMessage.set!(**mark_read_params)
 
-    head :ok
+    redirect_to community_path(seller_id: @community.seller.external_id, community_id: @community.external_id)
   end
 
   private
