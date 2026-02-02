@@ -284,7 +284,7 @@ class LinksController < ApplicationController
     authorize @product
 
     if @product.user.email.blank?
-      return redirect_to edit_link_path(@product), status: :see_other, alert: "To publish a product, we need you to have an email. Set an email in your settings to continue."
+      return redirect_to edit_link_path(@product), alert: "To publish a product, we need you to have an email. Set an email in your settings to continue."
 
     end
 
@@ -292,7 +292,7 @@ class LinksController < ApplicationController
       @product.publish!
       redirect_to determine_redirect_path_after_publish_toggle(@product, published: true), notice: "Product published successfully", status: :see_other
     rescue Link::LinkInvalid, ActiveRecord::RecordInvalid
-      redirect_to edit_link_path(@product), status: :see_other, alert: @product.errors.full_messages[0]
+      redirect_to edit_link_path(@product), alert: @product.errors.full_messages[0]
     rescue => e
       Bugsnag.notify(e)
       redirect_to edit_link_path(@product), alert: "Something broke. We're looking into what happened. Sorry about this!"
@@ -355,12 +355,12 @@ class LinksController < ApplicationController
 
       if current_tab == "share"
         if product.native_type == Link::NATIVE_TYPE_COFFEE
-          products_edit_product_edit_show_path(product.unique_permalink)
+          products_edit_product_path(product.unique_permalink)
         else
-          products_edit_content_edit_show_path(product.unique_permalink)
+          products_edit_content_path(product.unique_permalink)
         end
       elsif published
-        products_edit_share_edit_show_path(product.unique_permalink)
+        products_edit_share_path(product.unique_permalink)
       else
         edit_link_path(product)
       end
@@ -469,7 +469,8 @@ class LinksController < ApplicationController
 
     def index_params
       @index_params ||= begin
-        permitted = params.permit(
+        safe_params = request.parameters.respond_to?(:permit) ? request.parameters : ActionController::Parameters.new(request.parameters)
+        permitted = safe_params.permit(
           :query, :products_page, :memberships_page,
           :products_sort_key, :products_sort_direction,
           :memberships_sort_key, :memberships_sort_direction

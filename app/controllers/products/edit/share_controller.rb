@@ -4,9 +4,9 @@ class Products::Edit::ShareController < Products::Edit::BaseController
   def show
     redirect_to bundle_path(@product.external_id) if @product.is_bundle?
 
-    unless @product.is_published
+    unless @product.published?
       return redirect_to(
-        products_edit_product_edit_show_path(@product.unique_permalink),
+        products_edit_product_path(@product.unique_permalink),
         warning: "Not yet! You've got to publish your awesome product before you can share it with your audience and the world."
       )
     end
@@ -118,7 +118,7 @@ class Products::Edit::ShareController < Products::Edit::BaseController
       else
         error_message = @product.errors.full_messages.first || e.message
       end
-      return redirect_to products_edit_share_edit_show_path(@product.unique_permalink), alert: error_message
+      return redirect_to products_edit_share_path(@product.unique_permalink), alert: error_message
     end
 
     invalid_currency_offer_codes = @product.product_and_universal_offer_codes.reject do |offer_code|
@@ -141,9 +141,9 @@ class Products::Edit::ShareController < Products::Edit::BaseController
         issue_description = "#{all_invalid_offer_codes.count > 1 ? "discount" : "discounts"} this product below #{@product.min_price_formatted}, but not to #{MoneyFormatter.format(0, @product.price_currency_type.to_sym, no_cents_if_whole: true, symbol: true)}"
       end
 
-      return redirect_to products_edit_share_edit_show_path(@product.unique_permalink), warning: "The following offer #{"code".pluralize(all_invalid_offer_codes.count)} #{issue_description}: #{all_invalid_offer_codes.join(", ")}. Please update #{all_invalid_offer_codes.length > 1 ? "them or they" : "it or it"} will not work at checkout."
+      return redirect_to products_edit_share_path(@product.unique_permalink), warning: "The following offer #{"code".pluralize(all_invalid_offer_codes.count)} #{issue_description}: #{all_invalid_offer_codes.join(", ")}. Please update #{all_invalid_offer_codes.length > 1 ? "them or they" : "it or it"} will not work at checkout."
     end
 
-    redirect_to products_edit_share_edit_show_path(@product.unique_permalink), notice: "Changes saved successfully!", status: :see_other
+    redirect_to products_edit_share_path(@product.unique_permalink), notice: "Changes saved successfully!", status: :see_other
   end
 end
