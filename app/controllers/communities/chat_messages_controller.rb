@@ -44,7 +44,7 @@ class Communities::ChatMessagesController < ApplicationController
     mark_read_params = { user_id: current_user.id, community_id: @community.id, community_chat_message_id: message.id }
     LastReadCommunityChatMessage.set!(**mark_read_params)
 
-    redirect_to community_path(seller_id: @community.seller.external_id, community_id: @community.external_id)
+    redirect_to community_path(seller_id: @community.seller.external_id, community_id: @community.external_id), status: :see_other
   end
 
   private

@@ -11,7 +11,7 @@ class Communities::NotificationSettingsController < ApplicationController
     settings = current_user.community_notification_settings.find_or_initialize_by(seller: @community.seller)
     settings.update!(permitted_params)
 
-    redirect_to community_path(@community.seller.external_id, @community.external_id), status: :see_other
+    redirect_to community_path(@community.seller.external_id, @community.external_id), notice: "Changes saved!", status: :see_other
   end
 
   private
