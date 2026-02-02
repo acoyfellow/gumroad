@@ -26,10 +26,9 @@ describe CommunitiesController do
         sign_in seller
       end
 
-      it "renders the page" do
+      it "redirects to the first community" do
         get :index
-        expect(response).to be_successful
-        expect(controller.send(:page_title)).to eq("Communities")
+        expect(response).to redirect_to(community_path(seller.external_id, community.external_id))
       end
 
       it "returns unauthorized response if the :communities feature flag is disabled" do

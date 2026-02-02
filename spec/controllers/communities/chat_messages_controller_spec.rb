@@ -11,48 +11,6 @@ describe Communities::ChatMessagesController do
     Feature.activate_user(:communities, seller)
   end
 
-  describe "GET #index" do
-    context "when logged in as a user with access" do
-      let(:buyer) { create(:user) }
-      let!(:purchase) { create(:free_purchase, seller: seller, purchaser: buyer, link: product) }
-
-      before do
-        sign_in(buyer)
-        # Set Inertia headers to get JSON response
-        request.headers["X-Inertia"] = "true"
-        request.headers["X-Inertia-Version"] = "1"
-      end
-
-      it "returns chat messages" do
-        create(:community_chat_message, community: community, user: seller, content: "Hello!")
-
-        # Use a timestamp after the message was created to fetch it
-        get :index, params: { community_id: community.external_id, timestamp: 1.minute.from_now.iso8601, fetch_type: "older" }
-
-        expect(response).to have_http_status(:ok)
-        body = response.parsed_body
-        expect(body["component"]).to eq("Communities/Index")
-        expect(body["props"]["messages"]["messages"].length).to eq(1)
-        expect(body["props"]["messages"]["messages"][0]["content"]).to eq("Hello!")
-      end
-    end
-
-    context "when logged in as a user without access" do
-      let(:other_user) { create(:user) }
-
-      before do
-        sign_in(other_user)
-      end
-
-      it "redirects unauthorized users" do
-        get :index, params: { community_id: community.external_id }
-
-        # Pundit redirects unauthorized users to dashboard
-        expect(response).to have_http_status(:redirect)
-      end
-    end
-  end
-
   describe "POST #create" do
     context "when logged in as a user with access" do
       let(:buyer) { create(:user) }
@@ -184,7 +142,7 @@ describe Communities::ChatMessagesController do
       sign_in(buyer)
     end
 
-    it "marks the message as read" do
+    it "marks the message as read and redirects" do
       expect do
         post :mark_read, params: {
           community_id: community.external_id,
@@ -192,7 +150,7 @@ describe Communities::ChatMessagesController do
         }
       end.to change(LastReadCommunityChatMessage, :count).by(1)
 
-      expect(response).to have_http_status(:ok)
+      expect(response).to redirect_to(community_path(seller.external_id, community.external_id))
 
       last_read = LastReadCommunityChatMessage.last
       expect(last_read.user).to eq(buyer)
