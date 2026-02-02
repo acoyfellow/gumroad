@@ -461,17 +461,15 @@ export default function ProductPage() {
                         onChange={(should_include_last_post) =>
                           form.setData("should_include_last_post", !should_include_last_post)
                         }
-                      >
-                       label="New members will be emailed this product's last published post"
-                      </Switch>
+                        label="New members will be emailed this product's last published post"
+                      />
                       <Switch
                         checked={form.data.should_show_all_posts}
                         onChange={(should_show_all_posts) =>
                           form.setData("should_show_all_posts", !should_show_all_posts)
                         }
-                      >
                         label="New members will get access to all posts you have published"
-                      </Switch>
+                      />
                       <Switch
                         checked={form.data.block_access_after_membership_cancellation}
                         onChange={(block_access_after_membership_cancellation) =>
@@ -480,9 +478,8 @@ export default function ProductPage() {
                             !block_access_after_membership_cancellation,
                           )
                         }
-                      >
                         label="Members will lose access when their memberships end"
-                      </Switch>
+                      />
                       <DurationEditor product={form.data as Product} updateProduct={updateProduct} />
                     </>
                   ) : null}
@@ -495,9 +492,8 @@ export default function ProductPage() {
                       <Switch
                         checked={form.data.quantity_enabled}
                         onChange={(quantity_enabled) => form.setData("quantity_enabled", !quantity_enabled)}
-                      >
                         label="Allow customers to choose a quantity"
-                      </Switch>
+                      />
                     </>
                   ) : null}
                   <Switch
@@ -505,25 +501,22 @@ export default function ProductPage() {
                     onChange={(should_show_sales_count) =>
                       form.setData("should_show_sales_count", !should_show_sales_count)
                     }
-                  >
                     label="Display your product's sales count on the product page"
-                  </Switch>
+                  />
                   {form.data.variants.length > 0 ? (
                     <Switch
                       checked={form.data.hide_sold_out_variants}
                       onChange={(hide_sold_out_variants) =>
                         form.setData("hide_sold_out_variants", !hide_sold_out_variants)
                       }
-                    >
                       label="Hide variants when they sell out"
-                    </Switch>
+                    />
                   ) : null}
                   <Switch
                     checked={form.data.is_epublication}
                     onChange={(is_epublication) => form.setData("is_epublication", !is_epublication)}
-                  >
                     label="Mark this product as an e-publication for VAT purposes"
-                  </Switch>
+                  />
                   <RefundPolicySelector
                     refundPolicy={form.data.refund_policy}
                     setRefundPolicy={(refund_policy) => form.setData("refund_policy", refund_policy)}
