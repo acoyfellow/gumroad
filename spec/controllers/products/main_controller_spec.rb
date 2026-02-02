@@ -132,35 +132,26 @@ describe Products::MainController, inertia: true do
       let(:response_status) { 303 }
     end
 
-    context "when publishing" do
-      before do
-        @product.unpublish!
-      end
-
-      it "does not publish the product" do
-        patch :update, params: @params.deep_merge!({ product: { publish: true } }), as: :json
-
-        expect(response).to redirect_to(edit_product_path(@product.unique_permalink))
-        expect(flash[:alert]).to eq("You cannot publish this product yet.")
-        @product.reload
-        expect(@product.purchase_disabled_at).to be_present
-      end
-    end
-
-    context "when unpublishing" do
-      it_behaves_like "unpublishes the product and redirects to", "product" do
-        let(:base_update_params) { @params }
-        let(:product) { @product }
-        let(:unpublish_redirect_path) { edit_product_path(@product.unique_permalink) }
-      end
-    end
-
-    context "when offer code has amount issues" do
+    it_behaves_like "a product with offer code amount issues" do
       let(:product) { @product }
-      let(:base_update_params) { @params }
-      let(:redirect_path) { edit_product_path(product.unique_permalink) }
+      let(:request_params) { @params }
+      let(:redirect_path) { edit_product_path(@product.unique_permalink) }
+    end
 
-      it_behaves_like "redirects with warning when offer code has amount issues"
+    it "does not publish the product" do
+      @product.unpublish!
+      patch :update, params: @params.deep_merge!({ product: { publish: true } }), as: :json
+
+      expect(response).to redirect_to(edit_product_path(@product.unique_permalink))
+      expect(flash[:alert]).to eq("You cannot publish this product yet.")
+      @product.reload
+      expect(@product.purchase_disabled_at).to be_present
+    end
+
+    it_behaves_like "unpublishing a product" do
+      let(:request_params) { @params }
+      let(:product) { @product }
+      let(:unpublish_redirect_path) { edit_product_path(@product.unique_permalink) }
     end
 
     describe "coffee products" do

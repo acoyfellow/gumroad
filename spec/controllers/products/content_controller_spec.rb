@@ -66,12 +66,6 @@ describe Products::ContentController, inertia: true do
   end
 
   describe "PATCH update" do
-    let(:base_update_params) { @params }
-
-    def update_params_for(p)
-      { product_id: p.unique_permalink, product: { rich_content: [], files: [], variants: [] } }
-    end
-
     before do
       @gif_file = fixture_file_upload("test-small.gif", "image/gif")
       product_file = product.product_files.alive.first
@@ -106,6 +100,37 @@ describe Products::ContentController, inertia: true do
       let(:response_status) { 303 }
     end
 
+    it_behaves_like "a product with offer code amount issues" do
+      let(:request_params) { @params }
+      let(:redirect_path) { edit_product_content_path(product.unique_permalink) }
+    end
+
+    context "when publishing" do
+      it_behaves_like "publishing a product" do
+        let(:request_params) { @params }
+        let(:publish_failure_redirect_path_for_product) { edit_product_content_path(product.unique_permalink) }
+        let(:publish_failure_redirect_path_for_unpublished_product) { edit_product_content_path(unpublished_product.unique_permalink) }
+      end
+
+      it "allows publishing a product without files" do
+        product_without_files = create(:product, user: seller, purchase_disabled_at: Time.current)
+
+        patch :update, params: { product_id: product_without_files.unique_permalink, product: { rich_content: [], files: [], variants: [], publish: true } }, as: :json
+
+        expect(response).to have_http_status(:see_other)
+        expect(response).to redirect_to(edit_product_share_path(product_without_files.unique_permalink))
+        expect(flash[:notice]).to eq("Published!")
+        product_without_files.reload
+        expect(product_without_files.purchase_disabled_at).to be_nil
+        expect(product_without_files.alive_product_files.count).to eq(0)
+      end
+    end
+
+    it_behaves_like "unpublishing a product" do
+      let(:request_params) { @params }
+      let(:unpublish_redirect_path) { edit_product_content_path(product.unique_permalink) }
+    end
+
     it "only updates content tab fields" do
       original_name = product.name
       original_price = product.price_cents
@@ -118,13 +143,6 @@ describe Products::ContentController, inertia: true do
       product.reload
       expect(product.name).to eq(original_name)
       expect(product.price_cents).to eq(original_price)
-    end
-
-    context "when offer code has amount issues" do
-      let(:base_update_params) { @params }
-      let(:redirect_path) { edit_product_content_path(product.unique_permalink) }
-
-      it_behaves_like "redirects with warning when offer code has amount issues"
     end
 
     it "sets flash inertia with new_email_url path when content is updated and product has sales" do
@@ -145,32 +163,6 @@ describe Products::ContentController, inertia: true do
 
       expect(response).to have_http_status(:found)
       expect(response).to redirect_to(edit_product_content_path(product.unique_permalink))
-    end
-
-    context "when publishing" do
-      include_examples "publish flow" do
-        let(:publish_failure_redirect_path_for_product) { edit_product_content_path(product.unique_permalink) }
-        let(:publish_failure_redirect_path_for_unpublished_product) { edit_product_content_path(unpublished_product.unique_permalink) }
-      end
-
-      it "allows publishing a product without files" do
-        product_without_files = create(:product, user: seller, purchase_disabled_at: Time.current)
-
-        patch :update, params: update_params_for(product_without_files).deep_merge(product: { publish: true }), as: :json
-
-        expect(response).to have_http_status(:see_other)
-        expect(response).to redirect_to(edit_product_share_path(product_without_files.unique_permalink))
-        expect(flash[:notice]).to eq("Published!")
-        product_without_files.reload
-        expect(product_without_files.purchase_disabled_at).to be_nil
-        expect(product_without_files.alive_product_files.count).to eq(0)
-      end
-    end
-
-    context "when unpublishing" do
-      it_behaves_like "unpublishes the product and redirects to", "content" do
-        let(:unpublish_redirect_path) { edit_product_content_path(product.unique_permalink) }
-      end
     end
 
     describe "licenses" do

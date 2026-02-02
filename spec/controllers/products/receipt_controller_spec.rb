@@ -70,18 +70,6 @@ describe Products::ReceiptController, inertia: true do
   end
 
   describe "PATCH update" do
-    let(:base_update_params) { @params }
-
-    def update_params_for(p)
-      {
-        product_id: p.unique_permalink,
-        product: {
-          custom_receipt_text: "Thank you for purchasing! Feel free to contact us any time for support.",
-          custom_view_content_button_text: "Get Your Files",
-        },
-      }
-    end
-
     before do
       request.headers["X-Inertia"] = "true"
       request.headers["X-Inertia-Partial-Component"] = "Products/Receipt/Edit"
@@ -108,6 +96,22 @@ describe Products::ReceiptController, inertia: true do
       let(:response_status) { 303 }
     end
 
+    it_behaves_like "a product with offer code amount issues" do
+      let(:request_params) { @params }
+      let(:redirect_path) { edit_product_receipt_path(product.unique_permalink) }
+    end
+
+    it_behaves_like "publishing a product" do
+      let(:request_params) { @params }
+      let(:publish_failure_redirect_path_for_product) { edit_product_receipt_path(product.unique_permalink) }
+      let(:publish_failure_redirect_path_for_unpublished_product) { edit_product_receipt_path(unpublished_product.unique_permalink) }
+    end
+
+    it_behaves_like "unpublishing a product" do
+      let(:request_params) { @params }
+      let(:unpublish_redirect_path) { edit_product_receipt_path(product.unique_permalink) }
+    end
+
     it "only updates receipt fields" do
       original_name = product.name
       original_price = product.price_cents
@@ -122,26 +126,6 @@ describe Products::ReceiptController, inertia: true do
       expect(product.custom_view_content_button_text).to eq("Get Your Files")
       expect(product.name).to eq(original_name)
       expect(product.price_cents).to eq(original_price)
-    end
-
-    context "when offer code has amount issues" do
-      let(:base_update_params) { @params }
-      let(:redirect_path) { edit_product_receipt_path(product.unique_permalink) }
-
-      it_behaves_like "redirects with warning when offer code has amount issues"
-    end
-
-    context "when publishing" do
-      include_examples "publish flow" do
-        let(:publish_failure_redirect_path_for_product) { edit_product_receipt_path(product.unique_permalink) }
-        let(:publish_failure_redirect_path_for_unpublished_product) { edit_product_receipt_path(unpublished_product.unique_permalink) }
-      end
-    end
-
-    context "when unpublishing" do
-      it_behaves_like "unpublishes the product and redirects to", "receipt" do
-        let(:unpublish_redirect_path) { edit_product_receipt_path(product.unique_permalink) }
-      end
     end
 
     it "returns error on validation failure" do

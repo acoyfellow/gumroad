@@ -86,6 +86,41 @@ describe Products::ShareController, inertia: true do
       let(:response_status) { 303 }
     end
 
+    it_behaves_like "a product with offer code amount issues" do
+      let(:request_params) { @params }
+      let(:redirect_path) { edit_product_share_path(product.unique_permalink) }
+    end
+
+    context "when attempting to publish" do
+      it "does not publish the product even if publish: true is sent" do
+        product.unpublish!
+        patch :update, params: @params.deep_merge!({ product: { publish: true } }), as: :json
+
+        expect(response).to have_http_status(:found)
+        expect(response).to redirect_to(edit_product_share_path(product.unique_permalink))
+        product.reload
+        expect(product.purchase_disabled_at).to be_present
+      end
+    end
+
+    it_behaves_like "unpublishing a product" do
+      let(:request_params) { @params }
+      let(:unpublish_redirect_path) { edit_product_content_path(product.unique_permalink) }
+    end
+
+    context "when unpublishing a coffee product" do
+      let(:seller) { create(:user, :eligible_for_service_products) }
+      let(:coffee_product) { create(:product, user: seller, native_type: Link::NATIVE_TYPE_COFFEE, price_cents: 1000) }
+      let(:request_params) { { product_id: coffee_product.unique_permalink, product: { taxonomy_id: coffee_product.taxonomy_id } } }
+      let(:product) { coffee_product }
+
+      it_behaves_like "unpublishing a product" do
+        let(:unpublish_redirect_path) { edit_product_path(coffee_product.unique_permalink) }
+
+        before { @params.merge!({ product_id: coffee_product.unique_permalink, product: { taxonomy_id: coffee_product.taxonomy_id } }) }
+      end
+    end
+
     it "only updates share tab fields" do
       original_name = product.name
       original_price = product.price_cents
@@ -107,50 +142,6 @@ describe Products::ShareController, inertia: true do
 
       expect(response).to have_http_status(:found)
       expect(response).to redirect_to(edit_product_share_path(product.unique_permalink))
-    end
-
-    context "when unpublishing" do
-      let(:base_update_params) { @params }
-
-      it_behaves_like "unpublishes the product and redirects to", "content" do
-        let(:unpublish_redirect_path) { edit_product_content_path(product.unique_permalink) }
-      end
-    end
-
-    context "when unpublishing a coffee product" do
-      let(:seller) { create(:user, :eligible_for_service_products) }
-      let(:coffee_product) { create(:product, user: seller, native_type: Link::NATIVE_TYPE_COFFEE, price_cents: 1000) }
-      let(:base_update_params) { { product_id: coffee_product.unique_permalink, product: { taxonomy_id: coffee_product.taxonomy_id } } }
-      let(:product) { coffee_product }
-
-      before do
-        @params.merge!({ product_id: coffee_product.unique_permalink, product: { taxonomy_id: coffee_product.taxonomy_id } })
-      end
-
-      it_behaves_like "unpublishes the product and redirects to", "product" do
-        let(:unpublish_redirect_path) { edit_product_path(coffee_product.unique_permalink) }
-      end
-    end
-
-    context "when attempting to publish" do
-      it "does not publish the product even if publish: true is sent" do
-        product.unpublish!
-        patch :update, params: @params.deep_merge!({ product: { publish: true } }), as: :json
-
-        expect(response).to have_http_status(:found)
-        expect(response).to redirect_to(edit_product_share_path(product.unique_permalink))
-        product.reload
-        expect(product.purchase_disabled_at).to be_present
-      end
-    end
-
-    context "when offer code has amount issues" do
-      before { @params.merge!({ product_id: product.unique_permalink, product: { taxonomy_id: product.taxonomy_id } }) }
-
-      let(:base_update_params) { @params }
-      let(:redirect_path) { edit_product_share_path(product.unique_permalink) }
-
-      it_behaves_like "redirects with warning when offer code has amount issues"
     end
 
     describe "is_adult" do
