@@ -1,5 +1,6 @@
 import cx from "classnames";
 import React from "react";
+import { InfiniteScroll } from "@inertiajs/react";
 
 import { ChatMessage } from "./ChatMessage";
 import { scrollTo } from "./scrollUtils";
@@ -159,6 +160,16 @@ export const ChatMessageList = ({
         {community.unread_count > 0 && lastReadMessageIndex === -1 && messages.length > 0 && (
           <UnreadSeparator visible={unreadSeparatorVisibility} />
         )}
+      <InfiniteScroll
+        data="messages"
+        reverse
+        loading = {()=>
+              <div className="flex justify-center py-4">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-black dark:border-t-white" />
+              </div>
+          }
+        >
+
         {sortedDates.map((date) => (
           <div className="flex flex-col gap-4" key={date} ref={(el) => el && dateElementsRef.current.set(date, el)}>
             <DateSeparator date={date} />
@@ -182,6 +193,7 @@ export const ChatMessageList = ({
             })}
           </div>
         ))}
+        </InfiniteScroll>
       </div>
       <div data-id="bottom"></div>
     </div>

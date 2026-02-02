@@ -1,5 +1,5 @@
 import { Channel } from "@anycable/web";
-import { InfiniteScroll, router } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import cx from "classnames";
 import { debounce } from "lodash-es";
 import * as React from "react";
@@ -57,13 +57,13 @@ const sortByCreatedAt = <T extends { created_at: string }>(items: readonly T[]) 
 const sortByName = <T extends { name: string }>(items: readonly T[]) =>
   [...items].sort((a, b) => a.name.localeCompare(b.name));
 
-export const CommunityView = () => ({
+export function CommunityView({
   hasProducts,
   communities: initialCommunities,
-  notificationSettings ,
+  notificationSettings,
   selectedCommunityId,
   messages,
-}: CommunitiesPageProps) => {
+}: CommunitiesPageProps) {
   const currentSeller = useCurrentSeller();
   const isAboveBreakpoint = useIsAboveBreakpoint("lg");
 
@@ -548,32 +548,6 @@ export const CommunityView = () => ({
 
               <div className="flex flex-1 overflow-auto">
                 <div ref={chatContainerRef} className="relative flex-1 overflow-y-auto">
-                  <InfiniteScroll data="messages"
-                    reverse
-                    preserveUrl
-                    next={({ hasMore, loading }) =>
-                      hasMore ? (
-                        loading ? (
-                          <div className="flex justify-center py-4">
-                            <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-black dark:border-t-white" />
-                          </div>
-                        ) : null
-                      ) : (
-                        <div className="px-6 pt-8">
-                          <div className="mb-2 text-3xl">👋</div>
-                          <h2 className="mb-2 text-xl font-bold">Welcome to {selectedCommunity.name}</h2>
-                          <p className="text-sm text-gray-500">This is the start of this community chat.</p>
-                        </div>
-                      )
-                    }
-                    previous={({ hasMore, loading }) =>
-                      hasMore && loading ? (
-                        <div className="flex justify-center py-4">
-                          <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-black dark:border-t-white" />
-                        </div>
-                      ) : null
-                    }
-                  >
                     <div
                       className={cx("sticky top-0 z-20 flex justify-center transition-opacity duration-300", {
                         "opacity-100": stickyDate,
@@ -583,7 +557,6 @@ export const CommunityView = () => ({
                       {stickyDate ? <DateSeparator date={stickyDate} showDividerLine={false} /> : null}
                     </div>
 
-                    {allMessages.length > 0 || messages ? (
                       <ChatMessageList
                         key={selectedCommunity.id}
                         community={selectedCommunity}
@@ -593,7 +566,6 @@ export const CommunityView = () => ({
                         unreadSeparatorVisibility={showScrollToBottomButton}
                         markMessageAsRead={markMessageAsRead}
                       />
-                    ) : null}
                     {showScrollToBottomButton ? (
                       <ScrollToBottomButton
                         hasUnreadMessages={selectedCommunity.unread_count > 0}
@@ -601,7 +573,6 @@ export const CommunityView = () => ({
                         chatMessageInputHeight={chatMessageInputHeight}
                       />
                     ) : null}
-                  </InfiniteScroll>
                 </div>
               </div>
 
@@ -628,7 +599,7 @@ export const CommunityView = () => ({
       ) : null}
     </>
   );
-};
+}
 
 const NotificationsSettingsModal = ({
   communityName,
