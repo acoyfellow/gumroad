@@ -10,7 +10,7 @@ export const DurationEditor = ({
   updateProduct,
 }: {
   product: Product;
-  updateProduct: (data: Partial<any>) => void;
+  updateProduct: (data: Partial<Product>) => void;
 }) => {
   const uid = React.useId();
   const [isOpen, setIsOpen] = React.useState(product.duration_in_months != null);

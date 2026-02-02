@@ -12,7 +12,7 @@ import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 
 type DefaultDiscountCodeSelectorProps = {
   product: Product;
-  updateProduct: (data: Partial<any>) => void;
+  updateProduct: (data: Partial<Product>) => void;
   uniquePermalink: string;
 };
 

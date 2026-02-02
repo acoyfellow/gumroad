@@ -13,7 +13,7 @@ export const CancellationDiscountSelector = ({
   currencyType,
 }: {
   product: Product;
-  updateProduct: (data: Partial<any>) => void;
+  updateProduct: (data: Partial<Product>) => void;
   currencyType: CurrencyCode;
 }) => {
   const cancellationDiscount = product.cancellation_discount;

@@ -47,7 +47,7 @@ type Props = {
 };
 
 export const useProductUrl = (params = {}) => {
-  const {product, unique_permalink: uniquePermalink} = usePage<Props>().props;
+  const { product, unique_permalink: uniquePermalink } = usePage<Props>().props;
   const currentSeller = useCurrentSeller();
   const { appDomain } = useDomains();
 
@@ -66,8 +66,8 @@ const NotifyAboutProductUpdatesAlert = ({
   setContentUpdates,
   uniquePermalink,
 }: {
-  contentUpdates: ContentUpdate | null ;
-  setContentUpdates: ((updates: ContentUpdate | null) => void) ;
+  contentUpdates: ContentUpdate | null;
+  setContentUpdates: (updates: ContentUpdate | null) => void;
   uniquePermalink: string;
 }) => {
   const timerRef = React.useRef<number | null>(null);
@@ -165,7 +165,7 @@ export const Layout = ({
   contentUpdates,
   setContentUpdates,
 }: InertiaLayoutProps) => {
-  const {product,unique_permalink: uniquePermalink} = usePage<Props>().props;
+  const { product, unique_permalink: uniquePermalink } = usePage<Props>().props;
   const currentSeller = useCurrentSeller();
   const { appDomain } = useDomains();
 

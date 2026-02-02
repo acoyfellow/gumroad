@@ -45,7 +45,7 @@ export const PriceEditor = ({
   currencyCodeSelector?: { options: CurrencyCode[]; onChange: (currencyCode: CurrencyCode) => void };
   showDefaultDiscountCodeSelector?: boolean;
   product?: Product;
-  updateProduct?: (data: Partial<any>) => void;
+  updateProduct?: (data: Partial<Product>) => void;
   uniquePermalink?: string;
 }) => {
   const uid = React.useId();

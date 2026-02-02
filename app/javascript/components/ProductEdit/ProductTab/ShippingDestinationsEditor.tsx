@@ -20,7 +20,7 @@ export const ShippingDestinationsEditor = ({
 }: {
   shippingDestinations: ShippingDestination[];
   onChange: (shippingDestinations: ShippingDestination[]) => void;
-  availableCountries: ShippingCountry[];
+  availableCountries: ShippingCountry[] | [];
   currencyType: CurrencyCode;
 }) => {
   const addShippingDestination = () => {

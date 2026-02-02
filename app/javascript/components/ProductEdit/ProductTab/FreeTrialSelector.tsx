@@ -13,7 +13,7 @@ export const FreeTrialSelector = ({
   updateProduct,
 }: {
   product: Product;
-  updateProduct: (data: Partial<any>) => void;
+  updateProduct: (data: Partial<Product>) => void;
 }) => {
   const uid = React.useId();
 

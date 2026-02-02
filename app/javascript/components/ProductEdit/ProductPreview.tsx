@@ -13,7 +13,7 @@ import { CoffeePage } from "$app/components/server-components/Profile/CoffeePage
 import { useProductUrl } from "./Layout";
 
 type ProductPreviewProps = {
-  product: ProductState & Record<string, any>;
+  product: ProductState;
   id: string;
   uniquePermalink: string;
   currencyType: CurrencyCode;
@@ -90,7 +90,7 @@ export const ProductPreview = ({
     is_compliance_blocked: false,
     is_published: product.is_published,
     is_stream_only: false,
-    streamable: (product.files || []).some((file) => file.is_streamable),
+    streamable: product.files.some((file) => file.is_streamable),
     is_quantity_enabled: product.quantity_enabled,
     is_multiseat_license: false,
     hide_sold_out_variants: product.hide_sold_out_variants,
@@ -115,7 +115,7 @@ export const ProductPreview = ({
             enabled: Object.entries(product.variants[0].recurrence_price_values).flatMap(([recurrence, value], idx) =>
               value.enabled
                 ? {
-                    recurrence: recurrence as any,
+                    recurrence,
                     price_cents: value.price_cents ?? 0,
                     id: idx.toString(),
                   }

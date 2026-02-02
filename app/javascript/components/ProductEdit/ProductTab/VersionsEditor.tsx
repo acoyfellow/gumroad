@@ -106,7 +106,7 @@ export const VersionsEditor = ({
             version={version}
             updateVersion={(update) => updateVersion(version.id, update)}
             onDelete={() => setDeletionModalVersionId(version.id)}
-            integrations={integrations ?? {}}
+            integrations={integrations}
             currencyType={currencyType ?? "usd"}
           />
         ))}
@@ -135,7 +135,7 @@ const VersionEditor = ({
 
   const url = useProductUrl({ option: version.id });
 
-  const availableIntegrations = Object.entries(integrations || {})
+  const availableIntegrations = Object.entries(integrations)
     .filter(([_, enabled]) => enabled)
     .map(([name]) => name);
 
@@ -212,7 +212,7 @@ const VersionEditor = ({
                 <legend>Integrations</legend>
                 {availableIntegrations.map((integration) => (
                   <Switch
-                    checked={version.integrations[integration as keyof typeof version.integrations]}
+                    checked={(version.integrations as any)[integration]}
                     onChange={(e) =>
                       updateVersion({ integrations: { ...version.integrations, [integration]: e.target.checked } })
                     }

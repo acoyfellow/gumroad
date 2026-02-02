@@ -154,7 +154,7 @@ const TierEditor = ({
   tier: Tier;
   updateTier: (update: Partial<Tier>) => void;
   onDelete: () => void;
-  product: any;
+  product: Product;
   currencyType: CurrencyCode;
 }) => {
   const uid = React.useId();
@@ -176,7 +176,7 @@ const TierEditor = ({
   };
 
   const defaultRecurrencePriceValue = product.subscription_duration
-    ? tier.recurrence_price_values[product.subscription_duration as keyof typeof tier.recurrence_price_values]
+    ? tier.recurrence_price_values[product.subscription_duration]
     : null;
   React.useEffect(() => {
     if (product.subscription_duration) {
@@ -199,7 +199,7 @@ const TierEditor = ({
   }, [defaultRecurrencePriceValue?.price_cents]);
 
   const integrations = Object.entries(product.integrations)
-    .filter(([_, enabled]) => enabled)
+    .filter(([, enabled]) => enabled)
     .map(([name]) => name);
 
   const allEnabledPricesAreZero = areAllEnabledPricesZero(tier.recurrence_price_values);
@@ -369,7 +369,7 @@ const TierEditor = ({
                 <legend>Integrations</legend>
                 {integrations.map((integration, idx) => (
                   <Switch
-                    checked={tier.integrations[integration as keyof typeof tier.integrations]}
+                    checked={(tier.integrations as any)[integration]}
                     onChange={(e) =>
                       updateTier({ integrations: { ...tier.integrations, [integration]: e.target.checked } })
                     }
@@ -445,7 +445,6 @@ You can modify or cancel your membership at any time.`;
       editor.view.dispatch(editor.state.tr);
       const placeholderExtension = editor.extensionManager.extensions.find(({ name }) => name === "placeholder");
       if (placeholderExtension) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         placeholderExtension.options.placeholder = placeholder;
         editor.view.dispatch(editor.state.tr);
       }

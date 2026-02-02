@@ -20,12 +20,13 @@ const loadDropboxScript = (): Promise<void> => {
     return loadPromise;
   }
 
+  const dropboxApiKey = (process.env as any).DROPBOX_PICKER_API_KEY ?? "";
+
   loadPromise = new Promise((resolve, reject) => {
     const script = document.createElement("script");
     script.src = DROPBOX_SCRIPT_URL;
     script.async = true;
-    const env = process.env as { DROPBOX_PICKER_API_KEY?: string };
-    script.setAttribute("data-app-key", env.DROPBOX_PICKER_API_KEY || "");
+    script.setAttribute("data-app-key", dropboxApiKey);
     script.onload = () => {
       resolve();
     };
@@ -46,7 +47,7 @@ export function useDropbox() {
   React.useEffect(() => {
     loadDropboxScript()
       .then(() => setIsLoaded(true))
-      .catch((err) => setError(err));
+      .catch((err: unknown) => setError(err as any));
   }, []);
 
   const choose = (options: {
@@ -57,9 +58,7 @@ export function useDropbox() {
     extensions?: string[][];
   }) => {
     if (!window.Dropbox) {
-      if (error) {
-        options.cancel?.();
-      }
+      options.cancel?.();
       return;
     }
     window.Dropbox.choose(options);

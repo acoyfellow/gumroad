@@ -6,6 +6,7 @@ import { assertResponseError } from "$app/utils/request";
 
 import { Button } from "$app/components/Button";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
+import { type Product } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 
@@ -28,7 +29,7 @@ export const GoogleCalendarIntegrationEditor = ({
   integration: GoogleCalendarIntegration;
   onChange: (integration: GoogleCalendarIntegration) => void;
   googleClientId: string;
-  updateProduct: (updater: (product: any) => void) => void;
+  updateProduct: (updater: (product: Product) => void) => void;
 }) => {
   const [isEnabled, setIsEnabled] = React.useState(!!integration);
   const [isLoading, setIsLoading] = React.useState(false);
