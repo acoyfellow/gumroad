@@ -163,11 +163,7 @@ export const ChatMessageList = ({
       <InfiniteScroll
         data="messages"
         reverse
-        loading = {()=>
-              <div className="flex justify-center py-4">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-black dark:border-t-white" />
-              </div>
-          }
+        previous={hasOlderMessages ? undefined : null}
         >
 
         {sortedDates.map((date) => (
