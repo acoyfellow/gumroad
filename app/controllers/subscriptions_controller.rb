@@ -32,11 +32,11 @@ class SubscriptionsController < ApplicationController
   end
 
   def manage
-    @product = @subscription.link
+    product = @subscription.link
     @body_id = "product_page"
 
     set_meta_tag(title: @subscription.is_installment_plan ? "Manage installment plan" : "Manage membership")
-    set_product_page_meta(@product)
+    set_product_page_meta(product)
 
     set_subscription_confirmed_redirect_cookie
 
