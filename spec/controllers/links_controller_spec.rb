@@ -42,7 +42,7 @@ describe LinksController, :vcr, inertia: true do
       end
     end
 
-    %w[edit unpublish publish destroy].each do |action|
+    %w[unpublish publish destroy].each do |action|
       describe "##{action}" do
         e404_test(action.to_sym)
       end
@@ -190,60 +190,6 @@ describe LinksController, :vcr, inertia: true do
         it "allows deletion if user suspended (tos)" do
           delete :destroy, params: { id: @product.unique_permalink }
           expect(@product.reload.deleted_at.present?).to be(true)
-        end
-      end
-    end
-
-    describe "GET edit" do
-      let(:product) { create(:product, user: seller) }
-
-      it_behaves_like "authorize called for action", :get, :edit do
-        let(:record) { product }
-        let(:request_params) { { id: product.unique_permalink } }
-      end
-
-      it "assigns the correct instance variables" do
-        get :edit, params: { id: product.unique_permalink }
-        expect(response).to be_successful
-
-        product_presenter = assigns(:presenter)
-        expect(product_presenter.product).to eq(product)
-        expect(product_presenter.pundit_user).to eq(controller.pundit_user)
-      end
-
-      context "with other user not owning the product" do
-        let(:other_user) { create(:user) }
-
-        before do
-          sign_in other_user
-        end
-
-        it "redirects to product page" do
-          get :edit, params: { id: product.unique_permalink }
-          expect(response).to redirect_to(short_link_path(product))
-        end
-      end
-
-      context "with admin user signed in" do
-        let(:admin) { create(:admin_user) }
-
-        before do
-          sign_in admin
-        end
-
-        it "renders the page" do
-          get :edit, params: { id: product.unique_permalink }
-          expect(response).to have_http_status(:ok)
-        end
-      end
-
-      context "when the product is a bundle" do
-        let(:bundle) { create(:product, :bundle) }
-
-        it "redirects to the bundle edit page" do
-          sign_in bundle.user
-          get :edit, params: { id: bundle.unique_permalink }
-          expect(response).to redirect_to(edit_bundle_product_path(bundle.external_id))
         end
       end
     end
