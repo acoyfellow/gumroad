@@ -18,6 +18,7 @@ import GuidGenerator from "$app/utils/guid_generator";
 import { getMimeType } from "$app/utils/mimetypes";
 import { assertResponseError, request, ResponseError } from "$app/utils/request";
 import { generatePageIcon } from "$app/utils/rich_content_page";
+import { useDropbox } from "$app/hooks/useDropbox";
 
 import { Button } from "$app/components/Button";
 import { InputtedDiscount } from "$app/components/CheckoutDashboard/DiscountInput";
@@ -398,6 +399,7 @@ const ContentTabContent = ({
     query: string;
     isLoading?: boolean;
   } | null>(null);
+  const dropbox = useDropbox();
 
   const filteredExistingFiles = React.useMemo(() => {
     if (!selectingExistingFiles) return [];
@@ -475,7 +477,7 @@ const ContentTabContent = ({
       window.___dropbox_files_picked = null;
       return;
     }
-    window.Dropbox.choose({ linkType: "direct", multiselect: true, success: (files) => void uploadFiles(files) });
+    dropbox.choose({ linkType: "direct", multiselect: true, success: (files) => void uploadFiles(files) });
   };
 
   React.useEffect(() => {
