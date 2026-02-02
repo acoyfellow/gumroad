@@ -30,7 +30,6 @@ type EditProductSharePageProps = {
     profile_sections: ProfileSection[];
     successful_sales_count: number;
     sales_count_for_inventory: number;
-    is_listed_on_discover: boolean;
     seller_refund_policy_enabled: boolean;
     seller_refund_policy: Pick<RefundPolicy, "title" | "fine_print">;
   };
@@ -161,7 +160,7 @@ const EditProductSharePage = () => {
                 Learn more
               </a>
             </header>
-            {page_metadata.is_listed_on_discover ? (
+            {product.is_listed_on_discover ? (
               <Alert role="status" variant="success">
                 <div className="flex flex-col justify-between sm:flex-row">
                   {product.name} is listed on Gumroad Discover.

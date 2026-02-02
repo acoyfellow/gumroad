@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
 class ReceiptPreviewRendererService
-  def initialize(product:, custom_receipt_text: nil, custom_view_content_button_text: nil, override_existing_text: false)
+  def initialize(product:, custom_receipt_text: nil, custom_view_content_button_text: nil, use_defaults: false)
     @product = product
     @custom_receipt_text = custom_receipt_text
     @custom_view_content_button_text = custom_view_content_button_text
-    @override_existing_text = override_existing_text
+    @use_defaults = use_defaults
   end
 
   def perform
-    @product.custom_receipt_text = @custom_receipt_text if @override_existing_text
-    @product.custom_view_content_button_text = @custom_view_content_button_text if @override_existing_text
+    @product.custom_receipt_text = @custom_receipt_text unless @use_defaults
+    @product.custom_view_content_button_text = @custom_view_content_button_text unless @use_defaults
 
     purchase_preview = build_purchase_preview
 

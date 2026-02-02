@@ -250,11 +250,6 @@ describe ProductPresenter do
   describe "#edit_product" do
     include_context "product presenter edit setup"
 
-    it "returns the exact product edit hash" do
-      expected = presenter.edit_product
-      expect(presenter.edit_product).to eq(expected)
-    end
-
     it "returns the product props for the product edit page" do
       expect(presenter.edit_product).to eq(
         name: "Product",
@@ -344,7 +339,6 @@ describe ProductPresenter do
         collaborating_user: nil,
         files: product_files,
         is_multiseat_license: false,
-        is_tiered_membership: false,
         call_limitation_info: nil,
         native_type: "ebook",
         require_shipping: false,
@@ -507,7 +501,6 @@ describe ProductPresenter do
           },
           files: [],
           is_multiseat_license: false,
-          is_tiered_membership: true,
           call_limitation_info: nil,
           native_type: "membership",
           require_shipping: false,
@@ -657,7 +650,6 @@ describe ProductPresenter do
           collaborating_user: nil,
           files: [],
           is_multiseat_license: false,
-          is_tiered_membership: false,
           call_limitation_info: nil,
           native_type: "digital",
           require_shipping: false,
@@ -717,11 +709,6 @@ describe ProductPresenter do
 
   describe "#edit_product_metadata" do
     include_context "product presenter edit setup"
-
-    it "returns the exact edit product metadata hash" do
-      expected = presenter.edit_product_metadata
-      expect(presenter.edit_product_metadata).to eq(expected)
-    end
 
     it "returns the page metadata for the product edit page" do
       metadata = presenter.edit_product_metadata
@@ -879,8 +866,39 @@ describe ProductPresenter do
     include_context "product presenter edit setup"
 
     it "returns the exact edit product content hash" do
-      expected = presenter.edit_product_content
-      expect(presenter.edit_product_content).to eq(expected)
+      expect(presenter.edit_product_content).to eq({
+                                                     currency_type: "usd",
+                                                     custom_permalink: "custom",
+                                                     customizable_price: true,
+                                                     description: "I am a product!",
+                                                     files: product_files,
+                                                     has_same_rich_content_for_all_variants: false,
+                                                     id: product.external_id,
+                                                     is_multiseat_license: false,
+                                                     is_published: true,
+                                                     name: "Product",
+                                                     native_type: "ebook",
+                                                     price_cents: 100,
+                                                     public_files: [],
+                                                     rich_content: [],
+                                                     suggested_price_cents: 200,
+                                                     thumbnail: thumbnail.as_json,
+                                                     unique_permalink: product.unique_permalink,
+                                                     variants: [
+                                                       {
+                                                         id: version1.external_id,
+                                                         name: "Version 1",
+                                                         integrations: { "circle" => false, "discord" => false, "zoom" => false, "google_calendar" => false },
+                                                         rich_content: [],
+                                                       },
+                                                       {
+                                                         id: version2.external_id,
+                                                         name: "Version 2",
+                                                         integrations: { "circle" => false, "discord" => false, "zoom" => false, "google_calendar" => false },
+                                                         rich_content: [],
+                                                       },
+                                                     ],
+                                                   })
     end
   end
 
@@ -888,37 +906,36 @@ describe ProductPresenter do
     let(:product) { create(:product) }
     let(:presenter) { described_class.new(product:, request: nil) }
 
-    it "returns aws_key, s3_url, seller, dropbox_picker_app_key" do
-      expect(presenter.edit_product_content_metadata).to eq(
-        aws_key: AWS_ACCESS_KEY,
-        s3_url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}",
-        seller: UserPresenter.new(user: product.user).author_byline_props,
-        dropbox_picker_app_key: DROPBOX_PICKER_API_KEY,
-      )
+    it "returns the exact edit product content metadata hash" do
+      expect(presenter.edit_product_content_metadata).to eq({
+                                                              aws_key: AWS_ACCESS_KEY,
+                                                              s3_url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}",
+                                                              seller: UserPresenter.new(user: product.user).author_byline_props,
+                                                              dropbox_picker_app_key: DROPBOX_PICKER_API_KEY,
+                                                            })
     end
   end
 
   describe "#edit_product_receipt" do
     include_context "product presenter edit setup"
 
-    it "returns custom_receipt_text, custom_view_content_button_text merged with edit_product_base_props" do
-      base_props = {
-        currency_type: product.price_currency_type,
-        custom_permalink: product.custom_permalink,
-        customizable_price: !!product.customizable_price,
-        description: product.description || "",
-        id: product.external_id,
-        is_published: !product.draft && product.alive?,
-        name: product.name,
-        native_type: product.native_type,
-        price_cents: product.price_cents,
-        suggested_price_cents: product.suggested_price_cents,
-        thumbnail: product.thumbnail&.alive&.as_json,
-        unique_permalink: product.unique_permalink,
-      }
-      expect(presenter.edit_product_receipt).to eq(
-        { custom_receipt_text: product.custom_receipt_text, custom_view_content_button_text: product.custom_view_content_button_text }.merge(base_props),
-      )
+    it "returns the exact edit product receipt hash" do
+      expect(presenter.edit_product_receipt).to eq({
+                                                     currency_type: "usd",
+                                                     custom_permalink: "custom",
+                                                     customizable_price: true,
+                                                     description: "I am a product!",
+                                                     id: product.external_id,
+                                                     is_published: true,
+                                                     name: "Product",
+                                                     native_type: "ebook",
+                                                     price_cents: 100,
+                                                     suggested_price_cents: 200,
+                                                     thumbnail: thumbnail.as_json,
+                                                     unique_permalink: product.unique_permalink,
+                                                     custom_receipt_text: "Thank you for purchasing! Feel free to contact us any time for support.",
+                                                     custom_view_content_button_text: "Download Files",
+                                                   })
     end
   end
 
@@ -926,7 +943,7 @@ describe ProductPresenter do
     let(:product) { create(:product) }
     let(:presenter) { described_class.new(product:, request: nil) }
 
-    it "returns custom_receipt_text_max_length and custom_view_content_button_text_max_length" do
+    it "returns the exact edit product receipt metadata hash" do
       expect(presenter.edit_product_receipt_metadata).to eq(
         custom_receipt_text_max_length: Product::Validations::MAX_CUSTOM_RECEIPT_TEXT_LENGTH,
         custom_view_content_button_text_max_length: Product::Validations::MAX_VIEW_CONTENT_BUTTON_TEXT_LENGTH,
@@ -938,8 +955,68 @@ describe ProductPresenter do
     include_context "product presenter edit setup"
 
     it "returns the exact edit product share hash" do
-      expected = presenter.edit_product_share
-      expect(presenter.edit_product_share).to eq(expected)
+      expect(presenter.edit_product_share).to eq({
+                                                   name: "Product",
+                                                   description: "I am a product!",
+                                                   custom_permalink: "custom",
+                                                   price_cents: 100,
+                                                   **ProductPresenter::InstallmentPlanProps.new(product: presenter.product).props,
+                                                   customizable_price: true,
+                                                   suggested_price_cents: 200,
+                                                   default_offer_code: nil,
+                                                   custom_button_text_option: "pay_prompt",
+                                                   custom_summary: "To summarize, I am a product.",
+                                                   custom_attributes: { "Detail 1" => "Value 1" },
+                                                   max_purchase_count: 50,
+                                                   quantity_enabled: true,
+                                                   should_show_sales_count: true,
+                                                   hide_sold_out_variants: false,
+                                                   section_ids: [profile_section.external_id],
+                                                   taxonomy_id: "1",
+                                                   tags: ["hi"],
+                                                   display_product_reviews: true,
+                                                   is_adult: true,
+                                                   refund_policy: { allowed_refund_periods_in_days: [{ key: 0, value: "No refunds allowed" }, { key: 7, value: "7-day money back guarantee" }, { key: 14, value: "14-day money back guarantee" }, { key: 30, value: "30-day money back guarantee" }, { key: 183, value: "6-month money back guarantee" },],  max_refund_period_in_days: 30, title: "30-day money back guarantee", fine_print: "This is a product-level refund policy", fine_print_enabled: true, },
+                                                   is_published: true,
+                                                   covers: asset_previews.map(&:as_json),
+                                                   variants: [
+                                                     {
+                                                       id: version1.external_id, name: "Version 1", description: "I am version 1",
+                                                       price_difference_cents: 0,
+                                                       max_purchase_count: nil,
+                                                       integrations: { "circle" => false, "discord" => false, "zoom" => false, "google_calendar" => false },
+                                                       rich_content: [],
+                                                       sales_count_for_inventory: 0,
+                                                       active_subscribers_count: 0,
+                                                     },
+                                                     {
+                                                       id: version2.external_id,
+                                                       name: "Version 2",
+                                                       description: "",
+                                                       price_difference_cents: 100,
+                                                       max_purchase_count: 100,
+                                                       integrations: { "circle" => false, "discord" => false, "zoom" => false, "google_calendar" => false },
+                                                       rich_content: [],
+                                                       sales_count_for_inventory: 0,
+                                                       active_subscribers_count: 0,
+                                                     },
+                                                   ],
+                                                   free_trial_enabled: false,
+                                                   free_trial_duration_amount: nil,
+                                                   free_trial_duration_unit: nil,
+                                                   subscription_duration: nil,
+                                                   collaborating_user: nil,
+                                                   files: product_files,
+                                                   native_type: "ebook",
+                                                   public_files: [],
+                                                   audio_previews_enabled: false,
+                                                   id: product.external_id,
+                                                   unique_permalink: product.unique_permalink,
+                                                   currency_type: "usd",
+                                                   thumbnail: thumbnail.as_json,
+                                                   is_listed_on_discover: false,
+                                                   ratings: { count: 0, average: 0, percentages: [0, 0, 0, 0, 0] },
+                                                 })
     end
   end
 
@@ -947,23 +1024,21 @@ describe ProductPresenter do
     include_context "product presenter edit setup"
 
     it "returns the exact edit product share metadata hash" do
-      expected = presenter.edit_product_share_metadata
-      expect(presenter.edit_product_share_metadata).to eq(expected)
-    end
-  end
-
-  describe "#edit_product_base_metadata" do
-    let(:product) { create(:product) }
-    let(:presenter) { described_class.new(product:, request: nil) }
-
-    it "returns seller_refund_policy_enabled and seller_refund_policy with title and fine_print" do
-      expect(presenter.edit_product_base_metadata).to eq(
-        seller_refund_policy_enabled: product.user.account_level_refund_policy_enabled?,
-        seller_refund_policy: {
-          title: product.user.refund_policy.title,
-          fine_print: product.user.refund_policy.fine_print,
-        },
-      )
+      expect(presenter.edit_product_share_metadata).to eq({
+                                                            seller_refund_policy_enabled: true,
+                                                            seller_refund_policy: { title: "30-day money back guarantee", fine_print: nil },
+                                                            profile_sections: [
+                                                              {
+                                                                id: profile_section.external_id,
+                                                                header: "",
+                                                                product_names: ["Product"],
+                                                                default: true,
+                                                              }
+                                                            ],
+                                                            successful_sales_count: 0,
+                                                            sales_count_for_inventory: 0,
+                                                            taxonomies: Discover::TaxonomyPresenter.new.taxonomies_for_nav,
+                                                          })
     end
   end
 

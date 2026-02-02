@@ -151,7 +151,6 @@ export type Product = {
   rich_content: Page[];
   files: FileEntry[];
   is_multiseat_license: boolean;
-  is_tiered_membership: boolean;
   call_limitation_info: CallLimitationInfo | null;
   require_shipping: boolean;
   cancellation_discount: CancellationDiscount | null;
@@ -262,8 +261,7 @@ export type EditProductShare = EditProductBase &
     | "audio_previews_enabled"
     | "default_offer_code_id"
     | "default_offer_code"
-    | "is_tiered_membership"
-  >;
+  > & { is_listed_on_discover: boolean };
 
 export type EditProductContent = EditProductBase &
   Pick<Product, "rich_content" | "files" | "is_multiseat_license" | "public_files"> & {

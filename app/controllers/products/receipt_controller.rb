@@ -5,7 +5,7 @@ class Products::ReceiptController < Products::BaseController
     render inertia: "Products/Receipt/Edit", props: {
       product: -> { edit_product_receipt_presenter.edit_product_receipt },
       page_metadata: -> { edit_product_receipt_presenter.edit_product_receipt_metadata },
-      receipt_preview_html: -> { ReceiptPreviewRendererService.new(product: @product, custom_receipt_text: params[:custom_receipt_text], custom_view_content_button_text: params[:custom_view_content_button_text], override_existing_text: request.inertia_partial?).perform },
+      receipt_preview_html: -> { ReceiptPreviewRendererService.new(product: @product, custom_receipt_text: params[:custom_receipt_text], custom_view_content_button_text: params[:custom_view_content_button_text], use_defaults: request.headers["HTTP_X_INERTIA_PARTIAL_COMPONENT"].blank? || request.headers["HTTP_X_INERTIA_PARTIAL_COMPONENT"] != "Products/Receipt/Edit").perform },
     }
   end
 

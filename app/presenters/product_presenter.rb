@@ -79,20 +79,10 @@ class ProductPresenter
         .includes(:alive_subtitle_files).map { _1.as_json(existing_product_file: true) }
   end
 
-  def edit_product_base_metadata
-    {
-      seller_refund_policy_enabled: product.user.account_level_refund_policy_enabled?,
-      seller_refund_policy: {
-        title: product.user.refund_policy.title,
-        fine_print: product.user.refund_policy.fine_print,
-      },
-    }
-  end
-
   def edit_product
     collaborator = product.collaborator_for_display
     cancellation_discount = product.cancellation_discount_offer_code
-    edit_product_base_props.merge(
+    edit_product_base.merge(
       custom_button_text_option: product.custom_button_text_option.presence,
       custom_summary: product.custom_summary,
       custom_attributes: product.custom_attributes,
@@ -142,7 +132,6 @@ class ProductPresenter
       collaborating_user: collaborator.present? ? UserPresenter.new(user: collaborator).author_byline_props : nil,
       files: files_data(product),
       is_multiseat_license:,
-      is_tiered_membership: product.is_tiered_membership,
       call_limitation_info: product.native_type == Link::NATIVE_TYPE_CALL && product.call_limitation_info.present? ?
         {
           minimum_notice_in_minutes: product.call_limitation_info.minimum_notice_in_minutes,
@@ -194,21 +183,23 @@ class ProductPresenter
   end
 
   def edit_product_content
-    {
-      rich_content: product.rich_content_json,
-      variants: product.alive_variants.in_order.map do |variant|
-        {
-          id: variant.external_id,
-          integrations: Integration::ALL_NAMES.index_with { |name| variant.find_integration_by_name(name).present? },
-          rich_content: variant.rich_content_json,
-          name: variant.name || "",
-        }
-      end,
-      has_same_rich_content_for_all_variants: product.has_same_rich_content_for_all_variants?,
-      files: files_data(product),
-      is_multiseat_license:,
-      public_files:,
-    }.merge(edit_product_base_props)
+    edit_product_base.merge(
+      {
+        rich_content: product.rich_content_json,
+        variants: product.alive_variants.in_order.map do |variant|
+          {
+            id: variant.external_id,
+            integrations: Integration::ALL_NAMES.index_with { |name| variant.find_integration_by_name(name).present? },
+            rich_content: variant.rich_content_json,
+            name: variant.name || "",
+          }
+        end,
+        has_same_rich_content_for_all_variants: product.has_same_rich_content_for_all_variants?,
+        files: files_data(product),
+        is_multiseat_license:,
+        public_files:,
+      }
+    )
   end
 
   def edit_product_content_metadata
@@ -221,10 +212,12 @@ class ProductPresenter
   end
 
   def edit_product_receipt
-    {
-      custom_receipt_text: product.custom_receipt_text,
-      custom_view_content_button_text: product.custom_view_content_button_text,
-    }.merge(edit_product_base_props)
+    edit_product_base.merge(
+      {
+        custom_receipt_text: product.custom_receipt_text,
+        custom_view_content_button_text: product.custom_view_content_button_text,
+      }
+    )
   end
 
   def edit_product_receipt_metadata
@@ -236,7 +229,7 @@ class ProductPresenter
 
   def edit_product_share
     collaborator = product.collaborator_for_display
-    edit_product_base_props.merge(
+    edit_product_base.merge(
       section_ids:,
       taxonomy_id: product.taxonomy_id&.to_s,
       tags: product.tags.pluck(:name),
@@ -263,7 +256,7 @@ class ProductPresenter
       public_files:,
       ratings: product.rating_stats,
       audio_previews_enabled: Feature.active?(:audio_previews, product.user),
-      is_tiered_membership: product.is_tiered_membership,
+      is_listed_on_discover: product.recommendable?,
     )
   end
 
@@ -274,7 +267,6 @@ class ProductPresenter
         profile_sections:,
         successful_sales_count: product.successful_sales_count,
         sales_count_for_inventory: product.max_purchase_count? ? product.sales_count_for_inventory : 0,
-        is_listed_on_discover: product.recommendable?,
       }
     )
   end
@@ -298,7 +290,17 @@ class ProductPresenter
   end
 
   private
-    def edit_product_base_props
+    def edit_product_base_metadata
+      {
+        seller_refund_policy_enabled: product.user.account_level_refund_policy_enabled?,
+        seller_refund_policy: {
+          title: product.user.refund_policy.title,
+          fine_print: product.user.refund_policy.fine_print,
+        },
+      }
+    end
+
+    def edit_product_base
       {
         currency_type: product.price_currency_type,
         custom_permalink: product.custom_permalink,
