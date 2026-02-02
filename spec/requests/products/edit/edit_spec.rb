@@ -1115,7 +1115,6 @@ describe("Product Edit Scenario", type: :system, js: true) do
         visit edit_product_path(product)
         select_tab "Content"
 
-
         set_rich_text_editor_input(find("[aria-label='Content editor']"), to_text: "Hi there!")
 
         click_on "Save changes"
