@@ -11,24 +11,25 @@ class CommunitiesController < ApplicationController
   def index
     authorize Community
 
-    presenter = CommunitiesPresenter.new(current_user: current_seller)
-
-    render inertia: "Communities/Index", props: {
-      has_products: -> { presenter.props[:has_products] },
-      communities: -> { presenter.props[:communities] },
-      notification_settings: -> { presenter.props[:notification_settings] }
-    }
+    first_community = communities_presenter.first_community
+    if first_community
+      redirect_to community_path(first_community.seller.external_id, first_community.external_id)
+    else
+      render inertia: "Communities/Index", props: {
+        has_products: -> { communities_presenter.has_products? },
+        communities: -> { communities_presenter.communities_props },
+        notification_settings: -> { communities_presenter.notification_settings_props }
+      }
+    end
   end
 
   def show
     authorize @community
 
-    presenter = CommunitiesPresenter.new(current_user: current_seller)
-
     render inertia: "Communities/Index", props: {
-      has_products: -> { presenter.props[:has_products] },
-      communities: -> { presenter.props[:communities] },
-      notification_settings: -> { presenter.props[:notification_settings] },
+      has_products: -> { communities_presenter.has_products? },
+      communities: -> { communities_presenter.communities_props },
+      notification_settings: -> { communities_presenter.notification_settings_props },
       selectedCommunityId: @community.external_id,
       messages: messages_scroll_prop
     }
@@ -49,6 +50,10 @@ class CommunitiesController < ApplicationController
 
   def set_default_page_title
     set_meta_tag(title: "Communities")
+  end
+
+  def communities_presenter
+    @communities_presenter ||= CommunitiesPresenter.new(current_user: current_seller)
   end
 
   def set_community
@@ -89,7 +94,9 @@ class CommunitiesController < ApplicationController
   end
 
   def last_read_timestamp
-    last_read = LastReadCommunityChatMessage.find_by(user: current_seller, community: @community)
+    last_read = LastReadCommunityChatMessage
+      .includes(:community_chat_message)
+      .find_by(user: current_seller, community: @community)
     last_read&.community_chat_message&.created_at&.iso8601
   end
 

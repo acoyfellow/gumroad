@@ -657,6 +657,7 @@ const NotificationsSettingsModal = ({
 
   const saveNotificationSettings = () => {
     form.put(Routes.community_notification_settings_path(community.seller.id, community.id), {
+      preserveState: true,
       preserveScroll: true,
       onSuccess: () => {
         onClose();
