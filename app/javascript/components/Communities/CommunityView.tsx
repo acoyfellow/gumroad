@@ -24,8 +24,8 @@ import { useRunOnce } from "$app/components/useRunOnce";
 import { ChatMessageInput } from "./ChatMessageInput";
 import { ChatMessageList } from "./ChatMessageList";
 import { CommunityList } from "./CommunityList";
-import { scrollTo } from "./scrollUtils";
 import { ScrollToBottomButton } from "./ScrollToBottomButton";
+import { scrollTo } from "./scrollUtils";
 import { DateSeparator } from "./Separator";
 import {
   type Community,
@@ -241,7 +241,7 @@ export function CommunityView({
   }, []);
 
   // Send message using Inertia
-  const sendMessage = async () => {
+  const sendMessage = () => {
     if (!selectedCommunity) return;
     if (!selectedCommunityDraft) return;
     if (selectedCommunityDraft.isSending) return;
@@ -262,7 +262,6 @@ export function CommunityView({
         },
         onError: () => {
           updateCommunityDraft(selectedCommunity.id, { isSending: false });
-          showAlert("Failed to send message. Please try again.", "error");
         },
       },
     );
@@ -270,7 +269,6 @@ export function CommunityView({
 
   const loggedInUser = assertDefined(useCurrentSeller());
 
-  // User channel WebSocket subscription
   React.useEffect(() => {
     if (!cable) return;
 
@@ -302,7 +300,6 @@ export function CommunityView({
     }
   }, 100);
 
-  // Community channels WebSocket subscriptions
   React.useEffect(() => {
     communities.forEach((community) => {
       if (!cable) return;
@@ -403,7 +400,7 @@ export function CommunityView({
     [communities, selectedCommunity],
   );
 
-  const saveNotificationsSettings = async (community: Community, settings: NotificationSettings) => {
+  const saveNotificationsSettings = (community: Community, settings: NotificationSettings) => {
     router.put(
       Routes.notification_settings_path(community.id),
       { settings },
@@ -544,15 +541,15 @@ export function CommunityView({
                     {stickyDate ? <DateSeparator date={stickyDate} showDividerLine={false} /> : null}
                   </div>
 
-                  <ChatMessageList
-                    key={selectedCommunity.id}
-                    community={selectedCommunity}
-                    messages={allMessages}
-                    hasOlderMessages={hasOlderMessages}
-                    setStickyDate={setStickyDate}
-                    unreadSeparatorVisibility={showScrollToBottomButton}
-                    markMessageAsRead={markMessageAsRead}
-                  />
+                    <ChatMessageList
+                      key={selectedCommunity.id}
+                      community={selectedCommunity}
+                      messages={allMessages}
+                      hasOlderMessages={hasOlderMessages}
+                      setStickyDate={setStickyDate}
+                      unreadSeparatorVisibility={showScrollToBottomButton}
+                      markMessageAsRead={markMessageAsRead}
+                    />
                   {showScrollToBottomButton ? (
                     <ScrollToBottomButton
                       hasUnreadMessages={selectedCommunity.unread_count > 0}
@@ -567,7 +564,7 @@ export function CommunityView({
                 <ChatMessageInput
                   draft={selectedCommunityDraft ?? null}
                   updateDraftMessage={(content) => updateCommunityDraft(selectedCommunity.id, { content })}
-                  onSend={asyncVoid(sendMessage)}
+                  onSend={sendMessage}
                   ref={chatMessageInputRef}
                   onHeightChange={setChatMessageInputHeight}
                 />
@@ -597,7 +594,7 @@ const NotificationsSettingsModal = ({
   communityName: string;
   settings: NotificationSettings;
   onClose: () => void;
-  onSave: (settings: NotificationSettings) => Promise<void>;
+  onSave: (settings: NotificationSettings) => void;
 }) => {
   const [isSaving, setIsSaving] = React.useState(false);
   const [updatedSettings, setUpdatedSettings] = React.useState<NotificationSettings>(settings);
