@@ -2,7 +2,7 @@
 
 class Products::Edit::ShareController < Products::Edit::BaseController
   def show
-    redirect_to bundle_path(@product.external_id) if @product.is_bundle?
+    return redirect_to bundle_path(@product.external_id) if @product.is_bundle?
 
     unless @product.published?
       return redirect_to(

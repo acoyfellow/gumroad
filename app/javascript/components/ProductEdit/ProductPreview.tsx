@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { recurrenceIds } from "$app/utils/recurringPricing";
+import { RatingsWithPercentages } from "$app/parsers/product";
 import { CurrencyCode } from "$app/utils/currency";
+import { recurrenceIds } from "$app/utils/recurringPricing";
 
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Product, ProductDiscount } from "$app/components/Product";
-import { RefundPolicyModalPreview } from "$app/components/ProductEdit/RefundPolicy";
-import { CoffeePage } from "$app/components/server-components/Profile/CoffeePage";
-import { RatingsWithPercentages } from "$app/parsers/product";
-import { RefundPolicy } from "$app/components/ProductEdit/RefundPolicy";
+import { RefundPolicyModalPreview, RefundPolicy } from "$app/components/ProductEdit/RefundPolicy";
 import { type Product as ProductState } from "$app/components/ProductEdit/state";
+import { CoffeePage } from "$app/components/server-components/Profile/CoffeePage";
+
 import { useProductUrl } from "./Layout";
 
 type ProductPreviewProps = {
@@ -40,7 +40,7 @@ export const ProductPreview = ({
 }: ProductPreviewProps) => {
   const currentSeller = useCurrentSeller();
 
-  const url = useProductUrl()
+  const url = useProductUrl();
 
   if (!currentSeller) return null;
 
@@ -112,15 +112,14 @@ export const ProductPreview = ({
       defaultRecurrence && product.variants[0] && "recurrence_price_values" in product.variants[0]
         ? {
             default: defaultRecurrence,
-            enabled: Object.entries(product.variants[0].recurrence_price_values).flatMap(
-              ([recurrence, value], idx) =>
-                value.enabled
-                  ? {
-                      recurrence: recurrence as any,
-                      price_cents: value.price_cents ?? 0,
-                      id: idx.toString(),
-                    }
-                  : [],
+            enabled: Object.entries(product.variants[0].recurrence_price_values).flatMap(([recurrence, value], idx) =>
+              value.enabled
+                ? {
+                    recurrence: recurrence as any,
+                    price_cents: value.price_cents ?? 0,
+                    id: idx.toString(),
+                  }
+                : [],
             ),
           }
         : null,
@@ -135,7 +134,7 @@ export const ProductPreview = ({
       recurrence_price_values:
         "recurrence_price_values" in variant
           ? Object.fromEntries(
-                Object.entries(variant.recurrence_price_values).flatMap(([recurrence, value]) =>
+              Object.entries(variant.recurrence_price_values).flatMap(([recurrence, value]) =>
                 value.enabled ? [[recurrence, { ...value, price_cents: value.price_cents ?? 0 }]] : [],
               ),
             )

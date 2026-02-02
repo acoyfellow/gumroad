@@ -2,8 +2,8 @@ import * as React from "react";
 
 import { Button, NavigationButton } from "$app/components/Button";
 import { Modal } from "$app/components/Modal";
-import { Alert } from "$app/components/ui/Alert";
 import { type Product } from "$app/components/ProductEdit/state";
+import { Alert } from "$app/components/ui/Alert";
 
 const BUNDLE_WORDS = ["bundle", "pack"];
 

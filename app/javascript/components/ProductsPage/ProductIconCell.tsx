@@ -1,8 +1,8 @@
+import { Link } from "@inertiajs/react";
 import * as React from "react";
 
 import { Icon } from "$app/components/Icons";
 import { TableCell } from "$app/components/ui/Table";
-import { Link } from "@inertiajs/react";
 
 export const ProductIconCell = ({
   href,

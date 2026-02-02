@@ -1,10 +1,5 @@
 import { Discount } from "$app/parsers/checkout";
-import {
-  AssetPreview,
-  CustomButtonTextOption,
-  FreeTrialDurationUnit,
-  ProductNativeType,
-} from "$app/parsers/product";
+import { AssetPreview, CustomButtonTextOption, FreeTrialDurationUnit, ProductNativeType } from "$app/parsers/product";
 import { RecurrenceId } from "$app/utils/recurringPricing";
 
 import { PublicFile, Seller } from "$app/components/Product";

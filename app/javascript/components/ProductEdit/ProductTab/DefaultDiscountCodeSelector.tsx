@@ -5,8 +5,7 @@ import { assertResponseError } from "$app/utils/request";
 
 import { ComboBox } from "$app/components/ComboBox";
 import { Icon } from "$app/components/Icons";
-import { type OfferCode } from "$app/components/ProductEdit/state";
-import { type Product } from "$app/components/ProductEdit/state";
+import { type OfferCode, type Product } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";

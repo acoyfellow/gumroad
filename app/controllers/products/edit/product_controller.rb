@@ -2,7 +2,7 @@
 
 class Products::Edit::ProductController < Products::Edit::BaseController
   def show
-    redirect_to bundle_path(@product.external_id) if @product.is_bundle?
+    return redirect_to bundle_path(@product.external_id) if @product.is_bundle?
 
     set_product_title
 

@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { type CurrencyCode } from "$app/utils/currency";
+
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { PriceInput } from "$app/components/PriceInput";
@@ -7,7 +9,6 @@ import { type ShippingDestination } from "$app/components/ProductEdit/state";
 import { Card, CardContent } from "$app/components/ui/Card";
 import { Placeholder } from "$app/components/ui/Placeholder";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { type CurrencyCode } from "$app/utils/currency";
 
 export type ShippingCountry = { code: string; name: string };
 

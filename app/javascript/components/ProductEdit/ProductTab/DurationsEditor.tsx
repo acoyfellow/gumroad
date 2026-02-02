@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { CurrencyCode } from "$app/utils/currency";
+
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
@@ -11,7 +13,6 @@ import { Pill } from "$app/components/ui/Pill";
 import { Placeholder } from "$app/components/ui/Placeholder";
 import { Row, RowActions, RowContent, RowDetails, Rows } from "$app/components/ui/Rows";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { CurrencyCode } from "$app/utils/currency";
 
 let newDurationId = 0;
 

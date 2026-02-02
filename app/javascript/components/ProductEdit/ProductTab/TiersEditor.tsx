@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import * as React from "react";
 
 import { sendSamplePriceChangeEmail } from "$app/data/membership_tiers";
-import { getIsSingleUnitCurrency } from "$app/utils/currency";
+import { getIsSingleUnitCurrency, CurrencyCode } from "$app/utils/currency";
 import { priceCentsToUnit } from "$app/utils/price";
 import {
   numberOfMonthsInRecurrence,
@@ -13,7 +13,6 @@ import {
   recurrenceNames,
 } from "$app/utils/recurringPricing";
 import { assertResponseError } from "$app/utils/request";
-import { CurrencyCode } from "$app/utils/currency";
 
 import { Button } from "$app/components/Button";
 import { DateInput } from "$app/components/DateInput";
@@ -368,7 +367,7 @@ const TierEditor = ({
             {integrations.length > 0 ? (
               <fieldset>
                 <legend>Integrations</legend>
-                {integrations.map((integration,idx) => (
+                {integrations.map((integration, idx) => (
                   <Switch
                     checked={tier.integrations[integration as keyof typeof tier.integrations]}
                     onChange={(e) =>
@@ -406,8 +405,7 @@ const PriceChangeSettings = ({
   const [isMounted, setIsMounted] = React.useState(false);
   useRunOnce(() => setIsMounted(true));
 
-  // These would need to be passed from parent context, using any for now
-  const uniquePermalink = (product as any).unique_permalink || "";
+  const uniquePermalink = product.custom_permalink || "";
   const earliestMembershipPriceChangeDate = new Date();
 
   const [effectiveDate, setEffectiveDate] = React.useState<{ value: Date; error?: boolean }>({

@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { CurrencyCode } from "$app/utils/currency";
+
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
@@ -12,7 +14,6 @@ import { Placeholder } from "$app/components/ui/Placeholder";
 import { Row, RowActions, RowContent, RowDetails, Rows } from "$app/components/ui/Rows";
 import { Switch } from "$app/components/ui/Switch";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { CurrencyCode } from "$app/utils/currency";
 
 let newVersionId = 0;
 
@@ -188,7 +189,7 @@ const VersionEditor = ({
                 <label htmlFor={`${uid}-price`}>Additional amount</label>
                 <PriceInput
                   id={`${uid}-price`}
-                  currencyCode={currencyType || "usd"}
+                  currencyCode={currencyType}
                   cents={version.price_difference_cents}
                   onChange={(price_difference_cents) => updateVersion({ price_difference_cents })}
                   placeholder="0"

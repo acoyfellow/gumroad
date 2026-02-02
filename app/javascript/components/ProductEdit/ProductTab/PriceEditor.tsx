@@ -7,8 +7,8 @@ import { Dropdown } from "$app/components/Dropdown";
 import { PriceInput } from "$app/components/PriceInput";
 import { DefaultDiscountCodeSelector } from "$app/components/ProductEdit/ProductTab/DefaultDiscountCodeSelector";
 import { InstallmentPlanEditor } from "$app/components/ProductEdit/ProductTab/InstallmentPlanEditor";
-import { Alert } from "$app/components/ui/Alert";
 import { type Product } from "$app/components/ProductEdit/state";
+import { Alert } from "$app/components/ui/Alert";
 import { Switch } from "$app/components/ui/Switch";
 
 export const PriceEditor = ({

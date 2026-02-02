@@ -37,6 +37,7 @@ import { showAlert } from "$app/components/server-components/Alert";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
 import { useRefToLatest } from "$app/components/useRefToLatest";
 import { WithTooltip } from "$app/components/WithTooltip";
+
 import { NavigationButtonInertia } from "../NavigationButton";
 
 export type Props = ProductProps & { main_section_index: number } & (SectionsProps | EditSectionsProps);

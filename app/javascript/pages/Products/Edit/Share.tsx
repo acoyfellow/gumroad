@@ -6,19 +6,19 @@ import { Taxonomy } from "$app/utils/discover";
 import { Button, NavigationButton } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
+import { useDiscoverUrl } from "$app/components/DomainSettings";
+import { FacebookShareButton } from "$app/components/FacebookShareButton";
 import { Icon } from "$app/components/Icons";
 import { Layout, useProductUrl } from "$app/components/ProductEdit/Layout";
 import { ProductPreview } from "$app/components/ProductEdit/ProductPreview";
 import { ProfileSectionsEditor } from "$app/components/ProductEdit/ShareTab/ProfileSectionsEditor";
 import { TagSelector } from "$app/components/ProductEdit/ShareTab/TagSelector";
 import { TaxonomyEditor } from "$app/components/ProductEdit/ShareTab/TaxonomyEditor";
-import { FacebookShareButton } from "$app/components/FacebookShareButton";
+import { type Product } from "$app/components/ProductEdit/state";
 import { TwitterShareButton } from "$app/components/TwitterShareButton";
 import { Alert } from "$app/components/ui/Alert";
 import { Switch } from "$app/components/ui/Switch";
 import { useRunOnce } from "$app/components/useRunOnce";
-import { useDiscoverUrl } from "$app/components/DomainSettings";
-import { type Product } from "$app/components/ProductEdit/state";
 
 type ProfileSection = {
   id: string;

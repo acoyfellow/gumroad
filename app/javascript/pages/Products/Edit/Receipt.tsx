@@ -3,8 +3,8 @@ import * as React from "react";
 
 import { Layout } from "$app/components/ProductEdit/Layout";
 import { ReceiptPreview } from "$app/components/ProductEdit/ReceiptPreview";
-import { CustomViewContentButtonTextInput } from "$app/components/ProductEdit/ReceiptTab/CustomViewContentButtonTextInput";
 import { CustomReceiptTextInput } from "$app/components/ProductEdit/ReceiptTab/CustomReceiptTextInput";
+import { CustomViewContentButtonTextInput } from "$app/components/ProductEdit/ReceiptTab/CustomViewContentButtonTextInput";
 
 type ReceiptPageProps = {
   product: {

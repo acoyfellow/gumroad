@@ -1,6 +1,6 @@
 import { Link, usePage, router } from "@inertiajs/react";
-import * as React from "react";
 import cx from "classnames";
+import * as React from "react";
 
 import { classNames } from "$app/utils/classNames";
 
@@ -11,6 +11,7 @@ import { useDomains } from "$app/components/DomainSettings";
 import { Icon } from "$app/components/Icons";
 import { Preview } from "$app/components/Preview";
 import { PreviewSidebar, WithPreviewSidebar } from "$app/components/PreviewSidebar";
+import { type Product } from "$app/components/ProductEdit/state";
 import { useImageUploadSettings } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
 import { SubtitleFile } from "$app/components/SubtitleList/Row";
@@ -18,7 +19,6 @@ import { Alert } from "$app/components/ui/Alert";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { type Product } from "$app/components/ProductEdit/state";
 
 import { type FileEntry } from "./state";
 
@@ -47,12 +47,9 @@ type Props = {
 };
 
 export const useProductUrl = (params = {}) => {
-  const props = usePage<Props>().props;
+  const {product, unique_permalink: uniquePermalink} = usePage<Props>().props;
   const currentSeller = useCurrentSeller();
   const { appDomain } = useDomains();
-
-  const product = props.product;
-  const uniquePermalink = props.unique_permalink;
 
   const isCoffee = product.native_type === "coffee";
 
@@ -69,8 +66,8 @@ const NotifyAboutProductUpdatesAlert = ({
   setContentUpdates,
   uniquePermalink,
 }: {
-  contentUpdates?: ContentUpdate | null | undefined;
-  setContentUpdates?: ((updates: ContentUpdate | null) => void) | undefined;
+  contentUpdates: ContentUpdate | null ;
+  setContentUpdates: ((updates: ContentUpdate | null) => void) ;
   uniquePermalink: string;
 }) => {
   const timerRef = React.useRef<number | null>(null);
@@ -92,7 +89,7 @@ const NotifyAboutProductUpdatesAlert = ({
 
   const close = () => {
     clearTimer();
-    setContentUpdates?.(null);
+    setContentUpdates(null);
   };
 
   React.useEffect(() => {
@@ -168,12 +165,9 @@ export const Layout = ({
   contentUpdates,
   setContentUpdates,
 }: InertiaLayoutProps) => {
-  const props = usePage<Props>().props;
+  const {product,unique_permalink: uniquePermalink} = usePage<Props>().props;
   const currentSeller = useCurrentSeller();
   const { appDomain } = useDomains();
-
-  const product = props.product;
-  const uniquePermalink = props.unique_permalink;
 
   const productUrl = useProductUrl();
 
@@ -195,10 +189,7 @@ export const Layout = ({
       published ? Routes.publish_link_path(uniquePermalink) : Routes.unpublish_link_path(uniquePermalink),
       { current_tab: currentTab },
       {
-        onSuccess: () => {
-          setIsPublishing(false);
-        },
-        onError: () => {
+        onFinish: () => {
           setIsPublishing(false);
         },
       },
@@ -249,7 +240,6 @@ export const Layout = ({
     if (message) {
       e.preventDefault();
       showAlert(message, "warning");
-      return;
     }
   };
 
@@ -266,7 +256,7 @@ export const Layout = ({
         actions={
           product.is_published ? (
             <>
-              <Button disabled={isBusy} onClick={() => void setPublished(false)}>
+              <Button disabled={isBusy} onClick={() => setPublished(false)}>
                 {isPublishing ? "Unpublishing..." : "Unpublish"}
               </Button>
               {saveButton}
@@ -296,7 +286,7 @@ export const Layout = ({
             <>
               {saveButton}
               <WithTooltip tip={saveButtonTooltip}>
-                <Button color="accent" disabled={isBusy} onClick={() => void setPublished(true)}>
+                <Button color="accent" disabled={isBusy} onClick={() => setPublished(true)}>
                   {isPublishing ? "Publishing..." : "Publish and continue"}
                 </Button>
               </WithTooltip>

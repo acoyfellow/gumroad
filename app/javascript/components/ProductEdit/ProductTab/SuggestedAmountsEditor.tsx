@@ -1,10 +1,11 @@
 import * as React from "react";
 
+import { type CurrencyCode } from "$app/utils/currency";
+
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { PriceInput } from "$app/components/PriceInput";
 import { type Version } from "$app/components/ProductEdit/state";
-import { type CurrencyCode } from "$app/utils/currency";
 
 let newVersionId = 0;
 
@@ -85,20 +86,18 @@ const SuggestedAmountEditor = ({
   label: string;
   onBlur: () => void;
   currencyType: CurrencyCode;
-}) => {
-  return (
-    <section className="flex gap-2">
-      <PriceInput
-        currencyCode={currencyType}
-        cents={version.price_difference_cents}
-        onChange={(price_difference_cents) => updateVersion({ price_difference_cents })}
-        placeholder="0"
-        ariaLabel={label}
-        onBlur={onBlur}
-      />
-      <Button aria-label="Delete" onClick={onDelete ?? undefined} disabled={!onDelete}>
-        <Icon name="trash2" />
-      </Button>
-    </section>
-  );
-};
+}) => (
+  <section className="flex gap-2">
+    <PriceInput
+      currencyCode={currencyType}
+      cents={version.price_difference_cents}
+      onChange={(price_difference_cents) => updateVersion({ price_difference_cents })}
+      placeholder="0"
+      ariaLabel={label}
+      onBlur={onBlur}
+    />
+    <Button aria-label="Delete" onClick={onDelete ?? undefined} disabled={!onDelete}>
+      <Icon name="trash2" />
+    </Button>
+  </section>
+);

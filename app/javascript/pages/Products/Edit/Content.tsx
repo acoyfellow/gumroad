@@ -1,14 +1,15 @@
 import { useForm, usePage } from "@inertiajs/react";
-import * as React from "react";
 import { findChildren, generateJSON, Node as TiptapNode } from "@tiptap/core";
 import { DOMSerializer } from "@tiptap/pm/model";
 import { EditorContent } from "@tiptap/react";
 import { parseISO } from "date-fns";
 import { partition } from "lodash-es";
+import * as React from "react";
 import { ReactSortable } from "react-sortablejs";
 import { cast } from "ts-safe-cast";
 
 import { fetchDropboxFiles, ResponseDropboxFile, uploadDropboxFile } from "$app/data/dropbox_upload";
+import { useDropbox } from "$app/hooks/useDropbox";
 import { type Post } from "$app/types/workflow";
 import { escapeRegExp } from "$app/utils";
 import { assertDefined } from "$app/utils/assert";
@@ -18,7 +19,6 @@ import GuidGenerator from "$app/utils/guid_generator";
 import { getMimeType } from "$app/utils/mimetypes";
 import { assertResponseError, request, ResponseError } from "$app/utils/request";
 import { generatePageIcon } from "$app/utils/rich_content_page";
-import { useDropbox } from "$app/hooks/useDropbox";
 
 import { Button } from "$app/components/Button";
 import { InputtedDiscount } from "$app/components/CheckoutDashboard/DiscountInput";
@@ -30,9 +30,17 @@ import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { Modal } from "$app/components/Modal";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "$app/components/Popover";
+import { FileEmbed, FileEmbedConfig, getDownloadUrl } from "$app/components/ProductEdit/ContentTab/FileEmbed";
 import { FileEmbedGroup } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
+import { Page, PageTab, titleWithFallback } from "$app/components/ProductEdit/ContentTab/PageTab";
 import { Layout } from "$app/components/ProductEdit/Layout";
-import { type ExistingFileEntry, type FileEntry, type Variant } from "$app/components/ProductEdit/state";
+import { ProductPreview } from "$app/components/ProductEdit/ProductPreview";
+import {
+  type ExistingFileEntry,
+  type FileEntry,
+  type Variant,
+  type Product as ProductType,
+} from "$app/components/ProductEdit/state";
 import { ReviewForm } from "$app/components/ReviewForm";
 import {
   baseEditorOptions,
@@ -48,12 +56,17 @@ import { Separator } from "$app/components/Separator";
 import { showAlert } from "$app/components/server-components/Alert";
 import { EntityInfo } from "$app/components/server-components/DownloadPage/Layout";
 import { TestimonialSelectModal } from "$app/components/TestimonialSelectModal";
+import { FileUpload } from "$app/components/TiptapExtensions/FileUpload";
 import { uploadImages } from "$app/components/TiptapExtensions/Image";
 import { LicenseKey, LicenseProvider } from "$app/components/TiptapExtensions/LicenseKey";
 import { LinkMenuItem } from "$app/components/TiptapExtensions/Link";
+import { LongAnswer } from "$app/components/TiptapExtensions/LongAnswer";
 import { EmbedMediaForm, insertMediaEmbed, ExternalMediaFileEmbed } from "$app/components/TiptapExtensions/MediaEmbed";
 import { MoreLikeThis } from "$app/components/TiptapExtensions/MoreLikeThis";
+import { MoveNode } from "$app/components/TiptapExtensions/MoveNode";
 import { Posts, PostsProvider } from "$app/components/TiptapExtensions/Posts";
+import { ShortAnswer } from "$app/components/TiptapExtensions/ShortAnswer";
+import { UpsellCard } from "$app/components/TiptapExtensions/UpsellCard";
 import { Card, CardContent } from "$app/components/ui/Card";
 import { Row, RowContent, Rows } from "$app/components/ui/Rows";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
@@ -62,17 +75,6 @@ import { useConfigureEvaporate } from "$app/components/useConfigureEvaporate";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
 import { useRefToLatest } from "$app/components/useRefToLatest";
 import { WithTooltip } from "$app/components/WithTooltip";
-
-import { FileEmbed, FileEmbedConfig } from "$app/components/ProductEdit/ContentTab/FileEmbed";
-import { Page, PageTab, titleWithFallback } from "$app/components/ProductEdit/ContentTab/PageTab";
-import { type Product as ProductType } from "$app/components/ProductEdit/state";
-import { getDownloadUrl } from "$app/components/ProductEdit/ContentTab/FileEmbed";
-import { ProductPreview } from "$app/components/ProductEdit/ProductPreview";
-import { FileUpload } from "$app/components/TiptapExtensions/FileUpload";
-import { LongAnswer } from "$app/components/TiptapExtensions/LongAnswer";
-import { MoveNode } from "$app/components/TiptapExtensions/MoveNode";
-import { ShortAnswer } from "$app/components/TiptapExtensions/ShortAnswer";
-import { UpsellCard } from "$app/components/TiptapExtensions/UpsellCard";
 
 declare global {
   interface Window {
@@ -1266,7 +1268,7 @@ export default function ContentPage() {
                 selectedVariantId={selectedVariantId}
                 form={form}
                 updateProduct={(data) => {
-                  Object.keys(data).forEach((key) => form.setData(key as any, (data as any)[key]));
+                  Object.keys(data).forEach((key) => form.setData(key as any, data[key]));
                 }}
                 existingFiles={existing_files}
                 save={handleSave}

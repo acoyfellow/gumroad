@@ -33,10 +33,10 @@ import { ThumbnailEditor } from "$app/components/ProductEdit/ProductTab/Thumbnai
 import { TiersEditor } from "$app/components/ProductEdit/ProductTab/TiersEditor";
 import { VersionsEditor } from "$app/components/ProductEdit/ProductTab/VersionsEditor";
 import { RefundPolicySelector } from "$app/components/ProductEdit/RefundPolicy";
-import { ToggleSettingRow } from "$app/components/SettingRow";
-import { Switch } from "$app/components/ui/Switch";
-import { Alert } from "$app/components/ui/Alert";
 import { type Product, type Version, type Duration, type Tier } from "$app/components/ProductEdit/state";
+import { ToggleSettingRow } from "$app/components/SettingRow";
+import { Alert } from "$app/components/ui/Alert";
+import { Switch } from "$app/components/ui/Switch";
 
 type Props = {
   product: Product;
