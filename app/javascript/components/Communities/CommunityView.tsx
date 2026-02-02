@@ -152,7 +152,7 @@ export function CommunityView({
       const url = new URL(window.location.href);
       if (url.searchParams.has("notifications")) {
         url.searchParams.delete("notifications");
-        window.history.replaceState({}, "", url.toString());
+        router.visit(url, { replace: true });
         setShowNotificationsSettings(true);
       }
     }
@@ -223,7 +223,6 @@ export function CommunityView({
 
       if (selectedCommunity?.id !== message.community_id || isUpdate) return;
 
-      // Scroll to the message if user is near bottom
       if (chatContainerRef.current) {
         const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
         const scrollPosition = scrollTop + clientHeight;
@@ -237,7 +236,6 @@ export function CommunityView({
     [selectedCommunity?.id],
   );
 
-  // Remove message from state
   const removeMessage = React.useCallback((messageId: string) => {
     setLocalMessages((prev) => prev.filter((m) => m.id !== messageId));
   }, []);
@@ -320,7 +318,6 @@ export function CommunityView({
               if (community.id === selectedCommunity?.id) {
                 insertOrUpdateMessage(msg.message);
               }
-              // For non-selected communities, unread count will be updated via UserChannel
             }
             sendMessageToUserChannel({ type: "latest_community_info", community_id: community.id });
           } else if (msg.type === "update_chat_message") {
@@ -346,10 +343,8 @@ export function CommunityView({
     };
   }, [cable, communities, selectedCommunity, insertOrUpdateMessage, removeMessage, sendMessageToUserChannel]);
 
-  // Focus chat input when community changes
   React.useEffect(() => chatMessageInputRef.current?.focus(), [selectedCommunity?.id]);
 
-  // Switch seller/community
   const switchSeller = (sellerId: string) => {
     const community = communities.find((community) => community.seller.id === sellerId);
     if (community) {
@@ -361,7 +356,6 @@ export function CommunityView({
     }
   };
 
-  // Redirect to first community on initial load if no community is selected
   useRunOnce(() => {
     if (selectedCommunity) return;
 
@@ -410,34 +404,27 @@ export function CommunityView({
   );
 
   const saveNotificationsSettings = async (community: Community, settings: NotificationSettings) => {
-    return new Promise<{ settings: NotificationSettings }>((resolve, reject) => {
-      router.put(
-        Routes.notification_settings_path(community.id),
-        { settings },
-        {
-          preserveState: true,
-          preserveScroll: true,
-          onSuccess: () => {
-            showAlert("Changes saved!", "success");
-            setShowNotificationsSettings(false);
-            resolve({ settings });
-          },
-          onError: () => {
-            showAlert("Failed to save changes. Please try again later.", "error");
-            reject(new Error("Failed to save settings"));
-          },
+    router.put(
+      Routes.notification_settings_path(community.id),
+      { settings },
+      {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+          setShowNotificationsSettings(false);
         },
-      );
-    });
+        onError: () => {
+          showAlert("Failed to save changes. Please try again later.", "error");
+        },
+      },
+    );
   };
 
   const scrollToBottom = () => {
     if (selectedCommunity && selectedCommunity.unread_count > 0) {
-      // Reload the page to get the latest messages
       router.reload({
         only: ["messages"],
         onSuccess: () => {
-          // After reload, scroll to bottom
           setTimeout(() => scrollTo({ target: "bottom" }), 100);
         },
         onError: () => {
@@ -548,31 +535,31 @@ export function CommunityView({
 
               <div className="flex flex-1 overflow-auto">
                 <div ref={chatContainerRef} className="relative flex-1 overflow-y-auto">
-                    <div
-                      className={cx("sticky top-0 z-20 flex justify-center transition-opacity duration-300", {
-                        "opacity-100": stickyDate,
-                        "opacity-0": !stickyDate,
-                      })}
-                    >
-                      {stickyDate ? <DateSeparator date={stickyDate} showDividerLine={false} /> : null}
-                    </div>
+                  <div
+                    className={cx("sticky top-0 z-20 flex justify-center transition-opacity duration-300", {
+                      "opacity-100": stickyDate,
+                      "opacity-0": !stickyDate,
+                    })}
+                  >
+                    {stickyDate ? <DateSeparator date={stickyDate} showDividerLine={false} /> : null}
+                  </div>
 
-                      <ChatMessageList
-                        key={selectedCommunity.id}
-                        community={selectedCommunity}
-                        messages={allMessages}
-                        hasOlderMessages={hasOlderMessages}
-                        setStickyDate={setStickyDate}
-                        unreadSeparatorVisibility={showScrollToBottomButton}
-                        markMessageAsRead={markMessageAsRead}
-                      />
-                    {showScrollToBottomButton ? (
-                      <ScrollToBottomButton
-                        hasUnreadMessages={selectedCommunity.unread_count > 0}
-                        onClick={scrollToBottom}
-                        chatMessageInputHeight={chatMessageInputHeight}
-                      />
-                    ) : null}
+                  <ChatMessageList
+                    key={selectedCommunity.id}
+                    community={selectedCommunity}
+                    messages={allMessages}
+                    hasOlderMessages={hasOlderMessages}
+                    setStickyDate={setStickyDate}
+                    unreadSeparatorVisibility={showScrollToBottomButton}
+                    markMessageAsRead={markMessageAsRead}
+                  />
+                  {showScrollToBottomButton ? (
+                    <ScrollToBottomButton
+                      hasUnreadMessages={selectedCommunity.unread_count > 0}
+                      onClick={scrollToBottom}
+                      chatMessageInputHeight={chatMessageInputHeight}
+                    />
+                  ) : null}
                 </div>
               </div>
 
@@ -610,7 +597,7 @@ const NotificationsSettingsModal = ({
   communityName: string;
   settings: NotificationSettings;
   onClose: () => void;
-  onSave: (settings: NotificationSettings) => Promise<{ settings: NotificationSettings }>;
+  onSave: (settings: NotificationSettings) => Promise<void>;
 }) => {
   const [isSaving, setIsSaving] = React.useState(false);
   const [updatedSettings, setUpdatedSettings] = React.useState<NotificationSettings>(settings);
@@ -706,9 +693,9 @@ const GoBackHeader = () => {
   const handleGoBack = (e: React.MouseEvent) => {
     e.preventDefault();
     const referrerUrl = new URL(document.referrer.trim() !== "" ? document.referrer : Routes.dashboard_url());
-    window.location.href = referrerUrl.pathname.startsWith("/communities")
-      ? Routes.dashboard_path()
-      : referrerUrl.toString();
+    const targetPath = referrerUrl.pathname.startsWith("/communities") ? Routes.dashboard_path() : referrerUrl.pathname;
+
+    router.visit(targetPath, { replace: true });
   };
 
   return (
