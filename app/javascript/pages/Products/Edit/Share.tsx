@@ -14,7 +14,6 @@ import { TagSelector } from "$app/components/ProductEdit/ShareTab/TagSelector";
 import { TaxonomyEditor } from "$app/components/ProductEdit/ShareTab/TaxonomyEditor";
 import { FacebookShareButton } from "$app/components/FacebookShareButton";
 import { TwitterShareButton } from "$app/components/TwitterShareButton";
-import { Toggle } from "$app/components/Toggle";
 import { Alert } from "$app/components/ui/Alert";
 import { Switch } from "$app/components/ui/Switch";
 import { useRunOnce } from "$app/components/useRunOnce";
@@ -152,12 +151,12 @@ export default function SharePage() {
             <fieldset>
               <Switch
                 checked={form.data.display_product_reviews}
-                onChange={(newValue) => form.setData("display_product_reviews", newValue)}
+                onChange={(newValue) => form.setData("display_product_reviews", !newValue)}
                 label="Display your product's 1-5 star rating to prospective customers"
               />
               <Switch
-                checked={form.is_adult}
-                onChange={(newValue) => form.setData("is_adult", newValue)}
+                checked={form.data.is_adult}
+                onChange={(newValue) => form.setData("is_adult", !newValue)}
                 label={
                   <>
                     This product contains content meant{" "}

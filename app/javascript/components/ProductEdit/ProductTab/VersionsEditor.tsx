@@ -211,7 +211,7 @@ const VersionEditor = ({
                 <legend>Integrations</legend>
                 {availableIntegrations.map((integration) => (
                   <Switch
-                    checked={version.integrations[integration]}
+                    checked={version.integrations[integration as keyof typeof version.integrations]}
                     onChange={(e) =>
                       updateVersion({ integrations: { ...version.integrations, [integration]: e.target.checked } })
                     }

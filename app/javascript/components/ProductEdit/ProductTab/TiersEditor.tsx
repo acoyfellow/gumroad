@@ -368,13 +368,13 @@ const TierEditor = ({
             {integrations.length > 0 ? (
               <fieldset>
                 <legend>Integrations</legend>
-                {integrations.map((integration) => (
+                {integrations.map((integration,idx) => (
                   <Switch
-                    checked={tier.integrations[integration]}
+                    checked={tier.integrations[integration as keyof typeof tier.integrations]}
                     onChange={(e) =>
                       updateTier({ integrations: { ...tier.integrations, [integration]: e.target.checked } })
                     }
-                    key={integration}
+                    key={idx}
                     label={
                       integration === "circle" ? "Enable access to Circle community" : "Enable access to Discord server"
                     }
