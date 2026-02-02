@@ -9,11 +9,11 @@ import { ToggleSettingRow } from "$app/components/SettingRow";
 
 export const CancellationDiscountSelector = ({
   product,
-  currency_type,
+  currencyCode,
   onChange,
 }: {
   product: EditProduct;
-  currency_type: CurrencyCode;
+  currencyCode: CurrencyCode;
   onChange: (cancellation_discount: EditProduct["cancellation_discount"]) => void;
 }) => {
   const cancellationDiscount = product.cancellation_discount;
@@ -57,7 +57,7 @@ export const CancellationDiscountSelector = ({
       label="Offer a cancellation discount"
       dropdown={
         <section className="flex flex-col gap-4">
-          <DiscountInput discount={discount} setDiscount={setDiscount} currencyCode={currency_type} />
+          <DiscountInput discount={discount} setDiscount={setDiscount} currencyCode={currencyCode} />
           <fieldset>
             <label htmlFor="billing-cycles">Duration in billing cycles</label>
             <NumberInput value={durationInBillingCycles} onChange={setDurationInBillingCycles}>

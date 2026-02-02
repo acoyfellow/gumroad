@@ -17,11 +17,11 @@ import { WithTooltip } from "$app/components/WithTooltip";
 export const DurationsEditor = ({
   durations,
   onChange,
-  currency_type,
+  currencyCode,
 }: {
   durations: DurationWithoutRichContent[];
   onChange: (durations: DurationWithoutRichContent[]) => void;
-  currency_type: CurrencyCode;
+  currencyCode: CurrencyCode;
 }) => {
   const nextIdRef = React.useRef(0);
 
@@ -103,7 +103,7 @@ export const DurationsEditor = ({
             duration={duration}
             updateDuration={(update) => updateDuration(duration.id, update)}
             onDelete={() => setDeletionModalDurationId(duration.id)}
-            currency_type={currency_type}
+            currencyCode={currencyCode}
           />
         ))}
       </SortableList>
@@ -116,12 +116,12 @@ const DurationEditor = ({
   duration,
   updateDuration,
   onDelete,
-  currency_type,
+  currencyCode,
 }: {
   duration: DurationWithoutRichContent;
   updateDuration: (update: Partial<DurationWithoutRichContent>) => void;
   onDelete: () => void;
-  currency_type: CurrencyCode;
+  currencyCode: CurrencyCode;
 }) => {
   const uid = React.useId();
 
@@ -185,7 +185,7 @@ const DurationEditor = ({
                 <label htmlFor={`${uid}-price`}>Additional amount</label>
                 <PriceInput
                   id={`${uid}-price`}
-                  currencyCode={currency_type}
+                  currencyCode={currencyCode}
                   cents={duration.price_difference_cents}
                   onChange={(price_difference_cents) => updateDuration({ price_difference_cents })}
                   placeholder="0"

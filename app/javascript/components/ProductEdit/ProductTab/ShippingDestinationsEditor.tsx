@@ -13,20 +13,20 @@ import { WithTooltip } from "$app/components/WithTooltip";
 export const ShippingDestinationsEditor = ({
   shippingDestinations,
   onChange,
-  available_countries,
-  currency_type,
+  availableCountries,
+  currencyCode,
 }: {
   shippingDestinations: ShippingDestination[];
   onChange: (shippingDestinations: ShippingDestination[]) => void;
-  available_countries: ShippingCountry[];
-  currency_type: CurrencyCode;
+  availableCountries: ShippingCountry[];
+  currencyCode: CurrencyCode;
 }) => {
   const addShippingDestination = () => {
-    if (!available_countries[0]) return;
+    if (!availableCountries[0]) return;
     onChange([
       ...shippingDestinations,
       {
-        country_code: available_countries[0].code,
+        country_code: availableCountries[0].code,
         one_item_rate_cents: null,
         multiple_items_rate_cents: null,
       },
@@ -52,8 +52,8 @@ export const ShippingDestinationsEditor = ({
               }
               onRemove={() => onChange(shippingDestinations.filter((_, i) => i !== index))}
               key={index}
-              available_countries={available_countries}
-              currency_type={currency_type}
+              availableCountries={availableCountries}
+              currencyCode={currencyCode}
             />
           ))}
           <CardContent>
@@ -83,14 +83,14 @@ const ShippingDestinationRow = ({
   shippingDestination,
   onChange,
   onRemove,
-  available_countries,
-  currency_type,
+  availableCountries,
+  currencyCode,
 }: {
   shippingDestination: ShippingDestination;
   onChange: (shippingDestination: ShippingDestination) => void;
   onRemove: () => void;
-  available_countries: ShippingCountry[];
-  currency_type: CurrencyCode;
+  availableCountries: ShippingCountry[];
+  currencyCode: CurrencyCode;
 }) => {
   const uid = React.useId();
 
@@ -110,7 +110,7 @@ const ShippingDestinationRow = ({
             value={shippingDestination.country_code}
             onChange={(evt) => updateDestination({ country_code: evt.target.value })}
           >
-            {available_countries.map((country) => {
+            {availableCountries.map((country) => {
               const shouldInsertDividerAfter = INSERT_DIVIDERS_AFTER_CODES.includes(country.code);
 
               return (
@@ -135,7 +135,7 @@ const ShippingDestinationRow = ({
           </legend>
           <PriceInput
             id={`${uid}-one-item`}
-            currencyCode={currency_type}
+            currencyCode={currencyCode}
             cents={shippingDestination.one_item_rate_cents}
             placeholder="0"
             onChange={(one_item_rate_cents) => updateDestination({ one_item_rate_cents })}
@@ -147,7 +147,7 @@ const ShippingDestinationRow = ({
           </legend>
           <PriceInput
             id={`${uid}-multiple-items`}
-            currencyCode={currency_type}
+            currencyCode={currencyCode}
             cents={shippingDestination.multiple_items_rate_cents}
             placeholder="0"
             onChange={(multiple_items_rate_cents) => updateDestination({ multiple_items_rate_cents })}

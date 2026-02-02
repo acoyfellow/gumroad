@@ -10,11 +10,11 @@ import type { VersionWithoutRichContent } from "$app/components/ProductEdit/stat
 export const SuggestedAmountsEditor = ({
   versions,
   onChange,
-  currency_type,
+  currencyCode,
 }: {
   versions: VersionWithoutRichContent[];
   onChange: (versions: VersionWithoutRichContent[]) => void;
-  currency_type: CurrencyCode;
+  currencyCode: CurrencyCode;
 }) => {
   const nextIdRef = React.useRef(0);
 
@@ -63,7 +63,7 @@ export const SuggestedAmountsEditor = ({
           onBlur={() =>
             onChange(versions.sort((a, b) => (a.price_difference_cents ?? 0) - (b.price_difference_cents ?? 0)))
           }
-          currency_type={currency_type}
+          currencyCode={currencyCode}
         />
       ))}
       {addButton}
@@ -77,18 +77,18 @@ const SuggestedAmountEditor = ({
   onDelete,
   label,
   onBlur,
-  currency_type,
+  currencyCode,
 }: {
   version: VersionWithoutRichContent;
   updateVersion: (update: Partial<VersionWithoutRichContent>) => void;
   onDelete: (() => void) | null;
   label: string;
   onBlur: () => void;
-  currency_type: CurrencyCode;
+  currencyCode: CurrencyCode;
 }) => (
   <section className="flex gap-2">
     <PriceInput
-      currencyCode={currency_type}
+      currencyCode={currencyCode}
       cents={version.price_difference_cents}
       onChange={(price_difference_cents) => updateVersion({ price_difference_cents })}
       placeholder="0"

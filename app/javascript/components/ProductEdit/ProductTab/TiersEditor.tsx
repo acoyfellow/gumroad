@@ -46,15 +46,15 @@ export const TiersEditor = ({
   onChange,
   product,
   unique_permalink,
-  currency_type,
-  earliest_membership_price_change_date,
+  currencyCode,
+  earliestMembershipPriceChangeDate,
 }: {
   tiers: TierWithoutRichContent[];
   onChange: (tiers: TierWithoutRichContent[]) => void;
   product: EditProduct;
   unique_permalink: string;
-  currency_type: CurrencyCode;
-  earliest_membership_price_change_date: Date;
+  currencyCode: CurrencyCode;
+  earliestMembershipPriceChangeDate: Date;
 }) => {
   const nextIdRef = React.useRef(0);
 
@@ -138,8 +138,8 @@ export const TiersEditor = ({
             onDelete={() => setDeletionModalVersionId(version.id)}
             product={product}
             unique_permalink={unique_permalink}
-            currency_type={currency_type}
-            earliest_membership_price_change_date={earliest_membership_price_change_date}
+            currencyCode={currencyCode}
+            earliestMembershipPriceChangeDate={earliestMembershipPriceChangeDate}
           />
         ))}
       </SortableList>
@@ -156,16 +156,16 @@ const TierEditor = ({
   onDelete,
   product,
   unique_permalink,
-  currency_type,
-  earliest_membership_price_change_date,
+  currencyCode,
+  earliestMembershipPriceChangeDate,
 }: {
   tier: TierWithoutRichContent;
   updateTier: (update: Partial<TierWithoutRichContent>) => void;
   onDelete: () => void;
   product: EditProduct;
   unique_permalink: string;
-  currency_type: CurrencyCode;
-  earliest_membership_price_change_date: Date;
+  currencyCode: CurrencyCode;
+  earliestMembershipPriceChangeDate: Date;
 }) => {
   const uid = React.useId();
 
@@ -303,7 +303,7 @@ const TierEditor = ({
                   />
                   <PriceInput
                     id={`${uid}-price`}
-                    currencyCode={currency_type}
+                    currencyCode={currencyCode}
                     cents={value.price_cents ?? null}
                     onChange={(price_cents) => updateRecurrencePriceValue(recurrence, { price_cents })}
                     placeholder={PLACEHOLDER_VALUES[recurrence]}
@@ -346,7 +346,7 @@ const TierEditor = ({
                           </label>
                           <PriceInput
                             id={`${uid}-${recurrence}-minimum-price`}
-                            currencyCode={currency_type}
+                            currencyCode={currencyCode}
                             cents={value.price_cents}
                             disabled
                           />
@@ -357,7 +357,7 @@ const TierEditor = ({
                           </label>
                           <PriceInput
                             id={`${uid}-${recurrence}-suggested-price`}
-                            currencyCode={currency_type}
+                            currencyCode={currencyCode}
                             cents={value.suggested_price_cents}
                             onChange={(suggested_price_cents) =>
                               updateRecurrencePriceValue(recurrence, { suggested_price_cents })
@@ -378,8 +378,8 @@ const TierEditor = ({
               updateTier={updateTier}
               product={product}
               unique_permalink={unique_permalink}
-              currency_type={currency_type}
-              earliest_membership_price_change_date={earliest_membership_price_change_date}
+              currencyCode={currencyCode}
+              earliestMembershipPriceChangeDate={earliestMembershipPriceChangeDate}
             />
             {integrations.length > 0 ? (
               <fieldset>
@@ -411,15 +411,15 @@ const PriceChangeSettings = ({
   updateTier,
   product,
   unique_permalink,
-  currency_type,
-  earliest_membership_price_change_date,
+  currencyCode,
+  earliestMembershipPriceChangeDate,
 }: {
   tier: TierWithoutRichContent;
   updateTier: (update: Partial<TierWithoutRichContent>) => void;
   product: EditProduct;
   unique_permalink: string;
-  currency_type: CurrencyCode;
-  earliest_membership_price_change_date: Date;
+  currencyCode: CurrencyCode;
+  earliestMembershipPriceChangeDate: Date;
 }) => {
   const uid = React.useId();
 
@@ -429,7 +429,7 @@ const PriceChangeSettings = ({
   const [effectiveDate, setEffectiveDate] = React.useState<{ value: Date; error?: boolean }>({
     value: tier.subscription_price_change_effective_date
       ? new Date(tier.subscription_price_change_effective_date)
-      : earliest_membership_price_change_date,
+      : earliestMembershipPriceChangeDate,
   });
   effectiveDate.value = getDateWithUTCOffset(effectiveDate.value);
   React.useEffect(
@@ -446,7 +446,7 @@ const PriceChangeSettings = ({
   const newPrice = enabledPrice?.[1]?.enabled
     ? {
         recurrence: enabledPrice[0],
-        amount: priceCentsToUnit(enabledPrice[1].price_cents ?? 0, getIsSingleUnitCurrency(currency_type)).toString(),
+        amount: priceCentsToUnit(enabledPrice[1].price_cents ?? 0, getIsSingleUnitCurrency(currencyCode)).toString(),
       }
     : { recurrence: "monthly" as const, amount: "10" };
 
@@ -536,7 +536,7 @@ You can modify or cancel your membership at any time.`;
               value={effectiveDate.value}
               onChange={(value) => {
                 if (!value) return;
-                setEffectiveDate({ value, error: value < earliest_membership_price_change_date });
+                setEffectiveDate({ value, error: value < earliestMembershipPriceChangeDate });
               }}
             />
 

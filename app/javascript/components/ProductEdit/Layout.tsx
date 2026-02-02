@@ -139,6 +139,7 @@ export const Layout = ({
 
   return (
     <>
+      {/* TODO: remove this legacy uploader stuff */}
       <form hidden data-id={product.unique_permalink} id="edit-link-basic-form" />
       <PageHeader
         className="sticky-top"

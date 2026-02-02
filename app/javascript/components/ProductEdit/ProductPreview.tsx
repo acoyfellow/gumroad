@@ -74,7 +74,7 @@ export const ProductPreview = ({
     preorder: null,
     description_html: product.description,
     is_compliance_blocked: false,
-    is_published: !!product.is_published,
+    is_published: product.is_published,
     is_stream_only: false,
     streamable: product.files.some((file) => file.is_streamable),
     is_quantity_enabled: product.quantity_enabled,

@@ -284,7 +284,7 @@ const EditProductPage = () => {
                   <SuggestedAmountsEditor
                     versions={form.data.product.variants}
                     onChange={(variants) => form.setData("product.variants", variants)}
-                    currency_type={form.data.product.currency_type}
+                    currencyCode={form.data.product.currency_type}
                   />
                 </section>
                 <section className="p-4! md:p-8!">
@@ -392,10 +392,8 @@ const EditProductPage = () => {
                       onChange={(variants) => form.setData("product.variants", variants)}
                       product={form.data.product}
                       unique_permalink={form.data.product.unique_permalink}
-                      currency_type={form.data.product.currency_type}
-                      earliest_membership_price_change_date={
-                        new Date(page_metadata.earliest_membership_price_change_date)
-                      }
+                      currencyCode={form.data.product.currency_type}
+                      earliestMembershipPriceChangeDate={new Date(page_metadata.earliest_membership_price_change_date)}
                     />
                   </section>
                 ) : (
@@ -468,7 +466,7 @@ const EditProductPage = () => {
                           <DurationsEditor
                             durations={form.data.product.variants}
                             onChange={(variants) => form.setData("product.variants", variants)}
-                            currency_type={form.data.product.currency_type}
+                            currencyCode={form.data.product.currency_type}
                           />
                         </section>
                         <section className="p-4! md:p-8!">
@@ -507,7 +505,7 @@ const EditProductPage = () => {
                             versions={form.data.product.variants}
                             onChange={(variants) => form.setData("product.variants", variants)}
                             product={form.data.product}
-                            currency_type={form.data.product.currency_type}
+                            currencyCode={form.data.product.currency_type}
                           />
                         ) : null}
                       </section>
@@ -520,8 +518,8 @@ const EditProductPage = () => {
                     onChange={(shipping_destinations) =>
                       form.setData("product.shipping_destinations", shipping_destinations)
                     }
-                    available_countries={page_metadata.available_countries}
-                    currency_type={form.data.product.currency_type}
+                    availableCountries={page_metadata.available_countries}
+                    currencyCode={form.data.product.currency_type}
                   />
                 ) : null}
                 <section className="p-4! md:p-8!">
@@ -543,7 +541,7 @@ const EditProductPage = () => {
                         {page_metadata.cancellation_discounts_enabled ? (
                           <CancellationDiscountSelector
                             product={form.data.product}
-                            currency_type={form.data.product.currency_type}
+                            currencyCode={form.data.product.currency_type}
                             onChange={(cancellation_discount) =>
                               form.setData("product.cancellation_discount", cancellation_discount)
                             }

@@ -19,12 +19,12 @@ export const VersionsEditor = ({
   versions,
   onChange,
   product,
-  currency_type,
+  currencyCode,
 }: {
   versions: VersionWithoutRichContent[];
   onChange: (versions: VersionWithoutRichContent[]) => void;
   product: EditProduct;
-  currency_type: CurrencyCode;
+  currencyCode: CurrencyCode;
 }) => {
   const nextIdRef = React.useRef(0);
 
@@ -106,7 +106,7 @@ export const VersionsEditor = ({
             updateVersion={(update) => updateVersion(version.id, update)}
             onDelete={() => setDeletionModalVersionId(version.id)}
             product={product}
-            currency_type={currency_type}
+            currencyCode={currencyCode}
           />
         ))}
       </SortableList>
@@ -120,13 +120,13 @@ const VersionEditor = ({
   updateVersion,
   onDelete,
   product,
-  currency_type,
+  currencyCode,
 }: {
   version: VersionWithoutRichContent;
   updateVersion: (update: Partial<VersionWithoutRichContent>) => void;
   onDelete: () => void;
   product: EditProduct;
-  currency_type: CurrencyCode;
+  currencyCode: CurrencyCode;
 }) => {
   const uid = React.useId();
 
@@ -188,7 +188,7 @@ const VersionEditor = ({
                 <label htmlFor={`${uid}-price`}>Additional amount</label>
                 <PriceInput
                   id={`${uid}-price`}
-                  currencyCode={currency_type}
+                  currencyCode={currencyCode}
                   cents={version.price_difference_cents}
                   onChange={(price_difference_cents) => updateVersion({ price_difference_cents })}
                   placeholder="0"
