@@ -7,8 +7,8 @@ import { Button } from "$app/components/Button";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
-import { Toggle } from "$app/components/Toggle";
 import { Alert } from "$app/components/ui/Alert";
+import { Switch } from "$app/components/ui/Switch";
 import { useRunOnce } from "$app/components/useRunOnce";
 import { type Product } from "$app/components/ProductEdit/state";
 
@@ -216,12 +216,11 @@ export const CircleIntegrationEditor = ({
                           : "Your integration is not assigned to any version. Check your versions' settings."}
                       </Alert>
                     ) : null}
-                    <Toggle
-                      value={product.variants.every(({ integrations }) => integrations.circle)}
-                      onChange={setEnabledForOptions}
-                    >
-                      {product.native_type === "membership" ? "Enable for all tiers" : "Enable for all versions"}
-                    </Toggle>
+                    <Switch
+                      checked={product.variants.every(({ integrations }) => integrations.circle)}
+                      onChange={(e) => setEnabledForOptions(e.target.checked)}
+                      label={product.native_type === "membership" ? "Enable for all tiers" : "Enable for all versions"}
+                    />
                   </>
                 ) : null}
               </>

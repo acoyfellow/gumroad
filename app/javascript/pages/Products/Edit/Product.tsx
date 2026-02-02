@@ -34,7 +34,7 @@ import { TiersEditor } from "$app/components/ProductEdit/ProductTab/TiersEditor"
 import { VersionsEditor } from "$app/components/ProductEdit/ProductTab/VersionsEditor";
 import { RefundPolicySelector } from "$app/components/ProductEdit/RefundPolicy";
 import { ToggleSettingRow } from "$app/components/SettingRow";
-import { Toggle } from "$app/components/Toggle";
+import { Switch } from "$app/components/ui/Switch";
 import { Alert } from "$app/components/ui/Alert";
 import { type Product, type Version, type Duration, type Tier } from "$app/components/ProductEdit/state";
 
@@ -456,33 +456,33 @@ export default function ProductPage() {
                           currencyType={currencyType}
                         />
                       ) : null}
-                      <Toggle
-                        value={form.data.should_include_last_post}
+                      <Switch
+                        checked={form.data.should_include_last_post}
                         onChange={(should_include_last_post) =>
-                          form.setData("should_include_last_post", should_include_last_post)
+                          form.setData("should_include_last_post", !should_include_last_post)
                         }
                       >
-                        New members will be emailed this product's last published post
-                      </Toggle>
-                      <Toggle
-                        value={form.data.should_show_all_posts}
+                       label="New members will be emailed this product's last published post"
+                      </Switch>
+                      <Switch
+                        checked={form.data.should_show_all_posts}
                         onChange={(should_show_all_posts) =>
-                          form.setData("should_show_all_posts", should_show_all_posts)
+                          form.setData("should_show_all_posts", !should_show_all_posts)
                         }
                       >
-                        New members will get access to all posts you have published
-                      </Toggle>
-                      <Toggle
-                        value={form.data.block_access_after_membership_cancellation}
+                        label="New members will get access to all posts you have published"
+                      </Switch>
+                      <Switch
+                        checked={form.data.block_access_after_membership_cancellation}
                         onChange={(block_access_after_membership_cancellation) =>
                           form.setData(
                             "block_access_after_membership_cancellation",
-                            block_access_after_membership_cancellation,
+                            !block_access_after_membership_cancellation,
                           )
                         }
                       >
-                        Members will lose access when their memberships end
-                      </Toggle>
+                        label="Members will lose access when their memberships end"
+                      </Switch>
                       <DurationEditor product={form.data as Product} updateProduct={updateProduct} />
                     </>
                   ) : null}
@@ -492,38 +492,38 @@ export default function ProductPage() {
                         maxPurchaseCount={form.data.max_purchase_count}
                         setMaxPurchaseCount={(count) => form.setData("max_purchase_count", count)}
                       />
-                      <Toggle
-                        value={form.data.quantity_enabled}
-                        onChange={(quantity_enabled) => form.setData("quantity_enabled", quantity_enabled)}
+                      <Switch
+                        checked={form.data.quantity_enabled}
+                        onChange={(quantity_enabled) => form.setData("quantity_enabled", !quantity_enabled)}
                       >
-                        Allow customers to choose a quantity
-                      </Toggle>
+                        label="Allow customers to choose a quantity"
+                      </Switch>
                     </>
                   ) : null}
-                  <Toggle
-                    value={form.data.should_show_sales_count}
+                  <Switch
+                    checked={form.data.should_show_sales_count}
                     onChange={(should_show_sales_count) =>
-                      form.setData("should_show_sales_count", should_show_sales_count)
+                      form.setData("should_show_sales_count", !should_show_sales_count)
                     }
                   >
-                    Display your product's sales count on the product page
-                  </Toggle>
+                    label="Display your product's sales count on the product page"
+                  </Switch>
                   {form.data.variants.length > 0 ? (
-                    <Toggle
-                      value={form.data.hide_sold_out_variants}
+                    <Switch
+                      checked={form.data.hide_sold_out_variants}
                       onChange={(hide_sold_out_variants) =>
-                        form.setData("hide_sold_out_variants", hide_sold_out_variants)
+                        form.setData("hide_sold_out_variants", !hide_sold_out_variants)
                       }
                     >
-                      Hide variants when they sell out
-                    </Toggle>
+                      label="Hide variants when they sell out"
+                    </Switch>
                   ) : null}
-                  <Toggle
-                    value={form.data.is_epublication}
-                    onChange={(is_epublication) => form.setData("is_epublication", is_epublication)}
+                  <Switch
+                    checked={form.data.is_epublication}
+                    onChange={(is_epublication) => form.setData("is_epublication", !is_epublication)}
                   >
-                    Mark this product as an e-publication for VAT purposes
-                  </Toggle>
+                    label="Mark this product as an e-publication for VAT purposes"
+                  </Switch>
                   <RefundPolicySelector
                     refundPolicy={form.data.refund_policy}
                     setRefundPolicy={(refund_policy) => form.setData("refund_policy", refund_policy)}

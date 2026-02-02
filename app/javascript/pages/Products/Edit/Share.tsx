@@ -16,6 +16,7 @@ import { FacebookShareButton } from "$app/components/FacebookShareButton";
 import { TwitterShareButton } from "$app/components/TwitterShareButton";
 import { Toggle } from "$app/components/Toggle";
 import { Alert } from "$app/components/ui/Alert";
+import { Switch } from "$app/components/ui/Switch";
 import { useRunOnce } from "$app/components/useRunOnce";
 import { useDiscoverUrl } from "$app/components/DomainSettings";
 import { type Product } from "$app/components/ProductEdit/state";
@@ -149,19 +150,24 @@ export default function SharePage() {
             />
             <TagSelector tags={form.data.tags} onChange={(tags) => form.setData("tags", tags)} />
             <fieldset>
-              <Toggle
-                value={form.data.display_product_reviews}
+              <Switch
+                checked={form.data.display_product_reviews}
                 onChange={(newValue) => form.setData("display_product_reviews", newValue)}
-              >
-                Display your product's 1-5 star rating to prospective customers
-              </Toggle>
-              <Toggle value={form.data.is_adult} onChange={(newValue) => form.setData("is_adult", newValue)}>
-                This product contains content meant{" "}
-                <a href="/help/article/156-gumroad-and-adult-content" target="_blank" rel="noreferrer">
-                  only for adults,
-                </a>{" "}
-                including the preview
-              </Toggle>
+                label="Display your product's 1-5 star rating to prospective customers"
+              />
+              <Switch
+                checked={form.is_adult}
+                onChange={(newValue) => form.setData("is_adult", newValue)}
+                label={
+                  <>
+                    This product contains content meant{" "}
+                    <a href="/help/article/156-gumroad-and-adult-content" target="_blank" rel="noreferrer">
+                      only for adults,
+                    </a>{" "}
+                    including the preview
+                  </>
+                }
+              />
             </fieldset>
           </section>
         </form>
