@@ -278,7 +278,7 @@ Rails.application.routes.draw do
   get "/s3_utility/generate_multipart_signature", to: "s3_utility#generate_multipart_signature"
 
   constraints GumroadDomainConstraint do
-    resources :products, only: [], param: :id do
+    resources :products, only: [] do
       scope module: "products" do
         resource :product, only: [:edit, :update], controller: "edit/product"
         resource :content, only: [:edit, :update], controller: "edit/content"
