@@ -445,7 +445,7 @@ const ContentTabContent = ({
         request({
           method: "GET",
 
-          url: Routes.internal_product_existing_product_files_path(product.custom_permalink ?? unique_permalink),
+          url: Routes.internal_product_existing_product_files_path(unique_permalink),
           accept: "json",
         }),
         new Promise((resolve) => setTimeout(resolve, 250)),
@@ -495,7 +495,7 @@ const ContentTabContent = ({
     const uploadFiles = async (files: DropboxFile[]) => {
       for (const file of files) {
         try {
-          const response = await uploadDropboxFile(product.custom_permalink ?? unique_permalink, file);
+          const response = await uploadDropboxFile(unique_permalink, file);
           addDropboxFiles([response.dropbox_file]);
           setTimeout(() => onSelectFiles([response.dropbox_file.external_id]), 100);
         } catch (error) {
@@ -515,7 +515,7 @@ const ContentTabContent = ({
   React.useEffect(() => {
     const interval = setInterval(
       () =>
-        void fetchDropboxFiles(product.custom_permalink ?? unique_permalink).then(({ dropbox_files }) =>
+        void fetchDropboxFiles(unique_permalink).then(({ dropbox_files }) =>
           addDropboxFiles(dropbox_files),
         ),
       10000,
@@ -1070,12 +1070,14 @@ const ContentTabContent = ({
         </>
       ) : null}
       <UpsellSelectModal isOpen={showUpsellModal} onClose={() => setShowUpsellModal(false)} onInsert={onInsertUpsell} />
-      {id ? <TestimonialSelectModal
-        isOpen={showReviewModal}
-        onClose={() => setShowReviewModal(false)}
-        onInsert={onInsertReviews}
-        productId={id}
-      /> : null}
+      {id ? (
+        <TestimonialSelectModal
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          onInsert={onInsertReviews}
+          productId={id}
+        />
+      ) : null}
     </>
   );
 };
