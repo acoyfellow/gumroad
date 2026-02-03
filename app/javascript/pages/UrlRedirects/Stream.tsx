@@ -155,12 +155,12 @@ function Stream() {
   });
 
   return (
-    <div className="fixed inset-0 bg-black">
+    <>
       {should_show_transcoding_notice ? (
         <TranscodingNoticeModal transcodeOnFirstSale={transcode_on_first_sale} />
       ) : null}
-      <div ref={containerRef} className="h-full w-full" />
-    </div>
+      <div ref={containerRef} className="absolute h-full w-full" />
+    </>
   );
 }
 
