@@ -24,6 +24,7 @@ import { generatePageIcon } from "$app/utils/rich_content_page";
 import { Button } from "$app/components/Button";
 import { InputtedDiscount } from "$app/components/CheckoutDashboard/DiscountInput";
 import { ComboBox } from "$app/components/ComboBox";
+import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { PageList, PageListLayout, PageListItem } from "$app/components/Download/PageListLayout";
 import { EvaporateUploaderProvider, useEvaporateUploader } from "$app/components/EvaporateUploader";
 import { FileKindIcon } from "$app/components/FileRowContent";
@@ -77,7 +78,6 @@ import { useConfigureEvaporate } from "$app/components/useConfigureEvaporate";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
 import { useRefToLatest } from "$app/components/useRefToLatest";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { useCurrentSeller } from "$app/components/CurrentSeller";
 
 declare global {
   interface Window {
@@ -1100,11 +1100,14 @@ export default function ContentPage() {
 
   const [contentUpdates, setContentUpdates] = React.useState<{ uniquePermalinkOrVariantIds: string[] } | null>(null);
 
-  const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(
-    product.variants.length > 0 && !product.has_same_rich_content_for_all_variants
-      ? (product.variants[0]?.id ?? null)
-      : null,
-  );
+  const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(() => {
+    if (!product.has_same_rich_content_for_all_variants) {
+      const firstVariant = product.variants[0];
+      return firstVariant ? firstVariant.id : null;
+    }
+
+    return null;
+  });
 
   const [confirmingDiscardVariantContent, setConfirmingDiscardVariantContent] = React.useState(false);
 
@@ -1353,7 +1356,12 @@ export default function ContentPage() {
                 existingFiles={existing_files}
                 save={handleSave}
                 filesById={filesById}
-                seller={{ id: currentSeller.id, name: currentSeller.name || "", profile_url: currentSeller.subdomain || "", avatar_url: currentSeller.avatarUrl }}
+                seller={{
+                  id: currentSeller.id,
+                  name: currentSeller.name || "",
+                  profile_url: currentSeller.subdomain || "",
+                  avatar_url: currentSeller.avatarUrl,
+                }}
                 imageSettings={imageSettings}
                 id={id}
                 unique_permalink={unique_permalink}

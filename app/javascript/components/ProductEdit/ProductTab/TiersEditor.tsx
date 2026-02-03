@@ -443,12 +443,13 @@ You can modify or cancel your membership at any time.`;
   React.useEffect(() => {
     if (editor) {
       editor.view.dispatch(editor.state.tr);
-      const placeholderExtension = editor.extensionManager.extensions.find(({ name }) => name === "placeholder") as
-        | { options?: { placeholder?: string } }
-        | undefined;
-      if (placeholderExtension?.options) {
-        placeholderExtension.options.placeholder = placeholder;
-        editor.view.dispatch(editor.state.tr);
+      const placeholderExtension = editor.extensionManager.extensions.find(({ name }) => name === "placeholder");
+      if (placeholderExtension && "options" in placeholderExtension) {
+        const { options } = placeholderExtension;
+        if (options && typeof options === "object" && "placeholder" in options) {
+          options.placeholder = placeholder;
+          editor.view.dispatch(editor.state.tr);
+        }
       }
     }
   }, [placeholder, editor]);
