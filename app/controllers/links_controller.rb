@@ -41,22 +41,23 @@ class LinksController < ApplicationController
     set_meta_tag(title: "Products")
 
     render inertia: "Products/Index", props: {
+      query: products_page_presenter.query,
       archived_products_count: -> { products_page_presenter.page_props[:archived_products_count] },
       can_create_product: -> { products_page_presenter.page_props[:can_create_product] },
-      products_data: -> {
+      products_data: InertiaRails.defer(group: "data") do
         {
           products: products_page_presenter.products_table_props[:products],
           pagination: products_page_presenter.products_table_props[:products_pagination],
           sort: products_page_presenter.products_sort,
         }
-      },
-      memberships_data: -> {
+      end,
+      memberships_data: InertiaRails.defer(group: "data") do
         {
           memberships: products_page_presenter.memberships_table_props[:memberships],
           pagination: products_page_presenter.memberships_table_props[:memberships_pagination],
           sort: products_page_presenter.memberships_sort,
         }
-      },
+      end,
     }
   end
 
@@ -95,20 +96,14 @@ class LinksController < ApplicationController
 
     begin
       @product.save!
-
-      if ai_generated
-        generate_product_details_using_ai
-      end
+      generate_product_details_using_ai if ai_generated
     rescue ActiveRecord::RecordNotSaved, ActiveRecord::RecordInvalid, Link::LinkInvalid
       return redirect_to new_product_path, alert: @product.errors.to_hash.transform_values(&:to_sentence).first, inertia: inertia_errors(@product)
     end
 
     create_user_event("add_product")
-    if ai_generated
-      redirect_to edit_product_product_path(@product, ai_generated: true), status: :see_other
-    else
-      redirect_to edit_product_product_path(@product), status: :see_other
-    end
+    options = ai_generated ? { ai_generated: true } : {}
+    redirect_to edit_product_product_path(@product, **options), status: :see_other
   end
 
   def show

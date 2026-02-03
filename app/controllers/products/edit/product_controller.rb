@@ -40,7 +40,7 @@ module Products
         else
           @product.errors.full_messages.first || e.message
         end
-        redirect_to edit_product_product_path(@product.unique_permalink), alert: error_message, status: :see_other
+        redirect_to edit_product_product_path(@product.unique_permalink), alert: error_message
       end
 
       private

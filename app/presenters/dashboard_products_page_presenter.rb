@@ -9,7 +9,7 @@ class DashboardProductsPagePresenter
 
   PER_PAGE = 50
 
-  attr_reader :products_sort, :memberships_sort
+  attr_reader :products_sort, :memberships_sort, :query
 
   def initialize(pundit_user:, archived: false, products_page: 1, memberships_page: 1, products_sort: nil, memberships_sort: nil, query: nil)
     @pundit_user = pundit_user
@@ -64,7 +64,7 @@ class DashboardProductsPagePresenter
   end
 
   private
-    attr_reader :pundit_user, :products_page, :memberships_page, :query
+    attr_reader :pundit_user, :products_page, :memberships_page
 
     def archived? = @archived
 
