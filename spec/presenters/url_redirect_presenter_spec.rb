@@ -117,6 +117,47 @@ describe UrlRedirectPresenter do
     end
   end
 
+  describe "#stream_page_props" do
+    it "returns playlist, index_to_play, url_redirect_id, and stream page flags" do
+      allow_any_instance_of(SignedUrlHelper).to receive(:signed_download_url_for_s3_key_and_filename).and_return("#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachments/2/original/video.mp4?X-Amz-Signature=test")
+
+      product = create(:product)
+      video_file = create(:streamable_video, link: product)
+      purchase = create(:purchase, link: product)
+      url_redirect = create(:url_redirect, purchase:)
+      user = create(:user)
+
+      instance = described_class.new(url_redirect:, logged_in_user: user)
+      props = instance.stream_page_props(product_file: video_file)
+
+      expect(props.keys).to contain_exactly(:playlist, :index_to_play, :url_redirect_id, :purchase_id, :should_show_transcoding_notice, :transcode_on_first_sale)
+      expect(props[:url_redirect_id]).to eq(url_redirect.external_id)
+      expect(props[:purchase_id]).to eq(purchase.external_id)
+      expect(props[:index_to_play]).to eq(0)
+      expect(props[:playlist].size).to eq(1)
+      expect(props[:playlist][0]).to include(:sources, :guid, :title, :tracks, :external_id, :latest_media_location, :content_length)
+      expect(props[:playlist][0][:sources].size).to eq(2)
+      expect(props[:playlist][0][:external_id]).to eq(video_file.external_id)
+    end
+
+    it "returns index_to_play for the given product_file when product has multiple videos" do
+      allow_any_instance_of(SignedUrlHelper).to receive(:signed_download_url_for_s3_key_and_filename)
+        .and_return("#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachments/guid123/original/video.mp4?X-Amz-Signature=test")
+
+      product = create(:product)
+      video1 = create(:streamable_video, link: product, position: 1)
+      video2 = create(:streamable_video, link: product, position: 2)
+      url_redirect = create(:url_redirect, link: product, purchase: nil)
+      user = create(:user)
+
+      instance = described_class.new(url_redirect:, logged_in_user: user)
+      props = instance.stream_page_props(product_file: video2)
+
+      expect(props[:playlist].size).to eq(2)
+      expect(props[:index_to_play]).to eq(1)
+    end
+  end
+
   describe "#download_page_with_content_props" do
     before do
       @user = create(:user, name: "John Doe")
