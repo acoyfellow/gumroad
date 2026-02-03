@@ -40,8 +40,7 @@ module Products
         end
 
         def fetch_product
-          product_id = params[:product_id] || params[:id]
-          @product = Link.fetch_leniently(product_id, user: current_seller) || Link.fetch_leniently(product_id)
+          @product = Link.fetch_leniently(params[:product_id], user: current_seller) || Link.fetch_leniently(params[:product_id])
           raise(ActiveRecord::RecordNotFound) if @product.nil? || @product.deleted_at.present?
         end
 
