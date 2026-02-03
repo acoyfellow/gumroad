@@ -108,7 +108,7 @@ export const VersionsEditor = ({
             updateVersion={(update) => updateVersion(version.id, update)}
             onDelete={() => setDeletionModalVersionId(version.id)}
             integrations={integrations}
-            currencyType={currencyType ?? "usd"}
+            currencyType={currencyType}
           />
         ))}
       </SortableList>

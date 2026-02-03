@@ -77,6 +77,7 @@ import { useConfigureEvaporate } from "$app/components/useConfigureEvaporate";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
 import { useRefToLatest } from "$app/components/useRefToLatest";
 import { WithTooltip } from "$app/components/WithTooltip";
+import { useCurrentSeller } from "$app/components/CurrentSeller";
 
 declare global {
   interface Window {
@@ -1087,6 +1088,9 @@ const ContentTabContent = ({
 
 export default function ContentPage() {
   const props = usePage<ContentPageProps>().props;
+  const currentSeller = useCurrentSeller();
+  if (!currentSeller) return null;
+
   const { product, existing_files, aws_access_key_id, s3_url, user_id, id, unique_permalink } = props;
 
   const form = useForm<ProductType>({
@@ -1097,8 +1101,8 @@ export default function ContentPage() {
   const [contentUpdates, setContentUpdates] = React.useState<{ uniquePermalinkOrVariantIds: string[] } | null>(null);
 
   const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(
-    product.variants.length > 0 && !product.has_same_rich_content_for_all_variants && product.variants[0]
-      ? product.variants[0].id
+    product.variants.length > 0 && !product.has_same_rich_content_for_all_variants
+      ? (product.variants[0]?.id ?? null)
       : null,
   );
 
@@ -1349,7 +1353,7 @@ export default function ContentPage() {
                 existingFiles={existing_files}
                 save={handleSave}
                 filesById={filesById}
-                seller={{ id: user_id, name: "Creator", profile_url: "", avatar_url: null }}
+                seller={{ id: currentSeller.id, name: currentSeller.name || "", profile_url: currentSeller.subdomain || "", avatar_url: currentSeller.avatarUrl }}
                 imageSettings={imageSettings}
                 id={id}
                 unique_permalink={unique_permalink}

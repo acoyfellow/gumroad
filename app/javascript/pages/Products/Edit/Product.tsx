@@ -52,6 +52,7 @@ type Props = {
   refund_policies: OtherRefundPolicy[];
   is_physical: boolean;
   google_calendar_enabled: boolean;
+  google_client_id: string;
   cancellation_discounts_enabled: boolean;
   ai_generated: boolean;
   custom_domain_verification_status: { success: boolean; message: string } | null;
@@ -345,7 +346,7 @@ export default function ProductEditPage() {
                           google_calendar: newIntegration,
                         })
                       }
-                      googleClientId={props.google_calendar_enabled ? "some_id" : ""}
+                      googleClientId={props.google_client_id}
                       updateProduct={updateProductVia}
                     />
                   ) : null}
