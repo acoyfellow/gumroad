@@ -751,12 +751,10 @@ const ContentTabContent = ({
                 <Separator aria-orientation="vertical" />
                 <Popover
                   open={insertMenuState != null}
-                  onOpenChange={(open: boolean) => setInsertMenuState(open ? "open" : null)}
+                  onOpenChange={(open) => setInsertMenuState(open ? "open" : null)}
                 >
-                  <PopoverTrigger asChild>
-                    <div className="toolbar-item">
-                      Insert <Icon name="outline-cheveron-down" />
-                    </div>
+                  <PopoverTrigger className="toolbar-item all-unset">
+                    Insert <Icon name="outline-cheveron-down" />
                   </PopoverTrigger>
                   <PopoverContent sideOffset={4} className="border-0 p-0 shadow-none">
                     <div role="menu" onClick={() => setInsertMenuState(null)}>
@@ -848,12 +846,10 @@ const ContentTabContent = ({
                     </div>
                   </PopoverContent>
                 </Popover>
-                <>
-                  <Separator aria-orientation="vertical" />
-                  <button className="toolbar-item cursor-pointer all-unset" onClick={handleCreatePageClick}>
-                    <Icon name="plus" /> Page
-                  </button>
-                </>
+                <Separator aria-orientation="vertical" />
+                <button className="toolbar-item cursor-pointer all-unset" onClick={handleCreatePageClick}>
+                  <Icon name="plus" /> Page
+                </button>
               </>
             }
           />
@@ -908,7 +904,6 @@ const ContentTabContent = ({
                               onDelete={() => setConfirmingDeletePage(page)}
                             />
                           ))}
-                          {}
                           {product.native_type === "commission" ? (
                             <WithTooltip
                               tip="Commission files will appear on this page upon completion"
@@ -936,7 +931,7 @@ const ContentTabContent = ({
                               />
                             </WithTooltip>
                           ) : null}
-                          <PageListItem asChild className="ailwind-override text-left">
+                          <PageListItem asChild className="tailwind-override text-left">
                             <button
                               className="add-page"
                               onClick={(e) => {
@@ -965,7 +960,6 @@ const ContentTabContent = ({
                       />
                     </Card>
                     <Card>
-                      {}
                       {product.native_type === "membership" ? (
                         <CardContent asChild details>
                           <details>
@@ -1076,12 +1070,12 @@ const ContentTabContent = ({
         </>
       ) : null}
       <UpsellSelectModal isOpen={showUpsellModal} onClose={() => setShowUpsellModal(false)} onInsert={onInsertUpsell} />
-      <TestimonialSelectModal
+      {id ? <TestimonialSelectModal
         isOpen={showReviewModal}
         onClose={() => setShowReviewModal(false)}
         onInsert={onInsertReviews}
         productId={id}
-      />
+      /> : null}
     </>
   );
 };
