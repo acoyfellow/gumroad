@@ -97,7 +97,7 @@ export default function ProductEditPage() {
   const [showRefundPolicyPreview, setShowRefundPolicyPreview] = React.useState(false);
 
   const updateProductPartial = (partial: Partial<Product>) => {
-    (Object.keys(partial) as Array<keyof Product>).forEach((key) => {
+    Object.keys(partial).forEach((key) => {
       const value = partial[key];
       if (value !== undefined) form.setData(key, value);
     });
@@ -106,7 +106,7 @@ export default function ProductEditPage() {
   const updateProductVia = (updater: (product: Product) => void) => {
     const updated: Product = { ...form.data };
     updater(updated);
-    (Object.keys(updated) as Array<keyof Product>).forEach((key) => {
+    Object.keys(updated).forEach((key) => {
       form.setData(key, updated[key]);
     });
   };
