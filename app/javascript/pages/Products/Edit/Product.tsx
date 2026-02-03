@@ -35,7 +35,7 @@ import { ThumbnailEditor } from "$app/components/ProductEdit/ProductTab/Thumbnai
 import { TiersEditor } from "$app/components/ProductEdit/ProductTab/TiersEditor";
 import { VersionsEditor } from "$app/components/ProductEdit/ProductTab/VersionsEditor";
 import { RefundPolicySelector } from "$app/components/ProductEdit/RefundPolicy";
-import { type Product, type Version, type Duration, type Tier } from "$app/components/ProductEdit/state";
+import { type Product } from "$app/components/ProductEdit/state";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { Alert } from "$app/components/ui/Alert";
 import { Switch } from "$app/components/ui/Switch";
@@ -59,16 +59,14 @@ export default function ProductPage() {
   const currentSeller = useCurrentSeller();
   const uid = React.useId();
 
-  // Initialize form with all product fields
-  const form = useForm({
+  // Initialize form with typed product and defaults for optional arrays
+  const form = useForm<Product>({
     ...props.product,
-    integrations: props.product.integrations || {},
-    variants: props.product.variants || [],
-    covers: props.product.covers || [],
-    custom_attributes: props.product.custom_attributes || [],
-    file_attributes: props.product.file_attributes || [],
-    shipping_destinations: props.product.shipping_destinations || [],
-    availabilities: props.product.availabilities || [],
+    covers: props.product.covers ,
+    custom_attributes: props.product.custom_attributes ,
+    file_attributes: props.product.file_attributes ,
+    shipping_destinations: props.product.shipping_destinations ,
+    availabilities: props.product.availabilities ,
   });
 
   const [currencyType, setCurrencyType] = React.useState<CurrencyCode>(props.currency_type);
@@ -78,9 +76,18 @@ export default function ProductPage() {
   const { isUploading, setImagesUploading } = useImageUpload();
   const [showRefundPolicyPreview, setShowRefundPolicyPreview] = React.useState(false);
 
-  const updateProduct = (data: Partial<typeof form.data>) => {
-    Object.keys(data).forEach((key) => {
-      form.setData(key, data[key]);
+  const updateProductPartial = (partial: Partial<Product>) => {
+    Object.keys(partial).forEach((key) => {
+      const value = partial[key];
+      if (value !== undefined) form.setData(key, value);
+    });
+  };
+
+  const updateProductVia = (updater: (product: Product) => void) => {
+    const updated: Product = { ...form.data };
+    updater(updated);
+    Object.keys(updated).forEach((key) => {
+      form.setData(key, updated[key]);
     });
   };
 
@@ -100,7 +107,9 @@ export default function ProductPage() {
     });
   };
 
-  const isCoffee = props.product.native_type === "coffee";
+  const productData = form.data;
+  const nativeType = productData.native_type;
+  const isCoffee = nativeType === "coffee";
 
   const url = useProductUrl();
   if (!currentSeller) return null;
@@ -109,7 +118,7 @@ export default function ProductPage() {
     <Layout
       preview={
         <ProductPreview
-          product={form.data as Product}
+          product={form.data}
           id={props.id}
           uniquePermalink={props.unique_permalink}
           currencyType={currencyType}
@@ -149,7 +158,7 @@ export default function ProductPage() {
                 </div>
               </Alert>
             ) : null}
-            <BundleConversionNotice product={form.data as Product} id={props.id} />
+            <BundleConversionNotice product={productData} id={props.id} />
             <fieldset>
               <label htmlFor={`${uid}-name`}>{isCoffee ? "Header" : "Name"}</label>
               <input
@@ -159,7 +168,7 @@ export default function ProductPage() {
                 onChange={(evt) => form.setData("name", evt.target.value)}
               />
             </fieldset>
-            {isCoffee ? (
+            {productData.native_type === "coffee" ? (
               <>
                 <fieldset>
                   <label htmlFor={`${uid}-body`}>Body</label>
@@ -206,12 +215,12 @@ export default function ProductPage() {
               </>
             )}
           </section>
-          {isCoffee ? (
+          {productData.native_type === "coffee" ? (
             <>
               <section className="p-4! md:p-8!">
                 <h2>Pricing</h2>
                 <SuggestedAmountsEditor
-                  versions={form.data.variants as Version[]}
+                  versions={productData.variants}
                   onChange={(variants) => form.setData("variants", variants)}
                   currencyType={currencyType}
                 />
@@ -241,7 +250,7 @@ export default function ProductPage() {
               />
               <section className="p-4! md:p-8!">
                 <h2>Product info</h2>
-                {props.product.native_type !== "membership" ? (
+                {productData.native_type !== "membership" ? (
                   <CustomButtonTextOptionInput
                     value={form.data.custom_button_text_option}
                     onChange={(value) => form.setData("custom_button_text_option", value)}
@@ -281,14 +290,8 @@ export default function ProductPage() {
                         circle: newIntegration,
                       })
                     }
-                    product={form.data as Product}
-                    updateProduct={(updater) => {
-                      const updated = { ...form.data } as Product;
-                      updater(updated);
-                      Object.entries(updated).forEach(([key, value]) => {
-                        form.setData(key, value);
-                      });
-                    }}
+                    product={form.data}
+                    updateProduct={updateProductVia}
                   />
                   <DiscordIntegrationEditor
                     integration={form.data.integrations.discord}
@@ -298,39 +301,31 @@ export default function ProductPage() {
                         discord: newIntegration,
                       })
                     }
-                    product={form.data as Product}
-                    updateProduct={(updater) => {
-                      const updated = { ...form.data } as Product;
-                      updater(updated);
-                      Object.entries(updated).forEach(([key, value]) => {
-                        form.setData(key, value);
-                      });
-                    }}
+                    product={form.data}
+                    updateProduct={updateProductVia}
                   />
-                  {props.product.native_type === "call" && props.google_calendar_enabled ? (
+                  {productData.native_type === "call" && props.google_calendar_enabled ? (
                     <GoogleCalendarIntegrationEditor
                       integration={form.data.integrations.google_calendar}
                       onChange={(newIntegration) =>
-                        updateProduct({
-                          integrations: {
-                            ...form.data.integrations,
-                            google_calendar: newIntegration,
-                          },
+                        form.setData("integrations", {
+                          ...form.data.integrations,
+                          google_calendar: newIntegration,
                         })
                       }
                       googleClientId={props.google_calendar_enabled ? "some_id" : ""}
-                      updateProduct={(updater) => updater(form.data as Product)}
+                      updateProduct={updateProductVia}
                     />
                   ) : null}
                 </fieldset>
               </section>
-              {props.product.native_type === "membership" ? (
+              {productData.native_type === "membership" ? (
                 <section className="p-4! md:p-8!">
                   <h2>Tiers</h2>
                   <TiersEditor
-                    tiers={form.data.variants as Tier[]}
+                    tiers={productData.variants}
                     onChange={(variants) => form.setData("variants", variants)}
-                    product={form.data as Product}
+                    product={productData}
                     currencyType={currencyType}
                   />
                 </section>
@@ -366,7 +361,7 @@ export default function ProductPage() {
                         })
                       }
                     />
-                    {props.product.native_type === "commission" ? (
+                    {productData.native_type === "commission" ? (
                       <p
                         style={{
                           marginTop: "var(--spacer-2)",
@@ -378,7 +373,7 @@ export default function ProductPage() {
                       </p>
                     ) : null}
                   </section>
-                  {props.product.native_type === "call" ? (
+                  {productData.native_type === "call" ? (
                     <>
                       <section className="p-4! md:p-8!">
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -392,7 +387,7 @@ export default function ProductPage() {
                           </a>
                         </div>
                         <DurationsEditor
-                          durations={form.data.variants as Duration[]}
+                          durations={productData.variants}
                           onChange={(variants) => form.setData("variants", variants)}
                           currencyType={currencyType}
                         />
@@ -419,7 +414,7 @@ export default function ProductPage() {
                   ) : (
                     <section aria-label="Version editor" className="p-4! md:p-8!">
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <h2>{props.product.native_type === "physical" ? "Variants" : "Versions"}</h2>
+                        <h2>{productData.native_type === "physical" ? "Variants" : "Versions"}</h2>
                         <a
                           href="/help/article/126-setting-up-versions-on-a-digital-product"
                           target="_blank"
@@ -429,7 +424,7 @@ export default function ProductPage() {
                         </a>
                       </div>
                       <VersionsEditor
-                        versions={form.data.variants as Version[]}
+                        versions={productData.variants}
                         onChange={(variants) => form.setData("variants", variants)}
                         currencyType={currencyType}
                       />
@@ -448,13 +443,13 @@ export default function ProductPage() {
               <section className="p-4! md:p-8!">
                 <h2>Settings</h2>
                 <fieldset>
-                  {props.product.native_type === "membership" ? (
+                  {productData.native_type === "membership" ? (
                     <>
-                      <FreeTrialSelector product={form.data as Product} updateProduct={updateProduct} />
+                      <FreeTrialSelector product={form.data} updateProduct={updateProductPartial} />
                       {props.cancellation_discounts_enabled ? (
                         <CancellationDiscountSelector
-                          product={form.data as Product}
-                          updateProduct={updateProduct}
+                          product={form.data}
+                          updateProduct={updateProductPartial}
                           currencyType={currencyType}
                         />
                       ) : null}
@@ -482,7 +477,7 @@ export default function ProductPage() {
                         }
                         label="Members will lose access when their memberships end"
                       />
-                      <DurationEditor product={form.data as Product} updateProduct={updateProduct} />
+                      <DurationEditor product={form.data} updateProduct={updateProductPartial} />
                     </>
                   ) : null}
                   {form.data.can_enable_quantity ? (

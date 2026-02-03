@@ -135,9 +135,7 @@ const VersionEditor = ({
 
   const url = useProductUrl({ option: version.id });
 
-  const availableIntegrations = Object.entries(integrations)
-    .filter(([_, enabled]) => enabled)
-    .map(([name]) => name);
+  const availableIntegrations = ["discord", "circle", "google_calendar"] as const;
 
   return (
     <Row role="listitem">
@@ -210,18 +208,24 @@ const VersionEditor = ({
             {availableIntegrations.length > 0 ? (
               <fieldset>
                 <legend>Integrations</legend>
-                {availableIntegrations.map((integration) => (
-                  <Switch
-                    checked={(version.integrations as any)[integration]}
-                    onChange={(e) =>
-                      updateVersion({ integrations: { ...version.integrations, [integration]: e.target.checked } })
-                    }
-                    key={integration}
-                    label={
-                      integration === "circle" ? "Enable access to Circle community" : "Enable access to Discord server"
-                    }
-                  />
-                ))}
+                {availableIntegrations
+                  .filter((integration) => Boolean(integrations[integration]))
+                  .map((integration) => (
+                    <Switch
+                      checked={version.integrations[integration]}
+                      onChange={(e) =>
+                        updateVersion({ integrations: { ...version.integrations, [integration]: e.target.checked } })
+                      }
+                      key={integration}
+                      label={
+                        {
+                          circle: "Enable access to Circle community",
+                          discord: "Enable access to Discord server",
+                          google_calendar: "Enable Google Calendar sync",
+                        }[integration]
+                      }
+                    />
+                  ))}
               </fieldset>
             ) : null}
           </Drawer>

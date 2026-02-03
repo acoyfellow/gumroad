@@ -117,6 +117,9 @@ type SellerType = {
   avatar_url: string | null;
 };
 
+type UpdateProductKey = "files" | "variants" | "rich_content" | "has_same_rich_content_for_all_variants";
+type UpdateProductKV = <K extends UpdateProductKey>(key: K, value: ProductType[K]) => void;
+
 const ContentTabContent = ({
   selectedVariantId,
   product,
@@ -131,7 +134,7 @@ const ContentTabContent = ({
 }: {
   selectedVariantId: string | null;
   product: ProductType;
-  updateProduct: <K extends keyof ProductType>(key: K, value: ProductType[K]) => void;
+  updateProduct: UpdateProductKV;
   existingFiles: ExistingFileEntry[];
   save: () => void;
   filesById: Map<string, FileEntry>;
@@ -189,7 +192,7 @@ const ContentTabContent = ({
 
   const [selectedPageId, setSelectedPageId] = React.useState(pages[0]?.id);
   const selectedPage = pages.find((page) => page.id === selectedPageId);
-  if ((selectedPageId || pages.length) && !selectedPage) setSelectedPageId(pages[0]?.id);
+  if (!selectedPage && pages.length > 0) setSelectedPageId(pages[0]?.id);
 
   const [renamingPageId, setRenamingPageId] = React.useState<string | null>(null);
   const [confirmingDeletePage, setConfirmingDeletePage] = React.useState<Page | null>(null);
@@ -286,7 +289,12 @@ const ContentTabContent = ({
     filesById,
   });
 
-  const fileEmbedConfig = useRefToLatest<FileEmbedConfig>({ filesById });
+  const filesByIdRef = useRefToLatest(filesById);
+  const fileEmbedConfig = useRefToLatest<FileEmbedConfig>({
+    get filesById() {
+      return filesByIdRef.current;
+    },
+  });
   const uploadFilesRef = useRefToLatest(uploadFiles);
 
   const contentEditorExtensions = extensions(id, [
@@ -351,27 +359,24 @@ const ContentTabContent = ({
     };
   }, [editor]);
 
-  const pageIcons = React.useMemo(
-    () =>
-      new Map(
-        editor
-          ? pages.map((page) => {
-              const description = editor.schema.nodeFromJSON(page.description);
-              return [
-                page.id,
-                generatePageIcon({
-                  hasLicense: findChildren(description, (node) => node.type.name === LicenseKey.name).length > 0,
-                  fileIds: findChildren(description, (node) => node.type.name === FileEmbed.name).map(({ node }) =>
-                    String(node.attrs.id),
-                  ),
-                  allFiles: product.files,
-                }),
-              ] as const;
-            })
-          : [],
-      ),
-    [pages, editor],
-  );
+  const pageIcons = React.useMemo(() => {
+    if (!editor) return new Map<string, ReturnType<typeof generatePageIcon>>();
+    return new Map(
+      pages.map((page) => {
+        const description = editor.schema.nodeFromJSON(page.description);
+        return [
+          page.id,
+          generatePageIcon({
+            hasLicense: findChildren(description, (node) => node.type.name === LicenseKey.name).length > 0,
+            fileIds: findChildren(description, (node) => node.type.name === FileEmbed.name).map(({ node }) =>
+              String(node.attrs.id),
+            ),
+            allFiles: product.files,
+          }),
+        ] as const;
+      }),
+    );
+  }, [pages, editor, product.files]);
 
   const findPageWithNode = (type: string) =>
     editor &&
@@ -1080,7 +1085,9 @@ export default function ContentPage() {
   const [contentUpdates, setContentUpdates] = React.useState<{ uniquePermalinkOrVariantIds: string[] } | null>(null);
 
   const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(
-    product.variants.length > 0 && !product.has_same_rich_content_for_all_variants ? product.variants[0].id : null,
+    product.variants.length > 0 && !product.has_same_rich_content_for_all_variants && product.variants[0]
+      ? product.variants[0].id
+      : null,
   );
 
   const [confirmingDiscardVariantContent, setConfirmingDiscardVariantContent] = React.useState(false);
@@ -1149,27 +1156,15 @@ export default function ContentPage() {
     });
   };
 
-  // Restrict updates to keys we actually set from ContentTabContent
-  const updateProductKV = <K extends keyof ProductType>(key: K, value: ProductType[K]) => {
-    switch (key) {
-      case "files":
-        form.setData("files", value as ProductType["files"]);
-        break;
-      case "variants":
-        form.setData("variants", value as ProductType["variants"]);
-        break;
-      case "rich_content":
-        form.setData("rich_content", value as ProductType["rich_content"]);
-        break;
-      case "has_same_rich_content_for_all_variants":
-        form.setData(
-          "has_same_rich_content_for_all_variants",
-          value as ProductType["has_same_rich_content_for_all_variants"],
-        );
-        break;
-      default:
-        break;
-    }
+  // Restrict updates to keys we actually set from ContentTabContent, with overloads for sound typing
+  const updateProductKV: UpdateProductKV = (key, value) => {
+    const setters: { [K in UpdateProductKey]: (val: ProductType[K]) => void } = {
+      files: (val) => form.setData("files", val),
+      variants: (val) => form.setData("variants", val),
+      rich_content: (val) => form.setData("rich_content", val),
+      has_same_rich_content_for_all_variants: (val) => form.setData("has_same_rich_content_for_all_variants", val),
+    };
+    setters[key](value);
   };
 
   const { s3UploadConfig, evaporateUploader } = useConfigureEvaporate({ aws_access_key_id, s3_url, user_id });

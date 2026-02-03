@@ -1,5 +1,5 @@
-import hands from "images/illustrations/hands.png";
 import { useForm, usePage } from "@inertiajs/react";
+import hands from "images/illustrations/hands.png";
 import * as React from "react";
 
 import { Taxonomy } from "$app/utils/discover";
