@@ -47,11 +47,13 @@ export const TiersEditor = ({
   onChange,
   product,
   currencyType,
+  unique_permalink,
 }: {
   tiers: Tier[];
   onChange: (tiers: Tier[]) => void;
   product: Product;
   currencyType: CurrencyCode;
+  unique_permalink: string;
 }) => {
   const updateVersion = (id: string, update: Partial<Tier>) => {
     onChange(tiers.map((version) => (version.id === id ? { ...version, ...update } : version)));
@@ -134,6 +136,7 @@ export const TiersEditor = ({
             onDelete={() => setDeletionModalVersionId(version.id)}
             product={product}
             currencyType={currencyType}
+            unique_permalink={unique_permalink}
           />
         ))}
       </SortableList>
@@ -150,12 +153,14 @@ const TierEditor = ({
   onDelete,
   product,
   currencyType,
+  unique_permalink,
 }: {
   tier: Tier;
   updateTier: (update: Partial<Tier>) => void;
   onDelete: () => void;
   product: Product;
   currencyType: CurrencyCode;
+  unique_permalink: string;
 }) => {
   const uid = React.useId();
 
@@ -363,7 +368,7 @@ const TierEditor = ({
                 </div>
               </Dropdown>
             </Details>
-            <PriceChangeSettings tier={tier} updateTier={updateTier} product={product} currencyType={currencyType} />
+            <PriceChangeSettings unique_permalink={unique_permalink} tier={tier} updateTier={updateTier} product={product} currencyType={currencyType} />
             {integrations.length > 0 ? (
               <fieldset>
                 <legend>Integrations</legend>
@@ -394,18 +399,20 @@ const PriceChangeSettings = ({
   updateTier,
   product,
   currencyType,
+  unique_permalink,
 }: {
   tier: Tier;
   updateTier: (update: Partial<Tier>) => void;
   product: Product;
   currencyType: CurrencyCode;
+  unique_permalink: string;
 }) => {
   const uid = React.useId();
 
   const [isMounted, setIsMounted] = React.useState(false);
   useRunOnce(() => setIsMounted(true));
 
-  const uniquePermalink = product.custom_permalink || "";
+  const uniquePermalink = unique_permalink;
   const earliestMembershipPriceChangeDate = new Date();
 
   const [effectiveDate, setEffectiveDate] = React.useState<{ value: Date; error?: boolean }>({

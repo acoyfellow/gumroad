@@ -360,6 +360,7 @@ export default function ProductEditPage() {
                     onChange={(variants) => form.setData("variants", variants)}
                     product={productData}
                     currencyType={currencyType}
+                    unique_permalink={props.unique_permalink}
                   />
                 </section>
               ) : (
