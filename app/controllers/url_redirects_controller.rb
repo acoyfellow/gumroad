@@ -17,7 +17,7 @@ class UrlRedirectsController < ApplicationController
                                              download_archive latest_media_locations download_product_files audio_durations
                                              save_last_content_page]
   before_action :hide_layouts, only: %i[
-    confirm_page membership_inactive_page expired rental_expired_page show download_page download_product_files stream smil hls_playlist download_subtitle_file read
+    confirm_page membership_inactive_page expired rental_expired_page show download_page download_product_files smil hls_playlist download_subtitle_file read
   ]
   before_action :mark_rental_as_viewed, only: %i[smil hls_playlist]
   after_action :register_that_user_has_downloaded_product, only: %i[download_page show stream read]
@@ -29,6 +29,8 @@ class UrlRedirectsController < ApplicationController
   skip_before_action :check_suspended, only: %i[show stream confirm confirm_page download_page
                                                 download_subtitle_file download_archive download_product_files audio_durations]
   before_action :set_noindex_header, only: %i[confirm_page download_page]
+
+  layout "inertia", only: [:stream]
 
   rescue_from ActionController::RoutingError do |exception|
     if params[:action] == "read"
@@ -231,18 +233,14 @@ class UrlRedirectsController < ApplicationController
   # Consumption event is created by front-end code
   def stream
     set_meta_tag(title: "Watch")
+    set_favicon_meta_tags(@url_redirect.seller)
     @body_id = "stream_page"
     @body_class = "download-page responsive responsive-nav"
 
     @product_file = @url_redirect.product_file(params[:product_file_id]) || @url_redirect.alive_product_files.find(&:streamable?)
     e404 unless @product_file&.streamable?
 
-    @videos_playlist = @url_redirect.video_files_playlist(@product_file)
-    @should_show_transcoding_notice = logged_in_user == @url_redirect.seller && !@url_redirect.with_product_files.has_been_transcoded?
-
-    @url_redirect_id = @url_redirect.external_id
-    @purchase_id = @url_redirect.purchase.try(:external_id)
-    render :video_stream
+    render inertia: "UrlRedirects/Stream", props: UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).stream_page_props(product_file: @product_file)
   end
 
   def latest_media_locations

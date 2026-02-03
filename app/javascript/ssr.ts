@@ -31,7 +31,6 @@ import SubscriptionManager from "$app/components/server-components/SubscriptionM
 import SubscriptionManagerMagicLink from "$app/components/server-components/SubscriptionManagerMagicLink";
 import SupportHeader from "$app/components/server-components/support/Header";
 import TaxesCollectionModal from "$app/components/server-components/TaxesCollectionModal";
-import VideoStreamPlayer from "$app/components/server-components/VideoStreamPlayer";
 import CodeSnippet from "$app/components/ui/CodeSnippet";
 import { Pill } from "$app/components/ui/Pill";
 
@@ -66,5 +65,4 @@ ReactOnRails.register({
   SubscriptionManager,
   SubscriptionManagerMagicLink,
   TaxesCollectionModal,
-  VideoStreamPlayer,
 });

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "inertia_rails/rspec"
 
 describe UrlRedirectsController do
   render_views
@@ -562,11 +563,14 @@ describe UrlRedirectsController do
           stub_const("UrlRedirect::GUID_GETTER_FROM_S3_URL_REGEX", /(specs)/)
         end
 
-        it "assigns the first streamable product file to '@product_file' and renders the stream page correctly" do
+        it "assigns the first streamable product file to '@product_file' and renders the stream page correctly", inertia: true do
           get :stream, params: { id: @url_redirect.token }
 
           expect(response).to have_http_status(:ok)
           expect(assigns(:product_file)).to eq(@product.product_files.first)
+          expect_inertia.to render_component "UrlRedirects/Stream"
+          expect(inertia.props[:playlist]).to be_an(Array)
+          expect(inertia.props[:url_redirect_id]).to eq(@url_redirect.external_id)
         end
       end
 
@@ -979,33 +983,31 @@ describe UrlRedirectsController do
           allow_any_instance_of(Aws::S3::Object).to receive(:content_length).and_return(1_000_000)
         end
 
-        it "sets the m3u8 playlist url and the original video url in sources for hls-transcoded video" do
+        it "sets the m3u8 playlist url and the original video url in sources for hls-transcoded video", inertia: true do
           get :stream, params: { id: @multifile_url_redirect.token, product_file_id: @video_file_1.external_id }
-          video_urls = assigns(:videos_playlist)[:playlist]
 
           expect(response).to be_successful
-          expect(assigns(:hide_layouts)).to eq(true)
-          expect(video_urls.size).to eq 1
-          expect(video_urls[0][:sources][0]).to include "index.m3u8"
-          expect(video_urls[0][:sources][1]).to include @video_file_1.s3_filename
-          expect(assigns(:videos_playlist)[:index_to_play]).to eq 0
+          expect(inertia.component).to eq("UrlRedirects/Stream")
+          expect(inertia.props[:playlist].size).to eq 1
+          expect(inertia.props[:playlist][0][:sources][0]).to include "index.m3u8"
+          expect(inertia.props[:playlist][0][:sources][1]).to include @video_file_1.s3_filename
+          expect(inertia.props[:index_to_play]).to eq 0
         end
 
-        it "sets the smil url and the original video url in sources if the video is not HLS-transcoded yet" do
+        it "sets the smil url and the original video url in sources if the video is not HLS-transcoded yet", inertia: true do
           @video_file_1.update(is_transcoded_for_hls: false)
           get :stream, params: { id: @multifile_url_redirect.token }
-          video_urls = assigns(:videos_playlist)[:playlist]
 
           expect(response).to be_successful
-          expect(assigns(:hide_layouts)).to eq(true)
-          expect(video_urls.size).to eq 1
-          expect(video_urls[0][:sources][0]).to include "stream.smil"
-          expect(video_urls[0][:sources][1]).to include @video_file_1.s3_filename
-          expect(assigns(:videos_playlist)[:index_to_play]).to eq 0
+          expect(inertia.component).to eq("UrlRedirects/Stream")
+          expect(inertia.props[:playlist].size).to eq 1
+          expect(inertia.props[:playlist][0][:sources][0]).to include "stream.smil"
+          expect(inertia.props[:playlist][0][:sources][1]).to include @video_file_1.s3_filename
+          expect(inertia.props[:index_to_play]).to eq 0
         end
 
         context "when the product has rich content" do
-          it "sets the correct source urls for all video files in the product and returns the index of the file that should be played on load" do
+          it "sets the correct source urls for all video files in the product and returns the index of the file that should be played on load", inertia: true do
             pdf_file = create(:product_file, url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachment/manual.pdf")
             video_file_2 = create(:product_file, url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachments/43a5363194e74e9ee75b6203eaea6705/original/chapter1.mp4", position: 2)
             subtitle_file_en = create(:subtitle_file, language: "English", url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachment/english.srt", product_file: video_file_2)
@@ -1022,26 +1024,26 @@ describe UrlRedirectsController do
 
             get :stream, params: { id: @multifile_url_redirect.token, product_file_id: video_file_2.external_id }
 
-            video_urls = assigns(:videos_playlist)[:playlist]
             expect(response).to be_successful
-            expect(video_urls.size).to eq 3
-            expect(video_urls[0][:sources][0]).to include "stream.smil"
-            expect(video_urls[0][:sources][1]).to include video_file_2.s3_filename
-            expect(video_urls[0][:title]).to eq video_file_2.s3_display_name
-            expect(video_urls[0][:tracks].size).to eq 2
-            expect(video_urls[0][:tracks][0][:label]).to eq subtitle_file_en.language
-            expect(video_urls[0][:tracks][1][:label]).to eq subtitle_file_es.language
-            expect(video_urls[1][:sources][0]).to include "index.m3u8"
-            expect(video_urls[1][:sources][1]).to include @video_file_1.s3_filename
-            expect(video_urls[1][:title]).to eq @video_file_1.display_name
-            expect(video_urls[2][:sources][0]).to include "stream.smil"
-            expect(video_urls[2][:sources][1]).to include video_file_3.s3_filename
-            expect(video_urls[2][:title]).to eq "chapter3"
-            expect(assigns(:videos_playlist)[:index_to_play]).to eq 0
+            expect(inertia.component).to eq("UrlRedirects/Stream")
+            expect(inertia.props[:playlist].size).to eq 3
+            expect(inertia.props[:playlist][0][:sources][0]).to include "stream.smil"
+            expect(inertia.props[:playlist][0][:sources][1]).to include video_file_2.s3_filename
+            expect(inertia.props[:playlist][0][:title]).to eq video_file_2.s3_display_name
+            expect(inertia.props[:playlist][0][:tracks].size).to eq 2
+            expect(inertia.props[:playlist][0][:tracks][0][:label]).to eq subtitle_file_en.language
+            expect(inertia.props[:playlist][0][:tracks][1][:label]).to eq subtitle_file_es.language
+            expect(inertia.props[:playlist][1][:sources][0]).to include "index.m3u8"
+            expect(inertia.props[:playlist][1][:sources][1]).to include @video_file_1.s3_filename
+            expect(inertia.props[:playlist][1][:title]).to eq @video_file_1.display_name
+            expect(inertia.props[:playlist][2][:sources][0]).to include "stream.smil"
+            expect(inertia.props[:playlist][2][:sources][1]).to include video_file_3.s3_filename
+            expect(inertia.props[:playlist][2][:title]).to eq "chapter3"
+            expect(inertia.props[:index_to_play]).to eq 0
           end
         end
 
-        it "sets the correct source urls for all video attachments of an installment and returns the index of the file that should be played on load" do
+        it "sets the correct source urls for all video attachments of an installment and returns the index of the file that should be played on load", inertia: true do
           pdf_file = create(:product_file, url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachment/manual.pdf")
           video_file_1 = create(:product_file, url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachments/2/original/chapter2.mp4", is_transcoded_for_hls: true, display_name: "Chapter 2", position: 2)
           video_file_2 = create(:product_file, url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachments/43a5363194e74e9ee75b6203eaea6705/original/chapter1.mp4", position: 1)
@@ -1053,23 +1055,23 @@ describe UrlRedirectsController do
           installment.product_files << video_file_1 << video_file_2 << pdf_file << video_file_3 << mp3_file
           url_redirect = create(:installment_url_redirect, installment:)
           get :stream, params: { id: url_redirect.token, product_file_id: video_file_3.external_id }
-          video_urls = assigns(:videos_playlist)[:playlist]
+
           expect(response).to be_successful
-          expect(assigns(:hide_layouts)).to eq(true)
-          expect(video_urls.size).to eq(3)
-          expect(video_urls[2][:sources][0]).to include "index.m3u8"
-          expect(video_urls[2][:sources][1]).to include video_file_1.s3_filename
-          expect(video_urls[2][:title]).to eq video_file_1.display_name
-          expect(video_urls[1][:sources][0]).to include "stream.smil"
-          expect(video_urls[1][:sources][1]).to include video_file_2.s3_filename
-          expect(video_urls[1][:title]).to eq video_file_2.s3_display_name
-          expect(video_urls[1][:tracks].size).to eq 2
-          expect(video_urls[1][:tracks][0][:label]).to eq subtitle_file_en.language
-          expect(video_urls[1][:tracks][1][:label]).to eq subtitle_file_fr.language
-          expect(video_urls[0][:sources][0]).to include "stream.smil"
-          expect(video_urls[0][:sources][1]).to include video_file_3.s3_filename
-          expect(video_urls[0][:title]).to eq video_file_3.display_name
-          expect(assigns(:videos_playlist)[:index_to_play]).to eq 0
+          expect(inertia.component).to eq("UrlRedirects/Stream")
+          expect(inertia.props[:playlist].size).to eq(3)
+          expect(inertia.props[:playlist][2][:sources][0]).to include "index.m3u8"
+          expect(inertia.props[:playlist][2][:sources][1]).to include video_file_1.s3_filename
+          expect(inertia.props[:playlist][2][:title]).to eq video_file_1.display_name
+          expect(inertia.props[:playlist][1][:sources][0]).to include "stream.smil"
+          expect(inertia.props[:playlist][1][:sources][1]).to include video_file_2.s3_filename
+          expect(inertia.props[:playlist][1][:title]).to eq video_file_2.s3_display_name
+          expect(inertia.props[:playlist][1][:tracks].size).to eq 2
+          expect(inertia.props[:playlist][1][:tracks][0][:label]).to eq subtitle_file_en.language
+          expect(inertia.props[:playlist][1][:tracks][1][:label]).to eq subtitle_file_fr.language
+          expect(inertia.props[:playlist][0][:sources][0]).to include "stream.smil"
+          expect(inertia.props[:playlist][0][:sources][1]).to include video_file_3.s3_filename
+          expect(inertia.props[:playlist][0][:title]).to eq video_file_3.display_name
+          expect(inertia.props[:index_to_play]).to eq 0
         end
       end
 
