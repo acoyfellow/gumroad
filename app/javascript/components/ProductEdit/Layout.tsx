@@ -141,9 +141,9 @@ export const Layout = ({
 
   const pageComponent = usePage().component;
   const tab = React.useMemo(() => {
-    if (pageComponent === "Products/Edit/Content") return "content";
-    if (pageComponent === "Products/Edit/Receipt") return "receipt";
-    if (pageComponent === "Products/Edit/Share") return "share";
+    if (pageComponent === "Products/Content/Edit") return "content";
+    if (pageComponent === "Products/Receipt/Edit") return "receipt";
+    if (pageComponent === "Products/Share/Edit") return "share";
     return "product";
   }, [pageComponent]);
 

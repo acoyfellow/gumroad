@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Products::Edit::BaseController < Sellers::BaseController
+class Products::BaseController < Sellers::BaseController
   before_action :fetch_product
   before_action :authorize_product
   before_action :set_product_edit_title

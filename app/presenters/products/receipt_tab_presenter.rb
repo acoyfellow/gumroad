@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Products::Edit::ReceiptTabPresenter < Products::Edit::BasePresenter
+class Products::ReceiptTabPresenter < Products::BasePresenter
   def props
     layout_props.merge(product: product_props)
   end

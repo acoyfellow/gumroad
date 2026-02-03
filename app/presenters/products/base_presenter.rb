@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Products::Edit::BasePresenter
+class Products::BasePresenter
   include Rails.application.routes.url_helpers
   include ProductsHelper
   include CurrencyHelper

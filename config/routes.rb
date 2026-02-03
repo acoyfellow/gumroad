@@ -279,11 +279,11 @@ Rails.application.routes.draw do
 
   constraints GumroadDomainConstraint do
     resources :products, only: [] do
-      scope module: "products" do
-        resource :product, only: [:edit, :update], controller: "edit/product"
-        resource :content, only: [:edit, :update], controller: "edit/content"
-        resource :receipt, only: [:edit, :update], controller: "edit/receipt"
-        resource :share, only: [:edit, :update], controller: "edit/share"
+      scope module: :products do
+        resource :product, only: [:edit, :update], controller: "product"
+        resource :content, only: [:edit, :update], controller: "content"
+        resource :receipt, only: [:edit, :update], controller: "receipt"
+        resource :share, only: [:edit, :update], controller: "share"
       end
 
       # Backward compatibility redirects for old product edit URLs

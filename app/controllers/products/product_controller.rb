@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-class Products::Edit::ProductController < Products::Edit::BaseController
+class Products::ProductController < Products::BaseController
   def edit
     return redirect_to bundle_path(@product.external_id) if @product.is_bundle?
 
-    render inertia: "Products/Edit/Product", props: Products::Edit::ProductTabPresenter.new(product: @product, pundit_user:).props
+    render inertia: "Products/Product/Edit", props: Products::ProductTabPresenter.new(product: @product, pundit_user:).props
   end
 
   def update

@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-class Products::Edit::ShareController < Products::Edit::BaseController
+class Products::ShareController < Products::BaseController
   before_action :ensure_published_for_share, only: [:edit]
 
   def edit
-    render inertia: "Products/Edit/Share", props: Products::Edit::ShareTabPresenter.new(product: @product, pundit_user:).props
+    render inertia: "Products/Share/Edit", props: Products::ShareTabPresenter.new(product: @product, pundit_user:).props
   end
 
   def update

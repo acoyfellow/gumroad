@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-class Products::Edit::ReceiptController < Products::Edit::BaseController
+class Products::ReceiptController < Products::BaseController
   def edit
-    render inertia: "Products/Edit/Receipt", props: Products::Edit::ReceiptTabPresenter.new(product: @product, pundit_user:).props
+    render inertia: "Products/Receipt/Edit", props: Products::ReceiptTabPresenter.new(product: @product, pundit_user:).props
   end
 
   def update
