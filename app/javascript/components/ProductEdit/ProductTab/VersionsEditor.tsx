@@ -9,12 +9,12 @@ import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
 import { useProductUrl } from "$app/components/ProductEdit/Layout";
 import { Version } from "$app/components/ProductEdit/state";
+import { type Integration } from "$app/components/ProductEdit/state";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
 import { Placeholder } from "$app/components/ui/Placeholder";
 import { Row, RowActions, RowContent, RowDetails, Rows } from "$app/components/ui/Rows";
 import { Switch } from "$app/components/ui/Switch";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { type Integration } from "$app/components/ProductEdit/state";
 
 let newVersionId = 0;
 
@@ -212,17 +212,17 @@ const VersionEditor = ({
               <fieldset>
                 <legend>Integrations</legend>
                 {availableIntegrations.map((integration) => (
-                    <Switch
-                      checked={version.integrations[integration]}
-                      onChange={(e) =>
-                        updateVersion({ integrations: { ...version.integrations, [integration]: e.target.checked } })
-                      }
-                      key={integration}
-                      label={
-                        integration === "circle" ? "Enable access to Circle community" : "Enable access to Discord server"
-                      }
-                    />
-                  ))}
+                  <Switch
+                    checked={version.integrations[integration]}
+                    onChange={(e) =>
+                      updateVersion({ integrations: { ...version.integrations, [integration]: e.target.checked } })
+                    }
+                    key={integration}
+                    label={
+                      integration === "circle" ? "Enable access to Circle community" : "Enable access to Discord server"
+                    }
+                  />
+                ))}
               </fieldset>
             ) : null}
           </Drawer>

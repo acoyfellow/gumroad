@@ -199,8 +199,8 @@ export type ThumbnailFile = {
   status: { type: "saved" } | { type: "existing" } | { type: "unsaved" };
 };
 
-export type Integration ={
+export type Integration = {
   discord: DiscordIntegration;
   circle: CircleIntegration;
   google_calendar: GoogleCalendarIntegration;
-}
+};

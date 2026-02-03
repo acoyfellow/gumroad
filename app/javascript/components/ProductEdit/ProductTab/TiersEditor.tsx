@@ -1,3 +1,4 @@
+import { type Editor } from "@tiptap/core";
 import cx from "classnames";
 import { format } from "date-fns";
 import * as React from "react";
@@ -33,7 +34,6 @@ import { Switch } from "$app/components/ui/Switch";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 import { useRunOnce } from "$app/components/useRunOnce";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { type Editor } from "@tiptap/core";
 
 let newTierId = 0;
 
