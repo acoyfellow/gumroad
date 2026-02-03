@@ -514,10 +514,7 @@ const ContentTabContent = ({
 
   React.useEffect(() => {
     const interval = setInterval(
-      () =>
-        void fetchDropboxFiles(unique_permalink).then(({ dropbox_files }) =>
-          addDropboxFiles(dropbox_files),
-        ),
+      () => void fetchDropboxFiles(unique_permalink).then(({ dropbox_files }) => addDropboxFiles(dropbox_files)),
       10000,
     );
     return () => clearInterval(interval);

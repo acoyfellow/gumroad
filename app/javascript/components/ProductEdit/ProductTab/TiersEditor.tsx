@@ -368,7 +368,13 @@ const TierEditor = ({
                 </div>
               </Dropdown>
             </Details>
-            <PriceChangeSettings unique_permalink={unique_permalink} tier={tier} updateTier={updateTier} product={product} currencyType={currencyType} />
+            <PriceChangeSettings
+              unique_permalink={unique_permalink}
+              tier={tier}
+              updateTier={updateTier}
+              product={product}
+              currencyType={currencyType}
+            />
             {integrations.length > 0 ? (
               <fieldset>
                 <legend>Integrations</legend>
