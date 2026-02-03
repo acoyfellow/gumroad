@@ -76,6 +76,7 @@ import { useConfigureEvaporate } from "$app/components/useConfigureEvaporate";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
 import { useRefToLatest } from "$app/components/useRefToLatest";
 import { WithTooltip } from "$app/components/WithTooltip";
+import { type CurrencyCode} from "$app/utils/currency";
 
 declare global {
   interface Window {
@@ -108,6 +109,18 @@ type ContentPageProps = {
   aws_access_key_id: string;
   s3_url: string;
   user_id: string;
+  ratings: {
+    count: number;
+    average: number;
+    percentages: [number, number, number, number, number];
+  };
+  seller_refund_policy_enabled: boolean;
+  seller_refund_policy: {
+    title: string;
+    fine_print: string;
+  }
+  currency_type: CurrencyCode;
+
 };
 
 type SellerType = {
@@ -1242,10 +1255,10 @@ export default function ContentPage() {
                   product={form.data}
                   id={id}
                   uniquePermalink={unique_permalink}
-                  currencyType="usd"
-                  ratings={{ count: 0, average: 0, percentages: [0, 0, 0, 0, 0] }}
-                  seller_refund_policy_enabled={false}
-                  seller_refund_policy={{ title: "", fine_print: "" }}
+                  currencyType={props.currency_type}
+                  ratings={props.ratings}
+                  seller_refund_policy_enabled={props.seller_refund_policy_enabled}
+                  seller_refund_policy={props.seller_refund_policy}
                 />
               }
               currentTab="content"

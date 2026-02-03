@@ -20,6 +20,7 @@ import { TwitterShareButton } from "$app/components/TwitterShareButton";
 import { Alert } from "$app/components/ui/Alert";
 import { Switch } from "$app/components/ui/Switch";
 import { useRunOnce } from "$app/components/useRunOnce";
+import { type CurrencyCode } from "$app/utils/currency";
 
 type ProfileSection = {
   id: string;
@@ -35,6 +36,17 @@ type SharePageProps = {
   profile_sections: ProfileSection[];
   taxonomies: Taxonomy[];
   is_listed_on_discover: boolean;
+  currency_type: CurrencyCode;
+  ratings: {
+    count: number;
+    average: number;
+    percentages: [number, number, number, number, number];
+  };
+  seller_refund_policy_enabled: boolean;
+  seller_refund_policy: {
+    title: string;
+    fine_print: string;
+  }
 };
 
 export default function SharePage() {
@@ -87,10 +99,10 @@ export default function SharePage() {
           product={product}
           id={props.id}
           uniquePermalink={props.unique_permalink}
-          currencyType="usd"
-          ratings={{ count: 0, average: 0, percentages: [0, 0, 0, 0, 0] }}
-          seller_refund_policy_enabled={false}
-          seller_refund_policy={{ title: "", fine_print: "" }}
+          currencyType={props.currency_type}
+          ratings={props.ratings}
+          seller_refund_policy_enabled={props.seller_refund_policy_enabled}
+          seller_refund_policy={props.seller_refund_policy}
         />
       }
       currentTab="share"

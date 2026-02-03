@@ -19,8 +19,7 @@ type ReceiptPageProps = {
 };
 
 export default function ReceiptPage() {
-  const props = usePage<ReceiptPageProps>().props;
-  const { product } = props;
+  const {product, unique_permalink} = usePage<ReceiptPageProps>().props;
 
   const form = useForm({
     custom_receipt_text: product.custom_receipt_text ?? "",
@@ -30,11 +29,11 @@ export default function ReceiptPage() {
   const [contentUpdates, setContentUpdates] = React.useState<{ uniquePermalinkOrVariantIds: string[] } | null>(null);
 
   const handleSave = () => {
-    form.patch(Routes.products_edit_receipt_path(props.unique_permalink), {
+    form.patch(Routes.products_edit_receipt_path(unique_permalink), {
       preserveScroll: true,
       onSuccess: () => {
         setContentUpdates({
-          uniquePermalinkOrVariantIds: [props.unique_permalink],
+          uniquePermalinkOrVariantIds: [unique_permalink],
         });
       },
     });
@@ -46,7 +45,7 @@ export default function ReceiptPage() {
       ...data,
       redirect_to: targetUrl,
     }));
-    form.patch(Routes.products_edit_receipt_path(props.unique_permalink), { preserveScroll: true });
+    form.patch(Routes.products_edit_receipt_path(unique_permalink), { preserveScroll: true });
     return true;
   };
 
@@ -54,7 +53,7 @@ export default function ReceiptPage() {
     <Layout
       preview={
         <ReceiptPreview
-          uniquePermalink={props.unique_permalink}
+          uniquePermalink={unique_permalink}
           custom_receipt_text={form.data.custom_receipt_text}
           custom_view_content_button_text={form.data.custom_view_content_button_text}
         />

@@ -4,7 +4,7 @@ import * as React from "react";
 import { type OtherRefundPolicy } from "$app/data/products/other_refund_policies";
 import { type Thumbnail } from "$app/data/thumbnails";
 import { COFFEE_CUSTOM_BUTTON_TEXT_OPTIONS, CUSTOM_BUTTON_TEXT_OPTIONS } from "$app/parsers/product";
-import { CurrencyCode, currencyCodeList } from "$app/utils/currency";
+import { type CurrencyCode, currencyCodeList } from "$app/utils/currency";
 
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
@@ -49,12 +49,23 @@ type Props = {
   refund_policies: OtherRefundPolicy[];
   is_physical: boolean;
   google_calendar_enabled: boolean;
-  seller_refund_policy_enabled: boolean;
   cancellation_discounts_enabled: boolean;
   ai_generated: boolean;
+  ratings: {
+    count: number;
+    average: number;
+    percentages: [number, number, number, number, number];
+  };
+  seller_refund_policy_enabled: boolean;
+  seller_refund_policy: {
+    title: string;
+    fine_print: string;
+  }
+  sales_count_for_inventory: number;
+  successful_sales_count: number;
 };
 
-export default function ProductPage() {
+export default function ProductEditPage() {
   const props = usePage<Props>().props;
   const currentSeller = useCurrentSeller();
   const uid = React.useId();
@@ -134,11 +145,11 @@ export default function ProductPage() {
           uniquePermalink={props.unique_permalink}
           currencyType={currencyType}
           showRefundPolicyModal={showRefundPolicyPreview}
-          salesCountForInventory={0}
-          successfulSalesCount={0}
-          ratings={{ count: 0, average: 0, percentages: [0, 0, 0, 0, 0] }}
+          salesCountForInventory={props.sales_count_for_inventory}
+          successfulSalesCount={props.successful_sales_count}
+          ratings={props.ratings}
           seller_refund_policy_enabled={props.seller_refund_policy_enabled}
-          seller_refund_policy={{ title: "", fine_print: "" }}
+          seller_refund_policy={props.seller_refund_policy}
         />
       }
       isLoading={isUploading}
@@ -506,34 +517,50 @@ export default function ProductPage() {
                       />
                     </>
                   ) : null}
+                  {form.data.variants.length > 0 ? (
+                    <Switch
+                      checked={form.data.hide_sold_out_variants}
+                      onChange={(hide_sold_out_variants) => form.setData("hide_sold_out_variants", !hide_sold_out_variants)}
+                      label="Hide sold out versions"
+                    />
+                  ) : null}
                   <Switch
                     checked={form.data.should_show_sales_count}
                     onChange={(should_show_sales_count) =>
                       form.setData("should_show_sales_count", !should_show_sales_count)
                     }
-                    label="Display your product's sales count on the product page"
-                  />
-                  {form.data.variants.length > 0 ? (
-                    <Switch
-                      checked={form.data.hide_sold_out_variants}
-                      onChange={(hide_sold_out_variants) =>
-                        form.setData("hide_sold_out_variants", !hide_sold_out_variants)
+                      label={
+                        productData.native_type === "membership"
+                        ? "Publicly show the number of members on your product page"
+                        : "Publicly show the number of sales on your product page"
                       }
-                      label="Hide variants when they sell out"
-                    />
-                  ) : null}
+                  />
                   <Switch
                     checked={form.data.is_epublication}
                     onChange={(is_epublication) => form.setData("is_epublication", !is_epublication)}
-                    label="Mark this product as an e-publication for VAT purposes"
+                      label={
+                        <>
+                          Mark product as e-publication for VAT purposes{" "}
+                          <a href="/help/article/10-dealing-with-vat" target="_blank" rel="noreferrer">
+                            Learn more
+                          </a>
+                        </>
+                      }
                   />
-                  <RefundPolicySelector
+                     {/* {!seller_refund_policy_enabled ? (  */}
+                     <RefundPolicySelector
                     refundPolicy={form.data.refund_policy}
                     setRefundPolicy={(refund_policy) => form.setData("refund_policy", refund_policy)}
                     refundPolicies={props.refund_policies}
                     isEnabled={form.data.product_refund_policy_enabled}
                     setIsEnabled={(isEnabled) => form.setData("product_refund_policy_enabled", isEnabled)}
                     setShowPreview={() => setShowRefundPolicyPreview(true)}
+                  />
+                    {/* : null } */}
+                    <Switch
+                    checked={form.data.require_shipping}
+                    onChange={(require_shipping) => form.setData("require_shipping", !require_shipping)}
+                    label="Require shipping information"
                   />
                 </fieldset>
               </section>
