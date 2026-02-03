@@ -14,19 +14,20 @@ import { Placeholder } from "$app/components/ui/Placeholder";
 import { Row, RowActions, RowContent, RowDetails, Rows } from "$app/components/ui/Rows";
 import { Switch } from "$app/components/ui/Switch";
 import { WithTooltip } from "$app/components/WithTooltip";
+import { type Integration } from "$app/components/ProductEdit/state";
 
 let newVersionId = 0;
 
 export const VersionsEditor = ({
   versions,
   onChange,
-  integrations = {},
+  integrations,
   currencyType,
 }: {
   versions: Version[];
   onChange: (versions: Version[]) => void;
-  integrations?: Record<string, boolean>;
-  currencyType?: CurrencyCode;
+  integrations: Integration;
+  currencyType: CurrencyCode;
 }) => {
   const updateVersion = (id: string, update: Partial<Version>) => {
     onChange(versions.map((version) => (version.id === id ? { ...version, ...update } : version)));
@@ -126,7 +127,7 @@ const VersionEditor = ({
   version: Version;
   updateVersion: (update: Partial<Version>) => void;
   onDelete: () => void;
-  integrations: Record<string, boolean>;
+  integrations: Integration;
   currencyType: CurrencyCode;
 }) => {
   const uid = React.useId();
@@ -135,7 +136,9 @@ const VersionEditor = ({
 
   const url = useProductUrl({ option: version.id });
 
-  const availableIntegrations = ["discord", "circle", "google_calendar"] as const;
+  const availableIntegrations = Object.entries(integrations)
+    .filter(([_, enabled]) => enabled)
+    .map(([name]) => name);
 
   return (
     <Row role="listitem">
@@ -208,9 +211,7 @@ const VersionEditor = ({
             {availableIntegrations.length > 0 ? (
               <fieldset>
                 <legend>Integrations</legend>
-                {availableIntegrations
-                  .filter((integration) => Boolean(integrations[integration]))
-                  .map((integration) => (
+                {availableIntegrations.map((integration) => (
                     <Switch
                       checked={version.integrations[integration]}
                       onChange={(e) =>
@@ -218,11 +219,7 @@ const VersionEditor = ({
                       }
                       key={integration}
                       label={
-                        {
-                          circle: "Enable access to Circle community",
-                          discord: "Enable access to Discord server",
-                          google_calendar: "Enable Google Calendar sync",
-                        }[integration]
+                        integration === "circle" ? "Enable access to Circle community" : "Enable access to Discord server"
                       }
                     />
                   ))}

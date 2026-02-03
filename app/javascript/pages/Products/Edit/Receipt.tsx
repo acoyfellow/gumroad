@@ -40,6 +40,16 @@ export default function ReceiptPage() {
     });
   };
 
+  const handleSaveBeforeNavigate = (targetUrl: string) => {
+    if (!form.isDirty) return false;
+    form.transform((data) => ({
+      ...data,
+      redirect_to: targetUrl,
+    }));
+    form.patch(Routes.products_edit_receipt_path(props.unique_permalink), { preserveScroll: true });
+    return true;
+  };
+
   return (
     <Layout
       preview={
@@ -57,6 +67,7 @@ export default function ReceiptPage() {
       isSaving={form.processing}
       contentUpdates={contentUpdates}
       setContentUpdates={setContentUpdates}
+      onBeforeNavigate={handleSaveBeforeNavigate}
     >
       <div className="squished">
         <form>

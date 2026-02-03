@@ -198,3 +198,9 @@ export type ThumbnailFile = {
   signed_id: string;
   status: { type: "saved" } | { type: "existing" } | { type: "unsaved" };
 };
+
+export type Integration ={
+  discord: DiscordIntegration;
+  circle: CircleIntegration;
+  google_calendar: GoogleCalendarIntegration;
+}

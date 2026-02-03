@@ -62,11 +62,11 @@ export default function ProductPage() {
   // Initialize form with typed product and defaults for optional arrays
   const form = useForm<Product>({
     ...props.product,
-    covers: props.product.covers ,
-    custom_attributes: props.product.custom_attributes ,
-    file_attributes: props.product.file_attributes ,
-    shipping_destinations: props.product.shipping_destinations ,
-    availabilities: props.product.availabilities ,
+    covers: props.product.covers,
+    custom_attributes: props.product.custom_attributes,
+    file_attributes: props.product.file_attributes,
+    shipping_destinations: props.product.shipping_destinations,
+    availabilities: props.product.availabilities,
   });
 
   const [currencyType, setCurrencyType] = React.useState<CurrencyCode>(props.currency_type);
@@ -107,6 +107,17 @@ export default function ProductPage() {
     });
   };
 
+  const handleSaveBeforeNavigate = (targetUrl: string) => {
+    if (!form.isDirty) return false;
+    form.transform((data) => ({
+      ...data,
+      currency_type: currencyType,
+      redirect_to: targetUrl,
+    }));
+    form.patch(Routes.products_edit_product_path(props.unique_permalink), { preserveScroll: true });
+    return true;
+  };
+
   const productData = form.data;
   const nativeType = productData.native_type;
   const isCoffee = nativeType === "coffee";
@@ -136,6 +147,7 @@ export default function ProductPage() {
       isSaving={form.processing}
       contentUpdates={contentUpdates}
       setContentUpdates={setContentUpdates}
+      onBeforeNavigate={handleSaveBeforeNavigate}
     >
       <div className="squished">
         <form onSubmit={(e) => e.preventDefault()}>
@@ -424,6 +436,7 @@ export default function ProductPage() {
                         </a>
                       </div>
                       <VersionsEditor
+                        integrations={productData.integrations}
                         versions={productData.variants}
                         onChange={(variants) => form.setData("variants", variants)}
                         currencyType={currencyType}

@@ -123,7 +123,7 @@ export const ProductPreview = ({
             ),
           }
         : null,
-    options: product.variants.map((variant: any) => ({
+    options: product.variants.map((variant) => ({
       ...variant,
       price_difference_cents: "price_difference_cents" in variant ? variant.price_difference_cents : 0,
       is_pwyw: "customizable_price" in variant ? variant.customizable_price : product.customizable_price,

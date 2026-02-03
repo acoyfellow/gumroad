@@ -65,6 +65,16 @@ export default function SharePage() {
     });
   };
 
+  const handleSaveBeforeNavigate = (targetUrl: string) => {
+    if (!form.isDirty) return false;
+    form.transform((data) => ({
+      ...data,
+      redirect_to: targetUrl,
+    }));
+    form.patch(Routes.products_edit_share_path(props.unique_permalink), { preserveScroll: true });
+    return true;
+  };
+
   if (!currentSeller) return null;
 
   const discoverLink = new URL(discoverUrl);
@@ -88,6 +98,7 @@ export default function SharePage() {
       isSaving={form.processing}
       contentUpdates={contentUpdates}
       setContentUpdates={setContentUpdates}
+      onBeforeNavigate={handleSaveBeforeNavigate}
     >
       <div className="squished">
         <form>

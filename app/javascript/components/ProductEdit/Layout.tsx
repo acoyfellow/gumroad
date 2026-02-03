@@ -39,6 +39,7 @@ type InertiaLayoutProps = {
   isSaving?: boolean;
   contentUpdates?: ContentUpdate | null | undefined;
   setContentUpdates?: ((updates: ContentUpdate | null) => void) | undefined;
+  onBeforeNavigate?: ((targetUrl: string) => boolean) | undefined;
 };
 
 type Props = {
@@ -164,6 +165,7 @@ export const Layout = ({
   isSaving = false,
   contentUpdates = null,
   setContentUpdates = (_: ContentUpdate | null) => {},
+  onBeforeNavigate,
 }: InertiaLayoutProps) => {
   const { product, unique_permalink: uniquePermalink } = usePage<Props>().props;
   const currentSeller = useCurrentSeller();
@@ -230,7 +232,7 @@ export const Layout = ({
     </WithTooltip>
   );
 
-  const handleTabClick = (e: React.MouseEvent) => {
+  const handleTabClick = (e: React.MouseEvent, targetUrl: string) => {
     const message = isUploadingFiles
       ? "Some files are still uploading, please wait..."
       : isUploadingFilesOrImages
@@ -240,6 +242,11 @@ export const Layout = ({
     if (message) {
       e.preventDefault();
       showAlert(message, "warning");
+      return;
+    }
+
+    if (onBeforeNavigate?.(targetUrl)) {
+      e.preventDefault();
     }
   };
 
@@ -302,24 +309,36 @@ export const Layout = ({
         >
           <Tabs style={{ gridColumn: 1 }}>
             <Tab asChild isSelected={currentTab === "product"}>
-              <Link href={Routes.products_edit_product_path(uniquePermalink)} onClick={handleTabClick}>
+              <Link
+                href={Routes.products_edit_product_path(uniquePermalink)}
+                onClick={(e) => handleTabClick(e, Routes.products_edit_product_path(uniquePermalink))}
+              >
                 Product
               </Link>
             </Tab>
             {!isCoffee && (
               <Tab asChild isSelected={currentTab === "content"}>
-                <Link href={Routes.products_edit_content_path(uniquePermalink)} onClick={handleTabClick}>
+                <Link
+                  href={Routes.products_edit_content_path(uniquePermalink)}
+                  onClick={(e) => handleTabClick(e, Routes.products_edit_content_path(uniquePermalink))}
+                >
                   Content
                 </Link>
               </Tab>
             )}
             <Tab asChild isSelected={currentTab === "receipt"}>
-              <Link href={Routes.products_edit_receipt_path(uniquePermalink)} onClick={handleTabClick}>
+              <Link
+                href={Routes.products_edit_receipt_path(uniquePermalink)}
+                onClick={(e) => handleTabClick(e, Routes.products_edit_receipt_path(uniquePermalink))}
+              >
                 Receipt
               </Link>
             </Tab>
             <Tab asChild isSelected={currentTab === "share"}>
-              <Link href={Routes.products_edit_share_path(uniquePermalink)} onClick={handleTabClick}>
+              <Link
+                href={Routes.products_edit_share_path(uniquePermalink)}
+                onClick={(e) => handleTabClick(e, Routes.products_edit_share_path(uniquePermalink))}
+              >
                 Share
               </Link>
             </Tab>

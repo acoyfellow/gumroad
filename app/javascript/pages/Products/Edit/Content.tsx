@@ -1156,6 +1156,16 @@ export default function ContentPage() {
     });
   };
 
+  const handleSaveBeforeNavigate = (targetUrl: string) => {
+    if (!form.isDirty) return false;
+    form.transform((data) => ({
+      ...data,
+      redirect_to: targetUrl,
+    }));
+    form.patch(Routes.products_edit_content_path(unique_permalink), { preserveScroll: true });
+    return true;
+  };
+
   // Restrict updates to keys we actually set from ContentTabContent, with overloads for sound typing
   const updateProductKV: UpdateProductKV = (key, value) => {
     const setters: { [K in UpdateProductKey]: (val: ProductType[K]) => void } = {
@@ -1243,6 +1253,7 @@ export default function ContentPage() {
               isSaving={form.processing}
               contentUpdates={contentUpdates}
               setContentUpdates={setContentUpdates}
+              onBeforeNavigate={handleSaveBeforeNavigate}
               headerActions={
                 form.data.variants.length > 0 ? (
                   <>

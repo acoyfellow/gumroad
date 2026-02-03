@@ -144,6 +144,10 @@ class Products::Edit::ShareController < Products::Edit::BaseController
       return redirect_to products_edit_share_path(@product.unique_permalink), warning: "The following offer #{"code".pluralize(all_invalid_offer_codes.count)} #{issue_description}: #{all_invalid_offer_codes.join(", ")}. Please update #{all_invalid_offer_codes.length > 1 ? "them or they" : "it or it"} will not work at checkout."
     end
 
-    redirect_to products_edit_share_path(@product.unique_permalink), notice: "Changes saved successfully!", status: :see_other
+    if params[:redirect_to].present?
+      redirect_to params[:redirect_to], notice: "Changes saved successfully!", status: :see_other
+    else
+      redirect_to products_edit_share_path(@product.unique_permalink), notice: "Changes saved successfully!", status: :see_other
+    end
   end
 end
