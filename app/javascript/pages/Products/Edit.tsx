@@ -11,7 +11,6 @@ import { recurrenceLabels, recurrenceIds } from "$app/utils/recurringPricing";
 import { assertResponseError, request } from "$app/utils/request";
 
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
-import { useCurrentSeller } from "$app/components/CurrentSeller";
 import CustomDomain from "$app/components/CustomDomain";
 import { Icon } from "$app/components/Icons";
 import { Layout, useProductUrl } from "$app/components/ProductEdit/Layout";
@@ -83,8 +82,6 @@ type EditProductPageProps = {
 
 const EditProductPage = () => {
   const uid = React.useId();
-  const currentSeller = useCurrentSeller();
-  if (!currentSeller) return null;
 
   const { product, page_metadata } = cast<EditProductPageProps>(usePage().props);
   const form = useForm({ product });
