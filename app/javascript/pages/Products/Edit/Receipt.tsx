@@ -19,7 +19,7 @@ type ReceiptPageProps = {
 };
 
 export default function ReceiptPage() {
-  const {product, unique_permalink} = usePage<ReceiptPageProps>().props;
+  const { product, unique_permalink } = usePage<ReceiptPageProps>().props;
 
   const form = useForm({
     custom_receipt_text: product.custom_receipt_text ?? "",

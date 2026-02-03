@@ -2,6 +2,7 @@ import { useForm, usePage } from "@inertiajs/react";
 import hands from "images/illustrations/hands.png";
 import * as React from "react";
 
+import { type CurrencyCode } from "$app/utils/currency";
 import { Taxonomy } from "$app/utils/discover";
 
 import { Button, NavigationButton } from "$app/components/Button";
@@ -20,7 +21,6 @@ import { TwitterShareButton } from "$app/components/TwitterShareButton";
 import { Alert } from "$app/components/ui/Alert";
 import { Switch } from "$app/components/ui/Switch";
 import { useRunOnce } from "$app/components/useRunOnce";
-import { type CurrencyCode } from "$app/utils/currency";
 
 type ProfileSection = {
   id: string;
@@ -46,7 +46,7 @@ type SharePageProps = {
   seller_refund_policy: {
     title: string;
     fine_print: string;
-  }
+  };
 };
 
 export default function SharePage() {

@@ -5,9 +5,11 @@ import { type OtherRefundPolicy } from "$app/data/products/other_refund_policies
 import { type Thumbnail } from "$app/data/thumbnails";
 import { COFFEE_CUSTOM_BUTTON_TEXT_OPTIONS, CUSTOM_BUTTON_TEXT_OPTIONS } from "$app/parsers/product";
 import { type CurrencyCode, currencyCodeList } from "$app/utils/currency";
+import { recurrenceIds, recurrenceLabels } from "$app/utils/recurringPricing";
 
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
+import CustomDomain from "$app/components/CustomDomain";
 import { Icon } from "$app/components/Icons";
 import { Layout, useProductUrl } from "$app/components/ProductEdit/Layout";
 import { ProductPreview } from "$app/components/ProductEdit/ProductPreview";
@@ -37,6 +39,7 @@ import { VersionsEditor } from "$app/components/ProductEdit/ProductTab/VersionsE
 import { RefundPolicySelector } from "$app/components/ProductEdit/RefundPolicy";
 import { type Product } from "$app/components/ProductEdit/state";
 import { ToggleSettingRow } from "$app/components/SettingRow";
+import { TypeSafeOptionSelect } from "$app/components/TypeSafeOptionSelect";
 import { Alert } from "$app/components/ui/Alert";
 import { Switch } from "$app/components/ui/Switch";
 
@@ -51,6 +54,7 @@ type Props = {
   google_calendar_enabled: boolean;
   cancellation_discounts_enabled: boolean;
   ai_generated: boolean;
+  custom_domain_verification_status: { success: boolean; message: string } | null;
   ratings: {
     count: number;
     average: number;
@@ -60,9 +64,14 @@ type Props = {
   seller_refund_policy: {
     title: string;
     fine_print: string;
-  }
+  };
   sales_count_for_inventory: number;
   successful_sales_count: number;
+};
+
+type ProductFormData = Product & {
+  currency_type?: CurrencyCode;
+  redirect_to?: string;
 };
 
 export default function ProductEditPage() {
@@ -71,7 +80,7 @@ export default function ProductEditPage() {
   const uid = React.useId();
 
   // Initialize form with typed product and defaults for optional arrays
-  const form = useForm<Product>({
+  const form = useForm<ProductFormData>({
     ...props.product,
     covers: props.product.covers,
     custom_attributes: props.product.custom_attributes,
@@ -88,7 +97,7 @@ export default function ProductEditPage() {
   const [showRefundPolicyPreview, setShowRefundPolicyPreview] = React.useState(false);
 
   const updateProductPartial = (partial: Partial<Product>) => {
-    Object.keys(partial).forEach((key) => {
+    (Object.keys(partial) as Array<keyof Product>).forEach((key) => {
       const value = partial[key];
       if (value !== undefined) form.setData(key, value);
     });
@@ -97,7 +106,7 @@ export default function ProductEditPage() {
   const updateProductVia = (updater: (product: Product) => void) => {
     const updated: Product = { ...form.data };
     updater(updated);
-    Object.keys(updated).forEach((key) => {
+    (Object.keys(updated) as Array<keyof Product>).forEach((key) => {
       form.setData(key, updated[key]);
     });
   };
@@ -520,7 +529,9 @@ export default function ProductEditPage() {
                   {form.data.variants.length > 0 ? (
                     <Switch
                       checked={form.data.hide_sold_out_variants}
-                      onChange={(hide_sold_out_variants) => form.setData("hide_sold_out_variants", !hide_sold_out_variants)}
+                      onChange={(hide_sold_out_variants) =>
+                        form.setData("hide_sold_out_variants", !hide_sold_out_variants)
+                      }
                       label="Hide sold out versions"
                     />
                   ) : null}
@@ -529,40 +540,64 @@ export default function ProductEditPage() {
                     onChange={(should_show_sales_count) =>
                       form.setData("should_show_sales_count", !should_show_sales_count)
                     }
-                      label={
-                        productData.native_type === "membership"
+                    label={
+                      productData.native_type === "membership"
                         ? "Publicly show the number of members on your product page"
                         : "Publicly show the number of sales on your product page"
-                      }
+                    }
                   />
                   <Switch
                     checked={form.data.is_epublication}
                     onChange={(is_epublication) => form.setData("is_epublication", !is_epublication)}
-                      label={
-                        <>
-                          Mark product as e-publication for VAT purposes{" "}
-                          <a href="/help/article/10-dealing-with-vat" target="_blank" rel="noreferrer">
-                            Learn more
-                          </a>
-                        </>
-                      }
+                    label={
+                      <>
+                        Mark product as e-publication for VAT purposes{" "}
+                        <a href="/help/article/10-dealing-with-vat" target="_blank" rel="noreferrer">
+                          Learn more
+                        </a>
+                      </>
+                    }
                   />
-                     {/* {!seller_refund_policy_enabled ? (  */}
-                     <RefundPolicySelector
-                    refundPolicy={form.data.refund_policy}
-                    setRefundPolicy={(refund_policy) => form.setData("refund_policy", refund_policy)}
-                    refundPolicies={props.refund_policies}
-                    isEnabled={form.data.product_refund_policy_enabled}
-                    setIsEnabled={(isEnabled) => form.setData("product_refund_policy_enabled", isEnabled)}
-                    setShowPreview={() => setShowRefundPolicyPreview(true)}
-                  />
-                    {/* : null } */}
-                    <Switch
+                  {!props.seller_refund_policy_enabled ? (
+                    <RefundPolicySelector
+                      refundPolicy={form.data.refund_policy}
+                      setRefundPolicy={(refund_policy) => form.setData("refund_policy", refund_policy)}
+                      refundPolicies={props.refund_policies}
+                      isEnabled={form.data.product_refund_policy_enabled}
+                      setIsEnabled={(isEnabled) => form.setData("product_refund_policy_enabled", isEnabled)}
+                      setShowPreview={() => setShowRefundPolicyPreview(true)}
+                    />
+                  ) : null}
+                  <Switch
                     checked={form.data.require_shipping}
                     onChange={(require_shipping) => form.setData("require_shipping", !require_shipping)}
                     label="Require shipping information"
                   />
                 </fieldset>
+                {productData.native_type === "membership" ? (
+                  <fieldset>
+                    <legend>
+                      <label htmlFor={`${uid}-subscription-duration`}>Default payment frequency</label>
+                    </legend>
+                    <TypeSafeOptionSelect
+                      id={`${uid}-subscription-duration`}
+                      value={form.data.subscription_duration || "monthly"}
+                      onChange={(subscription_duration) => form.setData("subscription_duration", subscription_duration)}
+                      options={recurrenceIds.map((recurrenceId) => ({
+                        id: recurrenceId,
+                        label: recurrenceLabels[recurrenceId],
+                      }))}
+                    />
+                  </fieldset>
+                ) : null}
+                <CustomDomain
+                  verificationStatus={props.custom_domain_verification_status}
+                  customDomain={productData.custom_domain}
+                  setCustomDomain={(custom_domain) => form.setData("custom_domain", custom_domain)}
+                  label="Custom domain"
+                  productId={props.id}
+                  includeLearnMoreLink
+                />
               </section>
             </>
           )}

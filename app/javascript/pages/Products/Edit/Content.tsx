@@ -13,6 +13,7 @@ import { useDropbox } from "$app/hooks/useDropbox";
 import { type Post } from "$app/types/workflow";
 import { escapeRegExp } from "$app/utils";
 import { assertDefined } from "$app/utils/assert";
+import { type CurrencyCode } from "$app/utils/currency";
 import { formatDate } from "$app/utils/date";
 import FileUtils from "$app/utils/file";
 import GuidGenerator from "$app/utils/guid_generator";
@@ -76,7 +77,6 @@ import { useConfigureEvaporate } from "$app/components/useConfigureEvaporate";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
 import { useRefToLatest } from "$app/components/useRefToLatest";
 import { WithTooltip } from "$app/components/WithTooltip";
-import { type CurrencyCode} from "$app/utils/currency";
 
 declare global {
   interface Window {
@@ -118,9 +118,8 @@ type ContentPageProps = {
   seller_refund_policy: {
     title: string;
     fine_print: string;
-  }
+  };
   currency_type: CurrencyCode;
-
 };
 
 type SellerType = {
