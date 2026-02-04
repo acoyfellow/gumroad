@@ -3,23 +3,20 @@
 require "spec_helper"
 require "shared_examples/sellers_base_controller_concern"
 require "shared_examples/authorize_called"
+require "inertia_rails/rspec"
 
-describe CheckoutController do
+describe CheckoutController, type: :controller, inertia: true do
   render_views
 
   describe "GET index" do
-    it "returns HTTP success and assigns correct instance variables and force enables analytics" do
+    it "returns HTTP success and renders the checkout inertia page" do
       get :index
 
-      expect(assigns[:hide_layouts]).to eq(true)
       expect(response).to be_successful
-
-      html = Nokogiri::HTML.parse(response.body)
-      expect(html.xpath("//meta[@property='gr:google_analytics:enabled']/@content").text).to eq("true")
-      expect(html.xpath("//meta[@property='gr:fb_pixel:enabled']/@content").text).to eq("true")
-      expect(html.xpath("//meta[@property='gr:logged_in_user:id']/@content").text).to eq("")
-      expect(html.xpath("//meta[@property='gr:page:type']/@content").text).to eq("")
-      expect(html.xpath("//meta[@property='gr:facebook_sdk:enabled']/@content").text).to eq("true")
+      expect(inertia.component).to eq("Checkout/Index")
+      expect(inertia.props[:discover_url]).to eq(discover_url(protocol: PROTOCOL, host: DISCOVER_DOMAIN))
+      expect(inertia.props[:countries]).to be_present
+      expect(inertia.props[:max_allowed_cart_products]).to eq(Cart::MAX_ALLOWED_CART_PRODUCTS)
     end
 
     describe "process_cart_id_param check" do
@@ -36,8 +33,8 @@ describe CheckoutController do
           get :index
 
           expect(response).to be_successful
-          html = Nokogiri::HTML.parse(response.body)
-          expect(html.xpath("//meta[@property='gr:logged_in_user:id']/@content").text).to eq(user.external_id)
+          expect(inertia.component).to eq("Checkout/Index")
+          expect(inertia.props).to have_key(:cart)
         end
 
         it "redirects to the same path removing the `cart_id` query param" do
