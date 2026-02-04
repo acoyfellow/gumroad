@@ -1,6 +1,7 @@
 import { usePage } from "@inertiajs/react";
 import { throttle } from "lodash-es";
 import * as React from "react";
+import { cast } from "ts-safe-cast";
 
 import { createConsumptionEvent } from "$app/data/consumption_analytics";
 import { trackMediaLocationChanged } from "$app/data/media_location";
@@ -47,7 +48,7 @@ function Stream() {
     purchase_id,
     should_show_transcoding_notice,
     transcode_on_first_sale,
-  } = usePage<StreamProps>().props;
+  } = cast<StreamProps>(usePage().props);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
 
