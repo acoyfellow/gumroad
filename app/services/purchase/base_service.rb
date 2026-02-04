@@ -64,6 +64,7 @@ class Purchase::BaseService
 
       subscription.payment_options << payment_option
       subscription.save!
+      subscription.update_business_vat_id!(purchase.purchase_sales_tax_info&.business_vat_id)
       subscription.purchases << [purchase, giftee_purchase].compact
     end
 
