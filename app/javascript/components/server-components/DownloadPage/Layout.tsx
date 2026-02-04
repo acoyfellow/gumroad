@@ -19,6 +19,7 @@ import { PurchaseCustomField } from "$app/components/server-components/DownloadP
 import { Card, CardContent } from "$app/components/ui/Card";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
+import { Link } from "@inertiajs/react";
 
 type ContentUnavailabilityReasonCode =
   | "inactive_membership"
@@ -242,10 +243,10 @@ export const Layout = ({
     <>
       {loggedInUser && !is_mobile_app_web_view ? (
         <div className="font-size-base grid-row-[-3] text-singleline border-b border-border px-8 py-4">
-          <a style={{ textDecoration: "none" }} href={Routes.library_url()} title="Back to Library">
+          <Link style={{ textDecoration: "none" }} href={Routes.library_url()} title="Back to Library">
             <Icon name="arrow-left" className="mr-1.5" />
             {headerVisible ? "Back to Library" : null}
-          </a>
+          </Link>
           {!headerVisible ? <strong>{purchase?.product_name}</strong> : null}
         </div>
       ) : null}
