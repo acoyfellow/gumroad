@@ -1308,7 +1308,7 @@ describe UrlRedirectsController do
     end
   end
 
-describe "GET 'confirm_page'", inertia: true do
+  describe "GET 'confirm_page'", inertia: true do
     before do
       @url_redirect = create(:url_redirect)
     end
@@ -1319,22 +1319,22 @@ describe "GET 'confirm_page'", inertia: true do
     end
 
 
-  it "renders the confirm page correctly" do
-    get :confirm_page, params: { id: @url_redirect.token }
-    expect(response).to be_successful
-    expect(inertia.component).to eq("UrlRedirects/ConfirmPage")
-    expect(inertia.props[:token]).to eq(@url_redirect.token)
-    expect(inertia.props[:redirect_id]).to eq(@url_redirect.external_id)
-    expect(inertia.props[:content_unavailability_reason_code]).to eq(UrlRedirectPresenter::CONTENT_UNAVAILABILITY_REASON_CODES[:email_confirmation_required])
-    expect(inertia.props[:is_mobile_app_web_view]).to eq(false)
-    expect(inertia.props[:add_to_library_option]).to eq("none")
-    expect(inertia.props[:confirmation_info]).to eq({
-                                                      id: @url_redirect.token,
-                                                      destination: nil,
-                                                      display: nil,
-                                                      email: nil,
-                                                    })
-  end
+    it "renders the confirm page correctly" do
+      get :confirm_page, params: { id: @url_redirect.token }
+      expect(response).to be_successful
+      expect(inertia.component).to eq("UrlRedirects/ConfirmPage")
+      expect(inertia.props[:token]).to eq(@url_redirect.token)
+      expect(inertia.props[:redirect_id]).to eq(@url_redirect.external_id)
+      expect(inertia.props[:content_unavailability_reason_code]).to eq(UrlRedirectPresenter::CONTENT_UNAVAILABILITY_REASON_CODES[:email_confirmation_required])
+      expect(inertia.props[:is_mobile_app_web_view]).to eq(false)
+      expect(inertia.props[:add_to_library_option]).to eq("none")
+      expect(inertia.props[:confirmation_info]).to eq({
+                                                        id: @url_redirect.token,
+                                                        destination: nil,
+                                                        display: nil,
+                                                        email: nil,
+                                                      })
+    end
 
     it "assigns the url_redirect correctly" do
       get :confirm_page, params: { id: @url_redirect.token }
@@ -1345,8 +1345,8 @@ describe "GET 'confirm_page'", inertia: true do
       it "assigns @destination with params[:destination]" do
         get :confirm_page, params: { id: @url_redirect.token, destination: "stream" }
 
-    expect(inertia.props[:confirmation_info][:destination]).to eq "stream"
-  end
+        expect(inertia.props[:confirmation_info][:destination]).to eq "stream"
+      end
     end
 
     context "when params[:destination] is not set" do
@@ -1359,9 +1359,9 @@ describe "GET 'confirm_page'", inertia: true do
         it "assigns @destination with 'download_page'" do
           get :confirm_page, params: { id: @url_redirect.token }
 
-      expect(inertia.props[:confirmation_info][:destination]).to eq "download_page"
-    end
-  end
+          expect(inertia.props[:confirmation_info][:destination]).to eq "download_page"
+        end
+      end
 
       it "assigns @destination with nil value for an installment" do
         installment = create(:installment)
@@ -1370,9 +1370,9 @@ describe "GET 'confirm_page'", inertia: true do
 
         get :confirm_page, params: { id: url_redirect.token }
 
-    expect(inertia.props[:confirmation_info][:destination]).to be_nil
-  end
-end
+        expect(inertia.props[:confirmation_info][:destination]).to be_nil
+      end
+    end
   end
 
   describe "POST 'confirm'" do
