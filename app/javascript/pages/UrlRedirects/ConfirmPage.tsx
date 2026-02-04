@@ -76,7 +76,7 @@ const EmailConfirmation = ({
     <Placeholder>
       <h2>You've viewed this product a few times already</h2>
       <p>Once you enter the email address used to purchase this product, you'll be able to access it again.</p>
-      {confirmation_info ? (<form
+      <form
         action={Routes.confirm_redirect_path()}
         method="post"
         onSubmit={handleSubmit}
@@ -99,10 +99,10 @@ const EmailConfirmation = ({
         <Button type="submit" color="accent" disabled={processing}>
           {processing ? "Confirming..." : "Confirm email"}
         </Button>
-      </form> ): null}
+      </form>
     </Placeholder>
   );
 };
 
-ConfirmPage.loggedInUserLayout = true
+ConfirmPage.loggedInUserLayout = true;
 export default ConfirmPage;
