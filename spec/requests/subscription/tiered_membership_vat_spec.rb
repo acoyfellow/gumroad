@@ -84,10 +84,9 @@ describe "Tiered Membership VAT Spec", type: :system, js: true do
 
   context "when the original purchase had a VAT ID set" do
     it "uses the same VAT ID for the new subscription" do
+      allow_any_instance_of(VatValidationService).to receive(:process).and_return(true)
       travel_back
-      setup_subscription_with_vat
-      @subscription.update!(business_vat_id: "IE6388047V")
-      @subscription.original_purchase.purchase_sales_tax_info.update!(business_vat_id: "IE6388047V")
+      setup_subscription_with_vat(vat_id: "FR123456789")
       travel_to(@originally_subscribed_at + 1.month)
       setup_subscription_token
 
@@ -105,13 +104,13 @@ describe "Tiered Membership VAT Spec", type: :system, js: true do
       updated_purchase = @subscription.reload.original_purchase
       expect(updated_purchase.gumroad_tax_cents).to eq 0
       expect(updated_purchase.total_transaction_cents).to eq 10_50
-      expect(updated_purchase.purchase_sales_tax_info.business_vat_id).to eq "IE6388047V"
+      expect(updated_purchase.purchase_sales_tax_info.business_vat_id).to eq "FR123456789"
 
-      # upgrade purchase has correct taxes
+      # upgrade purchase has correct taxes - $6.55 * 0.20 = $1.31
       last_purchase = @subscription.purchases.last
       expect(last_purchase.gumroad_tax_cents).to eq 0
       expect(last_purchase.total_transaction_cents).to eq 6_55
-      expect(last_purchase.purchase_sales_tax_info.business_vat_id).to eq "IE6388047V"
+      expect(last_purchase.purchase_sales_tax_info.business_vat_id).to eq "FR123456789"
     end
   end
 end
