@@ -1509,7 +1509,7 @@ describe UrlRedirectsController do
     end
   end
 
-  describe "reading" do
+  describe "reading", inertia: true do
     describe "Product" do
       before do
         @product = create(:product_with_pdf_file)
@@ -1544,10 +1544,10 @@ describe UrlRedirectsController do
         it "can be read with proper file download URL" do
           get :read, params: { id: @token, product_file_id: @product.product_files.first.external_id }
           expect(response).to be_successful
-          expect(assigns(:hide_layouts)).to eq(true)
-          expect(assigns(:read_url)).to include("X-Amz-Signature=")
-          expect(assigns(:read_url)).to include(S3_BUCKET)
-          expect(response.body).to have_selector("h1", text: "The Works of Edgar Gumstein")
+          expect_inertia.to render_component("UrlRedirects/Read")
+          expect(inertia.props[:url]).to include("X-Amz-Signature=")
+          expect(inertia.props[:url]).to include(S3_BUCKET)
+          expect(inertia.props[:title]).to eq("The Works of Edgar Gumstein")
         end
 
         it "creates the proper consumption event" do
@@ -1586,7 +1586,7 @@ describe UrlRedirectsController do
           @product.product_files.each(&:mark_deleted)
           create(:product_file, link: @product, url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/specs/test.pdf", filetype: "pdf")
           get(:read, params: { id: @url_redirect.token })
-          expect(assigns(:read_url)).to include("test.pdf")
+          expect(inertia.props[:url]).to include("test.pdf")
         end
 
         it "recovers from an S3 error" do
@@ -1616,7 +1616,8 @@ describe UrlRedirectsController do
 
       it "can be read" do
         get :read, params: { id: @token, product_file_id: @post.product_files.first.external_id }
-        expect(response.body).to have_selector("h1", text: "A new file!")
+        expect_inertia.to render_component("UrlRedirects/Read")
+        expect(inertia.props[:title]).to eq("A new file!")
       end
     end
   end
