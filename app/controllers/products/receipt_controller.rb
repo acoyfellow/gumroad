@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class Products::ReceiptController < Products::BaseController
-
   def edit
     render inertia: "Products/Receipt/Edit", props: Products::ReceiptTabPresenter.new(product: @product, pundit_user:).props
   end
