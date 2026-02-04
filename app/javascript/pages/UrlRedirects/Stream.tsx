@@ -159,7 +159,7 @@ function Stream() {
       {should_show_transcoding_notice ? (
         <TranscodingNoticeModal transcodeOnFirstSale={transcode_on_first_sale} />
       ) : null}
-      <div ref={containerRef} className="absolute h-full w-full" />
+      <div ref={containerRef} className="absolute h-full w-full"></div>
     </>
   );
 }
