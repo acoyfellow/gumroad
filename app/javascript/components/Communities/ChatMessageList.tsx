@@ -147,7 +147,7 @@ export const ChatMessageList = ({
           },
         )}
       >
-        {!hasOlderMessages && messages.length > 0 ? (
+        {!hasOlderMessages ? (
           <div className="px-6 pt-8">
             <div className="mb-2 text-3xl">👋</div>
             <h2 className="mb-2 text-xl font-bold">Welcome to {community.name}</h2>

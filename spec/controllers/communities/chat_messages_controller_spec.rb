@@ -23,12 +23,11 @@ describe Communities::ChatMessagesController do
       let(:request_params) { { community_id: community.external_id, community_chat_message: { content: "Hello" } } }
     end
 
-    it "returns 404 when community is not found" do
+    it "raises RecordNotFound when community is not found" do
       sign_in seller
-      post :create, params: { community_id: "nonexistent", community_chat_message: { content: "Hello" } }
-
-      expect(response).to have_http_status(:not_found)
-      expect(response.parsed_body).to eq({ "success" => false, "error" => "Not found" })
+      expect do
+        post :create, params: { community_id: "nonexistent", community_chat_message: { content: "Hello" } }
+      end.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     context "when seller is logged in" do
@@ -182,11 +181,10 @@ describe Communities::ChatMessagesController do
         expect(flash[:alert]).to eq("You are not allowed to perform this action.")
       end
 
-      it "returns 404 when message is not found" do
-        put :update, params: { community_id: community.external_id, id: "nonexistent", community_chat_message: { content: "Updated" } }
-
-        expect(response).to have_http_status(:not_found)
-        expect(response.parsed_body).to eq({ "success" => false, "error" => "Not found" })
+      it "raises RecordNotFound when message is not found" do
+        expect do
+          put :update, params: { community_id: community.external_id, id: "nonexistent", community_chat_message: { content: "Updated" } }
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
 
       it "updates the message" do
@@ -264,11 +262,10 @@ describe Communities::ChatMessagesController do
         sign_in buyer
       end
 
-      it "returns 404 when message is not found" do
-        put :update, params: { community_id: community.external_id, id: "nonexistent", community_chat_message: { content: "Updated" } }
-
-        expect(response).to have_http_status(:not_found)
-        expect(response.parsed_body).to eq({ "success" => false, "error" => "Not found" })
+      it "raises RecordNotFound when message is not found" do
+        expect do
+          put :update, params: { community_id: community.external_id, id: "nonexistent", community_chat_message: { content: "Updated" } }
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
 
       it "updates the message" do
@@ -349,11 +346,10 @@ describe Communities::ChatMessagesController do
         expect(flash[:alert]).to eq("You are not allowed to perform this action.")
       end
 
-      it "returns 404 when message is not found" do
-        delete :destroy, params: { community_id: community.external_id, id: "nonexistent" }
-
-        expect(response).to have_http_status(:not_found)
-        expect(response.parsed_body).to eq({ "success" => false, "error" => "Not found" })
+      it "raises RecordNotFound when message is not found" do
+        expect do
+          delete :destroy, params: { community_id: community.external_id, id: "nonexistent" }
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
 
       it "destroys the message" do

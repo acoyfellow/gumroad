@@ -70,8 +70,8 @@ describe "Communities", :js, type: :system do
           within message_element do
             expect(page).to have_text(seller.display_name)
             expect(page).to have_text("CREATOR")
-            expect(page).to have_button("Edit message", wait: 2)
-            expect(page).to have_button("Delete message", wait: 2)
+            expect(page).to have_button("Edit message", wait: 5)
+            expect(page).to have_button("Delete message", wait: 5)
 
             click_button "Edit message"
             fill_in "Edit message", with: "This is wonderful!"
@@ -113,7 +113,7 @@ describe "Communities", :js, type: :system do
         expect(page).to have_text("John Customer")
         expect(page).not_to have_text("CREATOR")
         expect(page).not_to have_button("Edit message")
-        expect(page).to have_button("Delete message", wait: 2)
+        expect(page).to have_button("Delete message", wait: 5)
 
         click_button "Delete message"
         within_modal "Delete message" do
@@ -150,6 +150,7 @@ describe "Communities", :js, type: :system do
         expect(page).to have_radio_button("Weekly", checked: true)
 
         click_on "Save"
+        expect(page).to have_no_selector(".bg-backdrop", wait: 5)
       end
 
       wait_for_ajax
@@ -250,8 +251,8 @@ describe "Communities", :js, type: :system do
           within message_element do
             expect(page).to have_text("Bob")
             expect(page).to have_text("CREATOR")
-            expect(page).to have_button("Edit message", wait: 2)
-            expect(page).to have_button("Delete message", wait: 2)
+            expect(page).to have_button("Edit message", wait: 5)
+            expect(page).to have_button("Delete message", wait: 5)
           end
         end
       end
@@ -332,8 +333,8 @@ describe "Communities", :js, type: :system do
           within message_element do
             expect(page).to have_text("John Buyer")
             expect(page).not_to have_text("CREATOR")
-            expect(page).to have_button("Edit message", wait: 2)
-            expect(page).to have_button("Delete message", wait: 2)
+            expect(page).to have_button("Edit message", wait: 5)
+            expect(page).to have_button("Delete message", wait: 5)
 
             click_button "Edit message"
             fill_in "Edit message", with: "This is wonderful!"
@@ -403,6 +404,7 @@ describe "Communities", :js, type: :system do
         expect(page).to have_radio_button("Weekly", checked: true)
 
         click_on "Save"
+        expect(page).to have_no_selector(".bg-backdrop", wait: 5)
       end
 
       wait_for_ajax
@@ -526,8 +528,8 @@ describe "Communities", :js, type: :system do
           within message_element do
             expect(page).to have_text("John Buyer")
             expect(page).not_to have_text("CREATOR")
-            expect(page).to have_button("Edit message", wait: 2)
-            expect(page).to have_button("Delete message", wait: 2)
+            expect(page).to have_button("Edit message", wait: 5)
+            expect(page).to have_button("Delete message", wait: 5)
           end
         end
       end

@@ -37,7 +37,7 @@ export const CommunityList = ({
             "bg-black text-white": isCommunitySelected,
             "hover:bg-black/5 hover:text-black dark:hover:bg-white/5 dark:hover:text-white": !isCommunitySelected,
           })}
-          aria-selected={isCommunitySelected}
+          aria-selected={isCommunitySelected ? "true" : "false"}
         >
           <figure className="shrink-0">
             <img

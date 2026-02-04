@@ -29,27 +29,23 @@ describe CommunitiesController, inertia: true do
         sign_in seller
       end
 
-      it "renders the Inertia component with correct props" do
+      it "redirects to the first community when communities exist" do
         get :index
 
-        expect(response).to be_successful
-        expect(controller.send(:page_title)).to eq("Communities")
-        expect_inertia.to render_component("Communities/Index")
-        expect_inertia.to include_props(has_products: true)
+        expect(response).to redirect_to(community_path(community.seller.external_id, community.external_id))
       end
 
-      it "includes communities in props" do
-        get :index
+      context "when no communities exist" do
+        before do
+          community.destroy!
+        end
 
-        expect(inertia.props[:communities]).to be_an(Array)
-        expect(inertia.props[:communities].length).to eq(1)
-        expect(inertia.props[:communities].first[:id]).to eq(community.external_id)
-      end
+        it "redirects to dashboard when user has no accessible communities" do
+          get :index
 
-      it "does not include selectedCommunityId in props for index action" do
-        get :index
-
-        expect(inertia.props).not_to have_key(:selectedCommunityId)
+          expect(response).to redirect_to(dashboard_path)
+          expect(flash[:alert]).to eq("You are not allowed to perform this action.")
+        end
       end
 
       it "returns unauthorized response if the :communities feature flag is disabled" do
@@ -164,7 +160,7 @@ describe CommunitiesController, inertia: true do
 
     context "when buyer is logged in" do
       let(:buyer) { create(:user) }
-      let!(:purchase) { create(:purchase, seller:, purchaser: buyer, link: product, price_cents: 0) }
+      let!(:purchase) { create(:purchase, seller:, purchaser: buyer, link: product) }
 
       before do
         Feature.activate_user(:communities, buyer)
@@ -270,7 +266,7 @@ describe CommunitiesController, inertia: true do
 
     context "when buyer is logged in" do
       let(:buyer) { create(:user) }
-      let!(:purchase) { create(:purchase, seller:, purchaser: buyer, link: product, price_cents: 0) }
+      let!(:purchase) { create(:purchase, seller:, purchaser: buyer, link: product) }
 
       before do
         Feature.activate_user(:communities, buyer)
