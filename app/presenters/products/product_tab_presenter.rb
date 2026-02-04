@@ -22,7 +22,6 @@ class Products::ProductTabPresenter < Products::BasePresenter
         custom_view_content_button_text: product.custom_view_content_button_text,
         custom_view_content_button_text_max_length: ::Product::Validations::MAX_VIEW_CONTENT_BUTTON_TEXT_LENGTH,
         custom_receipt_text: product.custom_receipt_text,
-        custom_receipt_text_max_length: ::Product::Validations::MAX_CUSTOM_RECEIPT_TEXT_LENGTH,
         custom_attributes: product.custom_attributes,
         file_attributes: product.file_info_for_product_page.map { { name: _1.to_s, value: _2 } },
         max_purchase_count: product.max_purchase_count,

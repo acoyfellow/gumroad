@@ -5,7 +5,7 @@ import { assertResponseError } from "$app/utils/request";
 
 import { Button } from "$app/components/Button";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import { useProductFormContext } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { Alert } from "$app/components/ui/Alert";
@@ -30,7 +30,7 @@ export const CircleIntegrationEditor = ({
 }) => {
   const uid = React.useId();
 
-  const { product, updateProduct } = useProductEditContext();
+  const { product, updateProduct } = useProductFormContext();
 
   const [isEnabled, setIsEnabled] = React.useState(!!integration);
 

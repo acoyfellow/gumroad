@@ -83,6 +83,8 @@ class LinkPolicy < ApplicationPolicy
       :product_refund_policy_enabled,
       :seller_refund_policy_enabled,
       :custom_domain,
+      :custom_button_text_option,
+      :custom_summary,
       :free_trial_enabled,
       :free_trial_duration_amount,
       :free_trial_duration_unit,

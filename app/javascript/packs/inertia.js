@@ -2,9 +2,10 @@ import { createInertiaApp, router } from "@inertiajs/react";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 
+import { defaults as requestDefaults } from "$app/utils/request";
+
 import AppWrapper from "../inertia/app_wrapper.tsx";
 import Layout, { AuthenticationLayout, LoggedInUserLayout } from "../inertia/layout.tsx";
-import { defaults as requestDefaults } from "$app/utils/request";
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
 if (csrfToken) {

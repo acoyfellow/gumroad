@@ -170,15 +170,13 @@ export type ContentUpdates = {
   uniquePermalinkOrVariantIds: string[];
 } | null;
 
-export const ProductEditContext = React.createContext<{
+export type ProductEditContextType = {
   id: string;
   product: Product;
   uniquePermalink: string;
-  updateProduct: (update: Partial<Product> | ((product: Product) => void)) => void;
   thumbnail: Thumbnail | null;
   refundPolicies: OtherRefundPolicy[];
   currencyType: CurrencyCode;
-  setCurrencyType: (newCurrencyCode: CurrencyCode) => void;
   isListedOnDiscover: boolean;
   isPhysical: boolean;
   profileSections: ProfileSection[];
@@ -194,19 +192,31 @@ export const ProductEditContext = React.createContext<{
   awsKey: string;
   s3Url: string;
   availableCountries: ShippingCountry[];
-  saving: boolean;
-  save: () => Promise<void>;
   googleClientId: string;
+  dropboxAppKey: string;
   googleCalendarEnabled: boolean;
   seller_refund_policy_enabled: boolean;
   seller_refund_policy: Pick<RefundPolicy, "title" | "fine_print">;
   cancellationDiscountsEnabled: boolean;
-  contentUpdates: ContentUpdates;
-  setContentUpdates: React.Dispatch<React.SetStateAction<ContentUpdates>>;
   filesById: Map<string, FileEntry>;
   aiGenerated: boolean;
-} | null>(null);
+};
+
+export const ProductEditContext = React.createContext<ProductEditContextType | null>(null);
 export const useProductEditContext = () => assertDefined(React.useContext(ProductEditContext));
+
+// Form context provided by each page for mutable state
+export type ProductFormContextType = {
+  product: Product;
+  updateProduct: (update: Partial<Product> | ((product: Product) => void)) => void;
+  currencyType: CurrencyCode;
+  setCurrencyType: (newCurrencyCode: CurrencyCode) => void;
+  contentUpdates: ContentUpdates;
+  setContentUpdates: React.Dispatch<React.SetStateAction<ContentUpdates>>;
+};
+
+export const ProductFormContext = React.createContext<ProductFormContextType | null>(null);
+export const useProductFormContext = () => assertDefined(React.useContext(ProductFormContext));
 
 //TODO: clean up this legacy file state
 type UploadProgress = { percent: number; bitrate: number };

@@ -1,31 +1,28 @@
-import { useForm, usePage } from "@inertiajs/react";
-import Layout from "$app/inertia/layout";
-import { Editor, findChildren } from "@tiptap/core";
+import { usePage } from "@inertiajs/react";
 import { DirectUpload } from "@rails/activestorage";
 import * as React from "react";
+import { cast } from "ts-safe-cast";
 
 import { OtherRefundPolicy } from "$app/data/products/other_refund_policies";
 import { Thumbnail } from "$app/data/thumbnails";
+import Layout from "$app/inertia/layout";
 import { RatingsWithPercentages } from "$app/parsers/product";
-import { LoggedInUser } from "$app/components/LoggedInUser";
-import { Taxonomy } from "$app/utils/discover";
-import { Seller } from "$app/components/Product";
-import { RefundPolicy } from "$app/components/ProductEdit/RefundPolicy";
-import { FileEmbed } from "$app/components/ProductEdit/ContentTab/FileEmbed";
-import { ImageUploadSettingsContext } from "$app/components/RichTextEditor";
-import { baseEditorOptions } from "$app/components/RichTextEditor";
-import { extensions } from "$app/components/ProductEdit/ContentTab";
 import { CurrencyCode } from "$app/utils/currency";
+import { Taxonomy } from "$app/utils/discover";
 import { ALLOWED_EXTENSIONS } from "$app/utils/file";
 import { assertResponseError, request } from "$app/utils/request";
+
+import { LoggedInUser } from "$app/components/LoggedInUser";
+import { Seller } from "$app/components/Product";
+import { RefundPolicy } from "$app/components/ProductEdit/RefundPolicy";
 import {
   ProductEditContext,
   Product,
-  ContentUpdates,
   ExistingFileEntry,
   ProfileSection,
   ShippingCountry,
 } from "$app/components/ProductEdit/state";
+import { ImageUploadSettingsContext } from "$app/components/RichTextEditor";
 
 export type EditProps = {
   product: Product;
@@ -50,118 +47,38 @@ export type EditProps = {
   s3_url: string;
   available_countries: ShippingCountry[];
   google_client_id: string;
+  dropbox_app_key: string;
   google_calendar_enabled: boolean;
   seller_refund_policy_enabled: boolean;
   seller_refund_policy: Pick<RefundPolicy, "title" | "fine_print">;
   cancellation_discounts_enabled: boolean;
   ai_generated: boolean;
   logged_in_user: LoggedInUser | null;
-  current_seller: any;
+  current_seller: Seller;
 };
 
 export default function ProductEditLayout({ children }: { children: React.ReactNode }) {
   const props = usePage<EditProps>().props;
   const {
     id,
-    product: initialProduct,
+    product,
     unique_permalink: uniquePermalink,
-    currency_type: initialCurrencyType,
+    currency_type: currencyType,
     ai_generated: aiGenerated,
     existing_files: initialExistingFiles,
   } = props;
 
-  const form = useForm({
-    product: initialProduct,
-    currencyType: initialCurrencyType,
-  });
-
-  const [contentUpdates, setContentUpdates] = React.useState<ContentUpdates>(null);
   const [existingFiles, setExistingFiles] = React.useState<ExistingFileEntry[]>(initialExistingFiles);
   const [imagesUploading, setImagesUploading] = React.useState<Set<File>>(new Set());
-
-  const lastSavedProductRef = React.useRef<Product>(structuredClone(initialProduct));
-
-  const updateProduct = (update: Partial<Product> | ((product: Product) => void)) => {
-    form.setData((prev) => {
-      const currentProduct = prev.product;
-      const updatedProduct = { ...currentProduct };
-      if (typeof update === "function") update(updatedProduct);
-      else Object.assign(updatedProduct, update);
-      return { ...prev, product: updatedProduct as Product };
-    });
-  };
-
-  const save = (): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const editor = new Editor(baseEditorOptions(extensions(id)));
-      const richContents =
-        form.data.product.has_same_rich_content_for_all_variants || !form.data.product.variants.length
-          ? form.data.product.rich_content
-          : form.data.product.variants.flatMap((variant) => variant.rich_content);
-
-      const fileIds = new Set(
-        richContents.flatMap((content) =>
-          findChildren(
-            editor.schema.nodeFromJSON(content.description),
-            (node) => node.type.name === FileEmbed.name,
-          ).map<unknown>((child) => child.node.attrs.id),
-        ),
-      );
-      editor.destroy();
-
-      const productToSave = {
-        ...form.data.product,
-        files: form.data.product.files.filter((file) => fileIds.has(file.id)),
-      };
-
-      form.transform((data) => ({
-        product: {
-          ...productToSave,
-          price_currency_type: data.currencyType,
-          covers: productToSave.covers?.map(({ id }) => id) || [],
-          variants: productToSave.variants.map(({ newlyAdded, ...variant }) => (newlyAdded ? { ...variant, id: null } : variant)),
-          availabilities: productToSave.availabilities.map(({ newlyAdded, ...availability }) =>
-            newlyAdded ? { ...availability, id: null } : availability,
-          ),
-          installment_plan: productToSave.allow_installment_plan ? productToSave.installment_plan : null,
-        },
-        currencyType: data.currencyType,
-      }));
-
-      const pathname = window.location.pathname;
-      let updateUrl: string;
-      if (pathname.includes("/content/edit")) updateUrl = Routes.product_content_path(uniquePermalink);
-      else if (pathname.includes("/receipt/edit")) updateUrl = Routes.product_receipt_path(uniquePermalink);
-      else if (pathname.includes("/share/edit")) updateUrl = Routes.product_share_path(uniquePermalink);
-      else updateUrl = Routes.product_product_path(uniquePermalink);
-
-      form.patch(updateUrl, {
-        preserveScroll: true,
-        onSuccess: () => {
-          lastSavedProductRef.current = structuredClone(form.data.product);
-          resolve();
-        },
-        onError: (errors) => {
-          reject(new Error(Object.values(errors)[0] || "Failed to save product"));
-        },
-      });
-    });
-  };
-
-  const setCurrencyType = (newCurrencyCode: CurrencyCode) => {
-    form.setData("currencyType", newCurrencyCode);
-  };
 
   const contextValue = React.useMemo(
     () => ({
       id,
-      product: form.data.product,
+      product,
       uniquePermalink,
-      updateProduct,
       thumbnail: props.thumbnail,
       refundPolicies: props.refund_policies,
-      currencyType: form.data.currencyType,
-      setCurrencyType,
+      currencyType,
       isListedOnDiscover: props.is_listed_on_discover,
       isPhysical: props.is_physical,
       profileSections: props.profile_sections,
@@ -177,19 +94,16 @@ export default function ProductEditLayout({ children }: { children: React.ReactN
       awsKey: props.aws_key,
       s3Url: props.s3_url,
       availableCountries: props.available_countries,
-      saving: form.processing,
-      save,
       googleClientId: props.google_client_id,
+      dropboxAppKey: props.dropbox_app_key,
       googleCalendarEnabled: props.google_calendar_enabled,
       seller_refund_policy_enabled: props.seller_refund_policy_enabled,
       seller_refund_policy: props.seller_refund_policy,
       cancellationDiscountsEnabled: props.cancellation_discounts_enabled,
-      contentUpdates,
-      setContentUpdates,
       aiGenerated,
-      filesById: new Map(form.data.product.files.map((f) => [f.id, f])),
+      filesById: new Map(product.files.map((f) => [f.id, f])),
     }),
-    [form.data.product, form.data.currencyType, form.processing, existingFiles, contentUpdates]
+    [product, currencyType, existingFiles],
   );
 
   const imageSettings = React.useMemo(
@@ -214,25 +128,23 @@ export default function ProductEditLayout({ children }: { children: React.ReactN
                 url: Routes.s3_utility_cdn_url_for_blob_path({ key: blob.key }),
               })
                 .then((response) => response.json())
-                .then((data) => resolve((data as { url: string }).url))
+                .then((data) => resolve(cast<{ url: string }>(data).url))
                 .catch((e: unknown) => {
-                   assertResponseError(e);
-                   reject(e);
+                  assertResponseError(e);
+                  reject(e);
                 });
           });
         });
       },
       allowedExtensions: ALLOWED_EXTENSIONS,
     }),
-    [imagesUploading.size]
+    [imagesUploading.size],
   );
 
   return (
     <Layout>
       <ProductEditContext.Provider value={contextValue}>
-        <ImageUploadSettingsContext.Provider value={imageSettings}>
-          {children}
-        </ImageUploadSettingsContext.Provider>
+        <ImageUploadSettingsContext.Provider value={imageSettings}>{children}</ImageUploadSettingsContext.Provider>
       </ProductEditContext.Provider>
     </Layout>
   );

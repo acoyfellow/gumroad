@@ -122,7 +122,15 @@ describe Products::ShareController, inertia: true do
           expect(product.reload.purchase_disabled_at).to be_present
         end
       end
-    end
 
+      context "when redirect_to param is provided" do
+        it "redirects to the specified path" do
+          put :update, params: params.merge(redirect_to: edit_product_receipt_path(product.unique_permalink))
+
+          expect(response).to redirect_to(edit_product_receipt_path(product.unique_permalink))
+          expect(flash[:notice]).to eq("Changes saved!")
+        end
+      end
+    end
   end
 end

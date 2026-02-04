@@ -6,22 +6,21 @@ import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Product, ProductDiscount } from "$app/components/Product";
 import { useProductUrl } from "$app/components/ProductEdit/Layout";
 import { RefundPolicyModalPreview } from "$app/components/ProductEdit/RefundPolicy";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import { useProductEditContext, useProductFormContext } from "$app/components/ProductEdit/state";
 import { CoffeePage } from "$app/components/server-components/Profile/CoffeePage";
 
 export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModal?: boolean }) => {
   const currentSeller = useCurrentSeller();
   const {
-    product,
     id,
     uniquePermalink,
-    currencyType,
     salesCountForInventory,
     successfulSalesCount,
     ratings,
     seller_refund_policy_enabled,
     seller_refund_policy,
   } = useProductEditContext();
+  const { product, currencyType } = useProductFormContext();
 
   const url = useProductUrl();
 

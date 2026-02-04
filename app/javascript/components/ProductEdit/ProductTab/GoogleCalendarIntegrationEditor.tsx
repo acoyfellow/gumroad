@@ -6,7 +6,7 @@ import { assertResponseError } from "$app/utils/request";
 
 import { Button } from "$app/components/Button";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import { useProductEditContext, useProductFormContext } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 
@@ -35,7 +35,8 @@ export const GoogleCalendarIntegrationEditor = ({
       : [],
   );
 
-  const { updateProduct, googleClientId } = useProductEditContext();
+  const { googleClientId } = useProductEditContext();
+  const { updateProduct } = useProductFormContext();
 
   React.useEffect(() => {
     if (integration?.integration_details) {

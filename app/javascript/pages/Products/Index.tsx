@@ -1,26 +1,34 @@
-import React from "react";
 import { Deferred, router, usePage } from "@inertiajs/react";
-import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
-import { useOnChange } from "$app/components/useOnChange";
+import React from "react";
 
 import { NavigationButtonInertia } from "$app/components/NavigationButton";
 import { ProductsLayout } from "$app/components/ProductsLayout";
-
-import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
-
-import { LayoutCtaButton } from "$app/components/ProductsPage/LayoutCtaButton";
-import { ProductsContentLoading } from "$app/components/ProductsPage/ContentLoading";
-import { type ProductsPageProps } from "$app/components/ProductsPage/ProductsPageProps";
 import ProductsPage from "$app/components/ProductsPage";
+import { ProductsContentLoading } from "$app/components/ProductsPage/ContentLoading";
+import { LayoutCtaButton } from "$app/components/ProductsPage/LayoutCtaButton";
+import { type ProductsPageProps } from "$app/components/ProductsPage/ProductsPageProps";
+import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
+import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
+import { useOnChange } from "$app/components/useOnChange";
 
 import placeholder from "$assets/images/product_nudge.svg";
 
 type ProductsIndexPageProps = ProductsPageProps & {
   archived_products_count: number;
-}
+};
 
-const ProductsContent = ({ query, setEnableArchiveTab }: { query: string; setEnableArchiveTab: (enable: boolean) => void }) => {
-  const { memberships_data, products_data, can_create_product: canCreateProduct } = usePage<ProductsIndexPageProps>().props;
+const ProductsContent = ({
+  query,
+  setEnableArchiveTab,
+}: {
+  query: string;
+  setEnableArchiveTab: (enable: boolean) => void;
+}) => {
+  const {
+    memberships_data,
+    products_data,
+    can_create_product: canCreateProduct,
+  } = usePage<ProductsIndexPageProps>().props;
   const { memberships, pagination: membershipsPagination, sort: membershipsSort } = memberships_data;
   const { products, pagination: productsPagination, sort: productsSort } = products_data;
 
@@ -54,25 +62,26 @@ const ProductsContent = ({ query, setEnableArchiveTab }: { query: string; setEna
           query={query}
           setEnableArchiveTab={setEnableArchiveTab}
         />
-        )}
-      </section>
+      )}
+    </section>
   );
-}
+};
 
 const ProductsIndexPage = () => {
-  const { archived_products_count: archivedProductsCount, query: initialQuery } = usePage<ProductsIndexPageProps>().props;
+  const { archived_products_count: archivedProductsCount, query: initialQuery } =
+    usePage<ProductsIndexPageProps>().props;
   const [enableArchiveTab, setEnableArchiveTab] = React.useState(archivedProductsCount > 0);
   const [query, setQuery] = React.useState(initialQuery ?? "");
 
   const reloadProducts = useDebouncedCallback(() => {
     router.reload({
       data: { query },
-      only: ["memberships_data", "products_data"]
+      only: ["memberships_data", "products_data"],
     });
   }, 300);
 
   useOnChange(() => {
-    if (query !== null) reloadProducts();
+    reloadProducts();
   }, [query]);
 
   return (
@@ -80,9 +89,7 @@ const ProductsIndexPage = () => {
       selectedTab="products"
       title="Products"
       archivedTabVisible={enableArchiveTab}
-      ctaButton={
-        <LayoutCtaButton query={query} setQuery={setQuery} />
-      }
+      ctaButton={<LayoutCtaButton query={query} setQuery={setQuery} />}
     >
       <Deferred data={["memberships_data", "products_data"]} fallback={<ProductsContentLoading />}>
         <ProductsContent query={query} setEnableArchiveTab={setEnableArchiveTab} />

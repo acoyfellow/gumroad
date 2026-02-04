@@ -17,10 +17,34 @@ import { Alert } from "$app/components/ui/Alert";
 import { Switch } from "$app/components/ui/Switch";
 import { useRunOnce } from "$app/components/useRunOnce";
 
-export const ShareTab = () => {
+type ShareTabProps = {
+  sectionIds: string[];
+  taxonomyId: string | null;
+  tags: string[];
+  displayProductReviews: boolean;
+  isAdult: boolean;
+  onSectionIdsChange: (sectionIds: string[]) => void;
+  onTaxonomyIdChange: (taxonomyId: string | null) => void;
+  onTagsChange: (tags: string[]) => void;
+  onDisplayProductReviewsChange: (value: boolean) => void;
+  onIsAdultChange: (value: boolean) => void;
+};
+
+export const ShareTab = ({
+  sectionIds,
+  taxonomyId,
+  tags,
+  displayProductReviews,
+  isAdult,
+  onSectionIdsChange,
+  onTaxonomyIdChange,
+  onTagsChange,
+  onDisplayProductReviewsChange,
+  onIsAdultChange,
+}: ShareTabProps) => {
   const currentSeller = useCurrentSeller();
 
-  const { id, product, updateProduct, profileSections, taxonomies, isListedOnDiscover } = useProductEditContext();
+  const { id, product, profileSections, taxonomies, isListedOnDiscover } = useProductEditContext();
 
   const url = useProductUrl();
   const discoverUrl = useDiscoverUrl();
@@ -31,88 +55,84 @@ export const ShareTab = () => {
 
   return (
     <div className="squished">
-        <form>
-          <section className="p-4! md:p-8!">
-            <DiscoverEligibilityPromo />
-            <header>
-              <h2>Share</h2>
-            </header>
-            <div className="flex flex-wrap gap-2">
-              <TwitterShareButton url={url} text={`Buy ${product.name} on @Gumroad`} />
-              <FacebookShareButton url={url} text={product.name} />
-              <CopyToClipboard text={url} tooltipPosition="top">
-                <Button color="primary">
-                  <Icon name="link" />
-                  Copy URL
-                </Button>
-              </CopyToClipboard>
-              <NavigationButton
-                href={`https://gum.new?productId=${id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                color="accent"
-              >
-                <Icon name="plus" />
-                Create Gum
-              </NavigationButton>
-            </div>
-          </section>
-          <ProfileSectionsEditor
-            sectionIds={product.section_ids}
-            onChange={(sectionIds) => updateProduct({ section_ids: sectionIds })}
-            profileSections={profileSections}
-          />
-          <section className="p-8!">
-            <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <h2>Gumroad Discover</h2>
-              <a href="/help/article/79-gumroad-discover" target="_blank" rel="noreferrer">
-                Learn more
-              </a>
-            </header>
-            {isListedOnDiscover ? (
-              <Alert role="status" variant="success">
-                <div className="flex flex-col justify-between sm:flex-row">
-                  {product.name} is listed on Gumroad Discover.
-                  <a href={discoverLink.toString()}>View</a>
-                </div>
-              </Alert>
-            ) : null}
-            <div className="flex flex-col gap-4">
-              <p>
-                Gumroad Discover recommends your products to prospective customers for a flat 30% fee on each sale,
-                helping you grow beyond your existing following and find even more people who care about your work.
-              </p>
-              <p>When enabled, the product will also become part of the Gumroad affiliate program.</p>
-            </div>
-            <TaxonomyEditor
-              taxonomyId={product.taxonomy_id}
-              onChange={(taxonomy_id) => updateProduct({ taxonomy_id })}
-              taxonomies={taxonomies}
+      <form>
+        <section className="p-4! md:p-8!">
+          <DiscoverEligibilityPromo />
+          <header>
+            <h2>Share</h2>
+          </header>
+          <div className="flex flex-wrap gap-2">
+            <TwitterShareButton url={url} text={`Buy ${product.name} on @Gumroad`} />
+            <FacebookShareButton url={url} text={product.name} />
+            <CopyToClipboard text={url} tooltipPosition="top">
+              <Button color="primary">
+                <Icon name="link" />
+                Copy URL
+              </Button>
+            </CopyToClipboard>
+            <NavigationButton
+              href={`https://gum.new?productId=${id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              color="accent"
+            >
+              <Icon name="plus" />
+              Create Gum
+            </NavigationButton>
+          </div>
+        </section>
+        <ProfileSectionsEditor
+          sectionIds={sectionIds}
+          onChange={onSectionIdsChange}
+          profileSections={profileSections}
+        />
+        <section className="p-8!">
+          <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <h2>Gumroad Discover</h2>
+            <a href="/help/article/79-gumroad-discover" target="_blank" rel="noreferrer">
+              Learn more
+            </a>
+          </header>
+          {isListedOnDiscover ? (
+            <Alert role="status" variant="success">
+              <div className="flex flex-col justify-between sm:flex-row">
+                {product.name} is listed on Gumroad Discover.
+                <a href={discoverLink.toString()}>View</a>
+              </div>
+            </Alert>
+          ) : null}
+          <div className="flex flex-col gap-4">
+            <p>
+              Gumroad Discover recommends your products to prospective customers for a flat 30% fee on each sale,
+              helping you grow beyond your existing following and find even more people who care about your work.
+            </p>
+            <p>When enabled, the product will also become part of the Gumroad affiliate program.</p>
+          </div>
+          <TaxonomyEditor taxonomyId={taxonomyId} onChange={onTaxonomyIdChange} taxonomies={taxonomies} />
+          <TagSelector tags={tags} onChange={onTagsChange} />
+          <fieldset>
+            <Switch
+              checked={displayProductReviews}
+              onChange={(e) => onDisplayProductReviewsChange(e.target.checked)}
+              label="Display your product's 1-5 star rating to prospective customers"
             />
-            <TagSelector tags={product.tags} onChange={(tags) => updateProduct({ tags })} />
-            <fieldset>
-              <Switch
-                checked={product.display_product_reviews}
-                onChange={(e) => updateProduct({ display_product_reviews: e.target.checked })}
-                label="Display your product's 1-5 star rating to prospective customers"
-              />
-              <Switch
-                checked={product.is_adult}
-                onChange={(e) => updateProduct({ is_adult: e.target.checked })}
-                label={
-                  <>
-                    This product contains content meant{" "}
-                    <a href="/help/article/156-gumroad-and-adult-content" target="_blank" rel="noreferrer">
-                      only for adults,
-                    </a>{" "}
-                    including the preview
-                  </>
-                }
-              />
-            </fieldset>
-          </section>
-        </form>
-      </div>
+            <Switch
+              checked={isAdult}
+              onChange={(e) => onIsAdultChange(e.target.checked)}
+              label={
+                <>
+                  This product contains content meant{" "}
+                  <a href="/help/article/156-gumroad-and-adult-content" target="_blank" rel="noreferrer">
+                    only for adults,
+                  </a>{" "}
+                  including the preview
+                </>
+              }
+            />
+          </fieldset>
+        </section>
+      </form>
+    </div>
   );
 };
 

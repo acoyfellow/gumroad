@@ -6,7 +6,7 @@ import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
 import { useProductUrl } from "$app/components/ProductEdit/Layout";
-import { Version, useProductEditContext } from "$app/components/ProductEdit/state";
+import { Version, useProductFormContext } from "$app/components/ProductEdit/state";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
 import { Placeholder } from "$app/components/ui/Placeholder";
 import { Row, RowActions, RowContent, RowDetails, Rows } from "$app/components/ui/Rows";
@@ -118,7 +118,7 @@ const VersionEditor = ({
   onDelete: () => void;
 }) => {
   const uid = React.useId();
-  const { product, currencyType } = useProductEditContext();
+  const { product, currencyType } = useProductFormContext();
 
   const [isOpen, setIsOpen] = React.useState(true);
 

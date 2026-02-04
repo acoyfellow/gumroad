@@ -5,13 +5,14 @@ import { assertResponseError } from "$app/utils/request";
 
 import { ComboBox } from "$app/components/ComboBox";
 import { Icon } from "$app/components/Icons";
-import { OfferCode, useProductEditContext } from "$app/components/ProductEdit/state";
+import { OfferCode, useProductEditContext, useProductFormContext } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 
 export const DefaultDiscountCodeSelector = () => {
-  const { uniquePermalink, product, updateProduct } = useProductEditContext();
+  const { uniquePermalink } = useProductEditContext();
+  const { product, updateProduct } = useProductFormContext();
 
   const selectedDiscountCode = product.default_offer_code;
 

@@ -58,7 +58,15 @@ describe Products::ReceiptController, inertia: true do
         expect(product.reload.custom_receipt_text).to eq("Thanks for buying!")
         expect(product.custom_view_content_button_text).to eq("Download Now")
       end
-    end
 
+      context "when redirect_to param is provided" do
+        it "redirects to the specified path" do
+          put :update, params: params.merge(redirect_to: edit_product_share_path(product.unique_permalink))
+
+          expect(response).to redirect_to(edit_product_share_path(product.unique_permalink))
+          expect(flash[:notice]).to eq("Changes saved!")
+        end
+      end
+    end
   end
 end

@@ -19,6 +19,8 @@ class Products::ShareController < Products::BaseController
 
     if params[:unpublish].present?
       redirect_to edit_product_content_path(@product.unique_permalink), notice: "Unpublished!", status: :see_other
+    elsif params[:redirect_to].present?
+      redirect_to params[:redirect_to], notice: "Changes saved!", status: :see_other
     else
       redirect_back fallback_location: edit_product_share_path(@product.unique_permalink), notice: "Changes saved!", status: :see_other
     end

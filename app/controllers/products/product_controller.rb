@@ -8,15 +8,11 @@ class Products::ProductController < Products::BaseController
   end
 
   def update
-    authorize @product
-
     should_unpublish = params[:unpublish].present? && @product.published?
     was_published = @product.published?
 
     if should_unpublish
-      @product.unpublish!
-      check_offer_codes_validity
-      return redirect_back fallback_location: edit_product_product_path(@product.unique_permalink), notice: "Unpublished!", status: :see_other
+      return unpublish_and_redirect_to(edit_product_product_path(@product.unique_permalink))
     end
 
     ActiveRecord::Base.transaction do
@@ -62,7 +58,8 @@ class Products::ProductController < Products::BaseController
         :community_chat_enabled,
         :custom_domain,
         :file_attributes,
-        :refund_policy
+        :refund_policy,
+        :product_refund_policy_enabled
       ))
 
       if @product.native_type === ::Link::NATIVE_TYPE_COFFEE && product_permitted_params[:variants].present?
@@ -102,6 +99,8 @@ class Products::ProductController < Products::BaseController
       ).process if product_permitted_params[:public_files].present?
 
       toggle_community_chat!(product_permitted_params[:community_chat_enabled])
+      update_refund_policy
+      update_custom_domain
       @product.save!
     end
 
@@ -177,6 +176,31 @@ class Products::ProductController < Products::BaseController
       return unless Feature.active?(:communities, current_seller)
       return if [::Link::NATIVE_TYPE_COFFEE, ::Link::NATIVE_TYPE_BUNDLE].include?(@product.native_type)
       @product.toggle_community_chat!(enabled)
+    end
+
+    def update_refund_policy
+      return if current_seller.account_level_refund_policy_enabled?
+
+      @product.product_refund_policy_enabled = product_permitted_params[:product_refund_policy_enabled]
+      if product_permitted_params[:refund_policy].present? && @product.product_refund_policy_enabled
+        @product.find_or_initialize_product_refund_policy.update!(product_permitted_params[:refund_policy])
+      elsif @product.product_refund_policy_enabled == false && @product.product_refund_policy.present?
+        @product.product_refund_policy.destroy
+      end
+    end
+
+    def update_custom_domain
+      new_domain = product_permitted_params[:custom_domain]&.strip.presence
+
+      if new_domain.present?
+        if @product.custom_domain.present?
+          @product.custom_domain.update!(domain: new_domain) if @product.custom_domain.domain != new_domain
+        else
+          @product.create_custom_domain!(domain: new_domain)
+        end
+      elsif @product.custom_domain.present?
+        @product.custom_domain.mark_deleted!
+      end
     end
 
     def product_permitted_params

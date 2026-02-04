@@ -14,8 +14,11 @@ RSpec.describe Products::ShareTabPresenter do
 
       expect(props.keys).to include(:id, :unique_permalink, :product, :seller)
       expect(props[:product]).to be_a(Hash)
-      expect(props[:product].keys).to include(:name, :tags, :taxonomy_id, :display_product_reviews, :is_adult, :custom_domain)
-      expect(props[:product].keys).not_to include(:price_cents, :variants, :rich_content, :refund_policy)
+      expect(props[:product].keys).to include(
+        :name, :tags, :taxonomy_id, :display_product_reviews, :is_adult, :custom_domain,
+        :price_cents, :variants, :refund_policy, :description, :covers
+      )
+      expect(props[:product].keys).not_to include(:rich_content)
     end
   end
 end

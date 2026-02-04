@@ -3,7 +3,7 @@ import * as React from "react";
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { PriceInput } from "$app/components/PriceInput";
-import { ShippingDestination, useProductEditContext } from "$app/components/ProductEdit/state";
+import { ShippingDestination, useProductEditContext, useProductFormContext } from "$app/components/ProductEdit/state";
 import { Card, CardContent } from "$app/components/ui/Card";
 import { Placeholder } from "$app/components/ui/Placeholder";
 import { WithTooltip } from "$app/components/WithTooltip";
@@ -82,7 +82,8 @@ const ShippingDestinationRow = ({
   onChange: (shippingDestination: ShippingDestination) => void;
   onRemove: () => void;
 }) => {
-  const { availableCountries, currencyType } = useProductEditContext();
+  const { availableCountries } = useProductEditContext();
+  const { currencyType } = useProductFormContext();
   const uid = React.useId();
 
   const updateDestination = (update: Partial<ShippingDestination>) => onChange({ ...shippingDestination, ...update });

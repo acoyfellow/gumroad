@@ -12,9 +12,7 @@ class Products::ContentController < Products::BaseController
     should_unpublish = params[:unpublish].present? && @product.published?
 
     if should_unpublish
-      @product.unpublish!
-      check_offer_codes_validity
-      return redirect_back fallback_location: edit_product_content_path(@product.unique_permalink), notice: "Unpublished!", status: :see_other
+      return unpublish_and_redirect_to(edit_product_content_path(@product.unique_permalink))
     end
 
     ActiveRecord::Base.transaction do

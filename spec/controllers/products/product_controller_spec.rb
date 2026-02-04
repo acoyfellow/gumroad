@@ -117,6 +117,17 @@ describe Products::ProductController, inertia: true do
         expect(product.reload.should_show_sales_count).to be(false)
         expect(response).to redirect_to(edit_product_product_path(product.unique_permalink))
       end
+
+      context "when redirect_to param is provided" do
+        before { product.publish! }
+
+        it "redirects to the specified path" do
+          put :update, params: params.merge(redirect_to: edit_product_content_path(product.unique_permalink))
+
+          expect(response).to redirect_to(edit_product_content_path(product.unique_permalink))
+          expect(flash[:notice]).to eq("Changes saved!")
+        end
+      end
     end
 
     context "when product is physical" do
@@ -144,7 +155,9 @@ describe Products::ProductController, inertia: true do
     end
 
     context "when product_refund_policy_enabled is toggled" do
-      before { request.headers["X-Inertia"] = "true" }
+      before do
+        allow_any_instance_of(User).to receive(:account_level_refund_policy_enabled?).and_return(false)
+      end
 
       it "enables product-level refund policy when product_refund_policy_enabled is true" do
         product.update!(product_refund_policy_enabled: false)

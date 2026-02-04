@@ -2,11 +2,11 @@ import * as React from "react";
 
 import { InputtedDiscount, DiscountInput } from "$app/components/CheckoutDashboard/DiscountInput";
 import { NumberInput } from "$app/components/NumberInput";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import { useProductFormContext } from "$app/components/ProductEdit/state";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 
 export const CancellationDiscountSelector = () => {
-  const { product, updateProduct, currencyType } = useProductEditContext();
+  const { product, updateProduct, currencyType } = useProductFormContext();
   const cancellationDiscount = product.cancellation_discount;
 
   const [isEnabled, setIsEnabled] = React.useState(!!cancellationDiscount);

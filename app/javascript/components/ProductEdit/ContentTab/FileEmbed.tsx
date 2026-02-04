@@ -28,7 +28,7 @@ import {
   titleWithFallback,
   useFilesInGroup,
 } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
-import { FileEntry, useProductEditContext } from "$app/components/ProductEdit/state";
+import { FileEntry, useProductEditContext, useProductFormContext } from "$app/components/ProductEdit/state";
 import { useS3UploadConfig } from "$app/components/S3UploadConfig";
 import { Separator } from "$app/components/Separator";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -55,7 +55,8 @@ export const getDraggedFileEmbed = (editor: Editor) => {
 const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewProps) => {
   if (!node.attrs.id) return;
 
-  const { id, updateProduct, filesById } = useProductEditContext();
+  const { id, filesById } = useProductEditContext();
+  const { updateProduct } = useProductFormContext();
   const uid = React.useId();
   const ref = React.useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = React.useState(false);

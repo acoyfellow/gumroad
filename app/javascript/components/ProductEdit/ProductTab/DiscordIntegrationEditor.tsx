@@ -6,7 +6,7 @@ import { startOauthRedirectChecker } from "$app/utils/oauth";
 
 import { Button } from "$app/components/Button";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import { useProductFormContext } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { Alert } from "$app/components/ui/Alert";
@@ -24,7 +24,7 @@ export const DiscordIntegrationEditor = ({
   integration: DiscordIntegration;
   onChange: (integration: DiscordIntegration) => void;
 }) => {
-  const { product, updateProduct } = useProductEditContext();
+  const { product, updateProduct } = useProductFormContext();
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [isEnabled, setIsEnabled] = React.useState(!!integration);

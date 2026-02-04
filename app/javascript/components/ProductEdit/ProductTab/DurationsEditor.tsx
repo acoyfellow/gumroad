@@ -5,7 +5,7 @@ import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
-import { Duration, useProductEditContext } from "$app/components/ProductEdit/state";
+import { Duration, useProductFormContext } from "$app/components/ProductEdit/state";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
 import { Pill } from "$app/components/ui/Pill";
 import { Placeholder } from "$app/components/ui/Placeholder";
@@ -118,7 +118,7 @@ const DurationEditor = ({
   onDelete: () => void;
 }) => {
   const uid = React.useId();
-  const { currencyType } = useProductEditContext();
+  const { currencyType } = useProductFormContext();
 
   const [isOpen, setIsOpen] = React.useState(true);
 

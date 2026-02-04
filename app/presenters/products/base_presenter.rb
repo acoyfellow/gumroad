@@ -26,6 +26,7 @@ class Products::BasePresenter
       earliest_membership_price_change_date: ::BaseVariant::MINIMUM_DAYS_TIL_EXISTING_MEMBERSHIP_PRICE_CHANGE.days.from_now.in_time_zone(product.user.timezone).iso8601,
       available_countries: ::ShippingDestination::Destinations.shipping_countries.map { { code: _1[0], name: _1[1] } },
       google_client_id: ::GlobalConfig.get("GOOGLE_CLIENT_ID"),
+      dropbox_app_key: DROPBOX_PICKER_API_KEY,
       google_calendar_enabled: Feature.active?(:google_calendar_link, product.user),
       cancellation_discounts_enabled: Feature.active?(:cancellation_discounts, product.user),
       thumbnail: product.thumbnail&.alive&.as_json,
@@ -71,15 +72,22 @@ class Products::BasePresenter
       return if custom_domain.blank?
 
       domain = custom_domain.domain
-      if custom_domain.verified?
+
+      # Trigger verification on page load if unverified (like settings presenter)
+      if custom_domain.unverified?
+        has_valid_configuration = CustomDomainVerificationService.new(domain:).process
+        custom_domain.mark_verified if has_valid_configuration
+
         {
-          success: true,
-          message: "#{domain} domain is correctly configured!",
+          success: has_valid_configuration,
+          message: has_valid_configuration ?
+            "#{domain} domain is correctly configured!" :
+            "Domain verification failed. Please make sure you have correctly configured the DNS record for #{domain}.",
         }
       else
         {
-          success: false,
-          message: "Domain verification failed. Please make sure you have correctly configured the DNS record for #{domain}.",
+          success: true,
+          message: "#{domain} domain is correctly configured!",
         }
       end
     end

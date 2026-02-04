@@ -1,14 +1,13 @@
-import React from "react";
 import { Deferred, router, usePage } from "@inertiajs/react";
-import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
-import { useOnChange } from "$app/components/useOnChange";
+import React from "react";
 
 import { ProductsLayout } from "$app/components/ProductsLayout";
-
-import { LayoutCtaButton } from "$app/components/ProductsPage/LayoutCtaButton";
-import { ProductsContentLoading } from "$app/components/ProductsPage/ContentLoading";
-import { type ProductsPageProps } from "$app/components/ProductsPage/ProductsPageProps";
 import ProductsPage from "$app/components/ProductsPage";
+import { ProductsContentLoading } from "$app/components/ProductsPage/ContentLoading";
+import { LayoutCtaButton } from "$app/components/ProductsPage/LayoutCtaButton";
+import { type ProductsPageProps } from "$app/components/ProductsPage/ProductsPageProps";
+import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
+import { useOnChange } from "$app/components/useOnChange";
 
 const ProductsContent = ({ query }: { query: string }) => {
   const { memberships_data, products_data } = usePage<ProductsPageProps>().props;
@@ -29,7 +28,7 @@ const ProductsContent = ({ query }: { query: string }) => {
       />
     </section>
   );
-}
+};
 
 const ArchivedProductsIndexPage = () => {
   const { query: initialQuery } = usePage<ProductsPageProps>().props;
@@ -38,12 +37,12 @@ const ArchivedProductsIndexPage = () => {
   const reloadProducts = useDebouncedCallback(() => {
     router.reload({
       data: { query },
-      only: ["products_data", "memberships_data"]
+      only: ["products_data", "memberships_data"],
     });
   }, 300);
 
   useOnChange(() => {
-    if (query !== null) reloadProducts();
+    reloadProducts();
   }, [query]);
 
   return (
@@ -51,9 +50,7 @@ const ArchivedProductsIndexPage = () => {
       selectedTab="archived"
       title="Products"
       archivedTabVisible
-      ctaButton={
-        <LayoutCtaButton query={query} setQuery={setQuery} />
-      }
+      ctaButton={<LayoutCtaButton query={query} setQuery={setQuery} />}
     >
       <section className="p-4 md:p-8">
         <Deferred data={["products_data", "memberships_data"]} fallback={<ProductsContentLoading />}>

@@ -29,7 +29,13 @@ import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { Modal } from "$app/components/Modal";
 import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { FileEmbedGroup } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
-import { ExistingFileEntry, FileEntry, useProductEditContext, Variant } from "$app/components/ProductEdit/state";
+import {
+  ExistingFileEntry,
+  FileEntry,
+  useProductEditContext,
+  useProductFormContext,
+  Variant,
+} from "$app/components/ProductEdit/state";
 import { ReviewForm } from "$app/components/ReviewForm";
 import {
   baseEditorOptions,
@@ -91,9 +97,15 @@ export const extensions = (productId: string, extraExtensions: TiptapNode[] = []
   ].filter((ext) => !extraExtensions.some((existing) => existing.name === ext.name)),
 ];
 
-const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | null }) => {
-  const { id, product, updateProduct, seller, save, existingFiles, setExistingFiles, uniquePermalink, filesById } =
-    useProductEditContext();
+const ContentTabContent = ({
+  selectedVariantId,
+  prepareDownload,
+}: {
+  selectedVariantId: string | null;
+  prepareDownload: () => Promise<void>;
+}) => {
+  const { id, seller, existingFiles, setExistingFiles, uniquePermalink, filesById } = useProductEditContext();
+  const { product, updateProduct } = useProductFormContext();
   const uid = React.useId();
   const isDesktop = useIsAboveBreakpoint("lg");
   const imageSettings = useImageUploadSettings();
@@ -103,14 +115,16 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
     : product.variants.find((variant) => variant.id === selectedVariantId);
   const pages: (Page & { chosen?: boolean })[] = selectedVariant ? selectedVariant.rich_content : product.rich_content;
   const pagesRef = useRefToLatest(pages);
-  const updatePages = (pages: Page[]) =>
-    updateProduct((product) => {
-      if (selectedVariant) selectedVariant.rich_content = pages;
-      else {
-        product.has_same_rich_content_for_all_variants = true;
-        product.rich_content = pages;
-      }
-    });
+
+  const updatePages = (pages: Page[]) => {
+    if (selectedVariant) selectedVariant.rich_content = pages;
+    else {
+      product.has_same_rich_content_for_all_variants = true;
+      product.rich_content = pages;
+      updateProduct(product);
+    }
+  };
+
   const addPage = (description?: object) => {
     const page = {
       id: GuidGenerator.generate(),
@@ -209,7 +223,7 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
   const fileEmbedGroupConfig = useRefToLatest({
     productId: id,
     variantId: selectedVariantId,
-    prepareDownload: save,
+    prepareDownload,
     filesById,
   });
   const fileEmbedConfig = useRefToLatest<FileEmbedConfig>({ filesById });
@@ -972,8 +986,15 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
 };
 
 //TODO inline this once all the crazy providers are gone
-export const ContentTab = ({ selectedVariantId: parentSelectedVariantId }: { selectedVariantId?: string | null }) => {
-  const { id, awsKey, s3Url, seller, product, updateProduct, uniquePermalink } = useProductEditContext();
+export const ContentTab = ({
+  selectedVariantId: parentSelectedVariantId,
+  prepareDownload,
+}: {
+  selectedVariantId?: string | null;
+  prepareDownload: () => Promise<void>;
+}) => {
+  const { id, awsKey, s3Url, seller, uniquePermalink } = useProductEditContext();
+  const { product, updateProduct } = useProductFormContext();
   const [internalSelectedVariantId] = React.useState(product.variants[0]?.id ?? null);
   const selectedVariantId = parentSelectedVariantId !== undefined ? parentSelectedVariantId : internalSelectedVariantId;
   const [confirmingDiscardVariantContent, setConfirmingDiscardVariantContent] = React.useState(false);
@@ -1058,7 +1079,7 @@ export const ContentTab = ({ selectedVariantId: parentSelectedVariantId }: { sel
       <LicenseProvider value={licenseInfo}>
         <EvaporateUploaderProvider value={evaporateUploader}>
           <S3UploadConfigProvider value={s3UploadConfig}>
-            <ContentTabContent selectedVariantId={selectedVariantId} />
+            <ContentTabContent selectedVariantId={selectedVariantId} prepareDownload={prepareDownload} />
             <Modal
               open={confirmingDiscardVariantContent}
               onClose={() => setConfirmingDiscardVariantContent(false)}
@@ -1096,7 +1117,7 @@ export const ContentTabHeaderActions = ({
   selectedVariantId: string | null;
   setSelectedVariantId: (id: string | null) => void;
 }) => {
-  const { product, updateProduct } = useProductEditContext();
+  const { product, updateProduct } = useProductFormContext();
   const [confirmingDiscardVariantContent, setConfirmingDiscardVariantContent] = React.useState(false);
 
   const selectedVariant = product.variants.find((v) => v.id === selectedVariantId);

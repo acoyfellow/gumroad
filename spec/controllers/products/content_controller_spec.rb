@@ -56,7 +56,15 @@ describe Products::ContentController, inertia: true do
         expect(flash[:notice]).to eq("Changes saved!")
         expect(product.reload.rich_contents.count).to eq(1)
       end
-    end
 
+      context "when redirect_to param is provided" do
+        it "redirects to the specified path" do
+          put :update, params: params.merge(redirect_to: edit_product_share_path(product.unique_permalink))
+
+          expect(response).to redirect_to(edit_product_share_path(product.unique_permalink))
+          expect(flash[:notice]).to eq("Changes saved!")
+        end
+      end
+    end
   end
 end

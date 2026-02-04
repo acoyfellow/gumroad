@@ -33,7 +33,7 @@ import { ThumbnailEditor } from "$app/components/ProductEdit/ProductTab/Thumbnai
 import { TiersEditor } from "$app/components/ProductEdit/ProductTab/TiersEditor";
 import { VersionsEditor } from "$app/components/ProductEdit/ProductTab/VersionsEditor";
 import { RefundPolicySelector } from "$app/components/ProductEdit/RefundPolicy";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import { useProductEditContext, useProductFormContext } from "$app/components/ProductEdit/state";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { TypeSafeOptionSelect } from "$app/components/TypeSafeOptionSelect";
 import { Alert } from "$app/components/ui/Alert";
@@ -45,13 +45,9 @@ export const ProductTab = () => {
 
   const {
     id,
-    product,
-    updateProduct,
     uniquePermalink,
     thumbnail: initialThumbnail,
     refundPolicies,
-    currencyType,
-    setCurrencyType,
     isPhysical,
     customDomainVerificationStatus,
     googleCalendarEnabled,
@@ -59,6 +55,7 @@ export const ProductTab = () => {
     cancellationDiscountsEnabled,
     aiGenerated,
   } = useProductEditContext();
+  const { product, updateProduct, currencyType, setCurrencyType } = useProductFormContext();
   const [initialProduct] = React.useState(product);
 
   const [thumbnail, setThumbnail] = React.useState(initialThumbnail);
@@ -76,408 +73,403 @@ export const ProductTab = () => {
 
   return (
     <div className="squished">
-        <form>
-          <section className="p-4! md:p-8!">
-            {showAiNotification ? (
-              <Alert role="status" variant="accent">
-                <div className="flex items-center gap-4">
-                  <Icon className="text-lg" name="sparkle" />
-                  <div className="flex-1">
-                    <strong>Your AI product is ready!</strong> Take a moment to check out the product and content tabs.
-                    Tweak things and make it your own—this is your time to shine!
-                  </div>
-                  <button
-                    className="cursor-pointer self-center underline all-unset"
-                    onClick={() => setShowAiNotification(false)}
-                  >
-                    close
-                  </button>
+      <form>
+        <section className="p-4! md:p-8!">
+          {showAiNotification ? (
+            <Alert role="status" variant="accent">
+              <div className="flex items-center gap-4">
+                <Icon className="text-lg" name="sparkle" />
+                <div className="flex-1">
+                  <strong>Your AI product is ready!</strong> Take a moment to check out the product and content tabs.
+                  Tweak things and make it your own—this is your time to shine!
                 </div>
-              </Alert>
-            ) : null}
-            <BundleConversionNotice />
-            <fieldset>
-              <label htmlFor={`${uid}-name`}>{isCoffee ? "Header" : "Name"}</label>
-              <input
-                id={`${uid}-name`}
-                type="text"
-                value={product.name}
-                onChange={(evt) => updateProduct({ name: evt.target.value })}
-              />
-            </fieldset>
-            {isCoffee ? (
-              <>
-                <fieldset>
-                  <label htmlFor={`${uid}-body`}>Body</label>
-                  <textarea
-                    id={`${uid}-body`}
-                    value={product.description}
-                    placeholder="Add a short inspiring message"
-                    onChange={(evt) => updateProduct({ description: evt.target.value })}
-                  />
-                </fieldset>
-                <fieldset>
-                  <legend>
-                    <label htmlFor={`${uid}-url`}>URL</label>
-                    <CopyToClipboard text={url}>
-                      <button type="button" className="cursor-pointer font-normal underline all-unset">
-                        Copy URL
-                      </button>
-                    </CopyToClipboard>
-                  </legend>
-                  <input id={`${uid}-url`} type="text" value={url} disabled />
-                </fieldset>
-              </>
-            ) : (
-              <>
-                <DescriptionEditor
-                  id={id}
-                  initialDescription={initialProduct.description}
-                  onChange={(description) => updateProduct({ description })}
-                  setImagesUploading={setImagesUploading}
-                  publicFiles={product.public_files}
-                  updatePublicFiles={(updater) => updateProduct((product) => updater(product.public_files))}
-                  audioPreviewsEnabled={product.audio_previews_enabled}
-                />
-                <CustomPermalinkInput
-                  value={product.custom_permalink}
-                  onChange={(value) => updateProduct({ custom_permalink: value })}
-                  uniquePermalink={uniquePermalink}
-                  url={url}
-                />
-              </>
-            )}
-          </section>
+                <button
+                  className="cursor-pointer self-center underline all-unset"
+                  onClick={() => setShowAiNotification(false)}
+                >
+                  close
+                </button>
+              </div>
+            </Alert>
+          ) : null}
+          <BundleConversionNotice />
+          <fieldset>
+            <label htmlFor={`${uid}-name`}>{isCoffee ? "Header" : "Name"}</label>
+            <input
+              id={`${uid}-name`}
+              type="text"
+              value={product.name}
+              onChange={(evt) => updateProduct({ name: evt.target.value })}
+            />
+          </fieldset>
           {isCoffee ? (
             <>
-              <section className="p-4! md:p-8!">
-                <h2>Pricing</h2>
-                <SuggestedAmountsEditor
-                  versions={product.variants}
-                  onChange={(variants) => updateProduct({ variants })}
+              <fieldset>
+                <label htmlFor={`${uid}-body`}>Body</label>
+                <textarea
+                  id={`${uid}-body`}
+                  value={product.description}
+                  placeholder="Add a short inspiring message"
+                  onChange={(evt) => updateProduct({ description: evt.target.value })}
                 />
-              </section>
-              <section className="p-4! md:p-8!">
-                <h2>Settings</h2>
-                <CustomButtonTextOptionInput
-                  value={product.custom_button_text_option}
-                  onChange={(value) => updateProduct({ custom_button_text_option: value })}
-                  options={COFFEE_CUSTOM_BUTTON_TEXT_OPTIONS}
-                />
-              </section>
+              </fieldset>
+              <fieldset>
+                <legend>
+                  <label htmlFor={`${uid}-url`}>URL</label>
+                  <CopyToClipboard text={url}>
+                    <button type="button" className="cursor-pointer font-normal underline all-unset">
+                      Copy URL
+                    </button>
+                  </CopyToClipboard>
+                </legend>
+                <input id={`${uid}-url`} type="text" value={url} disabled />
+              </fieldset>
             </>
           ) : (
             <>
-              <CoverEditor
-                covers={product.covers}
-                setCovers={(covers) => updateProduct({ covers })}
-                permalink={uniquePermalink}
+              <DescriptionEditor
+                id={id}
+                initialDescription={initialProduct.description}
+                onChange={(description) => updateProduct({ description })}
+                setImagesUploading={setImagesUploading}
+                publicFiles={product.public_files}
+                updatePublicFiles={(updater) => updateProduct((product) => updater(product.public_files))}
+                audioPreviewsEnabled={product.audio_previews_enabled}
               />
-              <ThumbnailEditor
-                covers={product.covers}
-                thumbnail={thumbnail}
-                setThumbnail={setThumbnail}
-                permalink={uniquePermalink}
-                nativeType={product.native_type}
+              <CustomPermalinkInput
+                value={product.custom_permalink}
+                onChange={(value) => updateProduct({ custom_permalink: value })}
+                uniquePermalink={uniquePermalink}
+                url={url}
               />
-              <section className="p-4! md:p-8!">
-                <h2>Product info</h2>
-                {product.native_type !== "membership" ? (
-                  <CustomButtonTextOptionInput
-                    value={product.custom_button_text_option}
-                    onChange={(value) => updateProduct({ custom_button_text_option: value })}
-                    options={CUSTOM_BUTTON_TEXT_OPTIONS}
+            </>
+          )}
+        </section>
+        {isCoffee ? (
+          <>
+            <section className="p-4! md:p-8!">
+              <h2>Pricing</h2>
+              <SuggestedAmountsEditor
+                versions={product.variants}
+                onChange={(variants) => updateProduct({ variants })}
+              />
+            </section>
+            <section className="p-4! md:p-8!">
+              <h2>Settings</h2>
+              <CustomButtonTextOptionInput
+                value={product.custom_button_text_option}
+                onChange={(value) => updateProduct({ custom_button_text_option: value })}
+                options={COFFEE_CUSTOM_BUTTON_TEXT_OPTIONS}
+              />
+            </section>
+          </>
+        ) : (
+          <>
+            <CoverEditor
+              covers={product.covers}
+              setCovers={(covers) => updateProduct({ covers })}
+              permalink={uniquePermalink}
+            />
+            <ThumbnailEditor
+              covers={product.covers}
+              thumbnail={thumbnail}
+              setThumbnail={setThumbnail}
+              permalink={uniquePermalink}
+              nativeType={product.native_type}
+            />
+            <section className="p-4! md:p-8!">
+              <h2>Product info</h2>
+              {product.native_type !== "membership" ? (
+                <CustomButtonTextOptionInput
+                  value={product.custom_button_text_option}
+                  onChange={(value) => updateProduct({ custom_button_text_option: value })}
+                  options={CUSTOM_BUTTON_TEXT_OPTIONS}
+                />
+              ) : null}
+              <CustomSummaryInput
+                value={product.custom_summary}
+                onChange={(value) => updateProduct({ custom_summary: value })}
+              />
+              <AttributesEditor
+                customAttributes={product.custom_attributes}
+                setCustomAttributes={(custom_attributes) => updateProduct({ custom_attributes })}
+                fileAttributes={product.file_attributes}
+                setFileAttributes={(file_attributes) => updateProduct({ file_attributes })}
+              />
+            </section>
+            <section className="p-4! md:p-8!">
+              <h2>Integrations</h2>
+              <fieldset>
+                {product.community_chat_enabled === null ? null : (
+                  <ToggleSettingRow
+                    label="Invite your customers to your Gumroad community chat"
+                    value={product.community_chat_enabled}
+                    onChange={(newValue) => updateProduct({ community_chat_enabled: newValue })}
+                    help={{
+                      label: "Learn more",
+                      url: "/help/article/347-gumroad-community",
+                    }}
+                  />
+                )}
+                <CircleIntegrationEditor
+                  integration={product.integrations.circle}
+                  onChange={(newIntegration) =>
+                    updateProduct({
+                      integrations: {
+                        ...product.integrations,
+                        circle: newIntegration,
+                      },
+                    })
+                  }
+                />
+                <DiscordIntegrationEditor
+                  integration={product.integrations.discord}
+                  onChange={(newIntegration) =>
+                    updateProduct({
+                      integrations: {
+                        ...product.integrations,
+                        discord: newIntegration,
+                      },
+                    })
+                  }
+                />
+                {product.native_type === "call" && googleCalendarEnabled ? (
+                  <GoogleCalendarIntegrationEditor
+                    integration={product.integrations.google_calendar}
+                    onChange={(newIntegration) =>
+                      updateProduct({
+                        integrations: {
+                          ...product.integrations,
+                          google_calendar: newIntegration,
+                        },
+                      })
+                    }
                   />
                 ) : null}
-                <CustomSummaryInput
-                  value={product.custom_summary}
-                  onChange={(value) => updateProduct({ custom_summary: value })}
-                />
-                <AttributesEditor
-                  customAttributes={product.custom_attributes}
-                  setCustomAttributes={(custom_attributes) => updateProduct({ custom_attributes })}
-                  fileAttributes={product.file_attributes}
-                  setFileAttributes={(file_attributes) => updateProduct({ file_attributes })}
-                />
-              </section>
+              </fieldset>
+            </section>
+            {product.native_type === "membership" ? (
               <section className="p-4! md:p-8!">
-                <h2>Integrations</h2>
-                <fieldset>
-                  {product.community_chat_enabled === null ? null : (
-                    <ToggleSettingRow
-                      label="Invite your customers to your Gumroad community chat"
-                      value={product.community_chat_enabled}
-                      onChange={(newValue) => updateProduct({ community_chat_enabled: newValue })}
-                      help={{
-                        label: "Learn more",
-                        url: "/help/article/347-gumroad-community",
-                      }}
-                    />
-                  )}
-                  <CircleIntegrationEditor
-                    integration={product.integrations.circle}
-                    onChange={(newIntegration) =>
-                      updateProduct({
-                        integrations: {
-                          ...product.integrations,
-                          circle: newIntegration,
-                        },
-                      })
-                    }
-                  />
-                  <DiscordIntegrationEditor
-                    integration={product.integrations.discord}
-                    onChange={(newIntegration) =>
-                      updateProduct({
-                        integrations: {
-                          ...product.integrations,
-                          discord: newIntegration,
-                        },
-                      })
-                    }
-                  />
-                  {product.native_type === "call" && googleCalendarEnabled ? (
-                    <GoogleCalendarIntegrationEditor
-                      integration={product.integrations.google_calendar}
-                      onChange={(newIntegration) =>
-                        updateProduct({
-                          integrations: {
-                            ...product.integrations,
-                            google_calendar: newIntegration,
-                          },
-                        })
-                      }
-                    />
-                  ) : null}
-                </fieldset>
+                <h2>Tiers</h2>
+                <TiersEditor tiers={product.variants} onChange={(variants) => updateProduct({ variants })} />
               </section>
-              {product.native_type === "membership" ? (
+            ) : (
+              <>
                 <section className="p-4! md:p-8!">
-                  <h2>Tiers</h2>
-                  <TiersEditor tiers={product.variants} onChange={(variants) => updateProduct({ variants })} />
-                </section>
-              ) : (
-                <>
-                  <section className="p-4! md:p-8!">
-                    <h2>Pricing</h2>
-                    <PriceEditor
-                      priceCents={product.price_cents}
-                      suggestedPriceCents={product.suggested_price_cents}
-                      isPWYW={product.customizable_price}
-                      setPriceCents={(priceCents) =>
-                        updateProduct({
-                          price_cents: priceCents,
-                          ...(priceCents === 0 && { customizable_price: true }),
-                        })
-                      }
-                      setSuggestedPriceCents={(suggestedPriceCents) =>
-                        updateProduct({ suggested_price_cents: suggestedPriceCents })
-                      }
-                      currencyCodeSelector={{
-                        options: currencyCodeList,
-                        onChange: (currencyCode) => {
-                          setCurrencyType(currencyCode);
-                        },
+                  <h2>Pricing</h2>
+                  <PriceEditor
+                    priceCents={product.price_cents}
+                    suggestedPriceCents={product.suggested_price_cents}
+                    isPWYW={product.customizable_price}
+                    setPriceCents={(priceCents) =>
+                      updateProduct({
+                        price_cents: priceCents,
+                        ...(priceCents === 0 && { customizable_price: true }),
+                      })
+                    }
+                    setSuggestedPriceCents={(suggestedPriceCents) =>
+                      updateProduct({ suggested_price_cents: suggestedPriceCents })
+                    }
+                    currencyCodeSelector={{
+                      options: currencyCodeList,
+                      onChange: (currencyCode) => {
+                        setCurrencyType(currencyCode);
+                      },
+                    }}
+                    setIsPWYW={(isPWYW) => updateProduct({ customizable_price: isPWYW })}
+                    currencyType={currencyType}
+                    eligibleForInstallmentPlans={product.eligible_for_installment_plans}
+                    allowInstallmentPlan={product.allow_installment_plan}
+                    numberOfInstallments={product.installment_plan?.number_of_installments ?? null}
+                    onAllowInstallmentPlanChange={(allowed) => updateProduct({ allow_installment_plan: allowed })}
+                    onNumberOfInstallmentsChange={(value) =>
+                      updateProduct({
+                        installment_plan: { ...product.installment_plan, number_of_installments: value },
+                      })
+                    }
+                  />
+                  {product.native_type === "commission" ? (
+                    <p
+                      style={{
+                        marginTop: "var(--spacer-2)",
+                        fontSize: "var(--font-size-small)",
+                        color: "var(--color-text-secondary)",
                       }}
-                      setIsPWYW={(isPWYW) => updateProduct({ customizable_price: isPWYW })}
-                      currencyType={currencyType}
-                      eligibleForInstallmentPlans={product.eligible_for_installment_plans}
-                      allowInstallmentPlan={product.allow_installment_plan}
-                      numberOfInstallments={product.installment_plan?.number_of_installments ?? null}
-                      onAllowInstallmentPlanChange={(allowed) => updateProduct({ allow_installment_plan: allowed })}
-                      onNumberOfInstallmentsChange={(value) =>
-                        updateProduct({
-                          installment_plan: { ...product.installment_plan, number_of_installments: value },
-                        })
-                      }
-                    />
-                    {product.native_type === "commission" ? (
-                      <p
-                        style={{
-                          marginTop: "var(--spacer-2)",
-                          fontSize: "var(--font-size-small)",
-                          color: "var(--color-text-secondary)",
-                        }}
-                      >
-                        Commission products use a 50% deposit upfront, 50% upon completion payment split.
-                      </p>
-                    ) : null}
-                  </section>
-                  {product.native_type === "call" ? (
-                    <>
-                      <section className="p-4! md:p-8!">
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                          <h2>Durations</h2>
-                          <a
-                            href="https://gumroad.com/help/article/70-can-i-sell-services#call"
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Learn more
-                          </a>
-                        </div>
-                        <DurationsEditor
-                          durations={product.variants}
-                          onChange={(variants) => updateProduct({ variants })}
-                        />
-                      </section>
-                      <section className="p-4! md:p-8!">
-                        <h2>Available hours</h2>
-                        <AvailabilityEditor
-                          availabilities={product.availabilities}
-                          onChange={(availabilities) => updateProduct({ availabilities })}
-                        />
-                      </section>
-                      {product.call_limitation_info ? (
-                        <section className="p-4! md:p-8!">
-                          <h2>Call limitations</h2>
-                          <CallLimitationsEditor
-                            callLimitations={product.call_limitation_info}
-                            onChange={(call_limitation_info) => updateProduct({ call_limitation_info })}
-                          />
-                        </section>
-                      ) : null}
-                    </>
-                  ) : (
-                    <section aria-label="Version editor" className="p-4! md:p-8!">
+                    >
+                      Commission products use a 50% deposit upfront, 50% upon completion payment split.
+                    </p>
+                  ) : null}
+                </section>
+                {product.native_type === "call" ? (
+                  <>
+                    <section className="p-4! md:p-8!">
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <h2>{product.native_type === "physical" ? "Variants" : "Versions"}</h2>
+                        <h2>Durations</h2>
                         <a
-                          href="/help/article/126-setting-up-versions-on-a-digital-product"
+                          href="https://gumroad.com/help/article/70-can-i-sell-services#call"
                           target="_blank"
                           rel="noreferrer"
                         >
                           Learn more
                         </a>
                       </div>
-                      <VersionsEditor
-                        versions={product.variants}
+                      <DurationsEditor
+                        durations={product.variants}
                         onChange={(variants) => updateProduct({ variants })}
                       />
                     </section>
-                  )}
-                </>
-              )}
-              {isPhysical ? (
-                <ShippingDestinationsEditor
-                  shippingDestinations={product.shipping_destinations}
-                  onChange={(shipping_destinations) => updateProduct({ shipping_destinations })}
-                />
-              ) : null}
-              <section className="p-4! md:p-8!">
-                <h2>Settings</h2>
-                <fieldset>
-                  {product.native_type === "membership" ? (
-                    <>
-                      <FreeTrialSelector />
-                      {cancellationDiscountsEnabled ? <CancellationDiscountSelector /> : null}
-                      <Switch
-                        checked={product.should_include_last_post}
-                        onChange={(e) => updateProduct({ should_include_last_post: e.target.checked })}
-                        label="New members will be emailed this product's last published post"
+                    <section className="p-4! md:p-8!">
+                      <h2>Available hours</h2>
+                      <AvailabilityEditor
+                        availabilities={product.availabilities}
+                        onChange={(availabilities) => updateProduct({ availabilities })}
                       />
-                      <Switch
-                        checked={product.should_show_all_posts}
-                        onChange={(e) => updateProduct({ should_show_all_posts: e.target.checked })}
-                        label="New members will get access to all posts you have published"
-                      />
-                      <Switch
-                        checked={product.block_access_after_membership_cancellation}
-                        onChange={(e) =>
-                          updateProduct({ block_access_after_membership_cancellation: e.target.checked })
-                        }
-                        label="Members will lose access when their memberships end"
-                      />
-                      <DurationEditor />
-                    </>
-                  ) : null}
-                  {product.can_enable_quantity ? (
-                    <>
-                      <MaxPurchaseCountToggle
-                        maxPurchaseCount={product.max_purchase_count}
-                        setMaxPurchaseCount={(value) => updateProduct({ max_purchase_count: value })}
-                      />
-                      <Switch
-                        checked={product.quantity_enabled}
-                        onChange={(e) => updateProduct({ quantity_enabled: e.target.checked })}
-                        label="Allow customers to choose a quantity"
-                      />
-                    </>
-                  ) : null}
-                  {product.variants.length > 0 ? (
+                    </section>
+                    {product.call_limitation_info ? (
+                      <section className="p-4! md:p-8!">
+                        <h2>Call limitations</h2>
+                        <CallLimitationsEditor
+                          callLimitations={product.call_limitation_info}
+                          onChange={(call_limitation_info) => updateProduct({ call_limitation_info })}
+                        />
+                      </section>
+                    ) : null}
+                  </>
+                ) : (
+                  <section aria-label="Version editor" className="p-4! md:p-8!">
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <h2>{product.native_type === "physical" ? "Variants" : "Versions"}</h2>
+                      <a
+                        href="/help/article/126-setting-up-versions-on-a-digital-product"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Learn more
+                      </a>
+                    </div>
+                    <VersionsEditor versions={product.variants} onChange={(variants) => updateProduct({ variants })} />
+                  </section>
+                )}
+              </>
+            )}
+            {isPhysical ? (
+              <ShippingDestinationsEditor
+                shippingDestinations={product.shipping_destinations}
+                onChange={(shipping_destinations) => updateProduct({ shipping_destinations })}
+              />
+            ) : null}
+            <section className="p-4! md:p-8!">
+              <h2>Settings</h2>
+              <fieldset>
+                {product.native_type === "membership" ? (
+                  <>
+                    <FreeTrialSelector />
+                    {cancellationDiscountsEnabled ? <CancellationDiscountSelector /> : null}
                     <Switch
-                      checked={product.hide_sold_out_variants}
-                      onChange={(e) => updateProduct({ hide_sold_out_variants: e.target.checked })}
-                      label="Hide sold out versions"
+                      checked={product.should_include_last_post}
+                      onChange={(e) => updateProduct({ should_include_last_post: e.target.checked })}
+                      label="New members will be emailed this product's last published post"
                     />
-                  ) : null}
+                    <Switch
+                      checked={product.should_show_all_posts}
+                      onChange={(e) => updateProduct({ should_show_all_posts: e.target.checked })}
+                      label="New members will get access to all posts you have published"
+                    />
+                    <Switch
+                      checked={product.block_access_after_membership_cancellation}
+                      onChange={(e) => updateProduct({ block_access_after_membership_cancellation: e.target.checked })}
+                      label="Members will lose access when their memberships end"
+                    />
+                    <DurationEditor />
+                  </>
+                ) : null}
+                {product.can_enable_quantity ? (
+                  <>
+                    <MaxPurchaseCountToggle
+                      maxPurchaseCount={product.max_purchase_count}
+                      setMaxPurchaseCount={(value) => updateProduct({ max_purchase_count: value })}
+                    />
+                    <Switch
+                      checked={product.quantity_enabled}
+                      onChange={(e) => updateProduct({ quantity_enabled: e.target.checked })}
+                      label="Allow customers to choose a quantity"
+                    />
+                  </>
+                ) : null}
+                {product.variants.length > 0 ? (
                   <Switch
-                    checked={product.should_show_sales_count}
-                    onChange={(e) => updateProduct({ should_show_sales_count: e.target.checked })}
+                    checked={product.hide_sold_out_variants}
+                    onChange={(e) => updateProduct({ hide_sold_out_variants: e.target.checked })}
+                    label="Hide sold out versions"
+                  />
+                ) : null}
+                <Switch
+                  checked={product.should_show_sales_count}
+                  onChange={(e) => updateProduct({ should_show_sales_count: e.target.checked })}
+                  label={
+                    product.native_type === "membership"
+                      ? "Publicly show the number of members on your product page"
+                      : "Publicly show the number of sales on your product page"
+                  }
+                />
+                {product.native_type !== "physical" ? (
+                  <Switch
+                    checked={product.is_epublication}
+                    onChange={(e) => updateProduct({ is_epublication: e.target.checked })}
                     label={
-                      product.native_type === "membership"
-                        ? "Publicly show the number of members on your product page"
-                        : "Publicly show the number of sales on your product page"
+                      <>
+                        Mark product as e-publication for VAT purposes{" "}
+                        <a href="/help/article/10-dealing-with-vat" target="_blank" rel="noreferrer">
+                          Learn more
+                        </a>
+                      </>
                     }
                   />
-                  {product.native_type !== "physical" ? (
-                    <Switch
-                      checked={product.is_epublication}
-                      onChange={(e) => updateProduct({ is_epublication: e.target.checked })}
-                      label={
-                        <>
-                          Mark product as e-publication for VAT purposes{" "}
-                          <a href="/help/article/10-dealing-with-vat" target="_blank" rel="noreferrer">
-                            Learn more
-                          </a>
-                        </>
-                      }
-                    />
-                  ) : null}
-                  {!seller_refund_policy_enabled ? (
-                    <RefundPolicySelector
-                      refundPolicy={product.refund_policy}
-                      setRefundPolicy={(newValue) => updateProduct({ refund_policy: newValue })}
-                      refundPolicies={refundPolicies}
-                      isEnabled={product.product_refund_policy_enabled}
-                      setIsEnabled={(newValue) => updateProduct({ product_refund_policy_enabled: newValue })}
-                      setShowPreview={setShowRefundPolicyPreview}
-                    />
-                  ) : null}
-                  <Switch
-                    checked={product.require_shipping}
-                    onChange={(e) => updateProduct({ require_shipping: e.target.checked })}
-                    label="Require shipping information"
+                ) : null}
+                {!seller_refund_policy_enabled ? (
+                  <RefundPolicySelector
+                    refundPolicy={product.refund_policy}
+                    setRefundPolicy={(newValue) => updateProduct({ refund_policy: newValue })}
+                    refundPolicies={refundPolicies}
+                    isEnabled={product.product_refund_policy_enabled}
+                    setIsEnabled={(newValue) => updateProduct({ product_refund_policy_enabled: newValue })}
+                    setShowPreview={setShowRefundPolicyPreview}
+                  />
+                ) : null}
+                <Switch
+                  checked={product.require_shipping}
+                  onChange={(e) => updateProduct({ require_shipping: e.target.checked })}
+                  label="Require shipping information"
+                />
+              </fieldset>
+              {product.native_type === "membership" ? (
+                <fieldset>
+                  <legend>
+                    <label htmlFor={`${uid}-subscription-duration`}>Default payment frequency</label>
+                  </legend>
+                  <TypeSafeOptionSelect
+                    id={`${uid}-subscription-duration`}
+                    value={product.subscription_duration || "monthly"}
+                    onChange={(subscription_duration) => updateProduct({ subscription_duration })}
+                    options={recurrenceIds.map((recurrenceId) => ({
+                      id: recurrenceId,
+                      label: recurrenceLabels[recurrenceId],
+                    }))}
                   />
                 </fieldset>
-                {product.native_type === "membership" ? (
-                  <fieldset>
-                    <legend>
-                      <label htmlFor={`${uid}-subscription-duration`}>Default payment frequency</label>
-                    </legend>
-                    <TypeSafeOptionSelect
-                      id={`${uid}-subscription-duration`}
-                      value={product.subscription_duration || "monthly"}
-                      onChange={(subscription_duration) => updateProduct({ subscription_duration })}
-                      options={recurrenceIds.map((recurrenceId) => ({
-                        id: recurrenceId,
-                        label: recurrenceLabels[recurrenceId],
-                      }))}
-                    />
-                  </fieldset>
-                ) : null}
-                <CustomDomain
-                  verificationStatus={customDomainVerificationStatus}
-                  customDomain={product.custom_domain}
-                  setCustomDomain={(custom_domain) => updateProduct({ custom_domain })}
-                  label="Custom domain"
-                  productId={id}
-                  includeLearnMoreLink
-                />
-              </section>
-            </>
-          )}
-        </form>
-      </div>
+              ) : null}
+              <CustomDomain
+                verificationStatus={customDomainVerificationStatus}
+                customDomain={product.custom_domain}
+                setCustomDomain={(custom_domain) => updateProduct({ custom_domain })}
+                label="Custom domain"
+                productId={id}
+                includeLearnMoreLink
+              />
+            </section>
+          </>
+        )}
+      </form>
+    </div>
   );
 };

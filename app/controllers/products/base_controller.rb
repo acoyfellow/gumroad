@@ -32,6 +32,12 @@ class Products::BaseController < Sellers::BaseController
       end
     end
 
+    def unpublish_and_redirect_to(redirect_location)
+      @product.unpublish!
+      check_offer_codes_validity
+      redirect_to redirect_location, notice: "Unpublished!", status: :see_other
+    end
+
   private
     def set_product_edit_title
       set_meta_tag(title: @product.name)

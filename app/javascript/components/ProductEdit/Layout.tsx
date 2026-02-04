@@ -1,10 +1,9 @@
-import { Link, router, usePage } from "@inertiajs/react";
-import cx from "classnames";
+import { Link, usePage } from "@inertiajs/react";
 import * as React from "react";
 
 import { classNames } from "$app/utils/classNames";
 
-import { Button, NavigationButton } from "$app/components/Button";
+import { Button } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { useDomains } from "$app/components/DomainSettings";
@@ -14,13 +13,11 @@ import { PreviewSidebar, WithPreviewSidebar } from "$app/components/PreviewSideb
 import { useImageUploadSettings } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
 import { SubtitleFile } from "$app/components/SubtitleList/Row";
-import { Alert } from "$app/components/ui/Alert";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
-import { useRefToLatest } from "$app/components/useRefToLatest";
-import { WithTooltip } from "$app/components/WithTooltip";
+import { useDropbox } from "$app/components/useDropbox";
 
-import { FileEntry, useProductEditContext } from "./state";
+import { FileEntry, PublicFileWithStatus, useProductEditContext } from "./state";
 
 export const useProductUrl = (params = {}) => {
   const { product, uniquePermalink } = useProductEditContext();
@@ -34,182 +31,75 @@ export const useProductUrl = (params = {}) => {
       });
 };
 
-const NotifyAboutProductUpdatesAlert = () => {
-  const { uniquePermalink, contentUpdates, setContentUpdates } = useProductEditContext();
-  const timerRef = React.useRef<number | null>(null);
-  const isVisible = !!contentUpdates;
-
-  const clearTimer = () => {
-    if (timerRef.current !== null) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+const useCurrentTab = (): "product" | "content" | "receipt" | "share" => {
+  const componentToTab: Record<string, "product" | "content" | "receipt" | "share"> = {
+    "Products/Product/Edit": "product",
+    "Products/Content/Edit": "content",
+    "Products/Receipt/Edit": "receipt",
+    "Products/Share/Edit": "share",
   };
+  return componentToTab[usePage().component] ?? "product";
+};
 
-  const startTimer = () => {
-    clearTimer();
-    timerRef.current = window.setTimeout(() => {
-      close();
-    }, 10_000);
-  };
-
-  const close = () => {
-    clearTimer();
-    setContentUpdates(null);
-  };
-
-  React.useEffect(() => {
-    if (isVisible) {
-      startTimer();
-    }
-
-    return clearTimer;
-  }, [isVisible]);
-
-  const handleMouseEnter = () => {
-    clearTimer();
-  };
-
-  const handleMouseLeave = () => {
-    startTimer();
-  };
-
-  return (
-    <div
-      className={cx("fixed top-4 right-1/2", isVisible ? "visible" : "invisible")}
-      style={{
-        transform: `translateX(50%) translateY(${isVisible ? 0 : "calc(-100% - var(--spacer-4))"})`,
-        transition: "all 0.3s ease-out 0.5s",
-        zIndex: "var(--z-index-tooltip)",
-        backgroundColor: "var(--body-bg)",
-      }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <Alert variant="info">
-        <div className="flex flex-col gap-4">
-          Changes saved! Would you like to notify your customers about those changes?
-          <div className="flex gap-2">
-            <Button color="primary" outline onClick={() => close()}>
-              Skip for now
-            </Button>
-            <NavigationButton
-              color="primary"
-              href={Routes.new_email_path({
-                template: "content_updates",
-                product: uniquePermalink,
-                bought: contentUpdates?.uniquePermalinkOrVariantIds ?? [],
-              })}
-              onClick={() => {
-                // NOTE: this is a workaround to make sure the alert closes after the tab is opened
-                // with correct URL params. Otherwise `bought` won't be set correctly.
-                setTimeout(() => close(), 100);
-              }}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Send notification
-            </NavigationButton>
-          </div>
-        </div>
-      </Alert>
-    </div>
-  );
+type LayoutProps = {
+  children: React.ReactNode;
+  name?: string;
+  preview?: React.ReactNode;
+  headerActions?: React.ReactNode;
+  previewScaleFactor?: number;
+  showBorder?: boolean;
+  isLoading?: boolean;
+  isSaving?: boolean;
+  isPublishing?: boolean;
+  isUnpublishing?: boolean;
+  isDirty?: boolean;
+  files?: FileEntry[];
+  publicFiles?: PublicFileWithStatus[];
+  onSave?: () => void;
+  onPublish?: () => void;
+  onUnpublish?: () => void;
+  onSaveAndContinue?: () => void;
+  onPreview?: () => void;
+  onBeforeNavigate?: (targetPath: string) => boolean;
 };
 
 export const Layout = ({
   children,
+  name = "Untitled",
   preview,
-  isLoading = false,
   headerActions,
   previewScaleFactor = 0.4,
   showBorder = true,
-  showNavigationButton = true,
-}: {
-  children: React.ReactNode;
-  preview?: React.ReactNode;
-  isLoading?: boolean;
-  headerActions?: React.ReactNode;
-  previewScaleFactor?: number;
-  showBorder?: boolean;
-  showNavigationButton?: boolean;
-}) => {
-  const { product, updateProduct, uniquePermalink, saving, save } = useProductEditContext();
-
+  isLoading = false,
+  isSaving = false,
+  isPublishing = false,
+  isUnpublishing = false,
+  isDirty = false,
+  files = [],
+  publicFiles = [],
+  onSave,
+  onPublish,
+  onUnpublish,
+  onSaveAndContinue,
+  onPreview,
+  onBeforeNavigate,
+}: LayoutProps) => {
+  const { product, uniquePermalink, dropboxAppKey } = useProductEditContext();
   const url = useProductUrl();
   const checkoutUrl = useProductUrl({ wanted: true });
 
-  const pageComponent = usePage().component;
-  const tab = React.useMemo(() => {
-    if (pageComponent === "Products/Content/Edit") return "content";
-    if (pageComponent === "Products/Receipt/Edit") return "receipt";
-    if (pageComponent === "Products/Share/Edit") return "share";
-    return "product";
-  }, [pageComponent]);
-
-  const navigate = useRefToLatest((url: string) => {
-    router.get(url);
-  });
-
-  const [isPublishing, setIsPublishing] = React.useState(false);
-  const setPublished = async (published: boolean) => {
-    setIsPublishing(true);
-    if (published) {
-      try {
-        await save();
-      } catch {
-        setIsPublishing(false);
-        return;
-      }
-    }
-
-    if (published) {
-      router.post(Routes.publish_link_path(uniquePermalink), {}, {
-        preserveScroll: true,
-        onSuccess: () => updateProduct({ is_published: true }),
-        onFinish: () => setIsPublishing(false),
-      });
-    } else {
-      // Unpublish: use current tab's update URL with unpublish (like bundles)
-      if (tab === "product" || tab === "content" || tab === "share") {
-        const unpublishUrl =
-          tab === "product"
-            ? Routes.product_product_path(uniquePermalink)
-            : tab === "content"
-              ? Routes.product_content_path(uniquePermalink)
-              : Routes.product_share_path(uniquePermalink);
-        router.visit(unpublishUrl, {
-          method: "patch",
-          data: { unpublish: true },
-          preserveScroll: true,
-          onSuccess: () => updateProduct({ is_published: false }),
-          onFinish: () => setIsPublishing(false),
-        });
-      } else {
-        router.post(Routes.unpublish_link_path(uniquePermalink), {}, {
-          preserveScroll: true,
-          onSuccess: () => updateProduct({ is_published: false }),
-          onFinish: () => setIsPublishing(false),
-        });
-      }
-    }
-  };
+  const tab = useCurrentTab();
 
   const isUploadingFile = (file: FileEntry | SubtitleFile) =>
     file.status.type === "unsaved" && file.status.uploadStatus.type === "uploading";
   const isUploadingFiles =
-    product.public_files.some((f) => f.status?.type === "unsaved" && f.status.uploadStatus.type === "uploading") ||
-    product.files.some((file) => isUploadingFile(file) || file.subtitle_files.some(isUploadingFile));
+    publicFiles.some((f) => f.status?.type === "unsaved" && f.status.uploadStatus.type === "uploading") ||
+    files.some((file) => isUploadingFile(file) || file.subtitle_files.some(isUploadingFile));
   const imageSettings = useImageUploadSettings();
   const isUploadingFilesOrImages = isLoading || isUploadingFiles || !!imageSettings?.isUploading;
-  const isBusy = isUploadingFilesOrImages || saving || isPublishing;
-  const saveButtonTooltip = isUploadingFiles
-    ? "Files are still uploading..."
-    : isUploadingFilesOrImages
-      ? "Images are still uploading..."
-      : isBusy
-        ? "Please wait..."
-        : undefined;
+  const isBusy = isUploadingFilesOrImages || isSaving;
+
+  useDropbox(dropboxAppKey);
 
   React.useEffect(() => {
     if (!isUploadingFilesOrImages) return;
@@ -221,78 +111,73 @@ export const Layout = ({
     return () => window.removeEventListener("beforeunload", beforeUnload);
   }, [isUploadingFilesOrImages]);
 
-  const saveButton = (
-    <WithTooltip tip={saveButtonTooltip}>
-      <Button color="primary" disabled={isBusy} onClick={() => void save()}>
-        {saving ? "Saving changes..." : "Save changes"}
-      </Button>
-    </WithTooltip>
-  );
-
-  const onTabClick = (e: React.MouseEvent<Element>, callback?: () => void) => {
-    const message = isUploadingFiles
-      ? "Some files are still uploading, please wait..."
-      : isUploadingFilesOrImages
-        ? "Some images are still uploading, please wait..."
-        : undefined;
-
-    if (message) {
+  const handleTabClick = (e: React.MouseEvent, targetUrl: string) => {
+    if (isUploadingFiles) {
       e.preventDefault();
-      showAlert(message, "warning");
+      showAlert("Some files are still uploading, please wait...", "warning");
       return;
     }
 
-    callback?.();
+    if (isUploadingFilesOrImages) {
+      e.preventDefault();
+      showAlert("Some images are still uploading, please wait...", "warning");
+      return;
+    }
+
+    if (isDirty && onBeforeNavigate?.(targetUrl)) {
+      e.preventDefault();
+    }
   };
 
   const isCoffee = product.native_type === "coffee";
 
+  const saveButton = onSave ? (
+    <Button color="primary" disabled={isBusy} onClick={onSave}>
+      {isSaving ? "Saving changes..." : "Save changes"}
+    </Button>
+  ) : null;
+
+  const actions = product.is_published ? (
+    <>
+      {onUnpublish ? (
+        <Button disabled={isBusy} onClick={onUnpublish}>
+          {isUnpublishing ? "Unpublishing..." : "Unpublish"}
+        </Button>
+      ) : null}
+      {saveButton}
+      <CopyToClipboard text={url} copyTooltip="Copy product URL">
+        <Button>
+          <Icon name="link" />
+        </Button>
+      </CopyToClipboard>
+      <CopyToClipboard text={checkoutUrl} copyTooltip="Copy checkout URL" tooltipPosition="left">
+        <Button>
+          <Icon name="cart-plus" />
+        </Button>
+      </CopyToClipboard>
+    </>
+  ) : tab === "product" && !isCoffee ? (
+    onSaveAndContinue ? (
+      <Button color="primary" disabled={isBusy} onClick={onSaveAndContinue}>
+        {isSaving ? "Saving changes..." : "Save and continue"}
+      </Button>
+    ) : null
+  ) : (
+    <>
+      {saveButton}
+      {onPublish ? (
+        <Button color="accent" disabled={isBusy} onClick={onPublish}>
+          {isPublishing ? "Publishing..." : "Publish and continue"}
+        </Button>
+      ) : null}
+    </>
+  );
+
   return (
     <>
-      <NotifyAboutProductUpdatesAlert />
       {/* TODO: remove this legacy uploader stuff */}
       <form hidden data-id={uniquePermalink} id="edit-link-basic-form" />
-      <PageHeader
-        className="sticky-top"
-        title={product.name || "Untitled"}
-        actions={
-          product.is_published ? (
-            <>
-              <Button disabled={isBusy} onClick={() => void setPublished(false)}>
-                {isPublishing ? "Unpublishing..." : "Unpublish"}
-              </Button>
-              {saveButton}
-              <CopyToClipboard text={url} copyTooltip="Copy product URL">
-                <Button>
-                  <Icon name="link" />
-                </Button>
-              </CopyToClipboard>
-              <CopyToClipboard text={checkoutUrl} copyTooltip="Copy checkout URL" tooltipPosition="left">
-                <Button>
-                  <Icon name="cart-plus" />
-                </Button>
-              </CopyToClipboard>
-            </>
-          ) : tab === "product" && !isCoffee ? (
-            <Button
-              color="primary"
-              disabled={isBusy}
-              onClick={() => void save().then(() => navigate.current(Routes.edit_product_content_path(uniquePermalink)))}
-            >
-              {saving ? "Saving changes..." : "Save and continue"}
-            </Button>
-          ) : (
-            <>
-              {saveButton}
-              <WithTooltip tip={saveButtonTooltip}>
-                <Button color="accent" disabled={isBusy} onClick={() => void setPublished(true)}>
-                  {isPublishing ? "Publishing..." : "Publish and continue"}
-                </Button>
-              </WithTooltip>
-            </>
-          )
-        }
-      >
+      <PageHeader className="sticky-top" title={name || "Untitled"} actions={actions}>
         <div
           className={classNames(
             "flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between",
@@ -301,24 +186,40 @@ export const Layout = ({
         >
           <Tabs style={{ gridColumn: 1 }}>
             <Tab asChild isSelected={tab === "product"}>
-              <Link href={Routes.edit_product_product_path(uniquePermalink)} onClick={onTabClick}>
+              <Link
+                href={Routes.edit_product_product_path(uniquePermalink)}
+                onClick={(e) => handleTabClick(e, Routes.edit_product_product_path(uniquePermalink))}
+                preserveScroll
+              >
                 Product
               </Link>
             </Tab>
             {!isCoffee ? (
               <Tab asChild isSelected={tab === "content"}>
-                <Link href={Routes.edit_product_content_path(uniquePermalink)} onClick={onTabClick}>
+                <Link
+                  href={Routes.edit_product_content_path(uniquePermalink)}
+                  onClick={(e) => handleTabClick(e, Routes.edit_product_content_path(uniquePermalink))}
+                  preserveScroll
+                >
                   Content
                 </Link>
               </Tab>
             ) : null}
             <Tab asChild isSelected={tab === "receipt"}>
-              <Link href={Routes.edit_product_receipt_path(uniquePermalink)} onClick={onTabClick}>
+              <Link
+                href={Routes.edit_product_receipt_path(uniquePermalink)}
+                onClick={(e) => handleTabClick(e, Routes.edit_product_receipt_path(uniquePermalink))}
+                preserveScroll
+              >
                 Receipt
               </Link>
             </Tab>
             <Tab asChild isSelected={tab === "share"}>
-              <Link href={Routes.edit_product_share_path(uniquePermalink)} onClick={onTabClick}>
+              <Link
+                href={Routes.edit_product_share_path(uniquePermalink)}
+                onClick={(e) => handleTabClick(e, Routes.edit_product_share_path(uniquePermalink))}
+                preserveScroll
+              >
                 Share
               </Link>
             </Tab>
@@ -330,18 +231,8 @@ export const Layout = ({
         <WithPreviewSidebar className="flex-1">
           {children}
           <PreviewSidebar
-            {...(showNavigationButton && {
-              previewLink: (props) => (
-                <NavigationButton
-                  {...props}
-                  disabled={isBusy}
-                  href={url}
-                  onClick={(evt) => {
-                    evt.preventDefault();
-                    void save().then(() => window.open(url, "_blank"));
-                  }}
-                />
-              ),
+            {...(onPreview && {
+              previewLink: (props) => <Button {...props} onClick={onPreview} disabled={isBusy} />,
             })}
           >
             <Preview

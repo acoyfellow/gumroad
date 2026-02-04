@@ -23,7 +23,12 @@ import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
 import { useProductUrl } from "$app/components/ProductEdit/Layout";
-import { RecurrencePriceValue, Tier, useProductEditContext } from "$app/components/ProductEdit/state";
+import {
+  RecurrencePriceValue,
+  Tier,
+  useProductEditContext,
+  useProductFormContext,
+} from "$app/components/ProductEdit/state";
 import { RichTextEditor } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
@@ -142,7 +147,7 @@ const TierEditor = ({
   onDelete: () => void;
 }) => {
   const uid = React.useId();
-  const { product, currencyType } = useProductEditContext();
+  const { product, currencyType } = useProductFormContext();
 
   const [isOpen, setIsOpen] = React.useState(true);
 
@@ -380,7 +385,8 @@ const PriceChangeSettings = ({ tier, updateTier }: { tier: Tier; updateTier: (up
   const [isMounted, setIsMounted] = React.useState(false);
   useRunOnce(() => setIsMounted(true));
 
-  const { product, uniquePermalink, currencyType, earliestMembershipPriceChangeDate } = useProductEditContext();
+  const { uniquePermalink, earliestMembershipPriceChangeDate } = useProductEditContext();
+  const { product, currencyType } = useProductFormContext();
 
   const [effectiveDate, setEffectiveDate] = React.useState<{ value: Date; error?: boolean }>({
     value: tier.subscription_price_change_effective_date

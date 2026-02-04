@@ -3,7 +3,7 @@ import * as React from "react";
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { PriceInput } from "$app/components/PriceInput";
-import { Version, useProductEditContext } from "$app/components/ProductEdit/state";
+import { Version, useProductFormContext } from "$app/components/ProductEdit/state";
 
 let newVersionId = 0;
 
@@ -80,7 +80,7 @@ const SuggestedAmountEditor = ({
   label: string;
   onBlur: () => void;
 }) => {
-  const { currencyType } = useProductEditContext();
+  const { currencyType } = useProductFormContext();
 
   return (
     <section className="flex gap-2">
