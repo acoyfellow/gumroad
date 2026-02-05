@@ -31,7 +31,7 @@ import { FileKindIcon } from "$app/components/FileRowContent";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { Modal } from "$app/components/Modal";
-import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "$app/components/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { FileEmbed, FileEmbedConfig, getDownloadUrl } from "$app/components/ProductEdit/ContentTab/FileEmbed";
 import { FileEmbedGroup } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
 import { Page, PageTab, titleWithFallback } from "$app/components/ProductEdit/ContentTab/PageTab";
@@ -597,39 +597,31 @@ const ContentTabContent = ({
                 <LinkMenuItem editor={editor} />
                 <PopoverMenuItem name="Upload files" icon="upload-fill">
                   <div role="menu" aria-label="Image and file uploader">
-                    <PopoverClose asChild>
-                      <div role="menuitem" onClick={() => setShowEmbedModal(true)}>
-                        <Icon name="media" />
-                        <span>Embed media</span>
-                      </div>
-                    </PopoverClose>
-                    <PopoverClose asChild>
-                      <label role="menuitem">
-                        <input type="file" name="file" multiple onChange={(e) => uploadFileInput(e.target)} />
-                        <Icon name="paperclip" />
-                        <span>Computer files</span>
-                      </label>
-                    </PopoverClose>
+                    <div role="menuitem" onClick={() => setShowEmbedModal(true)}>
+                      <Icon name="media" />
+                      <span>Embed media</span>
+                    </div>
+                    <label role="menuitem">
+                      <input type="file" name="file" multiple onChange={(e) => uploadFileInput(e.target)} />
+                      <Icon name="paperclip" />
+                      <span>Computer files</span>
+                    </label>
                     {existingFiles.length > 0 ? (
-                      <PopoverClose asChild>
-                        <div
-                          role="menuitem"
-                          onClick={() => {
-                            setSelectingExistingFiles({ selected: [], query: "", isLoading: true });
-                            void fetchLatestExistingFiles();
-                          }}
-                        >
-                          <Icon name="files-earmark" />
-                          <span>Existing product files</span>
-                        </div>
-                      </PopoverClose>
-                    ) : null}
-                    <PopoverClose asChild>
-                      <div role="menuitem" onClick={uploadFromDropbox}>
-                        <Icon name="dropbox" />
-                        <span>Dropbox files</span>
+                      <div
+                        role="menuitem"
+                        onClick={() => {
+                          setSelectingExistingFiles({ selected: [], query: "", isLoading: true });
+                          void fetchLatestExistingFiles();
+                        }}
+                      >
+                        <Icon name="files-earmark" />
+                        <span>Existing product files</span>
                       </div>
-                    </PopoverClose>
+                    ) : null}
+                    <div role="menuitem" onClick={uploadFromDropbox}>
+                      <Icon name="dropbox" />
+                      <span>Dropbox files</span>
+                    </div>
                   </div>
                 </PopoverMenuItem>
                 {selectingExistingFiles ? (
@@ -708,7 +700,7 @@ const ContentTabContent = ({
                   <p>Paste a video link or upload images or videos.</p>
                   <Tabs variant="buttons">
                     <Tab isSelected aria-controls={`${uid}-embed-tab`} asChild>
-                      <button type="button" className="cursor-pointer">
+                      <button type="button">
                         <Icon name="link" />
                         <h4>Embed link</h4>
                       </button>
@@ -1246,10 +1238,10 @@ export default function ContentPage() {
   };
 
   return (
-    <S3UploadConfigProvider value={s3UploadConfig}>
-      <EvaporateUploaderProvider value={evaporateUploader}>
-        <LicenseProvider value={licenseInfo}>
-          <PostsProvider value={postsContext}>
+    <PostsProvider value={postsContext}>
+      <LicenseProvider value={licenseInfo}>
+        <EvaporateUploaderProvider value={evaporateUploader}>
+          <S3UploadConfigProvider value={s3UploadConfig}>
             <Layout
               preview={
                 <ProductPreview
@@ -1361,33 +1353,33 @@ export default function ContentPage() {
                 id={id}
                 unique_permalink={unique_permalink}
               />
-              <Modal
-                open={confirmingDiscardVariantContent}
-                onClose={() => setConfirmingDiscardVariantContent(false)}
-                title="Discard content from other versions?"
-                footer={
-                  <>
-                    <Button onClick={() => setConfirmingDiscardVariantContent(false)}>No, cancel</Button>
-                    <Button
-                      color="danger"
-                      onClick={() => {
-                        setHasSameRichContent(true);
-                        setConfirmingDiscardVariantContent(false);
-                      }}
-                    >
-                      Yes, proceed
-                    </Button>
-                  </>
-                }
-              >
-                If you proceed, the content from all other versions of this product will be removed and replaced with
-                the content of "{titleWithFallback(selectedVariant?.name)}".
-                <strong>This action is irreversible.</strong>
-              </Modal>
             </Layout>
-          </PostsProvider>
-        </LicenseProvider>
-      </EvaporateUploaderProvider>
-    </S3UploadConfigProvider>
+            <Modal
+              open={confirmingDiscardVariantContent}
+              onClose={() => setConfirmingDiscardVariantContent(false)}
+              title="Discard content from other versions?"
+              footer={
+                <>
+                  <Button onClick={() => setConfirmingDiscardVariantContent(false)}>No, cancel</Button>
+                  <Button
+                    color="danger"
+                    onClick={() => {
+                      setHasSameRichContent(true);
+                      setConfirmingDiscardVariantContent(false);
+                    }}
+                  >
+                    Yes, proceed
+                  </Button>
+                </>
+              }
+            >
+              If you proceed, the content from all other versions of this product will be removed and replaced with the
+              content of "{titleWithFallback(selectedVariant?.name)}".
+              <strong>This action is irreversible.</strong>
+            </Modal>
+          </S3UploadConfigProvider>
+        </EvaporateUploaderProvider>
+      </LicenseProvider>
+    </PostsProvider>
   );
 }
