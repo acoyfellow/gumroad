@@ -301,19 +301,12 @@ const ContentTabContent = ({
     filesById,
   });
 
-  const filesByIdRef = useRefToLatest(filesById);
-  const fileEmbedConfig = useRefToLatest<FileEmbedConfig>({
-    get filesById() {
-      return filesByIdRef.current;
-    },
-  });
+  const fileEmbedConfig = useRefToLatest<FileEmbedConfig>({ filesById });
   const uploadFilesRef = useRefToLatest(uploadFiles);
-
   const contentEditorExtensions = extensions(id, [
     FileEmbedGroup.configure({ getConfig: () => fileEmbedGroupConfig.current }),
     FileEmbed.configure({ getConfig: () => fileEmbedConfig.current }),
   ]);
-
   const editor = useRichTextEditor({
     ariaLabel: "Content editor",
     placeholder: "Enter the content you want to sell. Upload your files or start typing.",
@@ -1172,7 +1165,6 @@ export default function ContentPage() {
     return true;
   };
 
-  // Restrict updates to keys we actually set from ContentTabContent, with overloads for sound typing
   const updateProductKV: UpdateProductKV = (key, value) => {
     const setters: { [K in UpdateProductKey]: (val: ProductType[K]) => void } = {
       files: (val) => form.setData("files", val),
@@ -1382,4 +1374,4 @@ export default function ContentPage() {
       </LicenseProvider>
     </PostsProvider>
   );
-}
+};
