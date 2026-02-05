@@ -340,7 +340,9 @@ export const ContentTabContent = ({
         node.remove();
       }
     });
-    onUpdateFiles((prev) => [...prev.filter((f) => !newFiles.includes(f)), ...newFiles]);
+    if (newFiles.length > 0) {
+      onUpdateFiles((prev) => [...prev.filter((f) => !newFiles.includes(f)), ...newFiles]);
+    }
     const description = generateJSON(
       new XMLSerializer().serializeToString(fragment),
       baseEditorOptions(contentEditorExtensions).extensions,

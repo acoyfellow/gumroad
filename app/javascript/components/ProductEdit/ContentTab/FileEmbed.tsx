@@ -212,6 +212,9 @@ const FileEmbedNodeView = ({
     deleteNode();
     uploader.cancelUpload(`file_${file.id}`);
     if (file.status.type === "dropbox") void cancelDropboxFileUpload(file.id);
+    updateProduct((product) => {
+      product.files = product.files.filter((f) => f.id !== file.id);
+    });
   };
 
   const setDragOver = (value: boolean) => {
