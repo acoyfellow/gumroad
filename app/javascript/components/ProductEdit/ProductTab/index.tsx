@@ -33,7 +33,13 @@ import { ThumbnailEditor } from "$app/components/ProductEdit/ProductTab/Thumbnai
 import { TiersEditor } from "$app/components/ProductEdit/ProductTab/TiersEditor";
 import { VersionsEditor } from "$app/components/ProductEdit/ProductTab/VersionsEditor";
 import { RefundPolicySelector } from "$app/components/ProductEdit/RefundPolicy";
-import { useProductEditContext, useProductFormContext } from "$app/components/ProductEdit/state";
+import {
+  useProductEditContext,
+  useProductFormContext,
+  isCallProduct,
+  isMembershipProduct,
+  isVersionProduct,
+} from "$app/components/ProductEdit/state";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { TypeSafeOptionSelect } from "$app/components/TypeSafeOptionSelect";
 import { Alert } from "$app/components/ui/Alert";
@@ -145,7 +151,7 @@ export const ProductTab = () => {
             </>
           )}
         </section>
-        {isCoffee ? (
+        {isCoffee && isVersionProduct(product) ? (
           <>
             <section className="p-4! md:p-8!">
               <h2>Pricing</h2>
@@ -248,7 +254,7 @@ export const ProductTab = () => {
                 ) : null}
               </fieldset>
             </section>
-            {product.native_type === "membership" ? (
+            {isMembershipProduct(product) ? (
               <section className="p-4! md:p-8!">
                 <h2>Tiers</h2>
                 <TiersEditor tiers={product.variants} onChange={(variants) => updateProduct({ variants })} />
@@ -300,7 +306,7 @@ export const ProductTab = () => {
                     </p>
                   ) : null}
                 </section>
-                {product.native_type === "call" ? (
+                {isCallProduct(product) ? (
                   <>
                     <section className="p-4! md:p-8!">
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -335,7 +341,7 @@ export const ProductTab = () => {
                       </section>
                     ) : null}
                   </>
-                ) : (
+                ) : isVersionProduct(product) ? (
                   <section aria-label="Version editor" className="p-4! md:p-8!">
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <h2>{product.native_type === "physical" ? "Variants" : "Versions"}</h2>
@@ -349,7 +355,7 @@ export const ProductTab = () => {
                     </div>
                     <VersionsEditor versions={product.variants} onChange={(variants) => updateProduct({ variants })} />
                   </section>
-                )}
+                ) : null}
               </>
             )}
             {isPhysical ? (

@@ -73,7 +73,7 @@ describe("Product Edit custom permalink edit", type: :system, js: true) do
     end
 
     def visit_product_and_update_custom_permalink(product)
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_product_path(product.unique_permalink)
       custom_permalink_input.set("").set(@new_custom_permalink)
       save_change
     end

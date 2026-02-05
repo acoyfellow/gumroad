@@ -33,7 +33,7 @@ class Product::VariantCategoryUpdaterService
   end
 
   def perform
-    if category_params[:id].present?
+    if category_params[:id].present? && VariantCategory.external_id?(category_params[:id])
       self.variant_category = variant_categories.find_by_external_id(category_params[:id])
       variant_category.update(title: category_params[:title])
     else
@@ -86,7 +86,7 @@ class Product::VariantCategoryUpdaterService
 
   private
     def create_or_update_variant!(external_id, params)
-      return Variant.create!(params.slice(*ALLOWED_ATTRIBUTES)) if external_id.blank?
+      return Variant.create!(params.slice(*ALLOWED_ATTRIBUTES)) if external_id.blank? || !Variant.external_id?(external_id)
 
       variant = product.variants.find_by_external_id!(external_id)
       variant.assign_attributes(params.slice(*ALLOWED_ATTRIBUTES))

@@ -7,7 +7,7 @@ require "shared_examples/collaborator_access"
 require "shared_examples/with_sorting_and_pagination"
 require "inertia_rails/rspec"
 
-def e404_test(action)
+shared_examples "404s when link isn't found" do |action|
   it "404s when link isn't found" do
     expect { get action, params: { id: "NOT real" } }.to raise_error(ActionController::RoutingError)
   end
@@ -33,163 +33,22 @@ describe LinksController, :vcr, inertia: true do
         expect(inertia).to render_component("Products/Index")
         expect(inertia.props).to include(
           :archived_products_count,
-          :can_create_product,
-          :products_data,
-          :memberships_data
+          :can_create_product
         )
-        expect(inertia.props[:products_data]).to include(:products, :pagination, :sort)
-        expect(inertia.props[:memberships_data]).to include(:memberships, :pagination, :sort)
+        expect(inertia.props).not_to include(:products_data, :memberships_data)
+
+        request.headers["X-Inertia"] = "true"
+        request.headers["X-Inertia-Partial-Data"] = "products_data,memberships_data"
+        request.headers["X-Inertia-Partial-Component"] = "Products/Index"
+        get :index
+
+        expect(inertia.props["products_data"]).to include("products", "pagination", "sort")
+        expect(inertia.props["memberships_data"]).to include("memberships", "pagination", "sort")
       end
     end
 
-    %w[unpublish publish destroy].each do |action|
-      describe "##{action}" do
-        e404_test(action.to_sym)
-      end
-    end
-
-    describe "POST publish" do
-      before do
-        @disabled_link = create(:physical_product, purchase_disabled_at: Time.current, user: seller)
-      end
-
-      it_behaves_like "authorize called for action", :post, :publish do
-        let(:record) { @disabled_link }
-        let(:request_params) { { id: @disabled_link.unique_permalink } }
-      end
-
-      it_behaves_like "collaborator can access", :post, :publish do
-        let(:product) { @disabled_link }
-        let(:request_params) { { id: @disabled_link.unique_permalink } }
-        let(:response_attributes) { { "success" => true } }
-      end
-
-      it "enables a disabled link" do
-        post :publish, params: { id: @disabled_link.unique_permalink }
-
-        expect(response.parsed_body["success"]).to eq(true)
-        expect(@disabled_link.reload.purchase_disabled_at).to be_nil
-      end
-
-      context "with Inertia request" do
-        before do
-          request.headers["X-Inertia"] = "true"
-        end
-
-        it "publishes and redirects with flash notice" do
-          post :publish, params: { id: @disabled_link.unique_permalink }
-
-          expect(response).to redirect_to(edit_product_share_path(@disabled_link.unique_permalink))
-          expect(flash[:notice]).to eq("Published!")
-          expect(@disabled_link.reload.purchase_disabled_at).to be_nil
-        end
-
-        it "sets flash alert when publish fails" do
-          allow_any_instance_of(Link).to receive(:publishable?) { false }
-
-          post :publish, params: { id: @disabled_link.unique_permalink }
-
-          expect(response).to redirect_to(edit_product_product_path(@disabled_link.unique_permalink))
-          expect(flash[:alert]).to be_present
-          expect(@disabled_link.reload.purchase_disabled_at).to be_present
-        end
-      end
-
-      context "when link is not publishable" do
-        before do
-          allow_any_instance_of(Link).to receive(:publishable?) { false }
-        end
-
-        it "returns an error message" do
-          post :publish, params: { id: @disabled_link.unique_permalink }
-
-          expect(response.parsed_body["error_message"]).to eq("You must connect at least one payment method before you can publish this product for sale.")
-        end
-
-        it "does not publish the link" do
-          post :publish, params: { id: @disabled_link.unique_permalink }
-
-          expect(response.parsed_body["success"]).to eq(false)
-          expect(@disabled_link.reload.purchase_disabled_at).to be_present
-        end
-      end
-
-      context "when user email is not confirmed" do
-        before do
-          seller.update!(confirmed_at: nil)
-          @unpublished_product = create(:physical_product, purchase_disabled_at: Time.current, user: seller)
-        end
-
-        it "returns an error message" do
-          post :publish, params: { id: @unpublished_product.unique_permalink }
-          expect(response.parsed_body["error_message"]).to eq("You have to confirm your email address before you can do that.")
-        end
-
-        it "does not publish the link" do
-          post :publish, params: { id: @unpublished_product.unique_permalink }
-
-          expect(response.parsed_body["success"]).to eq(false)
-          expect(@unpublished_product.reload.purchase_disabled_at).to be_present
-        end
-      end
-
-      context "when an unknown exception is raised" do
-        before do
-          allow_any_instance_of(Link).to receive(:publish!).and_raise("error")
-        end
-
-        it "sends a Bugsnag notification" do
-          expect(Bugsnag).to receive(:notify).once
-
-          post :publish, params: { id: @disabled_link.unique_permalink }
-        end
-
-        it "returns an error message" do
-          post :publish, params: { id: @disabled_link.unique_permalink }
-
-          expect(response.parsed_body["error_message"]).to eq("Something broke. We're looking into what happened. Sorry about this!")
-        end
-
-        it "does not publish the link" do
-          post :publish, params: { id: @disabled_link.unique_permalink }
-
-          expect(response.parsed_body["success"]).to eq(false)
-          expect(@disabled_link.reload.purchase_disabled_at).to be_present
-        end
-      end
-    end
-
-    describe "POST unpublish" do
-      it_behaves_like "collaborator can access", :post, :unpublish do
-        let(:product) { create(:product, user: seller) }
-        let(:request_params) { { id: product.unique_permalink } }
-        let(:response_attributes) { { "success" => true } }
-      end
-
-      it "unpublishes a published link" do
-        product = create(:product, user: seller)
-
-        post :unpublish, params: { id: product.unique_permalink }
-
-        expect(response.parsed_body["success"]).to eq(true)
-        expect(product.reload.purchase_disabled_at).to be_present
-      end
-
-      context "with Inertia request" do
-        before do
-          request.headers["X-Inertia"] = "true"
-        end
-
-        it "unpublishes and redirects with flash notice" do
-          product = create(:product, user: seller)
-
-          post :unpublish, params: { id: product.unique_permalink }
-
-          expect(response).to redirect_to(edit_product_product_path(product.unique_permalink))
-          expect(flash[:notice]).to eq("Unpublished!")
-          expect(product.reload.purchase_disabled_at).to be_present
-        end
-      end
+    describe "#destroy" do
+      it_behaves_like "404s when link isn't found", :destroy
     end
 
     describe "PUT sections" do
@@ -312,7 +171,7 @@ describe LinksController, :vcr, inertia: true do
       it "creates link with display_product_reviews set to true" do
         params = { price_cents: 100, name: "test link" }
         post :create, params: { link: params }
-        expect(response).to redirect_to(edit_link_path(Link.last))
+        expect(response).to redirect_to(edit_product_product_path(Link.last))
         link = seller.links.last
         expect(link.display_product_reviews).to be(true)
       end
@@ -320,7 +179,7 @@ describe LinksController, :vcr, inertia: true do
       it "ignores is_in_preorder_state param" do
         params = { price_cents: 100, name: "preorder", is_in_preorder_state: true, release_at: 1.year.from_now.iso8601 }
         post :create, params: { link: params }
-        expect(response).to redirect_to(edit_link_path(Link.last))
+        expect(response).to redirect_to(edit_product_product_path(Link.last))
         link = seller.links.last
         expect(link.name).to eq "preorder"
         expect(link.price_cents).to eq 100
@@ -330,7 +189,7 @@ describe LinksController, :vcr, inertia: true do
       it "is able to set currency type" do
         params = { price_cents: 100, name: "test link", url: @s3_url, price_currency_type: "jpy" }
         post :create, params: { link: params }
-        expect(response).to redirect_to(edit_link_path(Link.last))
+        expect(response).to redirect_to(edit_product_product_path(Link.last))
         expect(Link.last.price_currency_type).to eq "jpy"
       end
 
@@ -342,14 +201,14 @@ describe LinksController, :vcr, inertia: true do
       it "assigns 'other' taxonomy" do
         params = { price_cents: 100, name: "test link" }
         post :create, params: { link: params }
-        expect(response).to redirect_to(edit_link_path(Link.last))
+        expect(response).to redirect_to(edit_product_product_path(Link.last))
         expect(Link.last.taxonomy).to eq(Taxonomy.find_by(slug: "other"))
       end
 
       context "when the product's native type is bundle" do
         it "sets is_bundle to true" do
           post :create, params: { link: { price_cents: 100, name: "Bundle", native_type: "bundle" } }
-          expect(response).to redirect_to(edit_link_path(Link.last))
+          expect(response).to redirect_to(edit_product_product_path(Link.last))
 
           product = Link.last
           expect(product.native_type).to eq("bundle")
@@ -362,7 +221,7 @@ describe LinksController, :vcr, inertia: true do
 
         it "sets custom_button_text_option to 'donate_prompt'" do
           post :create, params: { link: { price_cents: 100, name: "Coffee", native_type: "coffee" } }
-          expect(response).to redirect_to(edit_link_path(Link.last))
+          expect(response).to redirect_to(edit_product_product_path(Link.last))
 
           product = Link.last
           expect(product.native_type).to eq("coffee")
@@ -428,7 +287,7 @@ describe LinksController, :vcr, inertia: true do
 
           it "allows users to create physical products" do
             post :create, params: { link: @params }
-            expect(response).to redirect_to(edit_link_path(Link.last))
+            expect(response).to redirect_to(edit_product_product_path(Link.last))
             product = Link.last
             expect(product.is_physical).to be(true)
             expect(product.skus_enabled).to be(false)
@@ -454,7 +313,7 @@ describe LinksController, :vcr, inertia: true do
 
             post :create, params: { link: params }
 
-            expect(response).to redirect_to(edit_link_path(Link.last))
+            expect(response).to redirect_to(edit_product_product_path(Link.last))
             product = seller.links.last
             expect(product.community_chat_enabled?).to be(false)
             expect(product.active_community).to be_nil
@@ -471,7 +330,7 @@ describe LinksController, :vcr, inertia: true do
 
             post :create, params: { link: params }
 
-            expect(response).to redirect_to(edit_link_path(Link.last))
+            expect(response).to redirect_to(edit_product_product_path(Link.last))
             product = seller.links.last
             expect(product.community_chat_enabled?).to be(false)
             expect(product.active_community).to be_nil
@@ -514,7 +373,7 @@ describe LinksController, :vcr, inertia: true do
 
           expect(service_double).to have_received(:generate_cover_image)
           expect(service_double).to have_received(:generate_rich_content_pages)
-          expect(response).to redirect_to(edit_link_path(Link.last, ai_generated: true))
+          expect(response).to redirect_to(edit_product_product_path(Link.last, ai_generated: true))
 
           link = Link.last
           expect(link.name).to eq("UX design mastery using Figma")
@@ -633,20 +492,6 @@ describe LinksController, :vcr, inertia: true do
         )
       end
     end
-
-    it "allows updating and publishing a product without files" do
-      product = create(:product, user: seller, purchase_disabled_at: Time.current)
-
-      expect do
-        post :update, params: { id: product.unique_permalink, name: "Test" }, format: :json
-      end.to change { product.reload.name }.from(product.name).to("Test")
-
-      expect do
-        post :publish, params: { id: product.unique_permalink }
-      end.to change { product.reload.purchase_disabled_at }.to(nil)
-      expect(response.parsed_body["success"]).to eq(true)
-      expect(product.alive_product_files.count).to eq(0)
-    end
   end
 
   context "within consumer area" do
@@ -656,21 +501,24 @@ describe LinksController, :vcr, inertia: true do
     let(:product) { create(:product, user: @user) }
 
     describe "GET show" do
-      e404_test(:show)
+      it_behaves_like "404s when link isn't found", :show
+
+      shared_examples "renders when attribute is nil" do |attribute|
+        it "renders when #{attribute} is nil" do
+          Rails.cache.clear
+          link = create(:product, user: @user, attribute => nil)
+          get :show, params: { id: link.to_param }
+          expect(response).to be_successful
+        end
+      end
 
       before do
         @user = create(:user, :eligible_for_service_products)
         @request.host = URI.parse(@user.subdomain_with_protocol).host
       end
 
-      %w[preview_url description].each do |w|
-        it "renders when no #{w}" do
-          Rails.cache.clear
-          link = create(:product, user: @user, w => nil)
-          get :show, params: { id: link.to_param }
-          expect(response).to be_successful
-        end
-      end
+      it_behaves_like "renders when attribute is nil", :preview_url
+      it_behaves_like "renders when attribute is nil", :description
 
       describe "wanted=true parameter" do
         it "passes pay_in_installments parameter to checkout when wanted=true" do

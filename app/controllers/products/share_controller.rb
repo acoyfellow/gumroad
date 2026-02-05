@@ -26,7 +26,10 @@ class Products::ShareController < Products::BaseController
     end
   rescue ActiveRecord::RecordNotSaved, ActiveRecord::RecordInvalid, Link::LinkInvalid => e
     error_message = @product.errors.full_messages.first || e.message
-    redirect_to edit_product_share_path(@product.unique_permalink), alert: error_message, status: :see_other
+    redirect_to edit_product_share_path(@product.unique_permalink), alert: error_message
+  rescue StandardError => e
+    Bugsnag.notify(e)
+    redirect_to edit_product_share_path(@product.unique_permalink), alert: "Something broke. We're looking into what happened. Sorry about this!"
   end
 
   private

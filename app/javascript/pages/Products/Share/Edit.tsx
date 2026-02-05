@@ -10,40 +10,31 @@ import { ShareTab } from "$app/components/ProductEdit/ShareTab";
 import {
   useProductEditContext,
   ProductFormContext,
-  type Product,
+  type ProductFormState,
   type ContentUpdates,
 } from "$app/components/ProductEdit/state";
 
-type ShareFormData = {
-  name: string;
-  custom_permalink: string | null;
-  section_ids: string[];
-  taxonomy_id: string | null;
-  tags: string[];
-  display_product_reviews: boolean;
-  is_adult: boolean;
-};
-
 function SharePage() {
-  const { product, uniquePermalink, currencyType: initialCurrencyType } = useProductEditContext();
+  const { product: initialProduct, uniquePermalink, currencyType: initialCurrencyType } = useProductEditContext();
   const url = useProductUrl();
   const updateUrl = Routes.product_share_path(uniquePermalink);
 
   const [currencyType, setCurrencyType] = React.useState<CurrencyCode>(initialCurrencyType);
   const [contentUpdates, setContentUpdates] = React.useState<ContentUpdates>(null);
 
-  const form = useForm<ShareFormData>({
-    name: product.name,
-    custom_permalink: product.custom_permalink,
-    section_ids: product.section_ids,
-    taxonomy_id: product.taxonomy_id,
-    tags: product.tags,
-    display_product_reviews: product.display_product_reviews,
-    is_adult: product.is_adult,
-  });
+  const form = useForm<ProductFormState>(initialProduct);
+
+  // Build product object for child components - merging initialProduct with form.data
+  const product: ProductFormState = React.useMemo(
+    () => ({
+      ...initialProduct,
+      ...form.data,
+    }),
+    [initialProduct, form.data],
+  );
 
   const updateProduct = React.useCallback(
-    (update: Partial<Product> | ((product: Product) => void)) => {
+    (update: Partial<ProductFormState> | ((product: ProductFormState) => void)) => {
       if (typeof update === "function") {
         // Share page doesn't need complex updates
       } else {

@@ -55,8 +55,10 @@ export const getDraggedFileEmbed = (editor: Editor) => {
 const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewProps) => {
   if (!node.attrs.id) return;
 
-  const { id, filesById } = useProductEditContext();
-  const { updateProduct } = useProductFormContext();
+  const { id } = useProductEditContext();
+  const { product, updateProduct } = useProductFormContext();
+  // Compute filesById from form state to include newly uploaded files
+  const filesById = React.useMemo(() => new Map(product.files.map((f) => [f.id, f])), [product.files]);
   const uid = React.useId();
   const ref = React.useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = React.useState(false);

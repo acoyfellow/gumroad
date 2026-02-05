@@ -31,7 +31,7 @@ class LinksController < ApplicationController
   before_action :prepare_product_page, only: %i[show]
   before_action :ensure_domain_belongs_to_seller, only: [:show]
   before_action :fetch_product_and_enforce_ownership, only: %i[destroy]
-  before_action :fetch_product_and_enforce_access, only: %i[publish unpublish release_preorder update_sections]
+  before_action :fetch_product_and_enforce_access, only: %i[release_preorder update_sections]
 
   layout "inertia", only: [:index, :new, :cart_items_count]
 
@@ -270,19 +270,6 @@ class LinksController < ApplicationController
     render json: { success: true }
   end
 
-  def unpublish
-    authorize @product
-
-    @product.unpublish!
-
-    if request.inertia?
-      flash[:notice] = "Unpublished!"
-      redirect_to product_edit_redirect_url
-    else
-      render json: { success: true }
-    end
-  end
-
   def publish
     authorize @product
 
@@ -344,6 +331,7 @@ class LinksController < ApplicationController
 
   def release_preorder
     authorize @product
+
 
     preorder_link = @product.preorder_link
     preorder_link.is_being_manually_released_by_the_seller = true

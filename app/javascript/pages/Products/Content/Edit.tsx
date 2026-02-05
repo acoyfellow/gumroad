@@ -1,5 +1,4 @@
 import { useForm } from "@inertiajs/react";
-import { produce } from "immer";
 import * as React from "react";
 
 import ProductEditLayout from "$app/layouts/ProductEditLayout";
@@ -7,21 +6,16 @@ import { CurrencyCode } from "$app/utils/currency";
 
 import { ContentTab, ContentTabHeaderActions } from "$app/components/ProductEdit/ContentTab";
 import { Layout, useProductUrl } from "$app/components/ProductEdit/Layout";
-import { useProductEditContext, ProductFormContext, Product, ContentUpdates } from "$app/components/ProductEdit/state";
-
-type ContentFormData = {
-  name: string;
-  custom_permalink: string | null;
-  rich_content: Product["rich_content"];
-  files: Product["files"];
-  has_same_rich_content_for_all_variants: boolean;
-  is_multiseat_license: boolean;
-  variants: Product["variants"];
-  public_files: Product["public_files"];
-};
+import {
+  useProductEditContext,
+  ProductFormContext,
+  ProductFormState,
+  ContentUpdates,
+  produceProductForm,
+} from "$app/components/ProductEdit/state";
 
 function ContentPage() {
-  const { product, uniquePermalink, currencyType: initialCurrencyType } = useProductEditContext();
+  const { product: initialProduct, uniquePermalink, currencyType: initialCurrencyType } = useProductEditContext();
   const url = useProductUrl();
   const updateUrl = Routes.product_content_path(uniquePermalink);
 
@@ -29,21 +23,32 @@ function ContentPage() {
   const [currencyType, setCurrencyType] = React.useState<CurrencyCode>(initialCurrencyType);
   const [contentUpdates, setContentUpdates] = React.useState<ContentUpdates>(null);
 
-  const form = useForm<ContentFormData>({
-    name: product.name,
-    custom_permalink: product.custom_permalink,
-    rich_content: product.rich_content,
-    files: product.files,
-    has_same_rich_content_for_all_variants: product.has_same_rich_content_for_all_variants,
-    is_multiseat_license: product.is_multiseat_license,
-    variants: product.variants,
-    public_files: product.public_files,
-  });
+  const form = useForm<ProductFormState>(initialProduct);
+
+  // Initialize selectedVariantId to the first variant when product has per-variant content
+  React.useLayoutEffect(() => {
+    if (
+      !form.data.has_same_rich_content_for_all_variants &&
+      selectedVariantId === null &&
+      form.data.variants.length > 0
+    ) {
+      setSelectedVariantId(form.data.variants[0]?.id ?? null);
+    }
+  }, [form.data.has_same_rich_content_for_all_variants, selectedVariantId, form.data.variants]);
+
+  // Build product object for child components - merging initialProduct with form.data
+  const product: ProductFormState = React.useMemo(
+    () => ({
+      ...initialProduct,
+      ...form.data,
+    }),
+    [initialProduct, form.data],
+  );
 
   const updateProduct = React.useCallback(
-    (update: Partial<Product> | ((product: Product) => void)) => {
+    (update: Partial<ProductFormState> | ((product: ProductFormState) => void)) => {
       if (typeof update === "function") {
-        form.setData((prev) => ({ ...prev, ...produce(prev, update) }));
+        form.setData((prev) => produceProductForm(prev, update));
       } else {
         form.setData((prev) => ({ ...prev, ...update }));
       }

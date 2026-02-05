@@ -651,8 +651,6 @@ Rails.application.routes.draw do
       resources :variants, only: [:index], controller: "products/variants"
       resource :mobile_tracking, only: [:show], path: "in_app", controller: "products/mobile_tracking"
       member do
-        post :publish
-        post :unpublish
         post :increment_views
         post :track_user_action
         put :sections, action: :update_sections
@@ -738,7 +736,7 @@ Rails.application.routes.draw do
       end
     end
 
-    get "/links/:id/edit" => redirect("/products/%{id}/edit")
+    get "/links/:id/edit" => redirect("/products/%{id}/product/edit")
 
     post "/products/:id/release_preorder", to: "links#release_preorder", as: :release_preorder
 

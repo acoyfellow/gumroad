@@ -104,8 +104,10 @@ const ContentTabContent = ({
   selectedVariantId: string | null;
   prepareDownload: () => Promise<void>;
 }) => {
-  const { id, seller, existingFiles, setExistingFiles, uniquePermalink, filesById } = useProductEditContext();
+  const { id, seller, existingFiles, setExistingFiles, uniquePermalink } = useProductEditContext();
   const { product, updateProduct } = useProductFormContext();
+  // Compute filesById from form state to include newly uploaded files
+  const filesById = React.useMemo(() => new Map(product.files.map((f) => [f.id, f])), [product.files]);
   const uid = React.useId();
   const isDesktop = useIsAboveBreakpoint("lg");
   const imageSettings = useImageUploadSettings();
@@ -117,11 +119,16 @@ const ContentTabContent = ({
   const pagesRef = useRefToLatest(pages);
 
   const updatePages = (pages: Page[]) => {
-    if (selectedVariant) selectedVariant.rich_content = pages;
-    else {
-      product.has_same_rich_content_for_all_variants = true;
-      product.rich_content = pages;
-      updateProduct(product);
+    if (selectedVariant) {
+      updateProduct((draft) => {
+        const variant = draft.variants.find((v) => v.id === selectedVariantId);
+        if (variant) variant.rich_content = pages;
+      });
+    } else {
+      updateProduct((draft) => {
+        draft.has_same_rich_content_for_all_variants = true;
+        draft.rich_content = pages;
+      });
     }
   };
 

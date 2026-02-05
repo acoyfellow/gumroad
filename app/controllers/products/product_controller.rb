@@ -15,9 +15,9 @@ class Products::ProductController < Products::BaseController
       return unpublish_and_redirect_to(edit_product_product_path(@product.unique_permalink))
     end
 
-    ActiveRecord::Base.transaction do
+    # ActiveRecord::Base.transaction do
       update_product_attributes
-    end
+    # end
 
     check_offer_codes_validity
 
@@ -35,6 +35,9 @@ class Products::ProductController < Products::BaseController
       @product.errors.full_messages.first || e.message
     end
     redirect_to edit_product_product_path(@product.unique_permalink), alert: error_message
+  rescue StandardError => e
+    Bugsnag.notify(e)
+    redirect_to edit_product_product_path(@product.unique_permalink), alert: "Something broke. We're looking into what happened. Sorry about this!"
   end
 
   private

@@ -17,7 +17,7 @@ class Products::ContentController < Products::BaseController
 
     ActiveRecord::Base.transaction do
       update_content_attributes
-      @product.publish! if should_publish
+      publish! if should_publish
     end
 
     check_offer_codes_validity
@@ -31,7 +31,10 @@ class Products::ContentController < Products::BaseController
     end
   rescue ActiveRecord::RecordNotSaved, ActiveRecord::RecordInvalid, Link::LinkInvalid => e
     error_message = @product.errors.full_messages.first || e.message
-    redirect_to edit_product_content_path(@product.unique_permalink), alert: error_message, status: :see_other
+    redirect_to edit_product_content_path(@product.unique_permalink), alert: error_message
+  rescue StandardError => e
+    Bugsnag.notify(e)
+    redirect_to edit_product_content_path(@product.unique_permalink), alert: "Something broke. We're looking into what happened. Sorry about this!"
   end
 
   private

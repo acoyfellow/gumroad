@@ -1,5 +1,4 @@
 import { useForm } from "@inertiajs/react";
-import { produce } from "immer";
 import * as React from "react";
 
 import ProductEditLayout from "$app/layouts/ProductEditLayout";
@@ -9,19 +8,16 @@ import { Layout, useProductUrl } from "$app/components/ProductEdit/Layout";
 import { ProductPreview } from "$app/components/ProductEdit/ProductPreview";
 import { ProductTab } from "$app/components/ProductEdit/ProductTab";
 import { useImageUpload } from "$app/components/ProductEdit/ProductTab/DescriptionEditor";
-import { useProductEditContext, ProductFormContext, Product, ContentUpdates } from "$app/components/ProductEdit/state";
-
-// ProductTab uses almost all product fields, so we include most of them
-type ProductFormData = Omit<
-  Product,
-  | "custom_receipt_text"
-  | "custom_receipt_text_max_length"
-  | "custom_view_content_button_text"
-  | "custom_view_content_button_text_max_length"
->;
+import {
+  useProductEditContext,
+  ProductFormContext,
+  ProductFormState,
+  ContentUpdates,
+  produceProductForm,
+} from "$app/components/ProductEdit/state";
 
 function ProductPage() {
-  const { product, uniquePermalink, currencyType: initialCurrencyType } = useProductEditContext();
+  const { product: initialProduct, uniquePermalink, currencyType: initialCurrencyType } = useProductEditContext();
   const { isUploading } = useImageUpload();
   const url = useProductUrl();
   const updateUrl = Routes.product_product_path(uniquePermalink);
@@ -30,22 +26,21 @@ function ProductPage() {
   const [currencyType, setCurrencyType] = React.useState<CurrencyCode>(initialCurrencyType);
   const [contentUpdates, setContentUpdates] = React.useState<ContentUpdates>(null);
 
-  // Initialize form with product data (excluding receipt-specific fields)
-  const form = useForm<ProductFormData>(() => {
-    const {
-      custom_receipt_text,
-      custom_receipt_text_max_length,
-      custom_view_content_button_text,
-      custom_view_content_button_text_max_length,
-      ...productData
-    } = product;
-    return productData;
-  });
+  const form = useForm<ProductFormState>(initialProduct);
+
+  // Build product object for child components - merging initialProduct with form.data
+  const product: ProductFormState = React.useMemo(
+    () => ({
+      ...initialProduct,
+      ...form.data,
+    }),
+    [initialProduct, form.data],
+  );
 
   const updateProduct = React.useCallback(
-    (update: Partial<Product> | ((product: Product) => void)) => {
+    (update: Partial<ProductFormState> | ((product: ProductFormState) => void)) => {
       if (typeof update === "function") {
-        form.setData((prev) => produce(prev, update));
+        form.setData((prev) => produceProductForm(prev, update));
       } else {
         form.setData((prev) => ({ ...prev, ...update }));
       }

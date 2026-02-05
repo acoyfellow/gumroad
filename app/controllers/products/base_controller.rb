@@ -32,6 +32,25 @@ class Products::BaseController < Sellers::BaseController
       end
     end
 
+    def publish!
+      error_message = nil
+      begin
+        if @product.user.email.blank?
+          error_message = "<span>To publish a product, we need you to have an email. <a href=\"#{settings_main_url}\">Set an email</a> to continue.</span>".html_safe
+        end
+        @product.publish!
+      rescue Link::LinkInvalid, ActiveRecord::RecordInvalid
+        error_message = @product.errors.full_messages[0]
+      rescue StandardError => e
+        Bugsnag.notify(e)
+        error_message = "Something broke. We're looking into what happened. Sorry about this!"
+      end
+
+      if error_message.present?
+        return redirect_back fallback_location: edit_product_product_path(@product.unique_permalink), alert: error_message
+      end
+    end
+
     def unpublish_and_redirect_to(redirect_location)
       @product.unpublish!
       check_offer_codes_validity

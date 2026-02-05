@@ -1,3 +1,4 @@
+import { produce } from "immer";
 import * as React from "react";
 
 import { OtherRefundPolicy } from "$app/data/products/other_refund_policies";
@@ -205,10 +206,9 @@ export type ProductEditContextType = {
 export const ProductEditContext = React.createContext<ProductEditContextType | null>(null);
 export const useProductEditContext = () => assertDefined(React.useContext(ProductEditContext));
 
-// Form context provided by each page for mutable state
 export type ProductFormContextType = {
-  product: Product;
-  updateProduct: (update: Partial<Product> | ((product: Product) => void)) => void;
+  product: ProductFormState;
+  updateProduct: (update: Partial<ProductFormState> | ((product: ProductFormState) => void)) => void;
   currencyType: CurrencyCode;
   setCurrencyType: (newCurrencyCode: CurrencyCode) => void;
   contentUpdates: ContentUpdates;
@@ -217,6 +217,37 @@ export type ProductFormContextType = {
 
 export const ProductFormContext = React.createContext<ProductFormContextType | null>(null);
 export const useProductFormContext = () => assertDefined(React.useContext(ProductFormContext));
+
+export type ProductFormState = Omit<Product, "native_type" | "variants"> & {
+  native_type: ProductNativeType;
+  variants: Duration[] | Tier[] | Version[];
+};
+
+export function produceProductForm(
+  base: ProductFormState,
+  recipe: (draft: ProductFormState) => void,
+): ProductFormState {
+  return produce(base, recipe);
+}
+
+export function isCallProduct(
+  product: ProductFormState,
+): product is ProductFormState & { native_type: "call"; variants: Duration[] } {
+  return product.native_type === "call";
+}
+
+export function isMembershipProduct(
+  product: ProductFormState,
+): product is ProductFormState & { native_type: "membership"; variants: Tier[] } {
+  return product.native_type === "membership";
+}
+
+export function isVersionProduct(product: ProductFormState): product is ProductFormState & {
+  native_type: Exclude<ProductNativeType, "call" | "membership">;
+  variants: Version[];
+} {
+  return product.native_type !== "call" && product.native_type !== "membership";
+}
 
 //TODO: clean up this legacy file state
 type UploadProgress = { percent: number; bitrate: number };
