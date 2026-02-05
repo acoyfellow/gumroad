@@ -1,4 +1,4 @@
-import { Head, useForm, usePage } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
@@ -17,6 +17,9 @@ type SecureRedirectPageProps = {
 type SecureRedirectFormData = {
   confirmation_text: string;
   encrypted_payload: string;
+  message: string;
+  field_name: string;
+  error_message: string;
 };
 
 const New = () => {
@@ -25,19 +28,20 @@ const New = () => {
   const form = useForm<SecureRedirectFormData>({
     confirmation_text: "",
     encrypted_payload,
+    message,
+    field_name,
+    error_message,
   });
 
   const submitForm = (e: React.FormEvent) => {
     e.preventDefault();
-    form.post(Routes.secure_url_redirect_path({ message, field_name, error_message }), {
+    form.post(Routes.secure_url_redirect_path(), {
       preserveScroll: true,
-      preserveState: true,
     });
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <Head title="Confirm access" />
+    <>
       <Card className="single-page-form horizontal-form">
         <CardContent asChild>
           <header>
@@ -68,7 +72,7 @@ const New = () => {
         </CardContent>
       </Card>
       <PoweredByFooter className="mt-auto w-full !p-6 lg:!py-6" />
-    </div>
+    </>
   );
 };
 

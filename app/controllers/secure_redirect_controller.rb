@@ -11,7 +11,8 @@ class SecureRedirectController < ApplicationController
       message: @message,
       field_name: @field_name,
       error_message: @error_message,
-      encrypted_payload: @encrypted_payload
+      encrypted_payload: @encrypted_payload,
+      authenticity_token: form_authenticity_token
     }
   end
 
@@ -19,26 +20,14 @@ class SecureRedirectController < ApplicationController
     confirmation_text = params[:confirmation_text]
 
     if confirmation_text.blank?
-      flash[:alert] = "Please enter the confirmation text"
-      return redirect_to secure_url_redirect_path(
-        encrypted_payload: @encrypted_payload,
-        message: @message,
-        field_name: @field_name,
-        error_message: @error_message
-      )
+      return redirect_with_alert("Please enter the confirmation text")
     end
 
     # Decrypt and parse the bundled payload
     begin
       payload_json = SecureEncryptService.decrypt(@encrypted_payload)
       if payload_json.nil?
-        flash[:alert] = "Invalid request"
-        return redirect_to secure_url_redirect_path(
-          encrypted_payload: @encrypted_payload,
-          message: @message,
-          field_name: @field_name,
-          error_message: @error_message
-        )
+        return redirect_with_alert("Invalid request")
       end
 
       payload = JSON.parse(payload_json)
@@ -48,23 +37,11 @@ class SecureRedirectController < ApplicationController
 
       # Verify the payload is recent (within 24 hours)
       if payload["created_at"] && Time.current.to_i - payload["created_at"] > 24.hours
-        flash[:alert] = "This link has expired"
-        return redirect_to secure_url_redirect_path(
-          encrypted_payload: @encrypted_payload,
-          message: @message,
-          field_name: @field_name,
-          error_message: @error_message
-        )
+        return redirect_with_alert("This link has expired")
       end
 
     rescue JSON::ParserError, NoMethodError
-      flash[:alert] = "Invalid request"
-      return redirect_to secure_url_redirect_path(
-        encrypted_payload: @encrypted_payload,
-        message: @message,
-        field_name: @field_name,
-        error_message: @error_message
-      )
+      return redirect_with_alert("Invalid request")
     end
 
     # Check if confirmation text matches any of the allowed texts
@@ -84,26 +61,23 @@ class SecureRedirectController < ApplicationController
       if destination.present?
         redirect_to destination, allow_other_host: true, status: :see_other
       else
-        flash[:alert] = "Invalid destination"
-        redirect_to secure_url_redirect_path(
-          encrypted_payload: @encrypted_payload,
-          message: @message,
-          field_name: @field_name,
-          error_message: @error_message
-        )
+        redirect_with_alert("Invalid destination")
       end
     else
-      flash[:alert] = @error_message
+      redirect_with_alert(@error_message)
+    end
+  end
+
+  private
+    def redirect_with_alert(alert_message)
       redirect_to secure_url_redirect_path(
         encrypted_payload: @encrypted_payload,
         message: @message,
         field_name: @field_name,
         error_message: @error_message
-      )
+      ), alert: alert_message
     end
-  end
 
-  private
     def validate_params
       if params[:encrypted_payload].blank?
         redirect_to root_path
