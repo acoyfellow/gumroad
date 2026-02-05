@@ -194,7 +194,7 @@ describe ProductPresenter do
     end
   end
 
-  describe "#show_page_props" do
+  describe "layout-specific props methods" do
     let(:request) { ActionDispatch::TestRequest.create }
     let(:pundit_user) { SellerContext.new(user: @user, seller: @user) }
     let(:seller) { create(:user) }
@@ -202,21 +202,21 @@ describe ProductPresenter do
     let(:presenter) { described_class.new(product:, request:, pundit_user:) }
     let(:base_kwargs) { { seller_custom_domain_url: nil } }
 
-    it "returns product_page_props for default layout" do
-      props = presenter.show_page_props(layout: nil, **base_kwargs)
+    it "returns product_page_props with sections for default layout" do
+      props = presenter.product_page_props(**base_kwargs)
       expect(props[:product]).to be_present
       expect(props[:product][:name]).to eq(product.name)
-      expect(props).to have_key(:custom_styles)
+      expect(props).to have_key(:sections)
     end
 
-    it "returns product_props for embed layout" do
-      props = presenter.show_page_props(layout: nil, embed: true, **base_kwargs)
+    it "returns product_props without sections for iframe layout" do
+      props = presenter.iframe_product_props(**base_kwargs)
       expect(props[:product]).to be_present
       expect(props).not_to have_key(:sections)
     end
 
     it "merges creator_profile for profile layout" do
-      props = presenter.show_page_props(layout: Product::Layout::PROFILE, **base_kwargs)
+      props = presenter.profile_product_props(**base_kwargs)
       expect(props[:creator_profile]).to be_present
       expect(props[:creator_profile][:name]).to eq(seller.name || seller.username)
       expect(props[:product]).to be_present
@@ -224,7 +224,7 @@ describe ProductPresenter do
 
     it "merges discover_props for discover layout" do
       discover_props = { taxonomy_path: "art/illustration", taxonomies_for_nav: [{ name: "Art" }] }
-      props = presenter.show_page_props(layout: Product::Layout::DISCOVER, discover_props:, **base_kwargs)
+      props = presenter.discover_product_props(discover_props:, **base_kwargs)
       expect(props[:taxonomy_path]).to eq("art/illustration")
       expect(props[:taxonomies_for_nav]).to eq([{ name: "Art" }])
       expect(props[:product]).to be_present

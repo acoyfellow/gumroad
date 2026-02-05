@@ -154,19 +154,23 @@ class LinksController < ApplicationController
       )
     end
 
-    discover_props = params[:layout] == Product::Layout::DISCOVER ?
-      { taxonomy_path: @product.taxonomy&.ancestry_path&.join("/"), taxonomies_for_nav: } : {}
-
     set_noindex_header if !@product.alive?
 
     respond_to do |format|
       format.html do
-        render inertia: product_inertia_template, props: presenter.show_page_props(
-          layout: params[:layout],
-          embed: params[:embed].present? || params[:overlay].present?,
-          discover_props:,
-          **presenter_props
-        )
+        case params[:layout]
+        when Product::Layout::PROFILE
+          render inertia: "Products/Profile/Show", props: presenter.profile_product_props(**presenter_props)
+        when Product::Layout::DISCOVER
+          discover_props = { taxonomy_path: @product.taxonomy&.ancestry_path&.join("/"), taxonomies_for_nav: }
+          render inertia: "Products/Discover/Show", props: presenter.discover_product_props(discover_props:, **presenter_props)
+        else
+          if params[:embed] || params[:overlay]
+            render inertia: "Products/Iframe/Show", props: presenter.iframe_product_props(**presenter_props)
+          else
+            render inertia: "Products/Show", props: presenter.product_page_props(**presenter_props)
+          end
+        end
       end
       format.json { render json: @product.as_json }
       format.any { e404 }
@@ -564,22 +568,11 @@ class LinksController < ApplicationController
       end
     end
 
-    def product_inertia_template
-      if params[:layout] == Product::Layout::PROFILE
-        "Products/Profile/Show"
-      elsif params[:layout] == Product::Layout::DISCOVER
-        "Products/Discover/Show"
-      elsif params[:embed] || params[:overlay]
-        "Products/Iframe/Show"
-      else
-        "Products/Show"
-      end
-    end
-
     def prepare_product_page
       @user                  = @product.user
       set_meta_tag(title: @product.name)
       set_product_page_meta(@product)
+      set_meta_tag(tag_name: "style", inner_content: @product.user.seller_profile.custom_styles.to_s, head_key: "custom_styles")
       @body_id               = "product_page"
       @is_on_product_page    = true
       @debug                 = params[:debug] && !Rails.env.production?
