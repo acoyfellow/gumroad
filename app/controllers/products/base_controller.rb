@@ -47,7 +47,7 @@ class Products::BaseController < Sellers::BaseController
       end
 
       if error_message.present?
-        return redirect_back fallback_location: edit_product_product_path(@product.unique_permalink), alert: error_message
+        return redirect_back fallback_location: edit_product_product_path(@product.unique_permalink), alert: error_message # rubocop:disable Style/RedundantReturn
       end
     end
 
