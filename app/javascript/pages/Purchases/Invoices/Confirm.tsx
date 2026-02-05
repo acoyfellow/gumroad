@@ -1,8 +1,6 @@
 import { Form, usePage } from "@inertiajs/react";
 import * as React from "react";
 
-import { StandaloneLayout } from "$app/inertia/layout";
-
 import { Button } from "$app/components/Button";
 import { Card, CardContent } from "$app/components/ui/Card";
 
@@ -36,5 +34,5 @@ const PurchasesInvoiceConfirmationPage = () => {
   );
 };
 
-PurchasesInvoiceConfirmationPage.layout = (page: React.ReactNode) => <StandaloneLayout>{page}</StandaloneLayout>;
+PurchasesInvoiceConfirmationPage.publicLayout = true;
 export default PurchasesInvoiceConfirmationPage;

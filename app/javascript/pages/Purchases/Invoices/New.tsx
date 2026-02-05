@@ -3,7 +3,6 @@ import cx from "classnames";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
-import { StandaloneLayout } from "$app/inertia/layout";
 import { classNames } from "$app/utils/classNames";
 
 import { Button } from "$app/components/Button";
@@ -285,5 +284,5 @@ const PurchaseNewInvoicePage = () => {
   );
 };
 
-PurchaseNewInvoicePage.layout = (page: React.ReactNode) => <StandaloneLayout>{page}</StandaloneLayout>;
+PurchaseNewInvoicePage.publicLayout = true;
 export default PurchaseNewInvoicePage;
