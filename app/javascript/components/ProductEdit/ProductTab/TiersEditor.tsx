@@ -461,7 +461,8 @@ You can modify or cancel your membership at any time.`;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         placeholderExtension.options.placeholder = placeholder;
         editor.view.dispatch(editor.state.tr);
-      }}
+      }
+    }
   }, [placeholder, editor]);
 
   const onMessageChange = useDebouncedCallback((message: string) => {

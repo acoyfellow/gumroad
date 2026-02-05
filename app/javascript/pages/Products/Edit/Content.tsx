@@ -161,7 +161,7 @@ const ContentTabContent = ({
 
   const selectedVariant = product.has_same_rich_content_for_all_variants
     ? null
-    : (product.variants.find((variant) => variant.id === selectedVariantId) ?? null);
+    : product.variants.find((variant) => variant.id === selectedVariantId);
 
   const pages: (Page & { chosen?: boolean })[] = selectedVariant ? selectedVariant.rich_content : product.rich_content;
   const pagesRef = useRefToLatest(pages);
@@ -205,8 +205,7 @@ const ContentTabContent = ({
 
   const [selectedPageId, setSelectedPageId] = React.useState(pages[0]?.id);
   const selectedPage = pages.find((page) => page.id === selectedPageId);
-  if (!selectedPage && pages.length > 0) setSelectedPageId(pages[0]?.id);
-
+  if ((selectedPageId || pages.length) && !selectedPage) setSelectedPageId(pages[0]?.id);
   const [renamingPageId, setRenamingPageId] = React.useState<string | null>(null);
   const [confirmingDeletePage, setConfirmingDeletePage] = React.useState<Page | null>(null);
   const [pagesExpanded, setPagesExpanded] = React.useState(false);
@@ -344,7 +343,7 @@ const ContentTabContent = ({
       }
     });
     if (newFiles.length > 0) {
-      updateProduct({ files: [...product.files.filter((f) => !newFiles.includes(f)), ...newFiles] });
+      updateProduct("files", [...product.files.filter((f) => !newFiles.includes(f)), ...newFiles]);
     }
     const description = generateJSON(
       new XMLSerializer().serializeToString(fragment),
@@ -372,24 +371,27 @@ const ContentTabContent = ({
     };
   }, [editor]);
 
-  const pageIcons = React.useMemo(() => {
-    if (!editor) return new Map<string, ReturnType<typeof generatePageIcon>>();
-    return new Map(
-      pages.map((page) => {
-        const description = editor.schema.nodeFromJSON(page.description);
-        return [
-          page.id,
-          generatePageIcon({
-            hasLicense: findChildren(description, (node) => node.type.name === LicenseKey.name).length > 0,
-            fileIds: findChildren(description, (node) => node.type.name === FileEmbed.name).map(({ node }) =>
-              String(node.attrs.id),
-            ),
-            allFiles: product.files,
-          }),
-        ] as const;
-      }),
-    );
-  }, [pages, editor, product.files]);
+  const pageIcons = React.useMemo(
+    () =>
+      new Map(
+        editor
+          ? pages.map((page) => {
+              const description = editor.schema.nodeFromJSON(page.description);
+              return [
+                page.id,
+                generatePageIcon({
+                  hasLicense: findChildren(description, (node) => node.type.name === LicenseKey.name).length > 0,
+                  fileIds: findChildren(description, (node) => node.type.name === FileEmbed.name).map(({ node }) =>
+                    String(node.attrs.id),
+                  ),
+                  allFiles: product.files,
+                }),
+              ] as const;
+            })
+          : [],
+      ),
+    [pages],
+  );
 
   const findPageWithNode = (type: string) =>
     editor &&
@@ -1088,7 +1090,7 @@ export default function ContentPage() {
 
   const form = useForm<ProductType>({
     ...product,
-    files: product.files || [],
+    files: product.files,
   });
 
   const [contentUpdates, setContentUpdates] = React.useState<{ uniquePermalinkOrVariantIds: string[] } | null>(null);
