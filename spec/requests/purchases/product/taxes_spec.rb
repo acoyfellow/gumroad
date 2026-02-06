@@ -1426,6 +1426,7 @@ describe("Product Page - Tax Scenarios", type: :system, js: true) do
         expect(page).to have_text("Total US$100", normalize_ws: true)
 
         check_out(physical_product, address: { street: "Building 1234, Road 123, Block 123", city: "Manama", zip_code: "12345", state: "BH", country: "BH" }, credit_card: { number: "4000000360000006" }, should_verify_address: true)
+        wait_until_true { Cart.alive.where(email: "test@gumroad.com").exists? }
 
         purchase = Purchase.last
         expect(purchase.total_transaction_cents).to eq(100_00)
