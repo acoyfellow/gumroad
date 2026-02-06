@@ -41,7 +41,7 @@ describe CheckoutController, type: :controller, inertia: true do
           guest_cart = create(:cart, :guest)
           get :index, params: { cart_id: guest_cart.secure_external_id(scope: "cart_login") }
 
-          expect(response).to redirect_to(checkout_index_path(referrer: UrlService.discover_domain_with_protocol))
+          expect(response).to redirect_to(checkout_path(referrer: UrlService.discover_domain_with_protocol))
         end
       end
 
@@ -55,7 +55,7 @@ describe CheckoutController, type: :controller, inertia: true do
         it "redirects to the same path when `cart_id` is not found" do
           get :index, params: { cart_id: "no-such-cart" }
 
-          expect(response).to redirect_to(checkout_index_path(referrer: UrlService.discover_domain_with_protocol))
+          expect(response).to redirect_to(checkout_path(referrer: UrlService.discover_domain_with_protocol))
         end
 
         it "redirects to the same path when an OLD/INSECURE external_id is used" do
@@ -63,7 +63,7 @@ describe CheckoutController, type: :controller, inertia: true do
 
           get :index, params: { cart_id: harvested_id }
 
-          expect(response).to redirect_to(checkout_index_path(referrer: UrlService.discover_domain_with_protocol))
+          expect(response).to redirect_to(checkout_path(referrer: UrlService.discover_domain_with_protocol))
           expect(response.location).not_to include("email=")
         end
 
@@ -72,14 +72,14 @@ describe CheckoutController, type: :controller, inertia: true do
 
           get :index, params: { cart_id: secure_id }
 
-          expect(response).to redirect_to(checkout_index_path(referrer: UrlService.discover_domain_with_protocol))
+          expect(response).to redirect_to(checkout_path(referrer: UrlService.discover_domain_with_protocol))
         end
 
         context "when the cart matching the `cart_id` query param belongs to a user" do
           it "redirects to the login page path with `next` param set to the checkout path" do
             get :index, params: { cart_id: secure_id }
 
-            expect(response).to redirect_to(login_url(next: checkout_index_path(referrer: UrlService.discover_domain_with_protocol), email: cart.user.email))
+            expect(response).to redirect_to(login_url(next: checkout_path(referrer: UrlService.discover_domain_with_protocol), email: cart.user.email))
           end
         end
 
@@ -96,7 +96,7 @@ describe CheckoutController, type: :controller, inertia: true do
               end.not_to change { Cart.alive.count }
             end.not_to change { cart.reload }
 
-            expect(response).to redirect_to(checkout_index_path(referrer: UrlService.discover_domain_with_protocol))
+            expect(response).to redirect_to(checkout_path(referrer: UrlService.discover_domain_with_protocol))
           end
         end
 
@@ -119,7 +119,7 @@ describe CheckoutController, type: :controller, inertia: true do
               get :index, params: { cart_id: valid_id }
             end.to change { Cart.alive.count }.from(2).to(1)
 
-            expect(response).to redirect_to(checkout_index_path(referrer: UrlService.discover_domain_with_protocol))
+            expect(response).to redirect_to(checkout_path(referrer: UrlService.discover_domain_with_protocol))
             expect(Cart.alive.sole.id).to eq(cart.id)
             expect(current_guest_cart.reload).to be_deleted
             expect(cart.reload.email).to eq("john@example.com")

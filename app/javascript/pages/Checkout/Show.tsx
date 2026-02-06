@@ -532,10 +532,9 @@ const CheckoutPage = () => {
   const debouncedSaveCartState = useDebouncedCallback(
     () =>
       router.put(
-        `${Routes.internal_cart_path()}${window.location.search}`,
+        `${Routes.checkout_cart_path()}${window.location.search}`,
         { cart },
         {
-          preserveState: true,
           preserveScroll: true,
           replace: true,
           onSuccess: () => {

@@ -17,7 +17,7 @@ describe Api::Internal::CartsController do
         end.to change(Cart, :count).by(1)
 
         expect(response).to have_http_status(:see_other)
-        expect(response).to redirect_to(checkout_index_path)
+        expect(response).to redirect_to(checkout_path)
 
         expect(controller.logged_in_user.carts.alive).to be_present
       end
@@ -47,7 +47,7 @@ describe Api::Internal::CartsController do
         end.to change(Cart, :count).by(1)
 
         expect(response).to have_http_status(:see_other)
-        expect(response).to redirect_to(checkout_index_path)
+        expect(response).to redirect_to(checkout_path)
 
         cart = controller.logged_in_user.alive_cart
         expect(cart).to have_attributes(
@@ -127,7 +127,7 @@ describe Api::Internal::CartsController do
         end.not_to change(Cart, :count)
 
         expect(response).to have_http_status(:see_other)
-        expect(response).to redirect_to(checkout_index_path)
+        expect(response).to redirect_to(checkout_path)
 
         cart.reload
         expect(cart.return_url).to be_nil
@@ -168,7 +168,7 @@ describe Api::Internal::CartsController do
           put :update, params: { cart: { email: "john@example.com", items: [], discountCodes: [] } }, as: :json
         end.not_to change { Cart.count }
         expect(response).to have_http_status(:see_other)
-        expect(response).to redirect_to(checkout_index_path)
+        expect(response).to redirect_to(checkout_path)
         expect(cart.reload.browser_guid).to eq("456")
       end
 
@@ -200,7 +200,7 @@ describe Api::Internal::CartsController do
         end.not_to change { deleted_cart_product.reload.updated_at }
 
         expect(response).to have_http_status(:see_other)
-        expect(response).to redirect_to(checkout_index_path)
+        expect(response).to redirect_to(checkout_path)
 
         cart.reload
         expect(cart.cart_products.deleted.sole).to eq(deleted_cart_product)
@@ -232,7 +232,7 @@ describe Api::Internal::CartsController do
           }, as: :json
         end.not_to change(Cart, :count)
 
-        expect(response).to redirect_to(checkout_index_path)
+        expect(response).to redirect_to(checkout_path)
         expect(flash[:alert]).to eq("Sorry, something went wrong. Please try again.")
       end
 
@@ -240,7 +240,7 @@ describe Api::Internal::CartsController do
         items = (Cart::MAX_ALLOWED_CART_PRODUCTS + 1).times.map { { product: { id: _1 + 1 } }  }
         put :update, params: { cart: { items: }, as: :json }
 
-        expect(response).to redirect_to(checkout_index_path)
+        expect(response).to redirect_to(checkout_path)
         expect(flash[:alert]).to eq("You cannot add more than #{Cart::MAX_ALLOWED_CART_PRODUCTS} products to the cart.")
       end
     end
@@ -251,7 +251,7 @@ describe Api::Internal::CartsController do
           put :update, params: { cart: { email: "john@example.com", items: [], discountCodes: [] } }, as: :json
         end.to change(Cart, :count).by(1)
         expect(response).to have_http_status(:see_other)
-        expect(response).to redirect_to(checkout_index_path)
+        expect(response).to redirect_to(checkout_path)
         cart = Cart.last
         expect(cart.user).to be_nil
         expect(cart.email).to eq("john@example.com")
@@ -267,7 +267,7 @@ describe Api::Internal::CartsController do
           put :update, params: { cart: { email: "john@example.com", items: [], discountCodes: [] } }, as: :json
         end.not_to change(Cart, :count)
         expect(response).to have_http_status(:see_other)
-        expect(response).to redirect_to(checkout_index_path)
+        expect(response).to redirect_to(checkout_path)
         cart.reload
         expect(cart.email).to eq("john@example.com")
         expect(cart.ip_address).to eq("127.1.2.4")

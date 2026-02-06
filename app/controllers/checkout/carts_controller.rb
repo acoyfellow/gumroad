@@ -3,7 +3,7 @@
 class Api::Internal::CartsController < Api::Internal::BaseController
   def update
     if permitted_cart_params[:items].length > Cart::MAX_ALLOWED_CART_PRODUCTS
-      return redirect_to checkout_index_path, alert: "You cannot add more than #{Cart::MAX_ALLOWED_CART_PRODUCTS} products to the cart."
+      return redirect_to checkout_path, alert: "You cannot add more than #{Cart::MAX_ALLOWED_CART_PRODUCTS} products to the cart."
     end
 
     ActiveRecord::Base.transaction do
@@ -48,11 +48,11 @@ class Api::Internal::CartsController < Api::Internal::BaseController
       cart.alive_cart_products.where.not(id: updated_cart_products.map(&:id)).find_each(&:mark_deleted!)
     end
 
-    redirect_to checkout_index_path(request.query_parameters), status: :see_other
+    redirect_to checkout_path(request.query_parameters), status: :see_other
   rescue ActiveRecord::RecordInvalid => e
     Bugsnag.notify(e)
     Rails.logger.error(e.full_message) if Rails.env.development?
-    redirect_to checkout_index_path(request.query_parameters), alert: "Sorry, something went wrong. Please try again."
+    redirect_to checkout_path(request.query_parameters), alert: "Sorry, something went wrong. Please try again."
   end
 
   private

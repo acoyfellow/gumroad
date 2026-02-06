@@ -578,7 +578,7 @@ describe("Product checkout with upsells", type: :system, js: true) do
 
       expect(purchase.link).to eq(selected_product)
 
-      visit checkout_index_path
+      visit checkout_path
       expect { check_out(product) }.to change { Purchase.count }.by(1)
 
       purchase = Purchase.last
