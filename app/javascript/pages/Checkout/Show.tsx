@@ -540,11 +540,8 @@ const CheckoutPage = () => {
           onSuccess: () => {
             const url = new URL(window.location.href);
             const searchParams = new URLSearchParams([...url.searchParams].filter(([key]) => key === "_gl"));
-            const nextSearch = searchParams.toString();
-            if (url.search.replace(/^\?/, "") !== nextSearch) {
-              url.search = nextSearch;
-              window.history.replaceState(window.history.state, "", url.toString());
-            }
+            url.search = searchParams.toString();
+            window.history.replaceState(window.history.state, "", url.toString());
           },
         },
       ),
