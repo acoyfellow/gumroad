@@ -8,12 +8,12 @@ require "inertia_rails/rspec"
 describe CheckoutController, type: :controller, inertia: true do
   render_views
 
-  describe "GET index" do
+  describe "GET show" do
     it "returns HTTP success and renders the checkout inertia page" do
-      get :index
+      get :show
 
       expect(response).to be_successful
-      expect(inertia.component).to eq("Checkout/Index")
+      expect(inertia.component).to eq("Checkout/Show")
       expect(inertia.props[:discover_url]).to eq(discover_url(protocol: PROTOCOL, host: DISCOVER_DOMAIN))
       expect(inertia.props[:countries]).to be_present
       expect(inertia.props[:max_allowed_cart_products]).to eq(Cart::MAX_ALLOWED_CART_PRODUCTS)
@@ -30,16 +30,16 @@ describe CheckoutController, type: :controller, inertia: true do
         end
 
         it "does not redirect when cart_id is blank" do
-          get :index
+          get :show
 
           expect(response).to be_successful
-          expect(inertia.component).to eq("Checkout/Index")
+          expect(inertia.component).to eq("Checkout/Show")
           expect(inertia.props).to have_key(:cart)
         end
 
         it "redirects to the same path removing the `cart_id` query param" do
           guest_cart = create(:cart, :guest)
-          get :index, params: { cart_id: guest_cart.secure_external_id(scope: "cart_login") }
+          get :show, params: { cart_id: guest_cart.secure_external_id(scope: "cart_login") }
 
           expect(response).to redirect_to(checkout_path(referrer: UrlService.discover_domain_with_protocol))
         end
@@ -47,13 +47,13 @@ describe CheckoutController, type: :controller, inertia: true do
 
       context "when user is not logged in" do
         it "does not redirect when `cart_id` is blank" do
-          get :index
+          get :show
 
           expect(response).to be_successful
         end
 
         it "redirects to the same path when `cart_id` is not found" do
-          get :index, params: { cart_id: "no-such-cart" }
+          get :show, params: { cart_id: "no-such-cart" }
 
           expect(response).to redirect_to(checkout_path(referrer: UrlService.discover_domain_with_protocol))
         end
@@ -61,7 +61,7 @@ describe CheckoutController, type: :controller, inertia: true do
         it "redirects to the same path when an OLD/INSECURE external_id is used" do
           harvested_id = build(:product, id: cart.id).external_id
 
-          get :index, params: { cart_id: harvested_id }
+          get :show, params: { cart_id: harvested_id }
 
           expect(response).to redirect_to(checkout_path(referrer: UrlService.discover_domain_with_protocol))
           expect(response.location).not_to include("email=")
@@ -70,14 +70,14 @@ describe CheckoutController, type: :controller, inertia: true do
         it "redirects to the same path when the cart for `cart_id` is deleted" do
           cart.mark_deleted!
 
-          get :index, params: { cart_id: secure_id }
+          get :show, params: { cart_id: secure_id }
 
           expect(response).to redirect_to(checkout_path(referrer: UrlService.discover_domain_with_protocol))
         end
 
         context "when the cart matching the `cart_id` query param belongs to a user" do
           it "redirects to the login page path with `next` param set to the checkout path" do
-            get :index, params: { cart_id: secure_id }
+            get :show, params: { cart_id: secure_id }
 
             expect(response).to redirect_to(login_url(next: checkout_path(referrer: UrlService.discover_domain_with_protocol), email: cart.user.email))
           end
@@ -92,7 +92,7 @@ describe CheckoutController, type: :controller, inertia: true do
 
             expect do
               expect do
-                get :index, params: { cart_id: valid_id }
+                get :show, params: { cart_id: valid_id }
               end.not_to change { Cart.alive.count }
             end.not_to change { cart.reload }
 
@@ -116,7 +116,7 @@ describe CheckoutController, type: :controller, inertia: true do
             valid_id = cart.secure_external_id(scope: "cart_login")
 
             expect do
-              get :index, params: { cart_id: valid_id }
+              get :show, params: { cart_id: valid_id }
             end.to change { Cart.alive.count }.from(2).to(1)
 
             expect(response).to redirect_to(checkout_path(referrer: UrlService.discover_domain_with_protocol))
