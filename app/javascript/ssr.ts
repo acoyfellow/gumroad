@@ -10,11 +10,8 @@ import CustomersDownloadPopover from "$app/components/server-components/Customer
 import CustomersFilterPopover from "$app/components/server-components/CustomersPage/FilterPopover";
 import Discover from "$app/components/server-components/Discover";
 import DownloadPageWithContent from "$app/components/server-components/DownloadPage/WithContent";
-import DownloadPageWithoutContent from "$app/components/server-components/DownloadPage/WithoutContent";
 import GenerateInvoiceConfirmationPage from "$app/components/server-components/GenerateInvoiceConfirmationPage";
 import GenerateInvoicePage from "$app/components/server-components/GenerateInvoicePage";
-import GumroadBlogIndexPage from "$app/components/server-components/GumroadBlog/IndexPage";
-import GumroadBlogPostPage from "$app/components/server-components/GumroadBlog/PostPage";
 import Nav from "$app/components/server-components/Nav";
 import PdfReaderPage from "$app/components/server-components/PdfReaderPage";
 import ProductEditPage from "$app/components/server-components/ProductEditPage";
@@ -40,11 +37,8 @@ ReactOnRails.register({
   CustomersFilterPopover,
   Discover,
   DownloadPageWithContent,
-  DownloadPageWithoutContent,
   GenerateInvoiceConfirmationPage,
   GenerateInvoicePage,
-  GumroadBlogIndexPage,
-  GumroadBlogPostPage,
   Nav,
   PdfReaderPage,
   Pill,
