@@ -14,8 +14,6 @@ import DownloadPageWithContent from "$app/components/server-components/DownloadP
 import DownloadPageWithoutContent from "$app/components/server-components/DownloadPage/WithoutContent";
 import GenerateInvoiceConfirmationPage from "$app/components/server-components/GenerateInvoiceConfirmationPage";
 import GenerateInvoicePage from "$app/components/server-components/GenerateInvoicePage";
-import GumroadBlogIndexPage from "$app/components/server-components/GumroadBlog/IndexPage";
-import GumroadBlogPostPage from "$app/components/server-components/GumroadBlog/PostPage";
 import Nav from "$app/components/server-components/Nav";
 import ProductPage from "$app/components/server-components/Product";
 import ProductIframePage from "$app/components/server-components/Product/IframePage";
@@ -47,8 +45,6 @@ ReactOnRails.register({
   DownloadPageWithoutContent,
   GenerateInvoiceConfirmationPage,
   GenerateInvoicePage,
-  GumroadBlogIndexPage,
-  GumroadBlogPostPage,
   Nav,
   Pill,
   ProductEditPage,
