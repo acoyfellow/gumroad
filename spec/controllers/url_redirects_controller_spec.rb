@@ -598,6 +598,20 @@ describe UrlRedirectsController do
         expect(event.link_id).to eq @product.id
         expect(event.platform).to eq Platform::WEB
       end
+
+      context "with custom domain route", type: :request do
+        let!(:custom_domain) { create(:custom_domain, user: @product.user) }
+
+        it "renders stream page via custom domain" do
+          stub_const("UrlRedirect::GUID_GETTER_FROM_S3_URL_REGEX", /(specs)/)
+
+          get "/s/#{@url_redirect.token}",
+              headers: { "HOST" => custom_domain.domain }
+
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include("UrlRedirects/Stream")
+        end
+      end
     end
 
     describe "memberships" do
