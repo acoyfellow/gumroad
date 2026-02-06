@@ -229,8 +229,13 @@ const ContentTabContent = ({
       }
       return fileEntry;
     });
+    // Update product state with new files, then insert embeds after React commits the update.
+    // Using queueMicrotask ensures the state update is committed before TipTap tries to render
+    // the file embeds, so filesById will include the newly uploaded files.
     updateProduct({ files: [...product.files, ...fileEntries] });
-    onSelectFiles(fileEntries.map((file) => file.id));
+    queueMicrotask(() => {
+      onSelectFiles(fileEntries.map((file) => file.id));
+    });
   };
   const uploadFileInput = (input: HTMLInputElement) => {
     if (!input.files?.length) return;

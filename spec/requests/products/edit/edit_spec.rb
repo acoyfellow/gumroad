@@ -134,7 +134,7 @@ describe("Product Edit Scenario", type: :system, js: true) do
     product = create(:product, user: seller, name: "Sample product", price_cents: 1000)
     create(:purchase, :with_review, link: product)
 
-    visit edit_product_content_path(product.unique_permalink)
+    visit edit_product_product_path(product.unique_permalink)
 
     set_rich_text_editor_input(find("[aria-label='Description']"), to_text: "Hi there!")
 
@@ -194,7 +194,7 @@ describe("Product Edit Scenario", type: :system, js: true) do
     variant2 = product.alive_variants.last
     create(:purchase, :with_review, link: product)
 
-    visit edit_product_content_path(product.unique_permalink)
+    visit edit_product_product_path(product.unique_permalink)
 
     set_rich_text_editor_input(find("[aria-label='Description']"), to_text: "Hi there!")
 

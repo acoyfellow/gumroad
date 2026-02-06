@@ -3,7 +3,7 @@ import * as React from "react";
 
 import { classNames } from "$app/utils/classNames";
 
-import { Button } from "$app/components/Button";
+import { Button, NavigationButton } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { useDomains } from "$app/components/DomainSettings";
@@ -13,11 +13,12 @@ import { PreviewSidebar, WithPreviewSidebar } from "$app/components/PreviewSideb
 import { useImageUploadSettings } from "$app/components/RichTextEditor";
 import { showAlert } from "$app/components/server-components/Alert";
 import { SubtitleFile } from "$app/components/SubtitleList/Row";
+import { Alert } from "$app/components/ui/Alert";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { useDropbox } from "$app/components/useDropbox";
 
-import { FileEntry, PublicFileWithStatus, useProductEditContext } from "./state";
+import { FileEntry, PublicFileWithStatus, useProductEditContext, useProductFormContext } from "./state";
 
 export const useProductUrl = (params = {}) => {
   const { product, uniquePermalink } = useProductEditContext();
@@ -39,6 +40,90 @@ const useCurrentTab = (): "product" | "content" | "receipt" | "share" => {
     "Products/Share/Edit": "share",
   };
   return componentToTab[usePage().component] ?? "product";
+};
+
+const NotifyAboutProductUpdatesAlert = () => {
+  const { uniquePermalink } = useProductEditContext();
+  const { contentUpdates, setContentUpdates } = useProductFormContext();
+  const timerRef = React.useRef<number | null>(null);
+  const isVisible = !!contentUpdates;
+
+  const clearTimer = () => {
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const startTimer = () => {
+    clearTimer();
+    timerRef.current = window.setTimeout(() => {
+      close();
+    }, 10_000);
+  };
+
+  const close = () => {
+    clearTimer();
+    setContentUpdates(null);
+  };
+
+  React.useEffect(() => {
+    if (isVisible) {
+      startTimer();
+    }
+
+    return clearTimer;
+  }, [isVisible]);
+
+  const handleMouseEnter = () => {
+    clearTimer();
+  };
+
+  const handleMouseLeave = () => {
+    startTimer();
+  };
+
+  return (
+    <div
+      className={classNames("fixed top-4 right-1/2", isVisible ? "visible" : "invisible")}
+      style={{
+        transform: `translateX(50%) translateY(${isVisible ? 0 : "calc(-100% - var(--spacer-4))"})`,
+        transition: "all 0.3s ease-out 0.5s",
+        zIndex: "var(--z-index-tooltip)",
+        backgroundColor: "var(--body-bg)",
+      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <Alert variant="info">
+        <div className="flex flex-col gap-4">
+          Changes saved! Would you like to notify your customers about those changes?
+          <div className="flex gap-2">
+            <Button color="primary" outline onClick={() => close()}>
+              Skip for now
+            </Button>
+            <NavigationButton
+              color="primary"
+              href={Routes.new_email_path({
+                template: "content_updates",
+                product: uniquePermalink,
+                bought: contentUpdates?.uniquePermalinkOrVariantIds ?? [],
+              })}
+              onClick={() => {
+                // NOTE: this is a workaround to make sure the alert closes after the tab is opened
+                // with correct URL params. Otherwise `bought` won't be set correctly.
+                setTimeout(() => close(), 100);
+              }}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Send notification
+            </NavigationButton>
+          </div>
+        </div>
+      </Alert>
+    </div>
+  );
 };
 
 type LayoutProps = {
@@ -175,6 +260,7 @@ export const Layout = ({
 
   return (
     <>
+      <NotifyAboutProductUpdatesAlert />
       {/* TODO: remove this legacy uploader stuff */}
       <form hidden data-id={uniquePermalink} id="edit-link-basic-form" />
       <PageHeader className="sticky-top" title={name || "Untitled"} actions={actions}>

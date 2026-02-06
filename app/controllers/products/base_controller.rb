@@ -37,8 +37,9 @@ class Products::BaseController < Sellers::BaseController
       begin
         if @product.user.email.blank?
           error_message = "<span>To publish a product, we need you to have an email. <a href=\"#{settings_main_url}\">Set an email</a> to continue.</span>".html_safe
+        else
+          @product.publish!
         end
-        @product.publish!
       rescue Link::LinkInvalid, ActiveRecord::RecordInvalid
         error_message = @product.errors.full_messages[0]
       rescue StandardError => e

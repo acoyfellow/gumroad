@@ -1,10 +1,12 @@
 import { useForm } from "@inertiajs/react";
+import { isEqual } from "lodash-es";
 import * as React from "react";
 
 import ProductEditLayout from "$app/layouts/ProductEditLayout";
 import { CurrencyCode } from "$app/utils/currency";
 
 import { ContentTab, ContentTabHeaderActions } from "$app/components/ProductEdit/ContentTab";
+import { Page } from "$app/components/ProductEdit/ContentTab/PageTab";
 import { Layout, useProductUrl } from "$app/components/ProductEdit/Layout";
 import {
   useProductEditContext,
@@ -14,14 +16,34 @@ import {
   produceProductForm,
 } from "$app/components/ProductEdit/state";
 
+const pagesHaveSameContent = (pages1: Page[], pages2: Page[]): boolean => isEqual(pages1, pages2);
+
+const findUpdatedContent = (product: ProductFormState, lastSavedProduct: ProductFormState) => {
+  const contentUpdatedVariantIds = product.variants
+    .filter((variant) => {
+      const lastSavedVariant = lastSavedProduct.variants.find((v) => v.id === variant.id);
+      return !pagesHaveSameContent(variant.rich_content, lastSavedVariant?.rich_content ?? []);
+    })
+    .map((variant) => variant.id);
+
+  const sharedContentUpdated = !pagesHaveSameContent(product.rich_content, lastSavedProduct.rich_content);
+
+  return {
+    sharedContentUpdated,
+    contentUpdatedVariantIds,
+  };
+};
+
 function ContentPage() {
-  const { product: initialProduct, uniquePermalink, currencyType: initialCurrencyType } = useProductEditContext();
+  const { product: initialProduct, uniquePermalink, currencyType: initialCurrencyType, successfulSalesCount } =
+    useProductEditContext();
   const url = useProductUrl();
   const updateUrl = Routes.product_content_path(uniquePermalink);
 
   const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(null);
   const [currencyType, setCurrencyType] = React.useState<CurrencyCode>(initialCurrencyType);
   const [contentUpdates, setContentUpdates] = React.useState<ContentUpdates>(null);
+  const lastSavedProductRef = React.useRef<ProductFormState>(structuredClone(initialProduct));
 
   const form = useForm<ProductFormState>(initialProduct);
 
@@ -73,8 +95,35 @@ function ContentPage() {
     options?: { onStart?: () => void; onSuccess?: () => void; onFinish?: () => void },
   ) => {
     if (form.processing) return;
+    const productBeforeSave = structuredClone(product);
     form.transform((data) => ({ product: data, ...additionalData }));
-    form.patch(updateUrl, { preserveScroll: true, ...options });
+    form.patch(updateUrl, {
+      preserveScroll: true,
+      ...options,
+      onSuccess: () => {
+        // Check if content was updated and we should prompt for notification
+        const { contentUpdatedVariantIds, sharedContentUpdated } = findUpdatedContent(
+          productBeforeSave,
+          lastSavedProductRef.current,
+        );
+        const contentUpdated = sharedContentUpdated || contentUpdatedVariantIds.length > 0;
+
+        if (successfulSalesCount > 0 && contentUpdated) {
+          const uniquePermalinkOrVariantIds = productBeforeSave.has_same_rich_content_for_all_variants
+            ? [uniquePermalink]
+            : contentUpdatedVariantIds;
+
+          setContentUpdates({
+            uniquePermalinkOrVariantIds,
+          });
+        }
+
+        // Update the last saved product ref
+        lastSavedProductRef.current = structuredClone(productBeforeSave);
+
+        options?.onSuccess?.();
+      },
+    });
   };
 
   const [isPublishing, setIsPublishing] = React.useState(false);

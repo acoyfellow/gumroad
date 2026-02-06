@@ -20,6 +20,8 @@ class Products::ContentController < Products::BaseController
       publish! if should_publish
     end
 
+    return if performed?
+
     check_offer_codes_validity
 
     if should_publish
