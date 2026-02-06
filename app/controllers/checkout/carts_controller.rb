@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Api::Internal::CartsController < Api::Internal::BaseController
+class Checkout::CartsController < ApplicationController
   def update
     if permitted_cart_params[:items].length > Cart::MAX_ALLOWED_CART_PRODUCTS
       return redirect_to checkout_path, alert: "You cannot add more than #{Cart::MAX_ALLOWED_CART_PRODUCTS} products to the cart."
