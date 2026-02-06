@@ -612,6 +612,31 @@ describe UrlRedirectsController do
           expect(response.body).to include("UrlRedirects/Stream")
         end
       end
+
+      context "with custom subdomain", inertia: true do
+        before do
+          stub_const("UrlRedirect::GUID_GETTER_FROM_S3_URL_REGEX", /(specs)/)
+          @request.host = URI.parse(@product.user.subdomain_with_protocol).host
+        end
+
+        it "renders stream page via custom subdomain" do
+          get :stream, params: { id: @url_redirect.token }
+
+          expect(response).to have_http_status(:ok)
+          expect(inertia.component).to eq("UrlRedirects/Stream")
+          expect(inertia.props[:playlist]).to be_present
+          expect(inertia.props[:url_redirect_id]).to eq(@url_redirect.external_id)
+        end
+
+        it "renders stream page with product_file_id via custom subdomain" do
+          get :stream, params: { id: @url_redirect.token, product_file_id: @product.product_files.first.external_id }
+
+          expect(response).to have_http_status(:ok)
+          expect(inertia.component).to eq("UrlRedirects/Stream")
+          expect(inertia.props[:playlist]).to be_present
+          expect(inertia.props[:url_redirect_id]).to eq(@url_redirect.external_id)
+        end
+      end
     end
 
     describe "memberships" do
