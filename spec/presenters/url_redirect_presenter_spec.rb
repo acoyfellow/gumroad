@@ -817,6 +817,8 @@ describe UrlRedirectPresenter do
         expect(props[:playlist].size).to eq(2)
       end
     end
+  end
+
   describe "#read_page_props" do
     it "returns all necessary props for the PDF reader page" do
       product = create(:product_with_pdf_file)
