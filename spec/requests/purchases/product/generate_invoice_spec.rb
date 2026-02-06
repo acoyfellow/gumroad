@@ -352,7 +352,7 @@ describe("Generate invoice for purchase", type: :system, js: true) do
     it "shows Gumroad's UK VAT registration for United Kingdom purchases" do
       purchase = create(:purchase, link: @product, country: "United Kingdom")
 
-      visit generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email)
+      visit new_purchase_invoice_path(purchase.external_id, email: purchase.email)
 
       fill_in("Full name", with: "Wonderful Alice")
       fill_in("Street address", with: "Crooked St.")
@@ -385,7 +385,7 @@ describe("Generate invoice for purchase", type: :system, js: true) do
     it "shows Gumroad's GSTIN for India purchases" do
       purchase = create(:purchase, link: @product, country: "India")
 
-      visit generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email)
+      visit new_purchase_invoice_path(purchase.external_id, email: purchase.email)
 
       fill_in("Full name", with: "Wonderful Alice")
       fill_in("Street address", with: "Crooked St.")
@@ -418,7 +418,7 @@ describe("Generate invoice for purchase", type: :system, js: true) do
     it "shows Gumroad's JCT registration for Japan purchases" do
       purchase = create(:purchase, link: @product, country: "Japan")
 
-      visit generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email)
+      visit new_purchase_invoice_path(purchase.external_id, email: purchase.email)
 
       fill_in("Full name", with: "Wonderful Alice")
       fill_in("Street address", with: "Crooked St.")
@@ -451,7 +451,7 @@ describe("Generate invoice for purchase", type: :system, js: true) do
     it "shows Gumroad's Singapore GST for Singapore purchases" do
       purchase = create(:purchase, link: @product, country: "Singapore")
 
-      visit generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email)
+      visit new_purchase_invoice_path(purchase.external_id, email: purchase.email)
 
       fill_in("Full name", with: "Wonderful Alice")
       fill_in("Street address", with: "Crooked St.")
@@ -484,7 +484,7 @@ describe("Generate invoice for purchase", type: :system, js: true) do
     it "shows Gumroad's New Zealand GST for New Zealand purchases" do
       purchase = create(:purchase, link: @product, country: "New Zealand")
 
-      visit generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email)
+      visit new_purchase_invoice_path(purchase.external_id, email: purchase.email)
 
       fill_in("Full name", with: "Wonderful Alice")
       fill_in("Street address", with: "Crooked St.")
@@ -517,7 +517,7 @@ describe("Generate invoice for purchase", type: :system, js: true) do
     it "shows Gumroad's South Korea VAT for South Korea purchases" do
       purchase = create(:purchase, link: @product, country: "South Korea")
 
-      visit generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email)
+      visit new_purchase_invoice_path(purchase.external_id, email: purchase.email)
 
       fill_in("Full name", with: "Wonderful Alice")
       fill_in("Street address", with: "Crooked St.")
@@ -550,7 +550,7 @@ describe("Generate invoice for purchase", type: :system, js: true) do
     it "shows Gumroad's Switzerland VAT for Switzerland purchases" do
       purchase = create(:purchase, link: @product, country: "Switzerland")
 
-      visit generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email)
+      visit new_purchase_invoice_path(purchase.external_id, email: purchase.email)
 
       fill_in("Full name", with: "Wonderful Alice")
       fill_in("Street address", with: "Crooked St.")
@@ -583,7 +583,7 @@ describe("Generate invoice for purchase", type: :system, js: true) do
     it "shows Gumroad's Thailand VAT for Thailand purchases" do
       purchase = create(:purchase, link: @product, country: "Thailand")
 
-      visit generate_invoice_by_buyer_path(purchase.external_id, email: purchase.email)
+      visit new_purchase_invoice_path(purchase.external_id, email: purchase.email)
 
       fill_in("Full name", with: "Wonderful Alice")
       fill_in("Street address", with: "Crooked St.")
