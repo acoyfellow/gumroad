@@ -9,7 +9,7 @@ describe CheckoutController, type: :controller, inertia: true do
   render_views
 
   describe "GET show" do
-    it "returns HTTP success and renders the checkout inertia page" do
+    it "returns HTTP success, renders the checkout inertia page, and force enables analytics" do
       get :show
 
       expect(response).to be_successful
@@ -17,6 +17,13 @@ describe CheckoutController, type: :controller, inertia: true do
       expect(inertia.props[:discover_url]).to eq(discover_url(protocol: PROTOCOL, host: DISCOVER_DOMAIN))
       expect(inertia.props[:countries]).to be_present
       expect(inertia.props[:max_allowed_cart_products]).to eq(Cart::MAX_ALLOWED_CART_PRODUCTS)
+
+      html = Nokogiri::HTML.parse(response.body)
+      expect(html.xpath("//meta[@property='gr:google_analytics:enabled']/@content").text).to eq("true")
+      expect(html.xpath("//meta[@property='gr:fb_pixel:enabled']/@content").text).to eq("true")
+      expect(html.xpath("//meta[@property='gr:logged_in_user:id']/@content").text).to eq("")
+      expect(html.xpath("//meta[@property='gr:page:type']/@content").text).to eq("")
+      expect(html.xpath("//meta[@property='gr:facebook_sdk:enabled']/@content").text).to eq("true")
     end
 
     describe "process_cart_id_param check" do
@@ -35,6 +42,9 @@ describe CheckoutController, type: :controller, inertia: true do
           expect(response).to be_successful
           expect(inertia.component).to eq("Checkout/Show")
           expect(inertia.props).to have_key(:cart)
+
+          html = Nokogiri::HTML.parse(response.body)
+          expect(html.xpath("//meta[@property='gr:logged_in_user:id']/@content").text).to eq(user.external_id)
         end
 
         it "redirects to the same path removing the `cart_id` query param" do
