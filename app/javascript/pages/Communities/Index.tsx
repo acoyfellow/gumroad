@@ -79,11 +79,12 @@ interface PageProps {
 }
 
 interface ScrollMeta {
-  nextPage: string | null;
+  previousPage: string | null;
 }
 
 function CommunitiesIndex() {
   const currentSeller = useCurrentSeller();
+
   const isAboveBreakpoint = useIsAboveBreakpoint("lg");
   const {
     hasProducts,
@@ -139,24 +140,57 @@ function CommunitiesIndex() {
   }, [pageMessages, localMsgs, deletedMessageIds]);
 
   const scrollMeta = (usePage() as { scrollProps?: { messages?: ScrollMeta } }).scrollProps?.messages;
-  const hasOlderMessages = scrollMeta ? scrollMeta.nextPage != null : true;
+  const hasOlderMessages = scrollMeta ? scrollMeta.previousPage != null : true;
 
-  const prevFirstMessageIdRef = React.useRef<string | null>(null);
-  const prevMessagesLengthRef = React.useRef(0);
-
+  // Preserve scroll position when older messages are prepended.
+  // MutationObserver adjusts scrollTop immediately on DOM change.
+  // We also intercept scrollTo to block Inertia's restoreScrollPosition which
+  // computes a stale negative offset (via rAF) that would undo our adjustment.
   React.useEffect(() => {
-    const prevLength = prevMessagesLengthRef.current;
-    const prevFirstId = prevFirstMessageIdRef.current;
-    const currentLength = allMessages.length;
-    const currentFirstId = allMessages[0]?.id ?? null;
+    const container = chatContainerRef.current;
+    if (!container) return;
 
-    prevMessagesLengthRef.current = currentLength;
-    prevFirstMessageIdRef.current = currentFirstId;
+    let prevScrollHeight = container.scrollHeight;
+    let prevScrollTop = container.scrollTop;
 
-    if (prevLength > 0 && currentLength > prevLength && prevFirstId && currentFirstId !== prevFirstId) {
-      setScrollToMessage({ id: prevFirstId, position: "start" });
-    }
-  }, [allMessages]);
+    const onScroll = () => {
+      prevScrollTop = container.scrollTop;
+      prevScrollHeight = container.scrollHeight;
+    };
+    container.addEventListener("scroll", onScroll, { passive: true });
+
+    const mutationObserver = new MutationObserver(() => {
+      const newScrollHeight = container.scrollHeight;
+      const heightDiff = newScrollHeight - prevScrollHeight;
+
+      if (heightDiff > 0 && prevScrollTop < 200) {
+        container.scrollTop = prevScrollTop + heightDiff;
+      }
+
+      prevScrollHeight = newScrollHeight;
+      prevScrollTop = container.scrollTop;
+    });
+
+    mutationObserver.observe(container, { childList: true, subtree: true });
+
+    // Block Inertia's bogus scrollTo calls
+    const originalScrollTo = container.scrollTo.bind(container);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (container as any).scrollTo = function (...args: any[]) {
+      const current = container.scrollTop;
+      const targetTop = typeof args[0] === "number" ? (args[1] as number) : (args[0] as ScrollToOptions)?.top;
+      if (targetTop !== undefined && (targetTop < 0 || (current > 500 && targetTop < 100))) {
+        return;
+      }
+      return originalScrollTo(...(args as [ScrollToOptions]));
+    };
+
+    return () => {
+      mutationObserver.disconnect();
+      container.removeEventListener("scroll", onScroll);
+      container.scrollTo = originalScrollTo;
+    };
+  }, [selectedCommunity?.id]);
 
   const sendMessageToUserChannel = useDebouncedCallback((msg: OutgoingUserChannelMessage) => {
     const userChannelState = userChannelRef.current?.state;
@@ -333,7 +367,6 @@ function CommunitiesIndex() {
     return () => channel.disconnect();
   }, [cable, loggedInUser]);
 
-
   React.useEffect(() => {
     return () => {
       Object.values(communityChannelsRef.current).forEach((channel) => {
@@ -375,8 +408,6 @@ function CommunitiesIndex() {
   React.useEffect(() => {
     chatMessageInputRef.current?.focus();
     setDeletedMessageIds(new Set());
-    prevFirstMessageIdRef.current = null;
-    prevMessagesLengthRef.current = 0;
   }, [selectedCommunity?.id]);
 
   const switchSeller = (sellerId: string) => {
@@ -600,17 +631,16 @@ function CommunitiesIndex() {
                     <InfiniteScroll
                       key={selectedCommunity.id}
                       data="messages"
-                      reverse
                       preserveUrl
                       as="div"
-                      next={({ loading }) =>
+                      previous={({ loading }) =>
                         loading ? (
                           <div className="flex justify-center py-4">
                             <div className="text-sm text-muted">Loading older messages...</div>
                           </div>
                         ) : null
                       }
-                      previous={({ loading }) =>
+                      next={({ loading }) =>
                         loading ? (
                           <div className="flex justify-center py-4">
                             <div className="text-sm text-muted">Loading newer messages...</div>

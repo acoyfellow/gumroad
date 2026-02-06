@@ -60,8 +60,8 @@ class CommunitiesController < ApplicationController
     data = paginated_messages_data
     {
       page_name: "cursor",
-      previous_page: data[:next_newer_timestamp],
-      next_page: data[:next_older_timestamp],
+      previous_page: data[:next_older_timestamp],
+      next_page: data[:next_newer_timestamp],
       current_page: message_cursor
     }
   end
@@ -87,8 +87,8 @@ class CommunitiesController < ApplicationController
 
   def message_fetch_type
     case request.headers["X-Inertia-Infinite-Scroll-Merge-Intent"]
-    when "append" then "older"
-    when "prepend" then "newer"
+    when "prepend" then "older"
+    when "append" then "newer"
     else "around"
     end
   end

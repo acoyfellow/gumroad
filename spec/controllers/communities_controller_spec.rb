@@ -110,11 +110,11 @@ describe CommunitiesController, inertia: true do
         expect(inertia.props[:messages].map { |m| m[:id] }).to include(old_message.external_id)
       end
 
-      it "returns older messages with X-Inertia-Infinite-Scroll-Merge-Intent: append header" do
+      it "returns older messages with X-Inertia-Infinite-Scroll-Merge-Intent: prepend header" do
         old_message = create(:community_chat_message, community:, user: seller, created_at: 30.minutes.ago)
         new_message = create(:community_chat_message, community:, user: seller, created_at: 10.minutes.ago)
 
-        request.headers["X-Inertia-Infinite-Scroll-Merge-Intent"] = "append"
+        request.headers["X-Inertia-Infinite-Scroll-Merge-Intent"] = "prepend"
         get :show, params: {
           seller_id: seller.external_id,
           community_id: community.external_id,
