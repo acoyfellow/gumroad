@@ -63,6 +63,9 @@ class UrlRedirectPresenter
       purchase_id: purchase&.external_id,
       should_show_transcoding_notice: logged_in_user == url_redirect.seller && !url_redirect.with_product_files.has_been_transcoded?,
       transcode_on_first_sale: product_file.link&.transcode_videos_on_purchase.present?
+    }
+  end
+
   def read_page_props(product_file:, read_url:, title:)
     {
       read_id: product_file.external_id,
