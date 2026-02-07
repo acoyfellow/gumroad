@@ -17,15 +17,14 @@ class Communities::NotificationSettingsController < ApplicationController
   end
 
   private
+    def set_community
+      seller = User.find_by_external_id!(params[:seller_id])
+      @community = Community.alive.find_by_external_id!(params[:community_id])
 
-  def set_community
-    seller = User.find_by_external_id!(params[:seller_id])
-    @community = Community.alive.find_by_external_id!(params[:community_id])
+      raise ActiveRecord::RecordNotFound unless @community.seller_id == seller.id
+    end
 
-    raise ActiveRecord::RecordNotFound unless @community.seller_id == seller.id
-  end
-
-  def permitted_params
-    params.permit(:recap_frequency)
-  end
+    def permitted_params
+      params.permit(:recap_frequency)
+    end
 end

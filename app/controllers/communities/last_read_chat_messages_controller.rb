@@ -19,9 +19,8 @@ class Communities::LastReadChatMessagesController < ApplicationController
   end
 
   private
-
-  def set_community
-    @community = Community.find_by_external_id!(params[:community_id])
-    authorize @community, :show?
-  end
+    def set_community
+      @community = Community.find_by_external_id!(params[:community_id])
+      authorize @community, :show?
+    end
 end

@@ -22,13 +22,19 @@ const sortByName = <T extends { name: string }>(items: readonly T[]) =>
 
 export const useCommunities = () => {
   const pageProps = cast<PageProps>(usePage().props);
-  const { has_products, communities: initialCommunities, notification_settings, selectedCommunityId: initialSelectedCommunityId } = pageProps;
+  const {
+    has_products,
+    communities: initialCommunities,
+    notification_settings,
+    selectedCommunityId: initialSelectedCommunityId,
+  } = pageProps;
 
   const [communities, setCommunities] = React.useState<Community[]>(sortByName(initialCommunities));
-  const [notificationSettings, setNotificationSettings] = React.useState<CommunityNotificationSettings>(
-    notification_settings,
+  const [notificationSettings, setNotificationSettings] =
+    React.useState<CommunityNotificationSettings>(notification_settings);
+  const [selectedCommunityId, setSelectedCommunityId] = React.useState<string | null>(
+    initialSelectedCommunityId ?? null,
   );
-  const [selectedCommunityId, setSelectedCommunityId] = React.useState<string | null>(initialSelectedCommunityId ?? null);
   const [communityDrafts, setCommunityDrafts] = React.useState<Record<string, CommunityDraft>>({});
 
   const updateCommunity = React.useCallback(

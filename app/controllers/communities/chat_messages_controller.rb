@@ -44,28 +44,27 @@ class Communities::ChatMessagesController < ApplicationController
   end
 
   private
+    def set_community
+      @community = Community.find_by_external_id!(params[:community_id])
+      authorize @community, :show?
+    end
 
-  def set_community
-    @community = Community.find_by_external_id!(params[:community_id])
-    authorize @community, :show?
-  end
+    def set_message
+      @message = @community.community_chat_messages.find_by_external_id!(params[:id])
+      authorize @message
+    end
 
-  def set_message
-    @message = @community.community_chat_messages.find_by_external_id!(params[:id])
-    authorize @message
-  end
+    def permitted_params
+      params.require(:community_chat_message).permit(:content)
+    end
 
-  def permitted_params
-    params.require(:community_chat_message).permit(:content)
-  end
-
-  def broadcast_message(message_props, type)
-    CommunityChannel.broadcast_to(
-      "community_#{@community.external_id}",
-      { type:, message: message_props },
-    )
-  rescue => e
-    Rails.logger.error("Error broadcasting message to community channel: #{e.message}")
-    Bugsnag.notify(e)
-  end
+    def broadcast_message(message_props, type)
+      CommunityChannel.broadcast_to(
+        "community_#{@community.external_id}",
+        { type:, message: message_props },
+      )
+    rescue => e
+      Rails.logger.error("Error broadcasting message to community channel: #{e.message}")
+      Bugsnag.notify(e)
+    end
 end

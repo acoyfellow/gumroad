@@ -150,11 +150,11 @@ describe "Communities", :js, type: :system do
         expect(page).to have_radio_button("Weekly", checked: true)
 
         click_on "Save"
-        expect(page).to have_no_selector(".bg-backdrop", wait: 5)
       end
 
       wait_for_ajax
       expect(page).to have_alert(text: "Changes saved!")
+      expect(page).to have_no_selector(".bg-backdrop", wait: 5)
       expect(seller.reload.community_notification_settings.find_by(seller:).recap_frequency).to eq("weekly")
 
       within "[aria-label='Community switcher area']" do
@@ -172,6 +172,7 @@ describe "Communities", :js, type: :system do
 
       wait_for_ajax
       expect(page).to have_alert(text: "Changes saved!")
+      expect(page).to have_no_selector(".bg-backdrop", wait: 5)
       expect(seller.reload.community_notification_settings.find_by(seller:).recap_frequency).to eq("daily")
 
       within "[aria-label='Community switcher area']" do
@@ -191,6 +192,7 @@ describe "Communities", :js, type: :system do
 
       wait_for_ajax
       expect(page).to have_alert(text: "Changes saved!")
+      expect(page).to have_no_selector(".bg-backdrop", wait: 5)
       expect(seller.reload.community_notification_settings.find_by(seller:).recap_frequency).to be_nil
     end
 
@@ -404,11 +406,11 @@ describe "Communities", :js, type: :system do
         expect(page).to have_radio_button("Weekly", checked: true)
 
         click_on "Save"
-        expect(page).to have_no_selector(".bg-backdrop", wait: 5)
       end
 
       wait_for_ajax
       expect(page).to have_alert(text: "Changes saved!")
+      expect(page).to have_no_selector(".bg-backdrop", wait: 5)
       expect(buyer.reload.community_notification_settings.find_by(seller:).recap_frequency).to eq("weekly")
 
       within "[aria-label='Community switcher area']" do
@@ -426,6 +428,7 @@ describe "Communities", :js, type: :system do
 
       wait_for_ajax
       expect(page).to have_alert(text: "Changes saved!")
+      expect(page).to have_no_selector(".bg-backdrop", wait: 5)
       expect(buyer.reload.community_notification_settings.find_by(seller:).recap_frequency).to eq("daily")
 
       within "[aria-label='Community switcher area']" do
@@ -445,6 +448,7 @@ describe "Communities", :js, type: :system do
 
       wait_for_ajax
       expect(page).to have_alert(text: "Changes saved!")
+      expect(page).to have_no_selector(".bg-backdrop", wait: 5)
       expect(buyer.reload.community_notification_settings.find_by(seller:).recap_frequency).to be_nil
     end
 

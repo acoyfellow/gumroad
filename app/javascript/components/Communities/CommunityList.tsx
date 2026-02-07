@@ -1,9 +1,8 @@
+import { Link } from "@inertiajs/react";
 import cx from "classnames";
 import * as React from "react";
-import { Link } from "@inertiajs/react";
 
 import { Community } from "$app/data/communities";
-
 import { scrollTo } from "$app/pages/Communities/Index";
 
 export const CommunityList = ({
