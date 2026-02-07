@@ -1,7 +1,7 @@
-import * as React from "react";
 import { Head, usePage } from "@inertiajs/react";
+import * as React from "react";
 
-import { Profile, Props as ProfileProps } from "$app/components/server-components/Profile";
+import { Profile, Props as ProfileProps } from "$app/components/Profile";
 
 type Props = ProfileProps & {
   card_data_handling_mode: string;
@@ -16,7 +16,7 @@ export default function UserShowPage() {
     <div className="flex h-screen flex-col overflow-y-auto">
       {props.custom_styles ? (
         <Head>
-            <style>{props.custom_styles}</style>
+          <style>{props.custom_styles}</style>
         </Head>
       ) : null}
       <Profile {...props} />
@@ -24,4 +24,4 @@ export default function UserShowPage() {
   );
 }
 
-UserShowPage.StandaloneLayout = true
+UserShowPage.loggedInUserLayout = true;

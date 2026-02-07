@@ -96,4 +96,3 @@ export const Profile = (props: Props | EditProps) => (
     {"products" in props ? <EditProfile {...props} /> : <PublicProfile {...props} />}
   </Layout>
 );
-

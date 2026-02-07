@@ -1,7 +1,8 @@
-import * as React from "react";
 import { Head, usePage } from "@inertiajs/react";
+import * as React from "react";
 
-import { CreatorProfile } from "$app/parsers/profile";
+import { type CreatorProfile } from "$app/parsers/profile";
+
 import { FollowFormBlock } from "$app/components/Profile/FollowForm";
 import { Layout } from "$app/components/Profile/Layout";
 
@@ -26,4 +27,4 @@ export default function SubscribePage() {
     </>
   );
 }
-SubscribePage.StandaloneLayout= true;
+SubscribePage.loggedInUserLayout = true;
