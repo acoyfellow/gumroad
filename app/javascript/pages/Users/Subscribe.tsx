@@ -1,22 +1,22 @@
+import { usePage } from "@inertiajs/react";
 import * as React from "react";
+import { cast } from "ts-safe-cast";
 
 import { CreatorProfile } from "$app/parsers/profile";
 
 import { FollowFormBlock } from "$app/components/Profile/FollowForm";
 import { Layout } from "$app/components/Profile/Layout";
 
-type PageProps = {
+type SubscribePageProps = {
   creator_profile: CreatorProfile;
 };
 
-function ProfileSubscribe({ creator_profile }: PageProps) {
+export default function UsersSubscribe() {
+  const { creator_profile } = cast<SubscribePageProps>(usePage().props);
   return (
     <Layout hideFollowForm creatorProfile={creator_profile}>
-      <FollowFormBlock creatorProfile={creator_profile} className="px-4" useInertiaForm />
+      <FollowFormBlock creatorProfile={creator_profile} className="px-4" />
     </Layout>
   );
 }
-
-ProfileSubscribe.authenticationLayout = true;
-
-export default ProfileSubscribe;
+UsersSubscribe.loggedInUserLayout = true;

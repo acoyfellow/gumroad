@@ -98,23 +98,20 @@ describe FollowersController, inertia: true do
     end
 
     describe "POST create" do
-      it "creates a follower object" do
+      it "redirects to subscribe page with notice on success" do
         post :create, params: { email: "follower@example.com", seller_id: seller.external_id }
+        expect(response).to redirect_to(custom_domain_subscribe_path)
+        expect(response).to have_http_status(:see_other)
+        expect(flash[:notice]).to eq("Check your inbox to confirm your follow request.")
 
         follower = Follower.last
         expect(follower.email).to eq "follower@example.com"
         expect(follower.user).to eq seller
       end
 
-      it "redirects back with notice on success" do
-        post :create, params: { email: "follower@example.com", seller_id: seller.external_id }
-        expect(response).to redirect_to(seller.profile_url)
-        expect(flash[:notice]).to eq("Check your inbox to confirm your follow request.")
-      end
-
-      it "redirects back with alert when email is invalid" do
+      it "redirects to subscribe page with alert when email is invalid" do
         post :create, params: { email: "invalid email", seller_id: seller.external_id }
-        expect(response).to redirect_to(seller.profile_url)
+        expect(response).to redirect_to(custom_domain_subscribe_path)
         expect(flash[:alert]).to include("Email invalid")
       end
 
@@ -132,9 +129,10 @@ describe FollowersController, inertia: true do
           sign_in @buyer
         end
 
-        it "redirects back with notice on success" do
+        it "redirects to subscribe page with notice on success" do
           post :create, params: @params
-          expect(response).to redirect_to(seller.profile_url)
+          expect(response).to redirect_to(custom_domain_subscribe_path)
+          expect(response).to have_http_status(:see_other)
           expect(flash[:notice]).to eq("You are now following #{seller.name_or_username}!")
         end
 
@@ -149,7 +147,8 @@ describe FollowersController, inertia: true do
         it "follow should update the existing follower and not create another one or throw an exception" do
           post :create, params: { email: "follower@example.com", seller_id: seller.external_id }
 
-          expect(response).to redirect_to(seller.profile_url)
+          expect(response).to redirect_to(custom_domain_subscribe_path)
+          expect(response).to have_http_status(:see_other)
           expect(flash[:notice]).to eq("Check your inbox to confirm your follow request.")
 
           follower = Follower.last
@@ -160,7 +159,8 @@ describe FollowersController, inertia: true do
           sign_in new_user
 
           post :create, params: { email: "follower@example.com", seller_id: seller.external_id }
-          expect(response).to redirect_to(seller.profile_url)
+          expect(response).to redirect_to(custom_domain_subscribe_path)
+          expect(response).to have_http_status(:see_other)
           expect(flash[:notice]).to eq("You are now following #{seller.name_or_username}!")
 
           expect(Follower.count).to be 1
@@ -198,9 +198,10 @@ describe FollowersController, inertia: true do
         expect(follower.user).to eq seller
       end
 
-      it "shows proper success messaging" do
+      it "redirects to creator profile with success flash" do
         post :from_embed_form, params: { email: "follower@example.com", seller_id: seller.external_id }
-        expect(response.body).to match("Followed!")
+        expect(response).to redirect_to(seller.profile_url)
+        expect(flash[:notice]).to eq("Followed!")
       end
 
       it "redirects to follow page on failure with proper messaging" do
@@ -219,7 +220,8 @@ describe FollowersController, inertia: true do
           end.not_to change { Follower.count }
 
           expect(following_relationship.follower_user_id).to eq(following_user.id)
-          expect(response.body).to match("Followed!")
+          expect(response).to redirect_to(seller.profile_url)
+          expect(flash[:notice]).to eq("Followed!")
         end
       end
     end
