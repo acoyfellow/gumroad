@@ -40,7 +40,7 @@ describe "User Follow Page Scenario", type: :system, js: true do
         visit user_with_role_for_seller.subdomain_with_protocol
         expect(find("input[type='email']").value).to be_empty
         submit_follow_form(with: user_with_role_for_seller.email)
-        expect(page).to have_alert(text: "As the creator of this profile, you can't follow yourself!")
+        expect(page).to have_text("As the creator of this profile, you can't follow yourself!")
       end
     end
   end

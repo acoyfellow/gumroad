@@ -26,7 +26,7 @@ describe "/follow page", type: :system, js: true do
       visit "#{@creator.subdomain_with_protocol}/follow"
       fill_in("Your email address", with: @creator.email)
       click_on("Subscribe")
-      expect(page).to have_alert(text: "As the creator of this profile, you can't follow yourself!")
+      expect(page).to have_text("As the creator of this profile, you can't follow yourself!")
     end
 
     it "allows user to subscribe when logged out" do

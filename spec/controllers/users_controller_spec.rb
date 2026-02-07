@@ -97,12 +97,13 @@ describe UsersController do
       end
     end
 
-    it "returns user json when json request is sent" do
-      link = create(:product, user: create(:user, username: "creator"), name: "onelolol")
+    it "returns 404 when json request is sent" do
+      create(:product, user: create(:user, username: "creator"), name: "onelolol")
 
       @request.host = "creator.test.gumroad.com"
-      get :show, params: { username: "creator", format: "json" }
-      expect(response.parsed_body).to eq(link.user.as_json)
+      expect do
+        get :show, params: { username: "creator", format: "json" }
+      end.to raise_error(ActionController::RoutingError)
     end
 
     describe "redirection to subdomain for profile pages" do
@@ -163,8 +164,8 @@ describe UsersController do
           expect(assigns(:user)).to eq(@user)
         end
 
-        it "renders the show template" do
-          expect(response).to render_template(:show)
+        it "renders the Inertia Users/Show page", inertia: true do
+          expect(inertia.component).to eq("Users/Show")
         end
       end
 
@@ -198,8 +199,8 @@ describe UsersController do
         end
 
 
-        it "renders the show template" do
-          expect(response).to render_template(:show)
+        it "renders the Inertia Users/Show page", inertia: true do
+          expect(inertia.component).to eq("Users/Show")
         end
 
         describe "when the host is another subdomain that is www with the same apex domain" do
@@ -212,8 +213,8 @@ describe UsersController do
             expect(assigns(:user)).to eq(@user)
           end
 
-          it "renders the show template" do
-            expect(response).to render_template(:show)
+          it "renders the Inertia Users/Show page", inertia: true do
+            expect(inertia.component).to eq("Users/Show")
           end
         end
 
@@ -239,17 +240,17 @@ describe UsersController do
       end
     end
 
-    it "sets paypal_merchant_currency as merchant account's currency if native paypal payments are enabled else as usd" do
+    it "sets paypal_merchant_currency as merchant account's currency if native paypal payments are enabled else as usd", inertia: true do
       creator = create(:named_user)
       create(:product, user: creator)
 
       @request.host = "#{creator.username}.test.gumroad.com"
       get :show, params: { username: creator.username }
-      expect(assigns[:paypal_merchant_currency]).to eq "USD"
+      expect(inertia.props[:paypal_merchant_currency]).to eq "USD"
 
       create(:merchant_account_paypal, user: creator, currency: "GBP")
       get :show, params: { username: creator.username }
-      expect(assigns[:paypal_merchant_currency]).to eq "GBP"
+      expect(inertia.props[:paypal_merchant_currency]).to eq "GBP"
     end
 
     context "with user signed in as admin for seller" do
@@ -258,14 +259,14 @@ describe UsersController do
 
       include_context "with user signed in as admin for seller"
 
-      it "assigns the correct instance variables" do
+      it "renders creator profile props", inertia: true do
         expect(ProfilePresenter).to receive(:new).with(seller: creator, pundit_user: controller.pundit_user).at_least(:once).and_call_original
 
         @request.host = "#{creator.username}.test.gumroad.com"
         get :show, params: { username: creator.username }
 
-        profile_props = assigns[:profile_props]
-        expect(profile_props[:creator_profile][:external_id]).to eq(creator.external_id)
+        expect(inertia.component).to eq("Users/Show")
+        expect(inertia.props[:creator_profile][:external_id]).to eq(creator.external_id)
       end
     end
 
@@ -677,18 +678,18 @@ describe UsersController do
     end
   end
 
-  describe "GET subscribe" do
+  describe "GET subscribe", inertia: true do
     context "with user signed in as admin for seller" do
       include_context "with user signed in as admin for seller"
 
-      it "assigns the correct instance variables" do
+      it "renders the Inertia Users/Subscribe page with creator profile" do
         @request.host = "#{creator.username}.test.gumroad.com"
         get :subscribe
 
+        expect(response).to be_successful
+        expect(inertia.component).to eq("Users/Subscribe")
+        expect(inertia.props[:creator_profile][:external_id]).to eq(creator.external_id)
         expect(controller.send(:page_title)).to eq("Subscribe to creator")
-        profile_presenter = assigns[:profile_presenter]
-        expect(profile_presenter.seller).to eq(creator)
-        expect(profile_presenter.pundit_user).to eq(controller.pundit_user)
       end
     end
   end

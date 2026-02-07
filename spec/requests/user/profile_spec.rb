@@ -190,7 +190,7 @@ describe "User profile page", type: :system, js: true do
         expect(page).to have_link("Edit profile")
         expect(page).to have_text "Subscribe to receive email updates from #{seller.name}"
         submit_follow_form(with: "hello@example.com")
-        expect(page).to have_alert(text: "As the creator of this profile, you can't follow yourself!")
+        expect(page).to have_text("As the creator of this profile, you can't follow yourself!")
 
         add_section "Products"
         expect(page).to_not have_text "Subscribe to receive email updates from #{seller.name}"

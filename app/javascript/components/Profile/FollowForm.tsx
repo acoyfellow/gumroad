@@ -8,6 +8,7 @@ import { isValidEmail } from "$app/utils/email";
 
 import { Button } from "$app/components/Button";
 import { ButtonColor } from "$app/components/design";
+import Errors from "$app/components/Form/Errors";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 
 type FormData = {
@@ -69,7 +70,7 @@ export const FollowForm = ({
             }}
             placeholder="Your email address"
           />
-          <Button color={buttonColor} disabled={form.processing || isSubmittedSuccessfully} type="submit">
+              <Button color={buttonColor} disabled={form.processing || isSubmittedSuccessfully} type="submit">
             {buttonLabel && buttonLabel !== "Subscribe"
               ? buttonLabel
               : isSubmittedSuccessfully
@@ -77,11 +78,12 @@ export const FollowForm = ({
                 : form.processing
                   ? "Subscribing..."
                   : "Subscribe"}
-          </Button>
-        </div>
-      </fieldset>
-    </form>
-  );
+              </Button>
+            </div>
+            <Errors errors={form.errors.email} label="" />
+          </fieldset>
+        </form>
+      );
 };
 
 export const FollowFormBlock = ({
