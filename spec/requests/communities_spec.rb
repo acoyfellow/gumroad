@@ -18,6 +18,13 @@ describe "Communities", :js, type: :system do
     have_selector("[aria-label='Message content']", text: content, match: :first)
   end
 
+  def hover_until_actions_visible(element)
+    3.times do
+      element.hover
+      break if element.has_css?("[aria-label='Actions']", wait: 2)
+    end
+  end
+
   context "when the logged in seller has an active community" do
     let(:product) { create(:product, name: "Mastering Rails", user: seller, community_chat_enabled: true) }
     let!(:community) { create(:community, resource: product, seller:) }
@@ -65,13 +72,13 @@ describe "Communities", :js, type: :system do
         within "[aria-label='Chat messages']" do
           expect(page).to have_message("Hello, world!")
           message_element = find_message("Hello, world!")
-          message_element.hover
+          hover_until_actions_visible(message_element)
 
           within message_element do
             expect(page).to have_text(seller.display_name)
             expect(page).to have_text("CREATOR")
-            expect(page).to have_button("Edit message", wait: 5)
-            expect(page).to have_button("Delete message", wait: 5)
+            expect(page).to have_button("Edit message")
+            expect(page).to have_button("Delete message")
 
             click_button "Edit message"
             fill_in "Edit message", with: "This is wonderful!"
@@ -85,6 +92,7 @@ describe "Communities", :js, type: :system do
 
           expect(message.reload.content).to eq("This is wonderful!")
 
+          hover_until_actions_visible(message_element)
           within message_element do
             click_button "Delete message"
             within_modal "Delete message" do
@@ -108,12 +116,12 @@ describe "Communities", :js, type: :system do
       visit community_path(seller.external_id, community.external_id)
 
       customer_message_element = find_message("Hello, world!")
-      customer_message_element.hover
+      hover_until_actions_visible(customer_message_element)
       within customer_message_element do
         expect(page).to have_text("John Customer")
         expect(page).not_to have_text("CREATOR")
         expect(page).not_to have_button("Edit message")
-        expect(page).to have_button("Delete message", wait: 5)
+        expect(page).to have_button("Delete message")
 
         click_button "Delete message"
         within_modal "Delete message" do
@@ -249,12 +257,12 @@ describe "Communities", :js, type: :system do
 
         within "[aria-label='Chat messages']" do
           message_element = find_message("Wow, this is amazing!")
-          message_element.hover
+          hover_until_actions_visible(message_element)
           within message_element do
             expect(page).to have_text("Bob")
             expect(page).to have_text("CREATOR")
-            expect(page).to have_button("Edit message", wait: 5)
-            expect(page).to have_button("Delete message", wait: 5)
+            expect(page).to have_button("Edit message")
+            expect(page).to have_button("Delete message")
           end
         end
       end
@@ -331,12 +339,12 @@ describe "Communities", :js, type: :system do
         within "[aria-label='Chat messages']" do
           expect(page).to have_message("Hello from John!")
           message_element = find_message("Hello from John!")
-          message_element.hover
+          hover_until_actions_visible(message_element)
           within message_element do
             expect(page).to have_text("John Buyer")
             expect(page).not_to have_text("CREATOR")
-            expect(page).to have_button("Edit message", wait: 5)
-            expect(page).to have_button("Delete message", wait: 5)
+            expect(page).to have_button("Edit message")
+            expect(page).to have_button("Delete message")
 
             click_button "Edit message"
             fill_in "Edit message", with: "This is wonderful!"
@@ -350,6 +358,7 @@ describe "Communities", :js, type: :system do
 
           expect(message.reload.content).to eq("This is wonderful!")
 
+          hover_until_actions_visible(message_element)
           within message_element do
             click_button "Delete message"
             within_modal "Delete message" do
@@ -528,12 +537,12 @@ describe "Communities", :js, type: :system do
 
         within "[aria-label='Chat messages']" do
           message_element = find_message("Wow, this is amazing!")
-          message_element.hover
+          hover_until_actions_visible(message_element)
           within message_element do
             expect(page).to have_text("John Buyer")
             expect(page).not_to have_text("CREATOR")
-            expect(page).to have_button("Edit message", wait: 5)
-            expect(page).to have_button("Delete message", wait: 5)
+            expect(page).to have_button("Edit message")
+            expect(page).to have_button("Delete message")
           end
         end
       end
@@ -644,12 +653,12 @@ describe "Communities", :js, type: :system do
 
         within "[aria-label='Chat messages']" do
           message_element = find_message("This is great!")
-          message_element.hover
+          hover_until_actions_visible(message_element)
           within message_element do
             expect(page).to have_text("John Buyer")
             expect(page).not_to have_text("CREATOR")
-            expect(page).to have_button("Edit message", wait: 5)
-            expect(page).to have_button("Delete message", wait: 5)
+            expect(page).to have_button("Edit message")
+            expect(page).to have_button("Delete message")
           end
         end
       end
