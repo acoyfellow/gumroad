@@ -56,7 +56,7 @@ export const FollowForm = ({
 
   return (
     <form onSubmit={(e) => void submit(e)} style={{ flexGrow: 1 }} noValidate>
-      <fieldset className={cx({ danger: Boolean(form.errors.email) })}>
+      <fieldset className={cx({ danger: form.errors.email })}>
         <div className="flex gap-2">
           <input
             ref={emailInputRef}
@@ -69,7 +69,7 @@ export const FollowForm = ({
             }}
             placeholder="Your email address"
           />
-          <Button color={buttonColor} disabled={form.processing} type="submit">
+          <Button color={buttonColor} disabled={form.processing || isSubmittedSuccessfully} type="submit">
             {buttonLabel && buttonLabel !== "Subscribe"
               ? buttonLabel
               : isSubmittedSuccessfully
