@@ -571,6 +571,7 @@ describe UrlRedirectsController do
           expect(inertia.props[:url_redirect_id]).to eq(@url_redirect.external_id)
           expect(inertia.props[:purchase_id]).to be_nil
           expect(inertia.props[:should_show_transcoding_notice]).to eq(false)
+          expect(inertia.props[:transcode_on_first_sale]).to eq(false)
 
           playlist = inertia.props.fetch(:playlist)
           expect(playlist).to be_present
@@ -664,7 +665,11 @@ describe UrlRedirectsController do
           expect(response).to have_http_status(:ok)
           expect(inertia.component).to eq("UrlRedirects/Stream")
           expect(inertia.props[:playlist]).to be_present
+          expect(inertia.props[:index_to_play]).to eq(0)
           expect(inertia.props[:url_redirect_id]).to eq(@url_redirect.external_id)
+          expect(inertia.props[:purchase_id]).to be_nil
+          expect(inertia.props[:should_show_transcoding_notice]).to eq(false)
+          expect(inertia.props[:transcode_on_first_sale]).to eq(false)
         end
 
         it "renders stream page with product_file_id via custom subdomain" do
@@ -673,7 +678,11 @@ describe UrlRedirectsController do
           expect(response).to have_http_status(:ok)
           expect(inertia.component).to eq("UrlRedirects/Stream")
           expect(inertia.props[:playlist]).to be_present
+          expect(inertia.props[:index_to_play]).to eq(0)
           expect(inertia.props[:url_redirect_id]).to eq(@url_redirect.external_id)
+          expect(inertia.props[:purchase_id]).to be_nil
+          expect(inertia.props[:should_show_transcoding_notice]).to eq(false)
+          expect(inertia.props[:transcode_on_first_sale]).to eq(false)
         end
       end
     end
