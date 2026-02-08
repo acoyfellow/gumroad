@@ -238,15 +238,10 @@ class UrlRedirectsController < ApplicationController
 
   # Consumption event is created by front-end code
   def stream
-    set_meta_tag(title: "Watch")
-    set_favicon_meta_tags(@url_redirect.seller)
-    @body_id = "stream_page"
-    @body_class = "download-page responsive responsive-nav"
+    product_file = @url_redirect.product_file(params[:product_file_id]) || @url_redirect.alive_product_files.find(&:streamable?)
+    e404 unless product_file&.streamable?
 
-    @product_file = @url_redirect.product_file(params[:product_file_id]) || @url_redirect.alive_product_files.find(&:streamable?)
-    e404 unless @product_file&.streamable?
-
-    render inertia: "UrlRedirects/Stream", props: UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).stream_page_props(product_file: @product_file)
+    render inertia: "UrlRedirects/Stream", props: UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).stream_page_props(product_file:)
   end
 
   def latest_media_locations

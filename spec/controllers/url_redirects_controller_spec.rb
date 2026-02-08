@@ -563,14 +563,17 @@ describe UrlRedirectsController do
           stub_const("UrlRedirect::GUID_GETTER_FROM_S3_URL_REGEX", /(specs)/)
         end
 
-        it "assigns the first streamable product file to '@product_file' and renders the stream page correctly", inertia: true do
+        it "renders the stream page with the first streamable product file and all stream props", inertia: true do
           get :stream, params: { id: @url_redirect.token }
 
           expect(response).to have_http_status(:ok)
-          expect(assigns(:product_file)).to eq(@product.product_files.first)
           expect_inertia.to render_component "UrlRedirects/Stream"
           expect(inertia.props[:playlist]).to be_an(Array)
+          expect(inertia.props[:index_to_play]).to eq(0)
           expect(inertia.props[:url_redirect_id]).to eq(@url_redirect.external_id)
+          expect(inertia.props.key?(:purchase_id)).to be true
+          expect(inertia.props.key?(:should_show_transcoding_notice)).to be true
+          expect(inertia.props.key?(:transcode_on_first_sale)).to be true
         end
       end
 
@@ -587,7 +590,11 @@ describe UrlRedirectsController do
           expect(response).to have_http_status(:ok)
           expect(inertia.component).to eq("UrlRedirects/Stream")
           expect(inertia.props[:playlist]).to be_present
+          expect(inertia.props[:index_to_play]).to eq(0)
           expect(inertia.props[:url_redirect_id]).to eq(@url_redirect.external_id)
+          expect(inertia.props.key?(:purchase_id)).to be true
+          expect(inertia.props.key?(:should_show_transcoding_notice)).to be true
+          expect(inertia.props.key?(:transcode_on_first_sale)).to be true
         end
 
         it "renders stream with product_file_id via custom domain", inertia: true do
@@ -596,7 +603,11 @@ describe UrlRedirectsController do
           expect(response).to have_http_status(:ok)
           expect(inertia.component).to eq("UrlRedirects/Stream")
           expect(inertia.props[:playlist]).to be_present
+          expect(inertia.props[:index_to_play]).to eq(0)
           expect(inertia.props[:url_redirect_id]).to eq(@url_redirect.external_id)
+          expect(inertia.props.key?(:purchase_id)).to be true
+          expect(inertia.props.key?(:should_show_transcoding_notice)).to be true
+          expect(inertia.props.key?(:transcode_on_first_sale)).to be true
         end
       end
 
@@ -1047,6 +1058,10 @@ describe UrlRedirectsController do
           expect(inertia.props[:playlist][0][:sources][0]).to include "index.m3u8"
           expect(inertia.props[:playlist][0][:sources][1]).to include @video_file_1.s3_filename
           expect(inertia.props[:index_to_play]).to eq 0
+          expect(inertia.props[:url_redirect_id]).to eq(@multifile_url_redirect.external_id)
+          expect(inertia.props.key?(:purchase_id)).to be true
+          expect(inertia.props.key?(:should_show_transcoding_notice)).to be true
+          expect(inertia.props.key?(:transcode_on_first_sale)).to be true
         end
 
         it "sets the smil url and the original video url in sources if the video is not HLS-transcoded yet", inertia: true do
@@ -1059,6 +1074,10 @@ describe UrlRedirectsController do
           expect(inertia.props[:playlist][0][:sources][0]).to include "stream.smil"
           expect(inertia.props[:playlist][0][:sources][1]).to include @video_file_1.s3_filename
           expect(inertia.props[:index_to_play]).to eq 0
+          expect(inertia.props[:url_redirect_id]).to eq(@multifile_url_redirect.external_id)
+          expect(inertia.props.key?(:purchase_id)).to be true
+          expect(inertia.props.key?(:should_show_transcoding_notice)).to be true
+          expect(inertia.props.key?(:transcode_on_first_sale)).to be true
         end
 
         context "when the product has rich content" do
@@ -1095,6 +1114,10 @@ describe UrlRedirectsController do
             expect(inertia.props[:playlist][2][:sources][1]).to include video_file_3.s3_filename
             expect(inertia.props[:playlist][2][:title]).to eq "chapter3"
             expect(inertia.props[:index_to_play]).to eq 0
+            expect(inertia.props[:url_redirect_id]).to eq(@multifile_url_redirect.external_id)
+            expect(inertia.props.key?(:purchase_id)).to be true
+            expect(inertia.props.key?(:should_show_transcoding_notice)).to be true
+            expect(inertia.props.key?(:transcode_on_first_sale)).to be true
           end
         end
 
@@ -1127,6 +1150,10 @@ describe UrlRedirectsController do
           expect(inertia.props[:playlist][0][:sources][1]).to include video_file_3.s3_filename
           expect(inertia.props[:playlist][0][:title]).to eq video_file_3.display_name
           expect(inertia.props[:index_to_play]).to eq 0
+          expect(inertia.props[:url_redirect_id]).to eq(url_redirect.external_id)
+          expect(inertia.props.key?(:purchase_id)).to be true
+          expect(inertia.props.key?(:should_show_transcoding_notice)).to be true
+          expect(inertia.props.key?(:transcode_on_first_sale)).to be true
         end
       end
 
