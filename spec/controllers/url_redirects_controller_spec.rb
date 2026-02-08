@@ -563,11 +563,22 @@ describe UrlRedirectsController do
           stub_const("UrlRedirect::GUID_GETTER_FROM_S3_URL_REGEX", /(specs)/)
         end
 
-        it "assigns the first streamable product file to '@product_file' and renders the stream page correctly" do
+        it "renders the stream page with the first streamable product file" do
           get :stream, params: { id: @url_redirect.token }
 
           expect(response).to have_http_status(:ok)
-          expect(assigns(:product_file)).to eq(@product.product_files.first)
+          expect(inertia.component).to eq("UrlRedirects/Stream")
+          expect(inertia.props[:url_redirect_id]).to eq(@url_redirect.external_id)
+          expect(inertia.props[:purchase_id]).to be_nil
+          expect(inertia.props[:should_show_transcoding_notice]).to eq(false)
+
+          playlist = inertia.props.fetch(:playlist)
+          expect(playlist).to be_present
+          expect(inertia.props[:index_to_play]).to eq(0)
+
+          streamable_product_file = @product.product_files.find(&:streamable?)
+          first_external_id = playlist.first[:external_id] || playlist.first["external_id"]
+          expect(first_external_id).to eq(streamable_product_file.external_id)
         end
       end
 
@@ -609,7 +620,35 @@ describe UrlRedirectsController do
               headers: { "HOST" => custom_domain.domain }
 
           expect(response).to have_http_status(:ok)
-          expect(response.body).to include("UrlRedirects/Stream")
+          expect(response.body).to include("data-page=")
+
+          page_data_match = response.body.match(/data-page=\"([^\"]*)\"/)
+          expect(page_data_match).to be_present, "Expected Inertia.js data-page attribute"
+
+          page_data = JSON.parse(CGI.unescapeHTML(page_data_match[1]))
+          expect(page_data.fetch("component")).to eq("UrlRedirects/Stream")
+
+          props = page_data.fetch("props")
+          expect(props).to include(
+            "playlist",
+            "index_to_play",
+            "url_redirect_id",
+            "purchase_id",
+            "should_show_transcoding_notice",
+            "transcode_on_first_sale",
+          )
+
+          expect(props.fetch("url_redirect_id")).to eq(@url_redirect.external_id)
+          expect(props.fetch("purchase_id")).to be_nil
+          expect(props.fetch("should_show_transcoding_notice")).to eq(false)
+          expect(props.fetch("transcode_on_first_sale")).to eq(false)
+
+          playlist = props.fetch("playlist")
+          expect(playlist).to be_present
+          expect(props.fetch("index_to_play")).to eq(0)
+
+          streamable_product_file = @product.product_files.find(&:streamable?)
+          expect(playlist.first.fetch("external_id")).to eq(streamable_product_file.external_id)
         end
       end
 

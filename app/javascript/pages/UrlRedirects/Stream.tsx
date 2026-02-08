@@ -11,6 +11,7 @@ import { createJWPlayer } from "$app/utils/jwPlayer";
 import { TranscodingNoticeModal } from "$app/components/Download/TranscodingNoticeModal";
 import { useRunOnce } from "$app/components/useRunOnce";
 
+const FAKE_VIDEO_URL_GUID_FOR_OBFUSCATION = "ef64f2fef0d6c776a337050020423fc0";
 const LOCATION_TRACK_EVENT_DELAY_MS = 10_000;
 
 type SubtitleFile = {
@@ -37,8 +38,6 @@ type StreamProps = {
   should_show_transcoding_notice: boolean;
   transcode_on_first_sale: boolean;
 };
-
-const fakeVideoUrlGuidForObfuscation = "ef64f2fef0d6c776a337050020423fc0";
 
 function Stream() {
   const {
@@ -68,7 +67,7 @@ function Stream() {
         height: "100%",
         playlist: playlist.map((video) => ({
           sources: video.sources.map((source) => ({
-            file: source.replace(fakeVideoUrlGuidForObfuscation, video.guid),
+            file: source.replace(FAKE_VIDEO_URL_GUID_FOR_OBFUSCATION, video.guid),
           })),
           tracks: video.tracks,
           title: video.title,
