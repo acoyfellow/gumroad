@@ -71,9 +71,9 @@ class UrlRedirectPresenter
       read_id: product_file.external_id,
       url: read_url,
       url_redirect_id: url_redirect.external_id,
-      purchase_id: url_redirect.purchase.try(:external_id),
+      purchase_id: purchase&.external_id,
       product_file_id: product_file.external_id,
-      latest_media_location: product_file.latest_media_location_for(url_redirect.purchase),
+      latest_media_location: product_file.latest_media_location_for(purchase),
       title:,
     }
   end
