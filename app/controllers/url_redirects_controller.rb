@@ -238,7 +238,7 @@ class UrlRedirectsController < ApplicationController
   def stream
     set_meta_tag(title: "Watch")
     product_file = @url_redirect.product_file(params[:product_file_id]) || @url_redirect.alive_product_files.find(&:streamable?)
-    return e404 if product_file.blank? || !product_file.streamable?
+    e404 unless product_file&.streamable?
 
     render inertia: "UrlRedirects/Stream", props: UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).stream_page_props(product_file:)
   end
