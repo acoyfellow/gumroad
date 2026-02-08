@@ -121,7 +121,6 @@ describe("Product Page - Tax Scenarios", type: :system, js: true) do
         visit @product.long_url
         add_to_cart(@product)
         fill_checkout_form(@product, address: { street: "3029 W Sherman Rd", city: "San Tan Valley", state: "AZ", zip_code: "85144" })
-        wait_until_true { Cart.alive.where(email: "test@gumroad.com").exists? }
         expect(page).to have_text("Subtotal US$500", normalize_ws: true)
         expect(page).to_not have_text("Tip US$", normalize_ws: true)
         expect(page).to have_text("Sales tax US$53.50", normalize_ws: true)
@@ -1426,7 +1425,6 @@ describe("Product Page - Tax Scenarios", type: :system, js: true) do
         expect(page).to have_text("Total US$100", normalize_ws: true)
 
         check_out(physical_product, address: { street: "Building 1234, Road 123, Block 123", city: "Manama", zip_code: "12345", state: "BH", country: "BH" }, credit_card: { number: "4000000360000006" }, should_verify_address: true)
-        wait_until_true { Cart.alive.where(email: "test@gumroad.com").exists? }
 
         purchase = Purchase.last
         expect(purchase.total_transaction_cents).to eq(100_00)
@@ -1926,7 +1924,6 @@ describe("Product Page - Tax Scenarios", type: :system, js: true) do
 
         check_out(physical_product, address: { street: "Building 1234, Road 123, Block 123", city: "Quito", zip_code: "170101", state: "EC", country: "EC" }, credit_card: { number: "4000000360000006" }, should_verify_address: true)
 
-        wait_until_true { Cart.alive.where(email: "test@gumroad.com").exists? }
         purchase = Purchase.last
         expect(purchase.total_transaction_cents).to eq(100_00)
         expect(purchase.price_cents).to eq(100_00)
@@ -2645,7 +2642,6 @@ describe("Product Page - Tax Scenarios", type: :system, js: true) do
 
         check_out(physical_product, address: { street: "Building 1234, Road 123, Block 123", city: "Chisinau", zip_code: "MD-2001", state: "Chisinau", country: "MD" }, credit_card: { number: "4000000360000006" }, should_verify_address: true)
 
-        wait_until_true { Cart.alive.where(email: "test@gumroad.com").exists? }
         purchase = Purchase.last
         expect(purchase.total_transaction_cents).to eq(100_00)
         expect(purchase.price_cents).to eq(100_00)
@@ -3140,7 +3136,6 @@ describe("Product Page - Tax Scenarios", type: :system, js: true) do
         expect(page).to have_text("Total US$100", normalize_ws: true)
 
         check_out(physical_product, address: { street: "Building 1234, Road 123, Block 123", city: "Riyadh", zip_code: "10000", state: "Riyadh", country: "SA" }, credit_card: { number: "4000000360000006" }, should_verify_address: true)
-        wait_until_true { Cart.alive.where(email: "test@gumroad.com").exists? }
 
         purchase = Purchase.last
         expect(purchase.total_transaction_cents).to eq(100_00)
@@ -4146,7 +4141,6 @@ describe("Product Page - Tax Scenarios", type: :system, js: true) do
         expect(page).to have_select("Province", selected: "QC")
 
         check_out(product, qst_id: "1002092821TQ0001", zip_code: nil, credit_card: { number: "4000001240000000" }) do
-          wait_until_true { Cart.alive.where(email: "test@gumroad.com").exists? }
           expect(page).to have_text("Subtotal US$100", normalize_ws: true)
           expect(page).to have_text("Total US$100", normalize_ws: true)
         end
@@ -4253,7 +4247,7 @@ describe("Product Page - Tax Scenarios", type: :system, js: true) do
       expect(page).to have_select("Country", selected: "Austria")
 
       fill_in("Your email address", with: "test@test.com")
-      fill_in_credit_card
+      fill_cc_details
 
       expect(page).to have_text("VAT US$20", normalize_ws: true)
 

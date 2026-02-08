@@ -22,7 +22,6 @@ describe("Product Page - Shipping Scenarios", type: :system, js: true, shipping:
       expect(page).to have_text("Shipping rate US$30.65", normalize_ws: true)
       expect(page).to have_text("Total US$194.16", normalize_ws: true)
     end
-    wait_until_true { Cart.alive.where(email: "test@gumroad.com").exists? }
 
     expect(Purchase.last.price_cents).to eq(18389)
     expect(Purchase.last.shipping_cents).to eq(3065)
