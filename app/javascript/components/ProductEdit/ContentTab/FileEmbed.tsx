@@ -59,7 +59,7 @@ const FileEmbedNodeView = ({
   updateAttributes,
   config,
 }: NodeViewProps & { config: FileEmbedConfig }) => {
-  const { id, onUpdateFile, filesById } = config;
+  const { id, onUpdateFile, filesById, removeFile } = config;
   const uid = React.useId();
   const ref = React.useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = React.useState(false);
@@ -212,9 +212,7 @@ const FileEmbedNodeView = ({
     deleteNode();
     uploader.cancelUpload(`file_${file.id}`);
     if (file.status.type === "dropbox") void cancelDropboxFileUpload(file.id);
-    updateProduct((product) => {
-      product.files = product.files.filter((f) => f.id !== file.id);
-    });
+    removeFile(file.id);
   };
 
   const setDragOver = (value: boolean) => {
@@ -707,6 +705,7 @@ export type FileEmbedConfig = {
   filesById: Map<string, FileEntry>;
   id: string;
   onUpdateFile: (fileId: string, data: Partial<FileEntry>) => void;
+  removeFile: (fileId: string) => void;
 };
 
 export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }>({
@@ -727,7 +726,12 @@ export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }
         ...props,
         // The fallback config is used to for creating a lightweight editor
         // used for transforming form data before submission in Products/Content/Edit .
-        config: this.options.getConfig?.() ?? { filesById: new Map(), id: "", onUpdateFile: () => {} },
+        config: this.options.getConfig?.() ?? {
+          filesById: new Map(),
+          id: "",
+          onUpdateFile: () => {},
+          removeFile: () => {},
+        },
       }),
     );
   },

@@ -306,6 +306,7 @@ export const ContentTabContent = ({
     },
     id: productId,
     onUpdateFile: updateFile,
+    removeFile: (fileId) => onUpdateFiles((prev) => prev.filter((f) => f.id !== fileId)),
   });
   const uploadFilesRef = useLatest(uploadFiles);
   const contentEditorExtensions = extensions(productId, [
@@ -340,9 +341,7 @@ export const ContentTabContent = ({
         node.remove();
       }
     });
-    if (newFiles.length > 0) {
-      onUpdateFiles((prev) => [...prev.filter((f) => !newFiles.includes(f)), ...newFiles]);
-    }
+    if (newFiles.length > 0) onUpdateFiles((prev) => [...prev.filter((f) => !newFiles.includes(f)), ...newFiles]);
     const description = generateJSON(
       new XMLSerializer().serializeToString(fragment),
       baseEditorOptions(contentEditorExtensions).extensions,
