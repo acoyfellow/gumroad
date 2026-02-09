@@ -6,10 +6,6 @@ class StampPdfForPurchaseJob
   sidekiq_options queue: :long, retry: 5, lock: :until_executed
 
   def perform(purchase_id, notify_buyer = false)
-    if Sidekiq::Context.current[:queue] != "long" && Feature.active?(:skip_pdf_stamping_jobs)
-      raise "PDF stamping jobs are disabled outside of long queue"
-    end
-
     purchase = Purchase.find(purchase_id)
     PdfStampingService.stamp_for_purchase!(purchase)
 

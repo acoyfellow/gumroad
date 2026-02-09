@@ -11,30 +11,6 @@ describe StampPdfForPurchaseJob do
     allow(PdfStampingService).to receive(:stamp_for_purchase!)
   end
 
-  context "when skip_pdf_stamping_jobs feature is active and queue is not long" do
-    before do
-      allow(Sidekiq::Context).to receive(:current).and_return({ queue: "default" })
-      allow(Feature).to receive(:active?).with(:skip_pdf_stamping_jobs).and_return(true)
-    end
-
-    it "raises and does not stamp PDFs" do
-      expect { described_class.new.perform(purchase.id) }.to raise_error("PDF stamping jobs are disabled outside of long queue")
-      expect(PdfStampingService).not_to have_received(:stamp_for_purchase!)
-    end
-  end
-
-  context "when skip_pdf_stamping_jobs feature is active and queue is long" do
-    before do
-      allow(Sidekiq::Context).to receive(:current).and_return({ queue: "long" })
-      allow(Feature).to receive(:active?).with(:skip_pdf_stamping_jobs).and_return(true)
-    end
-
-    it "does not raise and stamps PDFs" do
-      described_class.new.perform(purchase.id)
-      expect(PdfStampingService).to have_received(:stamp_for_purchase!).with(purchase)
-    end
-  end
-
   it "performs the job" do
     described_class.new.perform(purchase.id)
     expect(PdfStampingService).to have_received(:stamp_for_purchase!).with(purchase)
