@@ -97,14 +97,12 @@ describe UsersController do
       end
     end
 
-    it "returns 404 when json request is sent" do
-      create(:product, user: create(:user, username: "creator"), name: "onelolol")
+    it "returns user json when request is sent" do
+      link = create(:product, user: create(:user, username: "creator"), name: "onelolol")
 
       @request.host = "creator.test.gumroad.com"
-      expect do
-        get :show, params: { username: "creator", format: "json" }
-      end.to raise_error(ActionController::RoutingError)
-    end
+      get :show, params: { username: "creator", format: "json" }
+      expect(response.parsed_body).to eq(link.user.as_json)    end
 
     describe "redirection to subdomain for profile pages" do
       before do
