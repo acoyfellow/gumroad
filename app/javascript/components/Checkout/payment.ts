@@ -405,8 +405,10 @@ export function createReducer(initial: {
   const [state, dispatch] = reducer;
   useRunOnce(() => {
     const url = new URL(window.location.href);
+    if (url.pathname.startsWith(Routes.checkout_path())) return;
     const searchParams = new URLSearchParams([...url.searchParams].filter(([key]) => key === "_gl"));
     url.search = searchParams.toString();
+    // #TODO (sm17p) Replace with inertia router once subscription manage page is migrated to Inertia
     window.history.replaceState(window.history.state, "", url.toString());
   });
 
