@@ -71,6 +71,9 @@ import { Posts, PostsProvider } from "$app/components/TiptapExtensions/Posts";
 import { ShortAnswer } from "$app/components/TiptapExtensions/ShortAnswer";
 import { UpsellCard } from "$app/components/TiptapExtensions/UpsellCard";
 import { Card, CardContent } from "$app/components/ui/Card";
+import { Checkbox } from "$app/components/ui/Checkbox";
+import { InputGroup } from "$app/components/ui/InputGroup";
+import { Label } from "$app/components/ui/Label";
 import { Row, RowContent, Rows } from "$app/components/ui/Rows";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { UpsellSelectModal, Product, ProductOption } from "$app/components/UpsellSelectModal";
@@ -1257,16 +1260,16 @@ export default function ContentPage() {
                   <>
                     <hr className="relative left-1/2 my-2 w-screen max-w-none -translate-x-1/2 border-border lg:hidden" />
                     <ComboBox<Variant>
-                      multiple
                       input={(props) => (
-                        <div {...props} className="input h-full min-h-auto" aria-label="Select a version">
-                          <span className="fake-input text-singleline">
+                        <InputGroup {...props} className="cursor-pointer py-3" aria-label="Select a version">
+                          <span className="text-singleline flex-1">
+
                             {selectedVariant && !form.data.has_same_rich_content_for_all_variants
                               ? `Editing: ${selectedVariant.name || "Untitled"}`
                               : "Editing: All versions"}
                           </span>
                           <Icon name="outline-cheveron-down" />
-                        </div>
+                        </InputGroup>
                       )}
                       options={form.data.variants}
                       option={(item, props, index) => (
@@ -1280,7 +1283,7 @@ export default function ContentPage() {
                             aria-selected={item.id === selectedVariantId}
                             inert={form.data.has_same_rich_content_for_all_variants}
                           >
-                            <div>
+                            <div className="flex-1">
                               <h4>{item.name || "Untitled"}</h4>
                               {item.id === selectedVariant?.id ? (
                                 <small>Editing</small>
@@ -1301,13 +1304,16 @@ export default function ContentPage() {
                                 <small className="text-muted">No content yet</small>
                               )}
                             </div>
+                            {item.id === selectedVariant?.id && (
+                              <Icon name="solid-check-circle" className="ml-auto text-success" />
+                            )}
                           </div>
+
                           {index === form.data.variants.length - 1 ? (
-                            <div className="option">
-                              <label style={{ alignItems: "center" }}>
-                                <input
-                                  type="checkbox"
-                                  checked={form.data.has_same_rich_content_for_all_variants}
+                            <div className="flex cursor-pointer items-center px-4 py-2">
+                              <Label className="items-center">
+                                <Checkbox
+                                  checked={product.has_same_rich_content_for_all_variants}
                                   onChange={() => {
                                     if (
                                       !form.data.has_same_rich_content_for_all_variants &&
@@ -1318,7 +1324,7 @@ export default function ContentPage() {
                                   }}
                                 />
                                 <small>Use the same content for all versions</small>
-                              </label>
+                              </Label>
                             </div>
                           ) : null}
                         </>
