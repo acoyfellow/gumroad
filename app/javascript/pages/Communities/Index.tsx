@@ -140,10 +140,8 @@ function CommunitiesIndex() {
   const scrollMeta = (usePage() as { scrollProps?: { messages?: ScrollMeta } }).scrollProps?.messages;
   const hasOlderMessages = scrollMeta ? scrollMeta.previousPage != null : true;
 
-  // Preserve scroll position when older messages are prepended.
-  // MutationObserver adjusts scrollTop immediately on DOM change.
-  // We also intercept scrollTo to block Inertia's restoreScrollPosition which
-  // computes a stale negative offset (via rAF) that would undo our adjustment.
+  // Workaround: Inertia InfiniteScroll scroll restoration bug when prepending messages.
+  // MutationObserver adjusts scroll immediately; scrollTo intercept blocks stale framework offset.
   React.useEffect(() => {
     const container = chatContainerRef.current;
     if (!container) return;
@@ -171,7 +169,6 @@ function CommunitiesIndex() {
 
     mutationObserver.observe(container, { childList: true, subtree: true });
 
-    // Block Inertia's bogus scrollTo calls
     const originalScrollTo = container.scrollTo.bind(container);
     /* eslint-disable @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access */
     (container as any).scrollTo = function (...args: any[]) {
@@ -206,9 +203,7 @@ function CommunitiesIndex() {
     if (selectedCommunity) {
       const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.has("notifications")) {
-        const url = new URL(window.location.href);
-        url.searchParams.delete("notifications");
-        router.get(url.pathname + url.search, {}, { replace: true, preserveState: true, preserveScroll: true });
+        router.reload({ only: [], replace: true });
         setShowNotificationsSettings(true);
       }
     }
@@ -225,7 +220,7 @@ function CommunitiesIndex() {
             preserveScroll: true,
             preserveState: true,
             async: true,
-            only: [],
+            only: ["communities"],
             onSuccess: () => {
               updateCommunity(communityId, {
                 last_read_community_chat_message_created_at: messageCreatedAt,

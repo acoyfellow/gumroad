@@ -45,7 +45,7 @@ describe "Main Navigation", type: :system, js: true do
         Feature.activate_user(:communities, user)
 
         product = create(:product, user: user, community_chat_enabled: true)
-        community = create(:community, seller: user, resource: product)
+        create(:community, seller: user, resource: product)
 
         visit library_path
 
@@ -59,7 +59,7 @@ describe "Main Navigation", type: :system, js: true do
         Feature.activate_user(:communities, seller)
 
         product = create(:product, user: seller, community_chat_enabled: true)
-        community = create(:community, resource: product, seller: seller)
+        create(:community, resource: product, seller: seller)
         create(:purchase, seller: seller, link: product, purchaser: user)
 
         visit library_path

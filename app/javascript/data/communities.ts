@@ -32,4 +32,3 @@ export type CommunityChatMessage = {
     is_seller: boolean;
   };
 };
-

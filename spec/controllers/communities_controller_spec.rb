@@ -98,7 +98,7 @@ describe CommunitiesController, inertia: true do
 
       it "returns paginated messages with cursor param" do
         old_message = create(:community_chat_message, community:, user: seller, created_at: 30.minutes.ago)
-        new_message = create(:community_chat_message, community:, user: seller, created_at: 10.minutes.ago)
+        create(:community_chat_message, community:, user: seller, created_at: 10.minutes.ago)
 
         get :show, params: {
           seller_id: seller.external_id,
@@ -127,15 +127,15 @@ describe CommunitiesController, inertia: true do
       end
 
       it "raises error when community does not exist" do
-        expect {
+        expect do
           get :show, params: { seller_id: seller.external_id, community_id: "non-existent" }
-        }.to raise_error(ActiveRecord::RecordNotFound)
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
 
       it "raises error when seller does not exist" do
-        expect {
+        expect do
           get :show, params: { seller_id: "non-existent", community_id: community.external_id }
-        }.to raise_error(ActiveRecord::RecordNotFound)
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
 
       it "raises error when community does not belong to seller" do
@@ -143,9 +143,9 @@ describe CommunitiesController, inertia: true do
         other_product = create(:product, user: other_seller, community_chat_enabled: true)
         other_community = create(:community, seller: other_seller, resource: other_product)
 
-        expect {
+        expect do
           get :show, params: { seller_id: seller.external_id, community_id: other_community.external_id }
-        }.to raise_error(ActiveRecord::RecordNotFound)
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
 
       it "returns unauthorized response if the :communities feature flag is disabled" do
@@ -195,11 +195,10 @@ describe CommunitiesController, inertia: true do
       end
 
       it "raises error when trying to access deleted community" do
-        expect {
+        expect do
           get :show, params: { seller_id: seller.external_id, community_id: community.external_id }
-        }.to raise_error(ActiveRecord::RecordNotFound)
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
   end
-
 end

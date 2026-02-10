@@ -35,9 +35,9 @@ describe Communities::NotificationSettingsController do
     it "raises error when community is not found" do
       sign_in seller
 
-      expect {
+      expect do
         put :update, params: { seller_id: seller.external_id, community_id: "nonexistent" }
-      }.to raise_error(ActiveRecord::RecordNotFound)
+      end.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     context "when seller is logged in" do
