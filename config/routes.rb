@@ -153,7 +153,6 @@ Rails.application.routes.draw do
     get "/", to: "home#about"
 
     get "/discover", to: "discover#index"
-    get "/discover/recommended_products", to: "discover#recommended_products", as: :discover_recommended_products
 
     product_info_and_purchase_routes
 

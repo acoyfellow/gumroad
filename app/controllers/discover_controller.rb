@@ -64,10 +64,6 @@ class DiscoverController < ApplicationController
     }
   end
 
-  def recommended_products
-    render json: recommendations
-  end
-
   private
     def recommendations
       # Don't show any recommended/featured products when offer codes are present

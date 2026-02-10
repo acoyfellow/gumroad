@@ -111,6 +111,19 @@ describe DiscoverController, type: :controller, inertia: true do
         expect(props["recommended_wishlists"]).to be_an(Array)
         expect(props).not_to have_key("search_results")
       end
+
+      it "only fetches search_results when filtering without taxonomy change" do
+        request.headers["X-Inertia-Partial-Data"] = "search_results"
+
+        get :index, params: { query: "test", tags: "design" }
+
+        expect(response).to be_successful
+        props = response.parsed_body.fetch("props")
+        expect(props["search_results"]).to be_present
+        expect(props["search_results"][:products]).to be_an(Array)
+        expect(props).not_to have_key("recommended_products")
+        expect(props).not_to have_key("recommended_wishlists")
+      end
     end
 
     it "stores the search query" do

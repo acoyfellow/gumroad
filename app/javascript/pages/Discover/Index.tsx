@@ -1,4 +1,4 @@
-import { Link, usePage } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import { range } from "lodash-es";
 import * as React from "react";
 import { is } from "ts-safe-cast";
@@ -233,46 +233,59 @@ function DiscoverIndex() {
 
   const resultsRef = useScrollToElement(isBlackFridayPage && props.show_black_friday_hero, undefined, [state.params]);
 
-  const fromUrl = React.useRef(false);
+  // Sync state changes to URL via Inertia router
   React.useEffect(() => {
-    if (!fromUrl.current) {
-      const url = new URL(window.location.href);
-      if (state.params.taxonomy) {
-        url.pathname = state.params.taxonomy;
-      } else if (url.pathname !== Routes.discover_path()) {
-        url.pathname = Routes.discover_path();
-      }
-      const serializeParams = <T extends keyof SearchRequest>(
-        keys: T[],
-        transform: (value: NonNullable<SearchRequest[T]>) => string,
-      ) => {
-        for (const key of keys) {
-          const value = state.params[key];
-          if (value && (!Array.isArray(value) || value.length)) url.searchParams.set(key, transform(value));
-          else url.searchParams.delete(key);
-        }
-      };
-      serializeParams(["sort", "query", "offer_code"], (value) => value);
-      serializeParams(["min_price", "max_price", "rating"], (value) => value.toString());
-      serializeParams(["filetypes", "tags"], (value) => value.join(","));
-      window.history.pushState(state.params, "", url.toString());
-    } else {
-      fromUrl.current = false;
+    const url = new URL(window.location.href);
+    if (state.params.taxonomy) {
+      url.pathname = state.params.taxonomy;
+    } else if (url.pathname !== Routes.discover_path()) {
+      url.pathname = Routes.discover_path();
     }
-    document.title = discoverTitleGenerator(state.params, props.taxonomies_for_nav);
-  }, [state.params, props.taxonomies_for_nav]);
 
+    const serializeParams = <T extends keyof SearchRequest>(
+      keys: T[],
+      transform: (value: NonNullable<SearchRequest[T]>) => string,
+    ) => {
+      for (const key of keys) {
+        const value = state.params[key];
+        if (value && (!Array.isArray(value) || value.length)) url.searchParams.set(key, transform(value));
+        else url.searchParams.delete(key);
+      }
+    };
+    serializeParams(["sort", "query", "offer_code"], (value) => value);
+    serializeParams(["min_price", "max_price", "rating"], (value) => value.toString());
+    serializeParams(["filetypes", "tags"], (value) => value.join(","));
+
+    const urlString = url.pathname + url.search;
+    const currentUrlString = window.location.pathname + window.location.search;
+    if (urlString !== currentUrlString) {
+      // Skip expensive recommendation computation when only search/filter params change
+      // Only fetch recommendations when taxonomy or offer_code changes (which affects what to show)
+      const shouldFetchRecommendations =
+        url.pathname !== new URL(window.location.href).pathname ||
+        state.params.offer_code !== parseUrlParams(window.location.href, props.curated_product_ids, defaultSortOrder).offer_code;
+
+      router.visit(url.toString(), {
+        preserveState: true,
+        preserveScroll: true,
+        only: shouldFetchRecommendations ? undefined : ["search_results"],
+      });
+    }
+
+    document.title = discoverTitleGenerator(state.params, props.taxonomies_for_nav);
+  }, [state.params, props.taxonomies_for_nav, defaultSortOrder, props.curated_product_ids]);
+
+  // Handle browser back/forward buttons
   React.useEffect(() => {
-    const parseUrl = () => {
-      fromUrl.current = true;
+    const handlePopstate = () => {
       const newParams = parseUrlParams(window.location.href, props.curated_product_ids, defaultSortOrder);
       dispatch({
         type: "set-params",
         params: addInitialOffset(newParams),
       });
     };
-    window.addEventListener("popstate", parseUrl);
-    return () => window.removeEventListener("popstate", parseUrl);
+    window.addEventListener("popstate", handlePopstate);
+    return () => window.removeEventListener("popstate", handlePopstate);
   }, [defaultSortOrder, props.curated_product_ids]);
 
   const taxonomyPath = state.params.taxonomy;
