@@ -294,190 +294,192 @@ function DiscoverIndex() {
   return (
     <>
       <Layout
-      taxonomyPath={taxonomyPath}
-      taxonomiesForNav={props.taxonomies_for_nav}
-      showTaxonomy
-      onTaxonomyChange={handleTaxonomyChange}
-      query={state.params.query}
-      setQuery={(query) => dispatch({ type: "set-params", params: { query, taxonomy: taxonomyPath } })}
-    >
-      {props.show_black_friday_hero ? (
-        <header className="relative flex flex-col items-center justify-center">
-          <div className="relative flex min-h-[72vh] w-full flex-col items-center justify-center bg-black">
-            <img
-              src={saleImage}
-              alt="Sale"
-              className="absolute top-1/2 left-40 hidden w-32 -translate-y-1/2 rotate-[-24deg] object-contain md:left-12 md:block md:w-40 lg:left-36 lg:w-48 xl:left-60 xl:w-60"
-              draggable={false}
-            />
-            <div className="relative">
-              <img src={blackFridayImage} alt="Black Friday" className="max-w-96 object-contain" draggable={false} />
+        taxonomyPath={taxonomyPath}
+        taxonomiesForNav={props.taxonomies_for_nav}
+        showTaxonomy
+        onTaxonomyChange={handleTaxonomyChange}
+        query={state.params.query}
+        setQuery={(query) => dispatch({ type: "set-params", params: { query, taxonomy: taxonomyPath } })}
+      >
+        {props.show_black_friday_hero ? (
+          <header className="relative flex flex-col items-center justify-center">
+            <div className="relative flex min-h-[72vh] w-full flex-col items-center justify-center bg-black">
               <img
                 src={saleImage}
                 alt="Sale"
-                className="absolute right-0 bottom-0 w-27.5 rotate-[16deg] object-contain md:hidden"
+                className="absolute top-1/2 left-40 hidden w-32 -translate-y-1/2 rotate-[-24deg] object-contain md:left-12 md:block md:w-40 lg:left-36 lg:w-48 xl:left-60 xl:w-60"
                 draggable={false}
               />
-            </div>
-            <img
-              src={saleImage}
-              alt="Sale"
-              className="absolute top-1/2 right-40 hidden w-32 -translate-y-1/2 rotate-[24deg] object-contain md:right-12 md:block md:w-40 lg:right-36 lg:w-48 xl:right-60 xl:w-60"
-              draggable={false}
-            />
-            <div className="font-regular mx-12 text-center text-xl text-white">
-              Snag creator-made deals <br className="block sm:hidden" /> before they're gone.
-            </div>
-            {!isBlackFridayPage && (
-              <div className="mt-8 text-base">
-                <BlackFridayButton offerCode={props.black_friday_offer_code} taxonomy={taxonomyPath} />
+              <div className="relative">
+                <img src={blackFridayImage} alt="Black Friday" className="max-w-96 object-contain" draggable={false} />
+                <img
+                  src={saleImage}
+                  alt="Sale"
+                  className="absolute right-0 bottom-0 w-27.5 rotate-[16deg] object-contain md:hidden"
+                  draggable={false}
+                />
               </div>
-            )}
-          </div>
-          <div className="h-14 w-full overflow-hidden border-b border-black bg-yellow-400">
-            <div className="flex h-14 min-w-fit items-center gap-x-4 whitespace-nowrap hover:[animation-play-state:paused] motion-safe:animate-[marquee-scroll_80s_linear_infinite] motion-reduce:animate-none">
-              {props.black_friday_stats ? (
-                <>
-                  {(() => {
-                    const stats = props.black_friday_stats;
-                    return Array.from({ length: 5 }, (_, i) => (
-                      <BlackFridayBanner key={i} stats={stats} currencyCode={props.currency_code} />
-                    ));
-                  })()}
-                </>
-              ) : null}
+              <img
+                src={saleImage}
+                alt="Sale"
+                className="absolute top-1/2 right-40 hidden w-32 -translate-y-1/2 rotate-[24deg] object-contain md:right-12 md:block md:w-40 lg:right-36 lg:w-48 xl:right-60 xl:w-60"
+                draggable={false}
+              />
+              <div className="font-regular mx-12 text-center text-xl text-white">
+                Snag creator-made deals <br className="block sm:hidden" /> before they're gone.
+              </div>
+              {!isBlackFridayPage && (
+                <div className="mt-8 text-base">
+                  <BlackFridayButton offerCode={props.black_friday_offer_code} taxonomy={taxonomyPath} />
+                </div>
+              )}
             </div>
-          </div>
-        </header>
-      ) : null}
-      <div className="grid gap-16! px-4 py-16 lg:ps-16 lg:pe-16">
-        {showRecommendationSections ? (
-          <ProductsCarousel
-            products={recommendedProducts}
-            title={isCuratedProducts ? "Recommended" : "Featured products"}
-          />
+            <div className="h-14 w-full overflow-hidden border-b border-black bg-yellow-400">
+              <div className="flex h-14 min-w-fit items-center gap-x-4 whitespace-nowrap hover:[animation-play-state:paused] motion-safe:animate-[marquee-scroll_80s_linear_infinite] motion-reduce:animate-none">
+                {props.black_friday_stats ? (
+                  <>
+                    {(() => {
+                      const stats = props.black_friday_stats;
+                      return Array.from({ length: 5 }, (_, i) => (
+                        <BlackFridayBanner key={i} stats={stats} currencyCode={props.currency_code} />
+                      ));
+                    })()}
+                  </>
+                ) : null}
+              </div>
+            </div>
+          </header>
         ) : null}
-        <section ref={resultsRef} className="flex flex-col gap-4">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--spacer-2)", flexWrap: "wrap" }}>
-            <h2>
-              {state.params.query || hasOfferCode
-                ? state.results?.products.length
-                  ? `Showing 1-${state.results.products.length} of ${state.results.total} products`
-                  : null
-                : sortTitles[is<keyof typeof sortTitles>(state.params.sort) ? state.params.sort : "trending"]}
-            </h2>
-            {state.params.query || hasOfferCode ? null : (
-              <Tabs>
-                {props.curated_product_ids.length > 0 ? (
+        <div className="grid gap-16! px-4 py-16 lg:ps-16 lg:pe-16">
+          {showRecommendationSections ? (
+            <ProductsCarousel
+              products={recommendedProducts}
+              title={isCuratedProducts ? "Recommended" : "Featured products"}
+            />
+          ) : null}
+          <section ref={resultsRef} className="flex flex-col gap-4">
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--spacer-2)", flexWrap: "wrap" }}>
+              <h2>
+                {state.params.query || hasOfferCode
+                  ? state.results?.products.length
+                    ? `Showing 1-${state.results.products.length} of ${state.results.total} products`
+                    : null
+                  : sortTitles[is<keyof typeof sortTitles>(state.params.sort) ? state.params.sort : "trending"]}
+              </h2>
+              {state.params.query || hasOfferCode ? null : (
+                <Tabs>
+                  {props.curated_product_ids.length > 0 ? (
+                    <Tab
+                      isSelected={state.params.sort === "curated"}
+                      onClick={() =>
+                        updateParams({
+                          sort: "curated",
+                          curated_product_ids: props.curated_product_ids.slice(recommendedProductsCount),
+                        })
+                      }
+                    >
+                      Curated
+                    </Tab>
+                  ) : null}
                   <Tab
-                    isSelected={state.params.sort === "curated"}
-                    onClick={() =>
-                      updateParams({
-                        sort: "curated",
-                        curated_product_ids: props.curated_product_ids.slice(recommendedProductsCount),
-                      })
-                    }
+                    isSelected={!state.params.sort || state.params.sort === "default"}
+                    onClick={() => updateParams({ sort: undefined })}
                   >
-                    Curated
+                    Trending
                   </Tab>
-                ) : null}
-                <Tab
-                  isSelected={!state.params.sort || state.params.sort === "default"}
-                  onClick={() => updateParams({ sort: undefined })}
-                >
-                  Trending
-                </Tab>
-                {props.curated_product_ids.length === 0 ? (
+                  {props.curated_product_ids.length === 0 ? (
+                    <Tab
+                      isSelected={state.params.sort === "best_sellers"}
+                      onClick={() => updateParams({ sort: "best_sellers" })}
+                    >
+                      Best Sellers
+                    </Tab>
+                  ) : null}
                   <Tab
-                    isSelected={state.params.sort === "best_sellers"}
-                    onClick={() => updateParams({ sort: "best_sellers" })}
+                    isSelected={state.params.sort === "hot_and_new"}
+                    onClick={() => updateParams({ sort: "hot_and_new" })}
                   >
-                    Best Sellers
+                    Hot &amp; New
                   </Tab>
-                ) : null}
-                <Tab
-                  isSelected={state.params.sort === "hot_and_new"}
-                  onClick={() => updateParams({ sort: "hot_and_new" })}
-                >
-                  Hot &amp; New
-                </Tab>
-              </Tabs>
-            )}
-          </div>
-          <CardGrid
-            state={state}
-            dispatchAction={dispatch}
-            currencyCode={props.currency_code}
-            hideSort={!state.params.query && !hasOfferCode}
-            defaults={{
-              taxonomy: state.params.taxonomy,
-              query: state.params.query,
-              sort: state.params.query || hasOfferCode ? "default" : state.params.sort,
-            }}
-            appendFilters={
-              <>
-                <CardContent asChild details>
-                  <details>
-                    <summary className="grow grid-flow-col grid-cols-[1fr_auto] before:col-start-2">Rating</summary>
-                    <fieldset role="group">
-                      {range(4, 0).map((number) => (
-                        <label key={number}>
-                          <span className="flex shrink-0 items-center gap-1">
-                            <RatingStars rating={number} />
-                            and up
-                          </span>
-                          <input
-                            type="radio"
-                            value={number}
-                            aria-label={`${number} ${number === 1 ? "star" : "stars"} and up`}
-                            checked={number === state.params.rating}
-                            readOnly
-                            onClick={() =>
-                              updateParams(state.params.rating === number ? { rating: undefined } : { rating: number })
-                            }
-                          />
-                        </label>
-                      ))}
-                    </fieldset>
-                  </details>
-                </CardContent>
-                {hasOfferCode ? (
+                </Tabs>
+              )}
+            </div>
+            <CardGrid
+              state={state}
+              dispatchAction={dispatch}
+              currencyCode={props.currency_code}
+              hideSort={!state.params.query && !hasOfferCode}
+              defaults={{
+                taxonomy: state.params.taxonomy,
+                query: state.params.query,
+                sort: state.params.query || hasOfferCode ? "default" : state.params.sort,
+              }}
+              appendFilters={
+                <>
                   <CardContent asChild details>
-                    <details open>
-                      <summary className="grow grid-flow-col grid-cols-[1fr_auto] before:col-start-2">
-                        Offer code
-                      </summary>
-                      <div className="flex items-center justify-between gap-2 py-1">
-                        <span>BLACKFRIDAY2025</span>
-                        <button
-                          onClick={() => updateParams({ offer_code: undefined })}
-                          className="flex cursor-pointer items-center justify-center all-unset"
-                          aria-label="Remove offer code filter"
-                        >
-                          <Icon name="x" />
-                        </button>
-                      </div>
+                    <details>
+                      <summary className="grow grid-flow-col grid-cols-[1fr_auto] before:col-start-2">Rating</summary>
+                      <fieldset role="group">
+                        {range(4, 0).map((number) => (
+                          <label key={number}>
+                            <span className="flex shrink-0 items-center gap-1">
+                              <RatingStars rating={number} />
+                              and up
+                            </span>
+                            <input
+                              type="radio"
+                              value={number}
+                              aria-label={`${number} ${number === 1 ? "star" : "stars"} and up`}
+                              checked={number === state.params.rating}
+                              readOnly
+                              onClick={() =>
+                                updateParams(
+                                  state.params.rating === number ? { rating: undefined } : { rating: number },
+                                )
+                              }
+                            />
+                          </label>
+                        ))}
+                      </fieldset>
                     </details>
                   </CardContent>
-                ) : null}
-              </>
-            }
-            pagination="button"
-          />
-        </section>
-        {showRecommendationSections ? (
-          <RecommendedWishlists
-            wishlists={props.recommended_wishlists}
-            title={
-              taxonomyPath
-                ? `Wishlists for ${props.taxonomies_for_nav.find((t) => t.slug === last(taxonomyPath.split("/")))?.label}`
-                : "Wishlists you might like"
-            }
-          />
-        ) : null}
-      </div>
-    </Layout>
-    <Footer />
+                  {hasOfferCode ? (
+                    <CardContent asChild details>
+                      <details open>
+                        <summary className="grow grid-flow-col grid-cols-[1fr_auto] before:col-start-2">
+                          Offer code
+                        </summary>
+                        <div className="flex items-center justify-between gap-2 py-1">
+                          <span>BLACKFRIDAY2025</span>
+                          <button
+                            onClick={() => updateParams({ offer_code: undefined })}
+                            className="flex cursor-pointer items-center justify-center all-unset"
+                            aria-label="Remove offer code filter"
+                          >
+                            <Icon name="x" />
+                          </button>
+                        </div>
+                      </details>
+                    </CardContent>
+                  ) : null}
+                </>
+              }
+              pagination="button"
+            />
+          </section>
+          {showRecommendationSections ? (
+            <RecommendedWishlists
+              wishlists={props.recommended_wishlists}
+              title={
+                taxonomyPath
+                  ? `Wishlists for ${props.taxonomies_for_nav.find((t) => t.slug === last(taxonomyPath.split("/")))?.label}`
+                  : "Wishlists you might like"
+              }
+            />
+          ) : null}
+        </div>
+      </Layout>
+      <Footer />
     </>
   );
 }
