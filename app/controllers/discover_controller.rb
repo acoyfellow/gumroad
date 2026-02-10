@@ -131,8 +131,6 @@ class DiscoverController < ApplicationController
       set_meta_tag(property: "og:site_name", content: "Gumroad")
       set_meta_tag(tag_name: "link", rel: "canonical", href: Discover::CanonicalUrlPresenter.canonical_url(params), head_key: "canonical")
 
-      # Page title for initial render and SEO crawlers. The frontend also generates
-      # titles via discoverTitleGenerator() after client-side navigation.
       title_parts = []
       if params[:query].present?
         title_parts << "Search results for \"#{params[:query]}\""

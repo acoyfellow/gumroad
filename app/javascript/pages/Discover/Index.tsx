@@ -234,7 +234,6 @@ function DiscoverIndex() {
 
   const resultsRef = useScrollToElement(isBlackFridayPage && showBlackFridayHero, undefined, [state.params]);
 
-  // Sync state changes to URL via Inertia router
   React.useEffect(() => {
     const url = new URL(window.location.href);
     if (state.params.taxonomy) {
@@ -260,8 +259,6 @@ function DiscoverIndex() {
     const urlString = url.pathname + url.search;
     const currentUrlString = window.location.pathname + window.location.search;
     if (urlString !== currentUrlString) {
-      // Skip expensive recommendation computation when only search/filter params change
-      // Only fetch recommendations when taxonomy or offer_code changes (which affects what to show)
       const shouldFetchRecommendations =
         url.pathname !== new URL(window.location.href).pathname ||
         state.params.offer_code !==
@@ -284,7 +281,6 @@ function DiscoverIndex() {
     document.title = discoverTitleGenerator(state.params, props.taxonomies_for_nav);
   }, [state.params, props.taxonomies_for_nav, defaultSortOrder, props.curated_product_ids]);
 
-  // Handle browser back/forward buttons
   React.useEffect(() => {
     const handlePopstate = () => {
       const newParams = parseUrlParams(window.location.href, props.curated_product_ids, defaultSortOrder);

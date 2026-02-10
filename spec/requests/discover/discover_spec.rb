@@ -416,7 +416,6 @@ describe("Discover", js: true, type: :system) do
 
     create(:thumbnail, product:)
     product.reload
-    # Pre-generate the variant URL once to avoid flaky variant creation during page rendering/assertion.
     expected_thumbnail_url = product.thumbnail.url
 
     allow(product).to receive(:recommendable?).and_return(true)
