@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "inertia_rails/rspec"
 
-describe DiscoverController do
-  render_views
-
+describe DiscoverController, type: :controller, inertia: true do
   let(:discover_domain_with_protocol) { UrlService.discover_domain_with_protocol }
 
   before do
@@ -15,53 +14,98 @@ describe DiscoverController do
   end
 
   describe "#index" do
-    it "displays navigation" do
-      sign_in @buyer
-
+    it "renders the Discover Inertia page with recommendation props" do
       get :index
 
-      expect(response.body).to have_field "Search products"
+      expect(response).to be_successful
+      expect_inertia.to render_component("Discover/Index")
+      expect(inertia.props).to include(
+        :currency_code,
+        :search_results,
+        :taxonomies_for_nav,
+        :curated_product_ids,
+        :show_black_friday_hero,
+        :is_black_friday_page,
+        :black_friday_offer_code,
+        :black_friday_stats,
+      )
+      expect(inertia.props[:currency_code]).to eq(@buyer.currency_type)
+
+      expect(inertia.props[:search_results]).to include(:products, :total, :tags_data, :filetypes_data)
+      expect(inertia.props[:search_results][:products]).to be_an(Array)
+      expect(inertia.props[:search_results][:total]).to be_a(Integer)
+
+      expect(inertia.props[:taxonomies_for_nav]).to be_an(Array)
+      if inertia.props[:taxonomies_for_nav].any?
+        expect(inertia.props[:taxonomies_for_nav].first).to include(:slug, :label)
+      end
+
+      expect(inertia.props[:curated_product_ids]).to be_an(Array)
+      expect(inertia.props[:curated_product_ids]).to all(be_a(String))
+      expect(inertia.props[:show_black_friday_hero]).to be_in([true, false])
+      expect(inertia.props[:is_black_friday_page]).to eq(false)
+      expect(inertia.props[:black_friday_offer_code]).to eq(SearchProducts::BLACK_FRIDAY_CODE)
+      expect(inertia.props[:black_friday_stats]).to satisfy { |value| value.nil? || value.is_a?(Hash) }
+      expect(inertia.props[:recommended_products]).to be_an(Array)
+      expect(inertia.props[:recommended_wishlists]).to be_an(Array)
     end
 
-    it "renders the proper meta tags with no extra parameters" do
-      get :index
+    it "sets black friday page props when offer code is provided" do
+      get :index, params: { offer_code: SearchProducts::BLACK_FRIDAY_CODE }
 
-      expect(response.body).to have_selector("title:contains('Gumroad')", visible: false)
-      expect(response.body).to have_selector("meta[property='og:type'][content='website']", visible: false)
-      expect(response.body).to have_selector("meta[property='og:description'][content='Browse over 1.6 million free and premium digital products in education, tech, design, and more categories from Gumroad creators and online entrepreneurs.']", visible: false)
-      expect(response.body).to have_selector("meta[name='description'][content='Browse over 1.6 million free and premium digital products in education, tech, design, and more categories from Gumroad creators and online entrepreneurs.']", visible: false)
-      expect(response.body).to have_selector("link[rel='canonical'][href='#{discover_domain_with_protocol}/']", visible: false)
+      expect(response).to be_successful
+      expect_inertia.to render_component("Discover/Index")
+      expect(inertia.props[:is_black_friday_page]).to eq(true)
+      expect(inertia.props[:black_friday_offer_code]).to eq(SearchProducts::BLACK_FRIDAY_CODE)
     end
 
-    it "renders the proper meta tags when a search query was submitted" do
-      get :index, params: { query: "tests" }
+    context "nav first render" do
+      it "renders discover inertia payload for iPhone user-agent" do
+        @request.user_agent = "Mozilla/5.0 (iPhone; CPU OS 13_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Mobile/15E148 Safari/604.1"
 
-      expect(response.body).to have_selector("title:contains('Gumroad')", visible: false)
-      expect(response.body).to have_selector("meta[property='og:description'][content='Browse over 1.6 million free and premium digital products in education, tech, design, and more categories from Gumroad creators and online entrepreneurs.']", visible: false)
-      expect(response.body).to have_selector("meta[name='description'][content='Browse over 1.6 million free and premium digital products in education, tech, design, and more categories from Gumroad creators and online entrepreneurs.']", visible: false)
-      expect(response.body).to have_selector("link[rel='canonical'][href='#{discover_domain_with_protocol}/?query=tests']", visible: false)
+        get :index
+
+        expect(response).to be_successful
+        expect_inertia.to render_component("Discover/Index")
+        expect(inertia.props[:taxonomies_for_nav]).to be_an(Array)
+      end
+
+      it "renders discover inertia payload for desktop user-agent" do
+        @request.user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36."
+
+        get :index
+
+        expect(response).to be_successful
+        expect_inertia.to render_component("Discover/Index")
+        expect(inertia.props[:taxonomies_for_nav]).to be_an(Array)
+      end
     end
 
-    it "renders the proper meta tags when a specific tag has been selected" do
-      get :index, params: { tags: "3d models" }
+    context "when fetching recommendation props via inertia partial data" do
+      before do
+        request.headers["X-Inertia"] = "true"
+        request.headers["X-Inertia-Partial-Component"] = "Discover/Index"
+      end
 
-      description = "Browse over 0 3D assets including 3D models, CG textures, HDRI environments & more" \
-                    " for VFX, game development, AR/VR, architecture, and animation."
-      expect(response.body).to have_selector("title:contains('Professional 3D Modeling Assets | Gumroad')", visible: false)
-      expect(response.body).to have_selector("meta[property='og:description'][content='#{description}']", visible: false)
-      expect(response.body).to have_selector("meta[name='description'][content='#{description}']", visible: false)
-      expect(response.body).to have_selector("link[rel='canonical'][href='#{discover_domain_with_protocol}/?tags=3d+models']", visible: false)
-    end
+      it "returns recommended products in partial props" do
+        request.headers["X-Inertia-Partial-Data"] = "recommended_products"
 
-    it "renders the proper meta tags when a specific tag has been selected" do
-      get :index, params: { tags: "3d      - mODELs" }
+        get :index
 
-      description = "Browse over 0 3D assets including 3D models, CG textures, HDRI environments & more" \
-                    " for VFX, game development, AR/VR, architecture, and animation."
-      expect(response.body).to have_selector("title:contains('Professional 3D Modeling Assets | Gumroad')", visible: false)
-      expect(response.body).to have_selector("meta[property='og:description'][content='#{description}']", visible: false)
-      expect(response.body).to have_selector("meta[name='description'][content='#{description}']", visible: false)
-      expect(response.body).to have_selector("link[rel='canonical'][href='#{discover_domain_with_protocol}/?tags=3d+models']", visible: false)
+        expect(response).to be_successful
+        expect(inertia.props[:recommended_products]).to be_an(Array)
+        expect(inertia.props).not_to have_key(:search_results)
+      end
+
+      it "returns recommended wishlists in partial props" do
+        request.headers["X-Inertia-Partial-Data"] = "recommended_wishlists"
+
+        get :index
+
+        expect(response).to be_successful
+        expect(inertia.props[:recommended_wishlists]).to be_an(Array)
+        expect(inertia.props).not_to have_key(:search_results)
+      end
     end
 
     it "stores the search query" do
@@ -82,40 +126,84 @@ describe DiscoverController do
       expect(DiscoverSearch.last!.discover_search_suggestion).to be_present
     end
 
-    context "nav first render" do
-      it "renders as mobile if the user-agent is of an iPhone" do
-        @request.user_agent = "Mozilla/5.0 (iPhone; CPU OS 13_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Mobile/15E148 Safari/604.1"
+    context "meta tags" do
+      let(:default_description) { "Browse over 1.6 million free and premium digital products in education, tech, design, and more categories from Gumroad creators and online entrepreneurs." }
+
+      def meta_tags
+        controller.send(:meta_tags)
+      end
+
+      it "sets the proper meta tags with no extra parameters" do
         get :index
 
-        expect(response.body).to have_selector("[role='nav'] > * > [aria-haspopup='menu'][aria-label='Categories']")
+        expect(meta_tags["meta-property-og-type"][:content]).to eq("website")
+        expect(meta_tags["meta-property-og-description"][:content]).to eq(default_description)
+        expect(meta_tags["meta-name-description"][:content]).to eq(default_description)
+        expect(meta_tags["canonical"][:href]).to eq("#{discover_domain_with_protocol}/")
       end
 
-      it "renders as desktop if the user-agent is windows chrome" do
-        @request.user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36."
-        get :index
+      it "sets the proper meta tags when a search query was submitted" do
+        get :index, params: { query: "tests" }
 
-        expect(response.body).to have_selector("[role='nav'] > * > [role='menubar']")
-      end
-    end
-
-    context "meta description total count" do
-      let(:total_products) { Link::RECOMMENDED_PRODUCTS_PER_PAGE + 2 }
-
-      before do
-        total_products.times do |i|
-          product = create(:product, :recommendable)
-          product.tag!("3d models")
-        end
-        Link.import(refresh: true, force: true)
+        expect(meta_tags["title"][:inner_content]).to eq("Search results for \"tests\" | Gumroad")
+        expect(meta_tags["meta-property-og-description"][:content]).to eq(default_description)
+        expect(meta_tags["meta-name-description"][:content]).to eq(default_description)
+        expect(meta_tags["canonical"][:href]).to eq("#{discover_domain_with_protocol}/?query=tests")
       end
 
-      it "renders the correct total search result size in the meta description" do
+      it "sets the proper title when only taxonomy is present" do
+        get :index, params: { taxonomy: "software-development/programming/c-sharp" }
+
+        expect(meta_tags["title"][:inner_content]).to eq("Software Development » Programming » C# | Gumroad")
+      end
+
+      it "sets the proper title when tags and taxonomy are present" do
+        get :index, params: { tags: "some-tag", taxonomy: "software-development/programming/c-sharp" }
+
+        expect(meta_tags["title"][:inner_content]).to eq("some tag | Software Development » Programming » C# | Gumroad")
+      end
+
+      it "sets the proper meta tags when a specific tag has been selected" do
         get :index, params: { tags: "3d models" }
 
-        description = "Browse over #{total_products} 3D assets including 3D models, CG textures, HDRI environments & more" \
+        description = "Browse over 0 3D assets including 3D models, CG textures, HDRI environments & more" \
                       " for VFX, game development, AR/VR, architecture, and animation."
-        expect(response.body).to have_selector("meta[property='og:description'][content='#{description}']", visible: false)
-        expect(response.body).to have_selector("meta[name='description'][content='#{description}']", visible: false)
+        expect(meta_tags["title"][:inner_content]).to eq("Professional 3D Modeling Assets | Gumroad")
+        expect(meta_tags["meta-property-og-description"][:content]).to eq(description)
+        expect(meta_tags["meta-name-description"][:content]).to eq(description)
+        expect(meta_tags["canonical"][:href]).to eq("#{discover_domain_with_protocol}/?tags=3d+models")
+      end
+
+      it "sets the proper meta tags when a specific tag has been selected with different formatting" do
+        get :index, params: { tags: "3d      - mODELs" }
+
+        description = "Browse over 0 3D assets including 3D models, CG textures, HDRI environments & more" \
+                      " for VFX, game development, AR/VR, architecture, and animation."
+        expect(meta_tags["title"][:inner_content]).to eq("Professional 3D Modeling Assets | Gumroad")
+        expect(meta_tags["meta-property-og-description"][:content]).to eq(description)
+        expect(meta_tags["meta-name-description"][:content]).to eq(description)
+        expect(meta_tags["canonical"][:href]).to eq("#{discover_domain_with_protocol}/?tags=3d+models")
+      end
+
+      context "meta description total count" do
+        let(:total_products) { Link::RECOMMENDED_PRODUCTS_PER_PAGE + 2 }
+
+        before do
+          total_products.times do
+            product = create(:product, :recommendable)
+            product.tag!("3d models")
+          end
+          Link.import(refresh: true, force: true)
+        end
+
+        it "sets the correct total search result size in the meta description" do
+          get :index, params: { tags: "3d models" }
+
+          description = "Browse over #{total_products} 3D assets including 3D models, CG textures, HDRI environments & more" \
+                        " for VFX, game development, AR/VR, architecture, and animation."
+          expect(meta_tags["meta-property-og-description"][:content]).to eq(description)
+          expect(meta_tags["meta-name-description"][:content]).to eq(description)
+        end
       end
     end
   end

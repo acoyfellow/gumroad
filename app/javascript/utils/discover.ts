@@ -48,7 +48,7 @@ export const getRootTaxonomy = (taxonomyPath: string | undefined) => {
 
 export const discoverTitleGenerator = (params: SearchRequest, taxonomies: Taxonomy[]) => {
   const searchOrTagsTitle = params.query
-    ? `Search results for “${params.query}”`
+    ? `Search results for "${params.query}"`
     : params.tags?.map((t) => t.trim().replace(/[-\s]+/gu, " ")).join(", ");
   const taxonomyTitle = params.taxonomy
     ?.split("/")
