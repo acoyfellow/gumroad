@@ -25,6 +25,7 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.html do
         set_user_page_meta(@user)
+        set_user_custom_styles_meta(@user)
         set_favicon_meta_tags(@user)
         render inertia: "Users/Show", props: show_page_props
       end
@@ -41,6 +42,7 @@ class UsersController < ApplicationController
 
     set_favicon_meta_tags(@user)
     set_user_page_meta(@user)
+    set_user_custom_styles_meta(@user)
     product = @user.products.visible_and_not_archived.find_by(native_type: Link::NATIVE_TYPE_COFFEE)
     e404 if product.nil?
 
@@ -58,6 +60,7 @@ class UsersController < ApplicationController
 
   def subscribe
     set_user_page_meta(@user)
+    set_user_custom_styles_meta(@user)
     set_meta_tag(title: "Subscribe to #{@user.name.presence || @user.username}")
     render inertia: "Users/Subscribe", props: {
       creator_profile: ProfilePresenter.new(pundit_user:, seller: @user).creator_profile
@@ -66,6 +69,7 @@ class UsersController < ApplicationController
 
   def subscribe_preview
     set_user_page_meta(@user)
+    set_user_custom_styles_meta(@user)
 
     render inertia: "Users/SubscribePreview", props: {
       avatar_url: @user.resized_avatar_url(size: 240),
@@ -149,6 +153,12 @@ class UsersController < ApplicationController
   private
     def show_page_props
       ProfilePresenter.new(pundit_user:, seller: @user).profile_props(seller_custom_domain_url:, request:)
+    end
+
+    def set_user_custom_styles_meta(user)
+      return if user.seller_profile.custom_styles.blank?
+
+      set_meta_tag(tag_name: "style", inner_content: user.seller_profile.custom_styles.to_s, head_key: "custom_styles")
     end
 
     def check_if_needs_redirect
