@@ -51,6 +51,9 @@ describe DiscoverController, type: :controller, inertia: true do
     end
 
     it "sets black friday page props when offer code is provided" do
+      allow(Feature).to receive(:active?).and_call_original
+      allow(Feature).to receive(:active?).with(:offer_codes_search).and_return(true)
+
       get :index, params: { offer_code: SearchProducts::BLACK_FRIDAY_CODE }
 
       expect(response).to be_successful
@@ -93,8 +96,9 @@ describe DiscoverController, type: :controller, inertia: true do
         get :index
 
         expect(response).to be_successful
-        expect(inertia.props[:recommended_products]).to be_an(Array)
-        expect(inertia.props).not_to have_key(:search_results)
+        props = response.parsed_body.fetch("props")
+        expect(props["recommended_products"]).to be_an(Array)
+        expect(props).not_to have_key("search_results")
       end
 
       it "returns recommended wishlists in partial props" do
@@ -103,8 +107,9 @@ describe DiscoverController, type: :controller, inertia: true do
         get :index
 
         expect(response).to be_successful
-        expect(inertia.props[:recommended_wishlists]).to be_an(Array)
-        expect(inertia.props).not_to have_key(:search_results)
+        props = response.parsed_body.fetch("props")
+        expect(props["recommended_wishlists"]).to be_an(Array)
+        expect(props).not_to have_key("search_results")
       end
     end
 
