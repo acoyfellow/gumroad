@@ -1,4 +1,4 @@
-import { Link, router, usePage } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { range } from "lodash-es";
 import * as React from "react";
 import { is } from "ts-safe-cast";
@@ -233,37 +233,47 @@ function DiscoverIndex() {
 
   const resultsRef = useScrollToElement(isBlackFridayPage && props.show_black_friday_hero, undefined, [state.params]);
 
+  const fromUrl = React.useRef(false);
   React.useEffect(() => {
-    const url = new URL(window.location.href);
-    if (state.params.taxonomy) {
-      url.pathname = state.params.taxonomy;
-    } else if (url.pathname !== Routes.discover_path()) {
-      url.pathname = Routes.discover_path();
-    }
-    const serializeParams = <T extends keyof SearchRequest>(
-      keys: T[],
-      transform: (value: NonNullable<SearchRequest[T]>) => string,
-    ) => {
-      for (const key of keys) {
-        const value = state.params[key];
-        if (value && (!Array.isArray(value) || value.length)) url.searchParams.set(key, transform(value));
-        else url.searchParams.delete(key);
+    if (!fromUrl.current) {
+      const url = new URL(window.location.href);
+      if (state.params.taxonomy) {
+        url.pathname = state.params.taxonomy;
+      } else if (url.pathname !== Routes.discover_path()) {
+        url.pathname = Routes.discover_path();
       }
-    };
-    serializeParams(["sort", "query", "offer_code"], (value) => value);
-    serializeParams(["min_price", "max_price", "rating"], (value) => value.toString());
-    serializeParams(["filetypes", "tags"], (value) => value.join(","));
-
-    const urlString = url.pathname + url.search;
-    const currentUrlString = window.location.pathname + window.location.search;
-    if (urlString !== currentUrlString) {
-      router.visit(url.toString(), {
-        preserveState: true,
-        preserveScroll: true,
-      });
+      const serializeParams = <T extends keyof SearchRequest>(
+        keys: T[],
+        transform: (value: NonNullable<SearchRequest[T]>) => string,
+      ) => {
+        for (const key of keys) {
+          const value = state.params[key];
+          if (value && (!Array.isArray(value) || value.length)) url.searchParams.set(key, transform(value));
+          else url.searchParams.delete(key);
+        }
+      };
+      serializeParams(["sort", "query", "offer_code"], (value) => value);
+      serializeParams(["min_price", "max_price", "rating"], (value) => value.toString());
+      serializeParams(["filetypes", "tags"], (value) => value.join(","));
+      window.history.pushState(state.params, "", url.toString());
+    } else {
+      fromUrl.current = false;
     }
     document.title = discoverTitleGenerator(state.params, props.taxonomies_for_nav);
   }, [state.params, props.taxonomies_for_nav]);
+
+  React.useEffect(() => {
+    const parseUrl = () => {
+      fromUrl.current = true;
+      const newParams = parseUrlParams(window.location.href, props.curated_product_ids, defaultSortOrder);
+      dispatch({
+        type: "set-params",
+        params: addInitialOffset(newParams),
+      });
+    };
+    window.addEventListener("popstate", parseUrl);
+    return () => window.removeEventListener("popstate", parseUrl);
+  }, [defaultSortOrder, props.curated_product_ids]);
 
   const taxonomyPath = state.params.taxonomy;
 
