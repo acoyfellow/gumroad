@@ -60,7 +60,7 @@ class DiscoverController < ApplicationController
       black_friday_offer_code: SearchProducts::BLACK_FRIDAY_CODE,
       black_friday_stats: -> { black_friday_feature_active? ? BlackFridayStatsService.fetch_stats : nil },
       recommended_products: -> { recommendations },
-      recommended_wishlists: -> { recommended_wishlists_props },
+      recommended_wishlists: -> { recommended_wishlists_data },
     }
   end
 
@@ -169,7 +169,7 @@ class DiscoverController < ApplicationController
       Feature.active?(:offer_codes_search) || (params[:feature_key].present? && ActiveSupport::SecurityUtils.secure_compare(params[:feature_key].to_s, ENV["SECRET_FEATURE_KEY"].to_s))
     end
 
-    def recommended_wishlists_props
+    def recommended_wishlists_data
       wishlists = RecommendedWishlistsService.fetch(
         limit: 4,
         current_seller:,
