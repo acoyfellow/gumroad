@@ -17,6 +17,7 @@ import { Icon } from "$app/components/Icons";
 import { HorizontalCard } from "$app/components/Product/Card";
 import { CardGrid, useSearchReducer } from "$app/components/Product/CardGrid";
 import { RatingStars } from "$app/components/RatingStars";
+import { Footer } from "$app/components/Shared/Footer";
 import { CardContent } from "$app/components/ui/Card";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { useScrollableCarousel } from "$app/components/useScrollableCarousel";
@@ -473,6 +474,7 @@ function DiscoverIndex() {
             }
           />
         ) : null}
+        <Footer />
       </div>
     </Layout>
   );
