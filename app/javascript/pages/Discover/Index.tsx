@@ -292,7 +292,8 @@ function DiscoverIndex() {
   };
 
   return (
-    <Layout
+    <>
+      <Layout
       taxonomyPath={taxonomyPath}
       taxonomiesForNav={props.taxonomies_for_nav}
       showTaxonomy
@@ -474,9 +475,10 @@ function DiscoverIndex() {
             }
           />
         ) : null}
-        <Footer />
       </div>
     </Layout>
+    <Footer />
+    </>
   );
 }
 
