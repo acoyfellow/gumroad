@@ -801,13 +801,11 @@ describe UrlRedirectPresenter do
         product.product_files << video_file_2
       end
 
-      it "returns index_to_play matching the specified product file position in playlist" do
+      it "returns index_to_play for the requested product file" do
         presenter = described_class.new(url_redirect:, logged_in_user: nil)
         props = presenter.stream_page_props(product_file: video_file)
 
-        expect(props[:index_to_play]).to be_a(Integer)
-        expect(props[:index_to_play]).to be >= 0
-        expect(props[:index_to_play]).to be < props[:playlist].size
+        expect(props[:playlist][props[:index_to_play]][:external_id]).to eq(video_file.external_id)
       end
 
       it "includes all video files in the playlist" do

@@ -595,6 +595,31 @@ describe UrlRedirectsController do
         end
       end
 
+      context "when 'product_file_id' points to a non-streamable file" do
+        it "raises 404 error" do
+          non_streamable_product_file = create(:product_file, link: @product)
+
+          expect do
+            get :stream, params: { id: @url_redirect.token, product_file_id: non_streamable_product_file.external_id }
+          end.to raise_error(ActionController::RoutingError)
+        end
+      end
+
+      context "when url redirect has a purchase", inertia: true do
+        before do
+          @url_redirect.update!(purchase: create(:purchase, link: @product))
+          stub_const("UrlRedirect::GUID_GETTER_FROM_S3_URL_REGEX", /(specs)/)
+        end
+
+        it "includes purchase_id in stream props" do
+          get :stream, params: { id: @url_redirect.token }
+
+          expect(response).to have_http_status(:ok)
+          expect(inertia.component).to eq("UrlRedirects/Stream")
+          expect(inertia.props[:purchase_id]).to eq(@url_redirect.purchase.external_id)
+        end
+      end
+
       it "creates consumption event" do
         @url_redirect.update!(purchase: create(:purchase, link: @product))
         expect do
