@@ -20,6 +20,8 @@ class UsersController < ApplicationController
   layout "inertia", only: [:coffee, :subscribe_preview, :show, :subscribe]
 
   def show
+    format_search_params!
+
     respond_to do |format|
       format.html do
         set_user_page_meta(@user)
