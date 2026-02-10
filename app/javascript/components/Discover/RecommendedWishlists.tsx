@@ -7,9 +7,9 @@ export const RecommendedWishlists = ({
   wishlists,
 }: {
   title: string;
-  wishlists: CardWishlist[] | null | undefined;
+  wishlists?: CardWishlist[] | undefined | null;
 }) => {
-  if (!wishlists || wishlists.length === 0) return null;
+  if (!wishlists?.length) return null;
 
   return (
     <section className="flex flex-col gap-4">

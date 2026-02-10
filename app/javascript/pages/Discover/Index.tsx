@@ -1,4 +1,4 @@
-import { Link, router, usePage } from "@inertiajs/react";
+import { Deferred, Link, router, usePage } from "@inertiajs/react";
 import { range } from "lodash-es";
 import * as React from "react";
 import { is } from "ts-safe-cast";
@@ -33,10 +33,10 @@ type Props = {
   recommended_products?: CardProduct[];
   recommended_wishlists?: CardWishlist[];
   curated_product_ids: string[];
-  show_black_friday_hero: boolean;
+  show_black_friday_hero?: boolean;
   is_black_friday_page: boolean;
   black_friday_offer_code: string;
-  black_friday_stats: {
+  black_friday_stats?: {
     active_deals_count: number;
     revenue_cents: number;
     average_discount_percentage: number;
@@ -230,8 +230,9 @@ function DiscoverIndex() {
   });
 
   const isBlackFridayPage = state.params.offer_code === "BLACKFRIDAY2025";
+  const showBlackFridayHero = props.show_black_friday_hero ?? false;
 
-  const resultsRef = useScrollToElement(isBlackFridayPage && props.show_black_friday_hero, undefined, [state.params]);
+  const resultsRef = useScrollToElement(isBlackFridayPage && showBlackFridayHero, undefined, [state.params]);
 
   // Sync state changes to URL via Inertia router
   React.useEffect(() => {
@@ -263,13 +264,21 @@ function DiscoverIndex() {
       // Only fetch recommendations when taxonomy or offer_code changes (which affects what to show)
       const shouldFetchRecommendations =
         url.pathname !== new URL(window.location.href).pathname ||
-        state.params.offer_code !== parseUrlParams(window.location.href, props.curated_product_ids, defaultSortOrder).offer_code;
+        state.params.offer_code !==
+          parseUrlParams(window.location.href, props.curated_product_ids, defaultSortOrder).offer_code;
 
-      router.visit(url.toString(), {
-        preserveState: true,
-        preserveScroll: true,
-        only: shouldFetchRecommendations ? undefined : ["search_results"],
-      });
+      if (shouldFetchRecommendations) {
+        router.visit(url.toString(), {
+          preserveState: true,
+          preserveScroll: true,
+        });
+      } else {
+        router.visit(url.toString(), {
+          preserveState: true,
+          preserveScroll: true,
+          only: ["search_results"],
+        });
+      }
     }
 
     document.title = discoverTitleGenerator(state.params, props.taxonomies_for_nav);
@@ -297,6 +306,7 @@ function DiscoverIndex() {
 
   const recommendedProducts = props.recommended_products ?? [];
   const isCuratedProducts =
+    recommendedProducts.length > 0 &&
     recommendedProducts[0] &&
     new URL(recommendedProducts[0].url).searchParams.get("recommended_by") === "products_for_you";
 
@@ -324,61 +334,70 @@ function DiscoverIndex() {
         query={state.params.query}
         setQuery={(query) => dispatch({ type: "set-params", params: { query, taxonomy: taxonomyPath } })}
       >
-        {props.show_black_friday_hero ? (
-          <header className="relative flex flex-col items-center justify-center">
-            <div className="relative flex min-h-[72vh] w-full flex-col items-center justify-center bg-black">
-              <img
-                src={saleImage}
-                alt="Sale"
-                className="absolute top-1/2 left-40 hidden w-32 -translate-y-1/2 rotate-[-24deg] object-contain md:left-12 md:block md:w-40 lg:left-36 lg:w-48 xl:left-60 xl:w-60"
-                draggable={false}
-              />
-              <div className="relative">
-                <img src={blackFridayImage} alt="Black Friday" className="max-w-96 object-contain" draggable={false} />
+        {showBlackFridayHero ? (
+          <Deferred data={["show_black_friday_hero", "black_friday_stats"]} fallback={null}>
+            <header className="relative flex flex-col items-center justify-center">
+              <div className="relative flex min-h-[72vh] w-full flex-col items-center justify-center bg-black">
                 <img
                   src={saleImage}
                   alt="Sale"
-                  className="absolute right-0 bottom-0 w-27.5 rotate-[16deg] object-contain md:hidden"
+                  className="absolute top-1/2 left-40 hidden w-32 -translate-y-1/2 rotate-[-24deg] object-contain md:left-12 md:block md:w-40 lg:left-36 lg:w-48 xl:left-60 xl:w-60"
                   draggable={false}
                 />
-              </div>
-              <img
-                src={saleImage}
-                alt="Sale"
-                className="absolute top-1/2 right-40 hidden w-32 -translate-y-1/2 rotate-[24deg] object-contain md:right-12 md:block md:w-40 lg:right-36 lg:w-48 xl:right-60 xl:w-60"
-                draggable={false}
-              />
-              <div className="font-regular mx-12 text-center text-xl text-white">
-                Snag creator-made deals <br className="block sm:hidden" /> before they're gone.
-              </div>
-              {!isBlackFridayPage && (
-                <div className="mt-8 text-base">
-                  <BlackFridayButton offerCode={props.black_friday_offer_code} taxonomy={taxonomyPath} />
+                <div className="relative">
+                  <img
+                    src={blackFridayImage}
+                    alt="Black Friday"
+                    className="max-w-96 object-contain"
+                    draggable={false}
+                  />
+                  <img
+                    src={saleImage}
+                    alt="Sale"
+                    className="absolute right-0 bottom-0 w-27.5 rotate-[16deg] object-contain md:hidden"
+                    draggable={false}
+                  />
                 </div>
-              )}
-            </div>
-            <div className="h-14 w-full overflow-hidden border-b border-black bg-yellow-400">
-              <div className="flex h-14 min-w-fit items-center gap-x-4 whitespace-nowrap hover:[animation-play-state:paused] motion-safe:animate-[marquee-scroll_80s_linear_infinite] motion-reduce:animate-none">
-                {props.black_friday_stats ? (
-                  <>
-                    {(() => {
-                      const stats = props.black_friday_stats;
-                      return Array.from({ length: 5 }, (_, i) => (
-                        <BlackFridayBanner key={i} stats={stats} currencyCode={props.currency_code} />
-                      ));
-                    })()}
-                  </>
-                ) : null}
+                <img
+                  src={saleImage}
+                  alt="Sale"
+                  className="absolute top-1/2 right-40 hidden w-32 -translate-y-1/2 rotate-[24deg] object-contain md:right-12 md:block md:w-40 lg:right-36 lg:w-48 xl:right-60 xl:w-60"
+                  draggable={false}
+                />
+                <div className="font-regular mx-12 text-center text-xl text-white">
+                  Snag creator-made deals <br className="block sm:hidden" /> before they're gone.
+                </div>
+                {!isBlackFridayPage && (
+                  <div className="mt-8 text-base">
+                    <BlackFridayButton offerCode={props.black_friday_offer_code} taxonomy={taxonomyPath} />
+                  </div>
+                )}
               </div>
-            </div>
-          </header>
+              <div className="h-14 w-full overflow-hidden border-b border-black bg-yellow-400">
+                <div className="flex h-14 min-w-fit items-center gap-x-4 whitespace-nowrap hover:[animation-play-state:paused] motion-safe:animate-[marquee-scroll_80s_linear_infinite] motion-reduce:animate-none">
+                  {props.black_friday_stats ? (
+                    <>
+                      {(() => {
+                        const stats = props.black_friday_stats;
+                        return Array.from({ length: 5 }, (_, i) => (
+                          <BlackFridayBanner key={i} stats={stats} currencyCode={props.currency_code} />
+                        ));
+                      })()}
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </header>
+          </Deferred>
         ) : null}
         <div className="grid gap-16! px-4 py-16 lg:ps-16 lg:pe-16">
           {showRecommendationSections ? (
-            <ProductsCarousel
-              products={recommendedProducts}
-              title={isCuratedProducts ? "Recommended" : "Featured products"}
-            />
+            <Deferred data={["recommended_products"]} fallback={null}>
+              <ProductsCarousel
+                products={recommendedProducts}
+                title={isCuratedProducts ? "Recommended" : "Featured products"}
+              />
+            </Deferred>
           ) : null}
           <section ref={resultsRef} className="flex flex-col gap-4">
             <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--spacer-2)", flexWrap: "wrap" }}>
@@ -491,14 +510,16 @@ function DiscoverIndex() {
             />
           </section>
           {showRecommendationSections ? (
-            <RecommendedWishlists
-              wishlists={props.recommended_wishlists}
-              title={
-                taxonomyPath
-                  ? `Wishlists for ${props.taxonomies_for_nav.find((t) => t.slug === last(taxonomyPath.split("/")))?.label}`
-                  : "Wishlists you might like"
-              }
-            />
+            <Deferred data={["recommended_wishlists"]} fallback={null}>
+              <RecommendedWishlists
+                wishlists={props.recommended_wishlists}
+                title={
+                  taxonomyPath
+                    ? `Wishlists for ${props.taxonomies_for_nav.find((t) => t.slug === last(taxonomyPath.split("/")))?.label}`
+                    : "Wishlists you might like"
+                }
+              />
+            </Deferred>
           ) : null}
         </div>
       </Layout>

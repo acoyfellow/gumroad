@@ -14,9 +14,16 @@ export const Footer = () => (
           <div className="lg:flex-1">
             <input name="email" placeholder="Your email address" type="email" />
           </div>
-          <button type="submit" className="button accent small">
-            →
-          </button>
+          <div className="group relative inline-block">
+            <div className="absolute inset-0 z-[2] rounded-sm border border-black bg-yellow transition-transform duration-150" />
+            <div className="absolute inset-0 z-[1] rounded-sm border border-black bg-red transition-transform duration-150 group-hover:translate-x-2 group-hover:translate-y-2" />
+            <button
+              type="submit"
+              className="relative z-[3] inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-sm border border-black bg-pink px-3 text-base text-black no-underline transition-all duration-150 group-hover:-translate-x-2 group-hover:-translate-y-2 lg:h-12 lg:w-auto lg:px-6 lg:text-base"
+            >
+              →
+            </button>
+          </div>
         </form>
       </div>
       <div className="flex items-center gap-2">
