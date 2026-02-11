@@ -1,5 +1,6 @@
 import { usePage } from "@inertiajs/react";
 import * as React from "react";
+import { cast } from "ts-safe-cast";
 
 import { CreatorProfile } from "$app/parsers/profile";
 
@@ -11,7 +12,7 @@ type PageProps = Props & {
 };
 
 function ProfileProductShowPage() {
-  const props = usePage<PageProps>().props;
+  const props = cast<PageProps>(usePage().props);
 
   return (
     <ProfileLayout creatorProfile={props.creator_profile}>
