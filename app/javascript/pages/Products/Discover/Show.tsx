@@ -1,6 +1,7 @@
 import { usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
+
 import { Taxonomy } from "$app/utils/discover";
 
 import { Layout as DiscoverLayout } from "$app/components/Discover/Layout";
