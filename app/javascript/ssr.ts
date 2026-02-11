@@ -4,7 +4,6 @@ import "whatwg-fetch";
 import ReactOnRails from "react-on-rails";
 
 import Alert from "$app/components/server-components/Alert";
-import CheckoutPage from "$app/components/server-components/CheckoutPage";
 import CommunitiesPage from "$app/components/server-components/CommunitiesPage";
 import CustomersDownloadPopover from "$app/components/server-components/CustomersPage/DownloadPopover";
 import CustomersFilterPopover from "$app/components/server-components/CustomersPage/FilterPopover";
@@ -18,7 +17,6 @@ import ProductPage from "$app/components/server-components/Product";
 import ProductIframePage from "$app/components/server-components/Product/IframePage";
 import ProductEditPage from "$app/components/server-components/ProductEditPage";
 import ProfileProductPage from "$app/components/server-components/Profile/ProductPage";
-import SubscriptionManager from "$app/components/server-components/SubscriptionManager";
 import SubscriptionManagerMagicLink from "$app/components/server-components/SubscriptionManagerMagicLink";
 import SupportHeader from "$app/components/server-components/support/Header";
 import TaxesCollectionModal from "$app/components/server-components/TaxesCollectionModal";
@@ -29,7 +27,6 @@ import { Pill } from "$app/components/ui/Pill";
 ReactOnRails.register({
   Alert,
   SupportHeader,
-  CheckoutPage,
   CodeSnippet,
   CommunitiesPage,
   CustomersDownloadPopover,
@@ -45,7 +42,6 @@ ReactOnRails.register({
   ProductIframePage,
   ProductPage,
   ProfileProductPage,
-  SubscriptionManager,
   SubscriptionManagerMagicLink,
   TaxesCollectionModal,
   VideoStreamPlayer,
