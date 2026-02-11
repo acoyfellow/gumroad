@@ -148,7 +148,6 @@ class DiscoverController < ApplicationController
       set_meta_tag(property: "og:type", content: "website")
       set_meta_tag(property: "og:site_name", content: "Gumroad")
       set_meta_tag(tag_name: "link", rel: "canonical", href: Discover::CanonicalUrlPresenter.canonical_url(params), head_key: "canonical")
-      set_meta_tag(property: "og:url", content: Discover::CanonicalUrlPresenter.canonical_url(params))
 
       if !params[:taxonomy].present? && !params[:query].present? && params[:tags].present?
         presenter = Discover::TagPageMetaPresenter.new(params[:tags], search_results[:total])

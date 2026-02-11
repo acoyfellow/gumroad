@@ -1,7 +1,7 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { range } from "lodash-es";
 import * as React from "react";
-import { is } from "ts-safe-cast";
+import { cast, is } from "ts-safe-cast";
 
 import { SearchResults, SearchRequest } from "$app/data/search";
 import { useScrollToElement } from "$app/hooks/useScrollToElement";
@@ -221,7 +221,7 @@ const parseUrlParams = (href: string, curatedProductIds: string[], defaultSortOr
 };
 
 function DiscoverIndex() {
-  const props = usePage<Props>().props;
+  const props = cast<Props>(usePage().props);
   const defaultSortOrder = props.curated_product_ids.length > 0 ? "curated" : undefined;
 
   const [state, dispatch] = useSearchReducer({
