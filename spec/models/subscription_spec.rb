@@ -3814,7 +3814,7 @@ describe Subscription, :vcr do
       let!(:product) { create(:product, user: seller, price_cents: 3000) }
       let!(:installment_plan) { create(:product_installment_plan, link: product, number_of_installments: 3) }
       let!(:offer_code) { create(:offer_code, products: [product], amount_cents: 500) }
-      let(:buyer) { create(:user, credit_card: create(:credit_card)) }
+      let(:buyer) { create(:user) }
 
       context "when offer code is deleted after initial purchase" do
         it "preserves the discount for subsequent installments" do
@@ -3914,7 +3914,7 @@ describe Subscription, :vcr do
       let(:seller) { create(:user) }
       let(:product) { create(:membership_product_with_preset_tiered_pricing, user: seller) }
       let(:offer_code) { create(:offer_code, products: [product], amount_cents: 100, duration_in_months: 3) }
-      let(:buyer) { create(:user, credit_card: create(:credit_card)) }
+      let(:buyer) { create(:user) }
 
       context "when offer code is deleted within duration" do
         it "preserves the discount for subsequent charges" do
@@ -3983,7 +3983,7 @@ describe Subscription, :vcr do
       let(:seller) { create(:user) }
       let(:product) { create(:membership_product_with_preset_tiered_pricing, user: seller) }
       let(:offer_code) { create(:offer_code, products: [product], amount_cents: 100) }
-      let(:buyer) { create(:user, credit_card: create(:credit_card)) }
+      let(:buyer) { create(:user) }
 
       context "when original purchase has no cached discount (legacy)" do
         it "falls back to live offer code" do
