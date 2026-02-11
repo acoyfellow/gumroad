@@ -539,6 +539,23 @@ describe "Purchase Process", :vcr do
         end
       end
 
+      context "when fees are capped during the full checkout flow" do
+        let(:low_price_product) { create(:product, price_cents: 50) }
+        let(:purchase) { create(:purchase, link: low_price_product, seller: low_price_product.user, save_card: false, ip_address:) }
+
+        before do
+          purchase.skip_preparing_for_charge = true
+          purchase.process!
+        end
+
+        it "succeeds with capped fees and seller nets at least 1 cent" do
+          expect(purchase.errors).to be_empty
+          expect(purchase.fee_cents).to be > 0
+          expect(purchase.price_cents - purchase.fee_cents - purchase.affiliate_credit_cents).to be >= 1
+          expect(purchase.purchase_state).to eq("successful")
+        end
+      end
+
       context "when affiliate credit is negative (fee share exceeds commission)" do
         let(:affiliate_purchase) { build(:purchase, link: product, seller: product.user, affiliate:, save_card: false, ip_address:) }
 

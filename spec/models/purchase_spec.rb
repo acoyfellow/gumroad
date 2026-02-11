@@ -2609,6 +2609,27 @@ describe Purchase, :vcr do
         expect(purchase.affiliate_credit_cents).to eq(-23)
         expect(purchase.fee_cents + purchase.affiliate_credit_cents).to be >= purchase.price_cents
       end
+
+      it "does not cap fees when discover fee replaces fixed fees" do
+        purchase.price_cents = 50
+        allow(purchase).to receive(:charge_discover_fee?).and_return(true)
+        allow(purchase).to receive(:determine_affiliate_balance_cents).and_return(0)
+        purchase.send(:calculate_fees)
+
+        expect(purchase.was_discover_fee_charged).to be true
+        expect(purchase.fee_cents).to be < purchase.price_cents
+      end
+
+      it "caps fees on a recurring subscription charge" do
+        purchase.price_cents = 50
+        purchase.subscription = create(:subscription, link: product, user: create(:user))
+        purchase.is_original_subscription_purchase = false
+        allow(purchase).to receive(:determine_affiliate_balance_cents).and_return(0)
+        purchase.send(:calculate_fees)
+
+        expect(purchase.fee_cents).to eq(49)
+        expect(purchase.price_cents - purchase.fee_cents).to eq(1)
+      end
     end
   end
 
