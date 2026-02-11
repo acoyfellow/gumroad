@@ -29,7 +29,6 @@ export const FollowForm = ({
     seller_id: creatorProfile.external_id,
   });
 
-
   const followUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidEmail(form.data.email)) {
