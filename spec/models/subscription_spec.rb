@@ -3809,7 +3809,6 @@ describe Subscription, :vcr do
   end
 
   describe "offer code persistence for subsequent charges" do
-
     describe "installment plans" do
       let(:seller) { create(:user) }
       let!(:product) { create(:product, user: seller, price_cents: 3000) }
