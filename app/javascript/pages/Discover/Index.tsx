@@ -1,4 +1,4 @@
-import { Deferred, Link, router, usePage } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import { range } from "lodash-es";
 import * as React from "react";
 import { is } from "ts-safe-cast";
@@ -229,7 +229,7 @@ function DiscoverIndex() {
     results: props.search_results,
   });
 
-  const isBlackFridayPage = state.params.offer_code === "BLACKFRIDAY2025";
+  const isBlackFridayPage = state.params.offer_code === props.black_friday_offer_code;
   const showBlackFridayHero = props.show_black_friday_hero ?? false;
 
   const resultsRef = useScrollToElement(isBlackFridayPage && showBlackFridayHero, undefined, [state.params]);
@@ -301,10 +301,15 @@ function DiscoverIndex() {
   const hasOfferCode = !!state.params.offer_code;
 
   const recommendedProducts = props.recommended_products ?? [];
-  const isCuratedProducts =
-    recommendedProducts.length > 0 &&
-    recommendedProducts[0] &&
-    new URL(recommendedProducts[0].url).searchParams.get("recommended_by") === "products_for_you";
+  const isCuratedProducts = (() => {
+    try {
+      if (!recommendedProducts.length || !recommendedProducts[0]?.url) return false;
+      const u = new URL(recommendedProducts[0].url, window.location.origin);
+      return u.searchParams.get("recommended_by") === "products_for_you";
+    } catch {
+      return false;
+    }
+  })();
 
   const showRecommendationSections = recommendedProducts.length > 0 && !state.params.query && !hasOfferCode;
 
@@ -331,7 +336,6 @@ function DiscoverIndex() {
         setQuery={(query) => dispatch({ type: "set-params", params: { query, taxonomy: taxonomyPath } })}
       >
         {showBlackFridayHero ? (
-          <Deferred data={["show_black_friday_hero", "black_friday_stats"]} fallback={null}>
             <header className="relative flex flex-col items-center justify-center">
               <div className="relative flex min-h-[72vh] w-full flex-col items-center justify-center bg-black">
                 <img
@@ -384,16 +388,13 @@ function DiscoverIndex() {
                 </div>
               </div>
             </header>
-          </Deferred>
         ) : null}
         <div className="grid gap-16! px-4 py-16 lg:ps-16 lg:pe-16">
           {showRecommendationSections ? (
-            <Deferred data={["recommended_products"]} fallback={null}>
-              <ProductsCarousel
-                products={recommendedProducts}
-                title={isCuratedProducts ? "Recommended" : "Featured products"}
-              />
-            </Deferred>
+            <ProductsCarousel
+              products={recommendedProducts}
+              title={isCuratedProducts ? "Recommended" : "Featured products"}
+            />
           ) : null}
           <section ref={resultsRef} className="flex flex-col gap-4">
             <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--spacer-2)", flexWrap: "wrap" }}>
@@ -488,7 +489,7 @@ function DiscoverIndex() {
                           Offer code
                         </summary>
                         <div className="flex items-center justify-between gap-2 py-1">
-                          <span>BLACKFRIDAY2025</span>
+                          <span>{props.black_friday_offer_code}</span>
                           <button
                             onClick={() => updateParams({ offer_code: undefined })}
                             className="flex cursor-pointer items-center justify-center all-unset"
@@ -506,16 +507,14 @@ function DiscoverIndex() {
             />
           </section>
           {showRecommendationSections ? (
-            <Deferred data={["recommended_wishlists"]} fallback={null}>
-              <RecommendedWishlists
-                wishlists={props.recommended_wishlists}
-                title={
-                  taxonomyPath
-                    ? `Wishlists for ${props.taxonomies_for_nav.find((t) => t.slug === last(taxonomyPath.split("/")))?.label}`
-                    : "Wishlists you might like"
-                }
-              />
-            </Deferred>
+            <RecommendedWishlists
+              wishlists={props.recommended_wishlists}
+              title={
+                taxonomyPath
+                  ? `Wishlists for ${props.taxonomies_for_nav.find((t) => t.slug === last(taxonomyPath.split("/")))?.label}`
+                  : "Wishlists you might like"
+              }
+            />
           ) : null}
         </div>
       </Layout>

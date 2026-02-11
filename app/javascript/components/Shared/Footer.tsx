@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Link } from "@inertiajs/react";
 
 import logoG from "$assets/images/logo-g.svg";
 
@@ -34,12 +35,12 @@ export const Footer = () => (
     <div className="flex w-full max-w-3xl flex-col gap-16">
       <div className="flex flex-1 gap-16">
         <div className="flex flex-1 flex-col gap-3">
-          <a href={Routes.discover_path()} className="no-underline hover:text-pink">
+          <Link href={Routes.discover_path()} className="no-underline hover:text-pink">
             Discover
-          </a>
-          <a href={Routes.gumroad_blog_root_path()} className="no-underline hover:text-pink">
+          </Link>
+          <Link href={Routes.gumroad_blog_root_path()} className="no-underline hover:text-pink">
             Blog
-          </a>
+          </Link>
           <a href={Routes.pricing_path()} className="no-underline hover:text-pink">
             Pricing
           </a>
