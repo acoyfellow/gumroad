@@ -1,6 +1,3 @@
-import * as React from "react";
-
-import { OtherRefundPolicy } from "$app/data/products/other_refund_policies";
 import { Thumbnail } from "$app/data/thumbnails";
 import { Discount } from "$app/parsers/checkout";
 import {
@@ -10,9 +7,7 @@ import {
   ProductNativeType,
   RatingsWithPercentages,
 } from "$app/parsers/product";
-import { assertDefined } from "$app/utils/assert";
 import { CurrencyCode } from "$app/utils/currency";
-import { Taxonomy } from "$app/utils/discover";
 import { RecurrenceId } from "$app/utils/recurringPricing";
 
 import { PublicFile, Seller } from "$app/components/Product";
@@ -37,14 +32,22 @@ export type Variant = {
   active_subscribers_count?: number;
 };
 
+export type VariantWithoutRichContent = Omit<Variant, "rich_content">;
+
+export type EditProductContentVariant = Pick<Variant, "id" | "name" | "integrations" | "rich_content">;
+
 export type Version = Variant & {
   price_difference_cents: number | null;
 };
+
+export type VersionWithoutRichContent = Omit<Version, "rich_content">;
 
 export type Duration = Variant & {
   duration_in_minutes: number | null;
   price_difference_cents: number | null;
 };
+
+export type DurationWithoutRichContent = Omit<Duration, "rich_content">;
 
 export type Availability = {
   id: string;
@@ -56,6 +59,7 @@ export type Availability = {
 export type RecurrencePriceValue =
   | { enabled: false; price_cents?: number | null }
   | { enabled: true; price_cents: number | null; suggested_price_cents: number | null };
+
 export type Tier = Variant & {
   customizable_price: boolean;
   apply_price_changes_to_existing_memberships: boolean;
@@ -65,6 +69,8 @@ export type Tier = Variant & {
     [key in RecurrenceId]: RecurrencePriceValue;
   };
 };
+
+export type TierWithoutRichContent = Omit<Tier, "rich_content">;
 
 export type ShippingDestination = {
   country_code: string;
@@ -106,9 +112,7 @@ export type Product = {
   custom_button_text_option: CustomButtonTextOption | null;
   custom_summary: string | null;
   custom_view_content_button_text: string | null;
-  custom_view_content_button_text_max_length: number;
   custom_receipt_text: string | null;
-  custom_receipt_text_max_length: number;
   custom_attributes: Attribute[];
   file_attributes: Attribute[];
   max_purchase_count: number | null;
@@ -146,7 +150,6 @@ export type Product = {
   collaborating_user: Seller | null;
   rich_content: Page[];
   files: FileEntry[];
-  has_same_rich_content_for_all_variants: boolean;
   is_multiseat_license: boolean;
   call_limitation_info: CallLimitationInfo | null;
   require_shipping: boolean;
@@ -156,6 +159,7 @@ export type Product = {
   public_files: PublicFileWithStatus[];
   audio_previews_enabled: boolean;
   community_chat_enabled: boolean | null;
+  ratings: RatingsWithPercentages | null;
 } & (
   | { native_type: "call"; variants: Duration[] }
   | { native_type: "membership"; variants: Tier[] }
@@ -170,54 +174,13 @@ export type ContentUpdates = {
   uniquePermalinkOrVariantIds: string[];
 } | null;
 
-export const ProductEditContext = React.createContext<{
-  id: string;
-  product: Product;
-  uniquePermalink: string;
-  updateProduct: (update: Partial<Product> | ((product: Product) => void)) => void;
-  thumbnail: Thumbnail | null;
-  refundPolicies: OtherRefundPolicy[];
-  currencyType: CurrencyCode;
-  setCurrencyType: (newCurrencyCode: CurrencyCode) => void;
-  isListedOnDiscover: boolean;
-  isPhysical: boolean;
-  profileSections: ProfileSection[];
-  taxonomies: Taxonomy[];
-  earliestMembershipPriceChangeDate: Date;
-  customDomainVerificationStatus: { success: boolean; message: string } | null;
-  salesCountForInventory: number;
-  successfulSalesCount: number;
-  ratings: RatingsWithPercentages;
-  seller: Seller;
-  existingFiles: ExistingFileEntry[];
-  setExistingFiles: React.Dispatch<React.SetStateAction<ExistingFileEntry[]>>;
-  awsKey: string;
-  s3Url: string;
-  availableCountries: ShippingCountry[];
-  saving: boolean;
-  save: () => Promise<void>;
-  googleClientId: string;
-  googleCalendarEnabled: boolean;
-  seller_refund_policy_enabled: boolean;
-  seller_refund_policy: Pick<RefundPolicy, "title" | "fine_print">;
-  cancellationDiscountsEnabled: boolean;
-  contentUpdates: ContentUpdates;
-  setContentUpdates: React.Dispatch<React.SetStateAction<ContentUpdates>>;
-  filesById: Map<string, FileEntry>;
-  aiGenerated: boolean;
-} | null>(null);
-export const useProductEditContext = () => assertDefined(React.useContext(ProductEditContext));
-
-//TODO: clean up this legacy file state
-type UploadProgress = { percent: number; bitrate: number };
-
 type FileStatus =
   | { type: "saved" }
   | { type: "existing" }
   | { type: "dropbox"; externalId: string; uploadState: string }
   | {
       type: "unsaved";
-      uploadStatus: { type: "uploaded" } | { type: "uploading"; progress: UploadProgress };
+      uploadStatus: { type: "uploaded" } | { type: "uploading"; progress: { percent: number; bitrate: number } };
       url: string;
     };
 
@@ -247,4 +210,76 @@ export type ThumbnailFile = {
   url: string;
   signed_id: string;
   status: { type: "saved" } | { type: "existing" } | { type: "unsaved" };
+};
+
+export type EditProductBase = {
+  id: string;
+  unique_permalink: string;
+  currency_type: CurrencyCode;
+  thumbnail: Thumbnail | null;
+} & Pick<
+  Product,
+  | "name"
+  | "description"
+  | "custom_permalink"
+  | "price_cents"
+  | "customizable_price"
+  | "suggested_price_cents"
+  | "native_type"
+  | "is_published"
+>;
+
+export type EditProductShare = EditProductBase &
+  Pick<
+    Product,
+    | "section_ids"
+    | "taxonomy_id"
+    | "tags"
+    | "display_product_reviews"
+    | "is_adult"
+    | "collaborating_user"
+    | "covers"
+    | "max_purchase_count"
+    | "eligible_for_installment_plans"
+    | "allow_installment_plan"
+    | "installment_plan"
+    | "subscription_duration"
+    | "files"
+    | "quantity_enabled"
+    | "hide_sold_out_variants"
+    | "should_show_sales_count"
+    | "custom_button_text_option"
+    | "custom_summary"
+    | "custom_attributes"
+    | "free_trial_enabled"
+    | "free_trial_duration_amount"
+    | "free_trial_duration_unit"
+    | "variants"
+    | "refund_policy"
+    | "public_files"
+    | "ratings"
+    | "audio_previews_enabled"
+    | "default_offer_code_id"
+    | "default_offer_code"
+  > & { is_listed_on_discover: boolean };
+
+export type EditProductContent = EditProductBase &
+  Pick<Product, "rich_content" | "files" | "is_multiseat_license" | "public_files"> & {
+    has_same_rich_content_for_all_variants: boolean;
+    variants: EditProductContentVariant[];
+  };
+
+export type EditProduct = EditProductBase &
+  Omit<Product, "custom_receipt_text" | "custom_view_content_button_text" | "rich_content" | "variants"> &
+  (
+    | { native_type: "call"; variants: DurationWithoutRichContent[] }
+    | { native_type: "membership"; variants: TierWithoutRichContent[] }
+    | { native_type: Exclude<ProductNativeType, "call" | "membership">; variants: VersionWithoutRichContent[] }
+  ) & { ai_generated: boolean };
+
+export type ContentsUpdatedAlertPayload = {
+  status: "frontend_alert_contents_updated";
+  data: {
+    new_email_url: string;
+  };
 };

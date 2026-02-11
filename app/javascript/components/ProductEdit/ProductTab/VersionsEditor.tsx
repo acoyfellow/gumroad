@@ -1,28 +1,34 @@
 import * as React from "react";
 
+import { CurrencyCode } from "$app/utils/currency";
+
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
 import { useProductUrl } from "$app/components/ProductEdit/Layout";
-import { Version, useProductEditContext } from "$app/components/ProductEdit/state";
+import type { EditProduct, VersionWithoutRichContent } from "$app/components/ProductEdit/state";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
 import { Placeholder } from "$app/components/ui/Placeholder";
 import { Row, RowActions, RowContent, RowDetails, Rows } from "$app/components/ui/Rows";
 import { Switch } from "$app/components/ui/Switch";
 import { WithTooltip } from "$app/components/WithTooltip";
 
-let newVersionId = 0;
-
 export const VersionsEditor = ({
   versions,
   onChange,
+  product,
+  currencyCode,
 }: {
-  versions: Version[];
-  onChange: (versions: Version[]) => void;
+  versions: VersionWithoutRichContent[];
+  onChange: (versions: VersionWithoutRichContent[]) => void;
+  product: EditProduct;
+  currencyCode: CurrencyCode;
 }) => {
-  const updateVersion = (id: string, update: Partial<Version>) => {
+  const nextIdRef = React.useRef(0);
+
+  const updateVersion = (id: string, update: Partial<VersionWithoutRichContent>) => {
     onChange(versions.map((version) => (version.id === id ? { ...version, ...update } : version)));
   };
 
@@ -36,7 +42,7 @@ export const VersionsEditor = ({
         onChange([
           ...versions,
           {
-            id: (newVersionId++).toString(),
+            id: (nextIdRef.current++, nextIdRef.current.toString()),
             name: "Untitled",
             description: "",
             price_difference_cents: 0,
@@ -47,7 +53,6 @@ export const VersionsEditor = ({
               google_calendar: false,
             },
             newlyAdded: true,
-            rich_content: [],
           },
         ]);
       }}
@@ -100,6 +105,8 @@ export const VersionsEditor = ({
             version={version}
             updateVersion={(update) => updateVersion(version.id, update)}
             onDelete={() => setDeletionModalVersionId(version.id)}
+            product={product}
+            currencyCode={currencyCode}
           />
         ))}
       </SortableList>
@@ -112,17 +119,20 @@ const VersionEditor = ({
   version,
   updateVersion,
   onDelete,
+  product,
+  currencyCode,
 }: {
-  version: Version;
-  updateVersion: (update: Partial<Version>) => void;
+  version: VersionWithoutRichContent;
+  updateVersion: (update: Partial<VersionWithoutRichContent>) => void;
   onDelete: () => void;
+  product: EditProduct;
+  currencyCode: CurrencyCode;
 }) => {
   const uid = React.useId();
-  const { product, currencyType } = useProductEditContext();
 
   const [isOpen, setIsOpen] = React.useState(true);
 
-  const url = useProductUrl({ option: version.id });
+  const url = useProductUrl(product, { option: version.id });
 
   const integrations = Object.entries(product.integrations)
     .filter(([_, enabled]) => enabled)
@@ -178,7 +188,7 @@ const VersionEditor = ({
                 <label htmlFor={`${uid}-price`}>Additional amount</label>
                 <PriceInput
                   id={`${uid}-price`}
-                  currencyCode={currencyType}
+                  currencyCode={currencyCode}
                   cents={version.price_difference_cents}
                   onChange={(price_difference_cents) => updateVersion({ price_difference_cents })}
                   placeholder="0"

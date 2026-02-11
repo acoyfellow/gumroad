@@ -52,7 +52,7 @@ describe DashboardProductsPagePresenter do
       expect(returned_product).to include(
         "id" => product.id,
         "name" => "normal_product",
-        "edit_url" => edit_link_path(product),
+        "edit_url" => edit_product_path(product),
         "is_duplicating" => false,
         "is_unpublished" => false,
         "permalink" => product.unique_permalink,
@@ -136,7 +136,7 @@ describe DashboardProductsPagePresenter do
       expect(returned_membership).to include(
         "id" => membership.id,
         "name" => "normal_membership",
-        "edit_url" => edit_link_path(membership),
+        "edit_url" => edit_product_path(membership),
         "is_duplicating" => false,
         "is_unpublished" => false,
         "permalink" => membership.unique_permalink,
@@ -551,7 +551,7 @@ describe DashboardProductsPagePresenter do
         expect(returned_product).to include(
           "id" => archived_product.id,
           "name" => "archived_product",
-          "edit_url" => edit_link_path(archived_product),
+          "edit_url" => edit_product_path(archived_product),
           "is_duplicating" => archived_product.is_duplicating?,
           "is_unpublished" => archived_product.draft? || archived_product.purchase_disabled_at?,
           "permalink" => archived_product.unique_permalink,
@@ -617,7 +617,7 @@ describe DashboardProductsPagePresenter do
         expect(returned_membership).to include(
           "id" => archived_membership.id,
           "name" => "archived_membership",
-          "edit_url" => edit_link_path(archived_membership),
+          "edit_url" => edit_product_path(archived_membership),
           "is_duplicating" => archived_membership.is_duplicating?,
           "is_unpublished" => archived_membership.draft? || archived_membership.purchase_disabled_at?,
           "permalink" => archived_membership.unique_permalink,

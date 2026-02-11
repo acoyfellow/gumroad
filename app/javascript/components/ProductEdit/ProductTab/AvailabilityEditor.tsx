@@ -11,8 +11,6 @@ import { Placeholder } from "$app/components/ui/Placeholder";
 const DEFAULT_INTERVAL_START_HOURS = 9;
 const DEFAULT_INTERVAL_LENGTH = 8;
 
-let newAvailabilityId = 0;
-
 type ParsedAvailability = Omit<Availability, "start_time" | "end_time"> & { start_time: Date; end_time: Date };
 
 const formatTime = (date: Date) => format(date, "HH:mm");
@@ -34,6 +32,7 @@ export const AvailabilityEditor = ({
   availabilities: Availability[];
   onChange: (availabilities: Availability[]) => void;
 }) => {
+  const nextIdRef = React.useRef(0);
   const seller = useCurrentSeller();
   if (!seller) return;
   const timeZone = seller.timeZone.name;
@@ -66,7 +65,7 @@ export const AvailabilityEditor = ({
     onChange([
       ...serializedAvailabilities,
       {
-        id: (newAvailabilityId++).toString(),
+        id: (nextIdRef.current++, nextIdRef.current.toString()),
         start_time: serializeDate(startTime),
         end_time: serializeDate(endTime),
         newlyAdded: true,

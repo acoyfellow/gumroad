@@ -12,7 +12,7 @@ describe("Product Edit pay what you want setting", type: :system, js: true) do
   include_context "with switching account to user as admin for seller"
 
   it "displays the setting" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     fill_in("Amount", with: "0")
 
     pwyw_toggle = find_field("Allow customers to pay what they want", disabled: true)
@@ -27,7 +27,7 @@ describe("Product Edit pay what you want setting", type: :system, js: true) do
   end
 
   it "tests that PWYW is still available" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     fill_in "Amount", with: "0"
 
     pwyw_toggle = find_field("Allow customers to pay what they want", disabled: true)
@@ -44,7 +44,7 @@ describe("Product Edit pay what you want setting", type: :system, js: true) do
   end
 
   it "hides info alert and enables toggle when price is changed from $0 to a positive value" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     fill_in "Amount", with: "0"
 
     expect(page).to have_content("Free products require a pay what they want price.")

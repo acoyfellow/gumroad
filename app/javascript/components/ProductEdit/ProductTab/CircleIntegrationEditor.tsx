@@ -1,11 +1,12 @@
 import * as React from "react";
 
 import { CircleCommunity, CircleSpaceGroup, fetchCommunities, fetchSpaceGroups } from "$app/data/circle_integration";
+import { ProductNativeType } from "$app/parsers/product";
 import { assertResponseError } from "$app/utils/request";
 
 import { Button } from "$app/components/Button";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import type { VariantWithoutRichContent } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { Alert } from "$app/components/ui/Alert";
@@ -24,13 +25,17 @@ type FetchState<T> = null | { status: "fetching" } | { status: "error" } | { sta
 export const CircleIntegrationEditor = ({
   integration,
   onChange,
+  variants,
+  native_type,
+  setEnabledForOptions,
 }: {
   integration: CircleIntegration;
   onChange: (integration: CircleIntegration) => void;
+  variants: VariantWithoutRichContent[];
+  native_type: ProductNativeType;
+  setEnabledForOptions: (enabled: boolean) => void;
 }) => {
   const uid = React.useId();
-
-  const { product, updateProduct } = useProductEditContext();
 
   const [isEnabled, setIsEnabled] = React.useState(!!integration);
 
@@ -40,6 +45,11 @@ export const CircleIntegrationEditor = ({
   const [selectedCommunityId, setSelectedCommunityId] = React.useState<number | null>(
     integration ? parseInt(integration.integration_details.community_id, 10) : null,
   );
+  const [spaceGroups, setSpaceGroups] = React.useState<FetchState<CircleSpaceGroup>>(null);
+  const [selectedSpaceGroupId, setSelectedSpaceGroupId] = React.useState<number | null>(
+    integration ? parseInt(integration.integration_details.space_group_id, 10) : null,
+  );
+
   const loadCommunities = async () => {
     if (apiKey) {
       setCommunities({ status: "fetching" });
@@ -72,11 +82,6 @@ export const CircleIntegrationEditor = ({
 
   React.useEffect(() => void loadSpaceGroups(), [selectedCommunityId]);
 
-  const [spaceGroups, setSpaceGroups] = React.useState<FetchState<CircleSpaceGroup>>(null);
-  const [selectedSpaceGroupId, setSelectedSpaceGroupId] = React.useState<number | null>(
-    integration ? parseInt(integration.integration_details.space_group_id, 10) : null,
-  );
-
   React.useEffect(() => {
     if (!apiKey || !selectedCommunityId || !selectedSpaceGroupId) return;
     onChange({
@@ -89,11 +94,6 @@ export const CircleIntegrationEditor = ({
       },
     });
   }, [selectedSpaceGroupId]);
-
-  const setEnabledForOptions = (enabled: boolean) =>
-    updateProduct((product) => {
-      for (const variant of product.variants) variant.integrations = { ...variant.integrations, circle: enabled };
-    });
 
   return (
     <ToggleSettingRow
@@ -194,7 +194,7 @@ export const CircleIntegrationEditor = ({
                     ))}
                   </select>
                 </fieldset>
-                {product.native_type === "membership" && integration ? (
+                {native_type === "membership" && integration ? (
                   <label>
                     <input
                       type="checkbox"
@@ -206,19 +206,19 @@ export const CircleIntegrationEditor = ({
                     Do not remove Circle access when membership ends
                   </label>
                 ) : null}
-                {product.variants.length > 0 ? (
+                {variants.length > 0 ? (
                   <>
-                    {product.variants.every(({ integrations }) => !integrations.circle) ? (
+                    {variants.every(({ integrations }) => !integrations.circle) ? (
                       <Alert role="status" variant="warning">
-                        {product.native_type === "membership"
+                        {native_type === "membership"
                           ? "Your integration is not assigned to any tier. Check your tiers' settings."
                           : "Your integration is not assigned to any version. Check your versions' settings."}
                       </Alert>
                     ) : null}
                     <Switch
-                      checked={product.variants.every(({ integrations }) => integrations.circle)}
+                      checked={variants.every(({ integrations }) => integrations.circle)}
                       onChange={(e) => setEnabledForOptions(e.target.checked)}
-                      label={product.native_type === "membership" ? "Enable for all tiers" : "Enable for all versions"}
+                      label={native_type === "membership" ? "Enable for all tiers" : "Enable for all versions"}
                     />
                   </>
                 ) : null}

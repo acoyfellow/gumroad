@@ -301,14 +301,14 @@ describe("ProductShowScenario", type: :system, js: true) do
     shared_examples_for "with product edit button" do
       it "shows the product edit button" do
         visit short_link_url(product.unique_permalink, host: product.user.subdomain_with_protocol)
-        expect(page).to have_link("Edit product", href: edit_link_url(product, host: DOMAIN))
+        expect(page).to have_link("Edit product", href: edit_product_url(product, host: DOMAIN))
       end
     end
 
     shared_examples_for "without product edit button" do
       it "doesn't show the product edit button" do
         visit short_link_url(product.unique_permalink, host: product.user.subdomain_with_protocol)
-        expect(page).not_to have_link("Edit product", href: edit_link_url(product, host: DOMAIN))
+        expect(page).not_to have_link("Edit product", href: edit_product_url(product, host: DOMAIN))
       end
     end
 

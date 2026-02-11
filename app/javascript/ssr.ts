@@ -15,7 +15,6 @@ import GenerateInvoicePage from "$app/components/server-components/GenerateInvoi
 import Nav from "$app/components/server-components/Nav";
 import ProductPage from "$app/components/server-components/Product";
 import ProductIframePage from "$app/components/server-components/Product/IframePage";
-import ProductEditPage from "$app/components/server-components/ProductEditPage";
 import Profile from "$app/components/server-components/Profile";
 import ProfileProductPage from "$app/components/server-components/Profile/ProductPage";
 import SubscribePage from "$app/components/server-components/SubscribePage";
@@ -41,7 +40,6 @@ ReactOnRails.register({
   GenerateInvoicePage,
   Nav,
   Pill,
-  ProductEditPage,
   ProductIframePage,
   ProductPage,
   Profile,

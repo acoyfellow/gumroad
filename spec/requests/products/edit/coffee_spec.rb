@@ -21,7 +21,7 @@ describe "Coffee Edit", type: :system, js: true do
   before { Feature.activate_user(:product_edit_react, seller) }
 
   it "allows editing coffee products" do
-    visit edit_link_path(coffee.unique_permalink)
+    visit edit_product_path(coffee)
 
     suggested_amount1 = coffee.alive_variants.first
 

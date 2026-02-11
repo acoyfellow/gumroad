@@ -9,3 +9,9 @@ export const useRefToLatest = <T>(value: T): React.MutableRefObject<T> => {
   }, [value]);
   return ref;
 };
+
+export const useLatest = <T>(value: T): React.MutableRefObject<T> => {
+  const ref = React.useRef(value);
+  ref.current = value;
+  return ref;
+};

@@ -1,9 +1,11 @@
 import * as React from "react";
 
+import { CurrencyCode } from "$app/utils/currency";
+
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { PriceInput } from "$app/components/PriceInput";
-import { ShippingDestination, useProductEditContext } from "$app/components/ProductEdit/state";
+import { ShippingCountry, ShippingDestination } from "$app/components/ProductEdit/state";
 import { Card, CardContent } from "$app/components/ui/Card";
 import { Placeholder } from "$app/components/ui/Placeholder";
 import { WithTooltip } from "$app/components/WithTooltip";
@@ -11,12 +13,14 @@ import { WithTooltip } from "$app/components/WithTooltip";
 export const ShippingDestinationsEditor = ({
   shippingDestinations,
   onChange,
+  availableCountries,
+  currencyCode,
 }: {
   shippingDestinations: ShippingDestination[];
   onChange: (shippingDestinations: ShippingDestination[]) => void;
+  availableCountries: ShippingCountry[];
+  currencyCode: CurrencyCode;
 }) => {
-  const { availableCountries } = useProductEditContext();
-
   const addShippingDestination = () => {
     if (!availableCountries[0]) return;
     onChange([
@@ -48,6 +52,8 @@ export const ShippingDestinationsEditor = ({
               }
               onRemove={() => onChange(shippingDestinations.filter((_, i) => i !== index))}
               key={index}
+              availableCountries={availableCountries}
+              currencyCode={currencyCode}
             />
           ))}
           <CardContent>
@@ -77,12 +83,15 @@ const ShippingDestinationRow = ({
   shippingDestination,
   onChange,
   onRemove,
+  availableCountries,
+  currencyCode,
 }: {
   shippingDestination: ShippingDestination;
   onChange: (shippingDestination: ShippingDestination) => void;
   onRemove: () => void;
+  availableCountries: ShippingCountry[];
+  currencyCode: CurrencyCode;
 }) => {
-  const { availableCountries, currencyType } = useProductEditContext();
   const uid = React.useId();
 
   const updateDestination = (update: Partial<ShippingDestination>) => onChange({ ...shippingDestination, ...update });
@@ -126,7 +135,7 @@ const ShippingDestinationRow = ({
           </legend>
           <PriceInput
             id={`${uid}-one-item`}
-            currencyCode={currencyType}
+            currencyCode={currencyCode}
             cents={shippingDestination.one_item_rate_cents}
             placeholder="0"
             onChange={(one_item_rate_cents) => updateDestination({ one_item_rate_cents })}
@@ -138,7 +147,7 @@ const ShippingDestinationRow = ({
           </legend>
           <PriceInput
             id={`${uid}-multiple-items`}
-            currencyCode={currencyType}
+            currencyCode={currencyCode}
             cents={shippingDestination.multiple_items_rate_cents}
             placeholder="0"
             onChange={(multiple_items_rate_cents) => updateDestination({ multiple_items_rate_cents })}

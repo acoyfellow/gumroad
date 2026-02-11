@@ -3,12 +3,12 @@ import { Editor, findChildren, Node as TiptapNode } from "@tiptap/core";
 import { DOMSerializer, DOMParser as ProseMirrorDOMParser } from "@tiptap/pm/model";
 import { NodeSelection, Plugin } from "@tiptap/pm/state";
 import { NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
-import cx from "classnames";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
 import { cancelDropboxFileUpload } from "$app/data/dropbox_upload";
 import { assertDefined } from "$app/utils/assert";
+import { classNames } from "$app/utils/classNames";
 import FileUtils from "$app/utils/file";
 import { createJWPlayer } from "$app/utils/jwPlayer";
 import { getMimeType } from "$app/utils/mimetypes";
@@ -28,7 +28,7 @@ import {
   titleWithFallback,
   useFilesInGroup,
 } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
-import { FileEntry, useProductEditContext } from "$app/components/ProductEdit/state";
+import { FileEntry } from "$app/components/ProductEdit/state";
 import { useS3UploadConfig } from "$app/components/S3UploadConfig";
 import { Separator } from "$app/components/Separator";
 import { showAlert } from "$app/components/server-components/Alert";
@@ -52,10 +52,14 @@ export const getDraggedFileEmbed = (editor: Editor) => {
   return draggedNode?.type.name === FileEmbed.name ? draggedNode : null;
 };
 
-const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewProps) => {
-  if (!node.attrs.id) return;
-
-  const { id, updateProduct, filesById } = useProductEditContext();
+const FileEmbedNodeView = ({
+  node,
+  editor,
+  getPos,
+  updateAttributes,
+  config,
+}: NodeViewProps & { config: FileEmbedConfig }) => {
+  const { id, onUpdateFile, filesById, removeFile } = config;
   const uid = React.useId();
   const ref = React.useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = React.useState(false);
@@ -102,6 +106,32 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
         });
     });
   }, [showingVideoPlayer, JSON.stringify(uploadedSubtitleFiles.map((subtitle) => subtitle.url))]);
+
+  const updateFile = (data: Partial<FileEntry>) => {
+    if (file) onUpdateFile(file.id, data);
+  };
+
+  const uploadThumbnail = (thumbnail: File) => {
+    if (thumbnail.size > 5 * 1024 * 1024)
+      return showAlert(
+        "Could not process your thumbnail, please upload an image with size smaller than 5 MB.",
+        "error",
+      );
+
+    setLoadingVideo(true);
+    const upload = new DirectUpload(thumbnail, Routes.rails_direct_uploads_path());
+    upload.create((error, blob) => {
+      if (error) return showAlert(error.message, "error");
+      updateFile({
+        thumbnail: {
+          url: Routes.s3_utility_cdn_url_for_blob_path({ key: blob.key }),
+          signed_id: blob.signed_id,
+          status: { type: "unsaved" },
+        },
+      });
+      setLoadingVideo(false);
+    });
+  };
 
   const generateThumbnail = () => {
     if (!downloadUrl || file.thumbnail) return;
@@ -161,7 +191,7 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
           ? []
           : [{ uid: cast<string>(groupNode.attrs.uid), name: titleWithFallback(groupNode.attrs.name) }],
       ),
-    [selected],
+    [selected, editor.state.doc, parentNode],
   );
 
   const isInGroup = parentNode?.type.name === FileEmbedGroup.name;
@@ -170,11 +200,6 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
   const isLastInGroup = node === parentNode?.content.lastChild;
 
   if (!fileExists) return;
-  const updateFile = (data: Partial<FileEntry>) =>
-    updateProduct((product) => {
-      const existing = product.files.find((existing) => existing.id === file.id);
-      if (existing) Object.assign(existing, data);
-    });
   const isComplete = !(
     (file.status.type === "unsaved" && file.status.uploadStatus.type === "uploading") ||
     (file.status.type === "dropbox" && file.status.uploadState === "in_progress")
@@ -187,9 +212,7 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
     deleteNode();
     uploader.cancelUpload(`file_${file.id}`);
     if (file.status.type === "dropbox") void cancelDropboxFileUpload(file.id);
-    updateProduct((product) => {
-      product.files = product.files.filter((f) => f.id !== file.id);
-    });
+    removeFile(file.id);
   };
 
   const setDragOver = (value: boolean) => {
@@ -206,27 +229,6 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
     return clientY < top + threshold || clientY > bottom - threshold;
   };
 
-  const uploadThumbnail = (thumbnail: File) => {
-    if (thumbnail.size > 5 * 1024 * 1024)
-      return showAlert(
-        "Could not process your thumbnail, please upload an image with size smaller than 5 MB.",
-        "error",
-      );
-
-    setLoadingVideo(true);
-    const upload = new DirectUpload(thumbnail, Routes.rails_direct_uploads_path());
-    upload.create((error, blob) => {
-      if (error) return showAlert(error.message, "error");
-      updateFile({
-        thumbnail: {
-          url: Routes.s3_utility_cdn_url_for_blob_path({ key: blob.key }),
-          signed_id: blob.signed_id,
-          status: { type: "unsaved" },
-        },
-      });
-      setLoadingVideo(false);
-    });
-  };
   const onThumbnailSelected = (files: FileList | null) => {
     const thumbnail = files?.[0];
     if (thumbnail) uploadThumbnail(thumbnail);
@@ -265,11 +267,11 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
         mimeType,
         onComplete: () => {
           subtitleEntry.status = { type: "unsaved", uploadStatus: { type: "uploaded" } };
-          updateFile({});
+          updateFile({ subtitle_files: [...file.subtitle_files, subtitleEntry] });
         },
         onProgress: (progress) => {
           subtitleEntry.status = { type: "unsaved", uploadStatus: { type: "uploading", progress } };
-          updateFile({});
+          updateFile({ subtitle_files: [...file.subtitle_files, subtitleEntry] });
         },
       });
 
@@ -317,6 +319,8 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
     ),
   };
 
+  if (!node.attrs.id) return;
+
   return (
     <NodeViewWrapper
       ref={ref}
@@ -356,11 +360,11 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
           })
           .run();
       }}
-      className={cx({ "relative rounded-sm border border-dashed border-accent": isDropZone })}
+      className={classNames({ "relative rounded-sm border border-dashed border-accent": isDropZone })}
       contentEditable={false}
     >
       <Row
-        className={cx("embed", { selected, [connectedFileRowClassName(isLastInGroup)]: isConnectedRow })}
+        className={classNames("embed", { selected }, isConnectedRow && connectedFileRowClassName(isLastInGroup))}
         role={isInGroup ? "treeitem" : undefined}
       >
         {file.is_streamable && !node.attrs.collapsed ? (
@@ -697,7 +701,12 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
   );
 };
 
-export type FileEmbedConfig = { filesById: Map<string, FileEntry> };
+export type FileEmbedConfig = {
+  filesById: Map<string, FileEntry>;
+  id: string;
+  onUpdateFile: (fileId: string, data: Partial<FileEntry>) => void;
+  removeFile: (fileId: string) => void;
+};
 
 export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }>({
   name: "fileEmbed",
@@ -712,7 +721,19 @@ export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }
   renderHTML: ({ HTMLAttributes }) => ["file-embed", HTMLAttributes],
 
   addNodeView() {
-    return ReactNodeViewRenderer(FileEmbedNodeView);
+    return ReactNodeViewRenderer((props: NodeViewProps) =>
+      FileEmbedNodeView({
+        ...props,
+        // The fallback config is used to for creating a lightweight editor
+        // used for transforming form data before submission in Products/Content/Edit .
+        config: this.options.getConfig?.() ?? {
+          filesById: new Map(),
+          id: "",
+          onUpdateFile: () => {},
+          removeFile: () => {},
+        },
+      }),
+    );
   },
 
   addProseMirrorPlugins() {

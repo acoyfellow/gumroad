@@ -1,27 +1,31 @@
 import * as React from "react";
 
+import { CurrencyCode } from "$app/utils/currency";
+
 import { Button } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
 import { NumberInput } from "$app/components/NumberInput";
 import { PriceInput } from "$app/components/PriceInput";
-import { Duration, useProductEditContext } from "$app/components/ProductEdit/state";
+import { DurationWithoutRichContent } from "$app/components/ProductEdit/state";
 import { Drawer, ReorderingHandle, SortableList } from "$app/components/SortableList";
 import { Pill } from "$app/components/ui/Pill";
 import { Placeholder } from "$app/components/ui/Placeholder";
 import { Row, RowActions, RowContent, RowDetails, Rows } from "$app/components/ui/Rows";
 import { WithTooltip } from "$app/components/WithTooltip";
 
-let newDurationId = 0;
-
 export const DurationsEditor = ({
   durations,
   onChange,
+  currencyCode,
 }: {
-  durations: Duration[];
-  onChange: (durations: Duration[]) => void;
+  durations: DurationWithoutRichContent[];
+  onChange: (durations: DurationWithoutRichContent[]) => void;
+  currencyCode: CurrencyCode;
 }) => {
-  const updateDuration = (id: string, update: Partial<Duration>) => {
+  const nextIdRef = React.useRef(0);
+
+  const updateDuration = (id: string, update: Partial<DurationWithoutRichContent>) => {
     onChange(durations.map((duration) => (duration.id === id ? { ...duration, ...update } : duration)));
   };
 
@@ -35,7 +39,7 @@ export const DurationsEditor = ({
         onChange([
           ...durations,
           {
-            id: (newDurationId++).toString(),
+            id: (nextIdRef.current++, nextIdRef.current.toString()),
             name: "Untitled",
             duration_in_minutes: null,
             description: "",
@@ -47,7 +51,6 @@ export const DurationsEditor = ({
               google_calendar: false,
             },
             newlyAdded: true,
-            rich_content: [],
           },
         ]);
       }}
@@ -100,6 +103,7 @@ export const DurationsEditor = ({
             duration={duration}
             updateDuration={(update) => updateDuration(duration.id, update)}
             onDelete={() => setDeletionModalDurationId(duration.id)}
+            currencyCode={currencyCode}
           />
         ))}
       </SortableList>
@@ -112,13 +116,14 @@ const DurationEditor = ({
   duration,
   updateDuration,
   onDelete,
+  currencyCode,
 }: {
-  duration: Duration;
-  updateDuration: (update: Partial<Duration>) => void;
+  duration: DurationWithoutRichContent;
+  updateDuration: (update: Partial<DurationWithoutRichContent>) => void;
   onDelete: () => void;
+  currencyCode: CurrencyCode;
 }) => {
   const uid = React.useId();
-  const { currencyType } = useProductEditContext();
 
   const [isOpen, setIsOpen] = React.useState(true);
 
@@ -180,7 +185,7 @@ const DurationEditor = ({
                 <label htmlFor={`${uid}-price`}>Additional amount</label>
                 <PriceInput
                   id={`${uid}-price`}
-                  currencyCode={currencyType}
+                  currencyCode={currencyCode}
                   cents={duration.price_difference_cents}
                   onChange={(price_difference_cents) => updateDuration({ price_difference_cents })}
                   placeholder="0"

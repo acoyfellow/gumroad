@@ -1,36 +1,32 @@
+import { router } from "@inertiajs/react";
 import { findChildren, generateJSON, Node as TiptapNode } from "@tiptap/core";
 import { DOMSerializer } from "@tiptap/pm/model";
 import { EditorContent } from "@tiptap/react";
-import { parseISO } from "date-fns";
 import { partition } from "lodash-es";
 import * as React from "react";
 import { ReactSortable } from "react-sortablejs";
-import { cast } from "ts-safe-cast";
 
 import { fetchDropboxFiles, ResponseDropboxFile, uploadDropboxFile } from "$app/data/dropbox_upload";
-import { type Post } from "$app/types/workflow";
+import { ProductNativeType } from "$app/parsers/product";
 import { escapeRegExp } from "$app/utils";
 import { assertDefined } from "$app/utils/assert";
-import { formatDate } from "$app/utils/date";
 import FileUtils from "$app/utils/file";
 import GuidGenerator from "$app/utils/guid_generator";
 import { getMimeType } from "$app/utils/mimetypes";
-import { assertResponseError, request, ResponseError } from "$app/utils/request";
+import { assertResponseError } from "$app/utils/request";
 import { generatePageIcon } from "$app/utils/rich_content_page";
 
 import { Button } from "$app/components/Button";
 import { InputtedDiscount } from "$app/components/CheckoutDashboard/DiscountInput";
-import { ComboBox } from "$app/components/ComboBox";
-import { PageList, PageListItem, PageListLayout } from "$app/components/Download/PageListLayout";
-import { EvaporateUploaderProvider, useEvaporateUploader } from "$app/components/EvaporateUploader";
+import { PageList, PageListLayout, PageListItem } from "$app/components/Download/PageListLayout";
+import { useEvaporateUploader } from "$app/components/EvaporateUploader";
 import { FileKindIcon } from "$app/components/FileRowContent";
 import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { Modal } from "$app/components/Modal";
 import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
 import { FileEmbedGroup } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
-import { Layout } from "$app/components/ProductEdit/Layout";
-import { ExistingFileEntry, FileEntry, useProductEditContext, Variant } from "$app/components/ProductEdit/state";
+import { EditProductContentVariant, ExistingFileEntry, FileEntry } from "$app/components/ProductEdit/state";
 import { ReviewForm } from "$app/components/ReviewForm";
 import {
   baseEditorOptions,
@@ -41,35 +37,32 @@ import {
   useRichTextEditor,
   validateUrl,
 } from "$app/components/RichTextEditor";
-import { S3UploadConfigProvider, useS3UploadConfig } from "$app/components/S3UploadConfig";
+import { useS3UploadConfig } from "$app/components/S3UploadConfig";
 import { Separator } from "$app/components/Separator";
 import { showAlert } from "$app/components/server-components/Alert";
 import { EntityInfo } from "$app/components/server-components/DownloadPage/Layout";
 import { TestimonialSelectModal } from "$app/components/TestimonialSelectModal";
 import { FileUpload } from "$app/components/TiptapExtensions/FileUpload";
 import { uploadImages } from "$app/components/TiptapExtensions/Image";
-import { LicenseKey, LicenseProvider } from "$app/components/TiptapExtensions/LicenseKey";
+import { LicenseKey } from "$app/components/TiptapExtensions/LicenseKey";
 import { LinkMenuItem } from "$app/components/TiptapExtensions/Link";
 import { LongAnswer } from "$app/components/TiptapExtensions/LongAnswer";
 import { EmbedMediaForm, ExternalMediaFileEmbed, insertMediaEmbed } from "$app/components/TiptapExtensions/MediaEmbed";
 import { MoreLikeThis } from "$app/components/TiptapExtensions/MoreLikeThis";
 import { MoveNode } from "$app/components/TiptapExtensions/MoveNode";
-import { Posts, PostsProvider } from "$app/components/TiptapExtensions/Posts";
+import { Posts } from "$app/components/TiptapExtensions/Posts";
 import { ShortAnswer } from "$app/components/TiptapExtensions/ShortAnswer";
 import { UpsellCard } from "$app/components/TiptapExtensions/UpsellCard";
 import { Card, CardContent } from "$app/components/ui/Card";
-import { Checkbox } from "$app/components/ui/Checkbox";
-import { InputGroup } from "$app/components/ui/InputGroup";
-import { Label } from "$app/components/ui/Label";
 import { Row, RowContent, Rows } from "$app/components/ui/Rows";
-import { Tab, Tabs } from "$app/components/ui/Tabs";
+import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { Product, ProductOption, UpsellSelectModal } from "$app/components/UpsellSelectModal";
-import { useConfigureEvaporate } from "$app/components/useConfigureEvaporate";
+import { useDropboxDropins } from "$app/components/useDropboxDropins";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
-import { useRefToLatest } from "$app/components/useRefToLatest";
+import { useLatest } from "$app/components/useRefToLatest";
 import { WithTooltip } from "$app/components/WithTooltip";
 
-import { FileEmbed, FileEmbedConfig } from "./FileEmbed";
+import { FileEmbed, FileEmbedConfig, getDownloadUrl } from "./FileEmbed";
 import { Page, PageTab, titleWithFallback } from "./PageTab";
 
 declare global {
@@ -95,26 +88,74 @@ export const extensions = (productId: string, extraExtensions: TiptapNode[] = []
   ].filter((ext) => !extraExtensions.some((existing) => existing.name === ext.name)),
 ];
 
-const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | null }) => {
-  const { id, product, updateProduct, seller, save, existingFiles, setExistingFiles, uniquePermalink, filesById } =
-    useProductEditContext();
+export const ContentTabContent = ({
+  selectedVariantId,
+  productId,
+  productName,
+  nativeType,
+  uniquePermalink,
+  files,
+  variants,
+  richContent,
+  hasSameRichContentForAllVariants,
+  onUpdateFiles,
+  onUpdateVariantRichContent,
+  onUpdateSharedRichContent,
+  existingFiles,
+  prepareDownload,
+  seller,
+  dropboxPickerAppKey,
+}: {
+  selectedVariantId: string | null;
+  productId: string;
+  productName: string;
+  nativeType: ProductNativeType;
+  uniquePermalink: string;
+  files: FileEntry[];
+  variants: EditProductContentVariant[];
+  richContent: Page[];
+  hasSameRichContentForAllVariants: boolean;
+  onUpdateFiles: (updater: (prev: FileEntry[]) => FileEntry[]) => void;
+  onUpdateVariantRichContent: (variantIndex: number, richContent: Page[]) => void;
+  onUpdateSharedRichContent: (richContent: Page[]) => void;
+  existingFiles: ExistingFileEntry[];
+  prepareDownload: () => Promise<void>;
+  seller: {
+    id: string;
+    name: string;
+    avatar_url: string;
+    profile_url: string;
+  };
+  dropboxPickerAppKey: string;
+}) => {
+  useDropboxDropins(dropboxPickerAppKey);
+
+  const filesByIdRef = useLatest(
+    React.useMemo(
+      () => new Map(files.map((file) => [file.id, { ...file, url: getDownloadUrl(productId, file) }])),
+      [files, productId],
+    ),
+  );
+
   const uid = React.useId();
   const isDesktop = useIsAboveBreakpoint("lg");
   const imageSettings = useImageUploadSettings();
 
-  const selectedVariant = product.has_same_rich_content_for_all_variants
+  const selectedVariant = hasSameRichContentForAllVariants
     ? null
-    : product.variants.find((variant) => variant.id === selectedVariantId);
-  const pages: (Page & { chosen?: boolean })[] = selectedVariant ? selectedVariant.rich_content : product.rich_content;
-  const pagesRef = useRefToLatest(pages);
-  const updatePages = (pages: Page[]) =>
-    updateProduct((product) => {
-      if (selectedVariant) selectedVariant.rich_content = pages;
-      else {
-        product.has_same_rich_content_for_all_variants = true;
-        product.rich_content = pages;
+    : variants.find((variant) => variant.id === selectedVariantId);
+  const pages: (Page & { chosen?: boolean })[] = selectedVariant ? selectedVariant.rich_content : richContent;
+  const pagesRef = useLatest(pages);
+  const updatePages = (pages: Page[]) => {
+    if (selectedVariant) {
+      const variantIndex = variants.findIndex((v) => v.id === selectedVariantId);
+      if (variantIndex !== -1) {
+        onUpdateVariantRichContent(variantIndex, pages);
       }
-    });
+    } else {
+      onUpdateSharedRichContent(pages);
+    }
+  };
   const addPage = (description?: object) => {
     const page = {
       id: GuidGenerator.generate(),
@@ -132,8 +173,7 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
   const [renamingPageId, setRenamingPageId] = React.useState<string | null>(null);
   const [confirmingDeletePage, setConfirmingDeletePage] = React.useState<Page | null>(null);
   const [pagesExpanded, setPagesExpanded] = React.useState(false);
-  const showPageList =
-    pages.length > 1 || selectedPage?.title || renamingPageId != null || product.native_type === "commission";
+  const showPageList = pages.length > 1 || selectedPage?.title || renamingPageId != null || nativeType === "commission";
   const [insertMenuState, setInsertMenuState] = React.useState<"open" | "inputs" | null>(null);
   const initialValue = React.useMemo(() => selectedPage?.description ?? "", [selectedPageId]);
 
@@ -188,11 +228,37 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
         mimeType,
         onComplete: () => {
           fileStatus.uploadStatus = { type: "uploaded" };
-          updateProduct({});
+          onUpdateFiles((prev) => {
+            const file = prev.find((fileEntry) => fileEntry.id === id);
+            if (file && file.status.type === "unsaved") {
+              return prev.map((f) =>
+                f.id === id
+                  ? {
+                      ...f,
+                      status: { ...f.status, uploadStatus: { type: "uploaded" } },
+                    }
+                  : f,
+              );
+            }
+            return prev;
+          });
         },
         onProgress: (progress) => {
           fileStatus.uploadStatus = { type: "uploading", progress };
-          updateProduct({});
+          onUpdateFiles((prev) => {
+            const file = prev.find((fileEntry) => fileEntry.id === id);
+            if (file && file.status.type === "unsaved") {
+              return prev.map((f) =>
+                f.id === id
+                  ? {
+                      ...f,
+                      status: { ...f.status, uploadStatus: { type: "uploading", progress } },
+                    }
+                  : f,
+              );
+            }
+            return prev;
+          });
         },
       });
       if (typeof status === "string") {
@@ -201,8 +267,8 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
       }
       return fileEntry;
     });
-    updateProduct({ files: [...product.files, ...fileEntries] });
-    onSelectFiles(fileEntries.map((file) => file.id));
+    onUpdateFiles((prev) => [...prev, ...fileEntries]);
+    onSelectFiles(fileEntries.map((fileEntry) => fileEntry.id));
   };
   const uploadFileInput = (input: HTMLInputElement) => {
     if (!input.files?.length) return;
@@ -210,15 +276,40 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
     input.value = "";
   };
 
-  const fileEmbedGroupConfig = useRefToLatest({
-    productId: id,
+  const updateFile = React.useCallback(
+    (fileId: string, data: Partial<FileEntry>) => {
+      onUpdateFiles((prev) => {
+        const fileIndex = prev.findIndex((f) => f.id === fileId);
+        if (fileIndex === -1) {
+          return prev;
+        }
+        const currentFile = prev[fileIndex];
+        if (!currentFile) return prev;
+        const updatedFile = { ...currentFile, ...data };
+        return prev.map((file, index) => (index === fileIndex ? updatedFile : file));
+      });
+    },
+    [onUpdateFiles],
+  );
+  const fileEmbedGroupConfig = useLatest({
+    productId,
     variantId: selectedVariantId,
-    prepareDownload: save,
-    filesById,
+    prepareDownload,
+    get filesById() {
+      return filesByIdRef.current;
+    },
   });
-  const fileEmbedConfig = useRefToLatest<FileEmbedConfig>({ filesById });
-  const uploadFilesRef = useRefToLatest(uploadFiles);
-  const contentEditorExtensions = extensions(id, [
+
+  const fileEmbedConfig = useLatest<FileEmbedConfig>({
+    get filesById() {
+      return filesByIdRef.current;
+    },
+    id: productId,
+    onUpdateFile: updateFile,
+    removeFile: (fileId) => onUpdateFiles((prev) => prev.filter((f) => f.id !== fileId)),
+  });
+  const uploadFilesRef = useLatest(uploadFiles);
+  const contentEditorExtensions = extensions(productId, [
     FileEmbedGroup.configure({ getConfig: () => fileEmbedGroupConfig.current }),
     FileEmbed.configure({ getConfig: () => fileEmbedConfig.current }),
   ]);
@@ -230,7 +321,7 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
     extensions: contentEditorExtensions,
     onInputNonImageFiles: (files) => uploadFilesRef.current(files),
   });
-  const updateContentRef = useRefToLatest(() => {
+  const updateContentRef = useLatest(() => {
     if (!editor) return;
 
     // Correctly set the IDs of the file embeds copied from another product
@@ -250,15 +341,15 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
         node.remove();
       }
     });
-    if (newFiles.length > 0) {
-      updateProduct({ files: [...product.files.filter((f) => !newFiles.includes(f)), ...newFiles] });
-    }
+    if (newFiles.length > 0) onUpdateFiles((prev) => [...prev.filter((f) => !newFiles.includes(f)), ...newFiles]);
     const description = generateJSON(
       new XMLSerializer().serializeToString(fragment),
       baseEditorOptions(contentEditorExtensions).extensions,
     );
 
-    if (selectedPage) updatePages(pages.map((page) => (page === selectedPage ? { ...page, description } : page)));
+    const currentSelectedPage = pagesRef.current.find((page) => page.id === selectedPageId);
+    if (currentSelectedPage)
+      updatePages(pagesRef.current.map((page) => (page === currentSelectedPage ? { ...page, description } : page)));
     else addPage(description);
   });
   const handleCreatePageClick = () => {
@@ -290,7 +381,7 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
                   fileIds: findChildren(description, (node) => node.type.name === FileEmbed.name).map(({ node }) =>
                     String(node.attrs.id),
                   ),
-                  allFiles: product.files,
+                  allFiles: files,
                 }),
               ] as const;
             })
@@ -321,8 +412,8 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
       showAlert(
         pages.length > 1
           ? `The license key has already been added to "${titleWithFallback(pageWithLicense.title)}"`
-          : product.variants.length > 1
-            ? `You can't insert more than one license key per ${product.native_type === "membership" ? "tier" : "version"}`
+          : variants.length > 1
+            ? `You can't insert more than one license key per ${nativeType === "membership" ? "tier" : "version"}`
             : "You can't insert more than one license key",
         "error",
       );
@@ -346,55 +437,44 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
   }, [existingFiles, selectingExistingFiles?.query]);
 
   const fetchLatestExistingFiles = async () => {
-    try {
-      const [response] = await Promise.all([
-        request({
-          method: "GET",
-          url: Routes.internal_product_existing_product_files_path(uniquePermalink),
-          accept: "json",
-        }),
-        // Enforce minimum loading time to prevent jarring spinner flicker UX on fast connections
-        new Promise((resolve) => setTimeout(resolve, 250)),
-      ]);
-      if (!response.ok) throw new ResponseError();
-      const parsedResponse = cast<{ existing_files: ExistingFileEntry[] }>(await response.json());
-      setExistingFiles(parsedResponse.existing_files);
-    } catch (error) {
-      assertResponseError(error);
-      showAlert(error.message, "error");
-    } finally {
-      setSelectingExistingFiles((state) => (state ? { ...state, isLoading: false } : null));
-    }
+    await Promise.all([
+      router.reload({
+        only: ["existing_files"],
+        onFinish: () => {
+          setSelectingExistingFiles((state) => (state ? { ...state, isLoading: false } : null));
+        },
+      }),
+      // Enforce minimum loading time to prevent jarring spinner flicker UX on fast connections
+      new Promise((resolve) => setTimeout(resolve, 250)),
+    ]);
   };
 
-  const addDropboxFiles = (files: ResponseDropboxFile[]) => {
-    updateProduct((product) => {
-      const [updatedFiles, nonModifiedFiles] = partition(product.files, (file) =>
-        files.some(({ external_id }) => file.id === external_id),
+  const addDropboxFiles = (dropboxFiles: ResponseDropboxFile[]) => {
+    onUpdateFiles((prev) => {
+      const [updatedFiles, nonModifiedFiles] = partition(prev, (file) =>
+        dropboxFiles.some(({ external_id }) => file.id === external_id),
       );
-      product.files = [
-        ...nonModifiedFiles,
-        ...files.map((file) => {
-          const existing = updatedFiles.find(({ id }) => id === file.external_id);
-          const extension = FileUtils.getFileExtension(file.name).toUpperCase();
-          return {
-            display_name: existing?.display_name ?? FileUtils.getFileNameWithoutExtension(file.name),
-            extension,
-            description: existing?.description ?? null,
-            file_size: file.bytes,
-            is_pdf: extension === "PDF",
-            pdf_stamp_enabled: false,
-            is_streamable: FileUtils.isFileNameStreamable(file.name),
-            stream_only: false,
-            is_transcoding_in_progress: false,
-            id: file.external_id,
-            subtitle_files: [],
-            url: file.s3_url,
-            status: { type: "dropbox", externalId: file.external_id, uploadState: file.state } as const,
-            thumbnail: existing?.thumbnail ?? null,
-          };
-        }),
-      ];
+      const newFiles = dropboxFiles.map((file) => {
+        const existing = updatedFiles.find(({ id }) => id === file.external_id);
+        const extension = FileUtils.getFileExtension(file.name).toUpperCase();
+        return {
+          display_name: existing?.display_name ?? FileUtils.getFileNameWithoutExtension(file.name),
+          extension,
+          description: existing?.description ?? null,
+          file_size: file.bytes,
+          is_pdf: extension === "PDF",
+          pdf_stamp_enabled: false,
+          is_streamable: FileUtils.isFileNameStreamable(file.name),
+          stream_only: false,
+          is_transcoding_in_progress: false,
+          id: file.external_id,
+          subtitle_files: [],
+          url: file.s3_url,
+          status: { type: "dropbox", externalId: file.external_id, uploadState: file.state } as const,
+          thumbnail: existing?.thumbnail ?? null,
+        };
+      });
+      return [...nonModifiedFiles, ...newFiles];
     });
   };
   const uploadFromDropbox = () => {
@@ -461,11 +541,7 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
     if (selectedPage?.description && editor.$node(MoreLikeThis.name)) {
       showAlert("You can't insert a More like this block more than once per page", "error");
     } else {
-      editor
-        .chain()
-        .focus()
-        .insertContent({ type: "moreLikeThis", attrs: { productId: id } })
-        .run();
+      editor.chain().focus().insertContent({ type: "moreLikeThis", attrs: { productId } }).run();
     }
   };
 
@@ -495,7 +571,7 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
             color="ghost"
             className="border-b border-border px-8"
             editor={editor}
-            productId={id}
+            productId={productId}
             custom={
               <>
                 <LinkMenuItem editor={editor} />
@@ -539,7 +615,7 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
                         <Button
                           color="primary"
                           onClick={() => {
-                            updateProduct({ files: [...product.files, ...selectingExistingFiles.selected] });
+                            onUpdateFiles((prev) => [...prev, ...selectingExistingFiles.selected]);
                             onSelectFiles(selectingExistingFiles.selected.map((file) => file.id));
                             setSelectingExistingFiles(null);
                           }}
@@ -764,7 +840,7 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
                   >
                     <>
                       {isDesktop ? null : (
-                        <PageListItem asChild className="tailwind-override text-left">
+                        <PageListItem asChild className="text-left">
                           <button className="cursor-pointer all-unset" onClick={() => setPagesExpanded(!pagesExpanded)}>
                             <span className="flex-1">
                               <strong>Table of contents:</strong> {titleWithFallback(selectedPage?.title)}
@@ -799,7 +875,7 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
                               onDelete={() => setConfirmingDeletePage(page)}
                             />
                           ))}
-                          {product.native_type === "commission" ? (
+                          {nativeType === "commission" ? (
                             <WithTooltip
                               tip="Commission files will appear on this page upon completion"
                               position="bottom"
@@ -855,7 +931,7 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
                       />
                     </Card>
                     <Card>
-                      {product.native_type === "membership" ? (
+                      {nativeType === "membership" ? (
                         <CardContent asChild details>
                           <details>
                             <summary className="grow grid-flow-col grid-cols-[1fr_auto] before:col-start-2" inert>
@@ -880,7 +956,7 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
                       </CardContent>
                     </Card>
                     <EntityInfo
-                      entityName={selectedVariant ? `${product.name} - ${selectedVariant.name}` : product.name}
+                      entityName={selectedVariant ? `${productName} - ${selectedVariant.name}` : productName}
                       creator={seller}
                     />
                   </>
@@ -965,207 +1041,14 @@ const ContentTabContent = ({ selectedVariantId }: { selectedVariantId: string | 
         </>
       ) : null}
       <UpsellSelectModal isOpen={showUpsellModal} onClose={() => setShowUpsellModal(false)} onInsert={onInsertUpsell} />
-      {id ? (
+      {productId ? (
         <TestimonialSelectModal
           isOpen={showReviewModal}
           onClose={() => setShowReviewModal(false)}
           onInsert={onInsertReviews}
-          productId={id}
+          productId={productId}
         />
       ) : null}
     </>
-  );
-};
-
-//TODO inline this once all the crazy providers are gone
-export const ContentTab = () => {
-  const { id, awsKey, s3Url, seller, product, updateProduct, uniquePermalink } = useProductEditContext();
-  const [selectedVariantId, setSelectedVariantId] = React.useState(product.variants[0]?.id ?? null);
-  const [confirmingDiscardVariantContent, setConfirmingDiscardVariantContent] = React.useState(false);
-  const selectedVariant = product.variants.find((variant) => variant.id === selectedVariantId);
-
-  const setHasSameRichContent = (value: boolean) => {
-    if (value) {
-      updateProduct((product) => {
-        product.has_same_rich_content_for_all_variants = true;
-        if (!product.rich_content.length) product.rich_content = selectedVariant?.rich_content ?? [];
-        for (const variant of product.variants) variant.rich_content = [];
-      });
-    } else {
-      updateProduct((product) => {
-        product.has_same_rich_content_for_all_variants = false;
-        if (product.rich_content.length > 0) {
-          for (const variant of product.variants) variant.rich_content = product.rich_content;
-          product.rich_content = [];
-        }
-      });
-    }
-  };
-
-  const { evaporateUploader, s3UploadConfig } = useConfigureEvaporate({
-    aws_access_key_id: awsKey,
-    s3_url: s3Url,
-    user_id: seller.id,
-  });
-
-  const loadedPostsData = React.useRef(
-    new Map<string | null, { posts: Post[]; total: number; next_page: number | null }>(),
-  );
-  const [loadingPostsCount, setLoadingPostsCount] = React.useState(0);
-  const postsDataForEditingId = loadedPostsData.current.get(selectedVariantId);
-  const fetchMorePosts = async (refresh?: boolean) => {
-    const page = refresh ? 1 : postsDataForEditingId?.next_page;
-    if (page === null) return;
-    setLoadingPostsCount((count) => ++count);
-    try {
-      const response = await request({
-        method: "GET",
-        url: Routes.internal_product_product_posts_path(uniquePermalink, {
-          params: { page: page ?? 1, variant_id: selectedVariantId },
-        }),
-        accept: "json",
-      });
-      if (!response.ok) throw new ResponseError();
-      const parsedResponse = cast<{ posts: Post[]; total: number; next_page: number | null }>(await response.json());
-      loadedPostsData.current.set(
-        selectedVariantId,
-        refresh
-          ? parsedResponse
-          : {
-              posts: [...(postsDataForEditingId?.posts ?? []), ...parsedResponse.posts],
-              total: parsedResponse.total,
-              next_page: parsedResponse.next_page,
-            },
-      );
-    } finally {
-      setLoadingPostsCount((count) => --count);
-    }
-  };
-  const postsContext = {
-    posts: postsDataForEditingId?.posts || null,
-    total: postsDataForEditingId?.total || 0,
-    isLoading: loadingPostsCount > 0,
-    hasMorePosts: postsDataForEditingId?.next_page !== null,
-    fetchMorePosts,
-    productPermalink: uniquePermalink,
-  };
-
-  const licenseInfo = {
-    licenseKey: "6F0E4C97-B72A4E69-A11BF6C4-AF6517E7",
-    isMultiSeatLicense: product.native_type === "membership" ? product.is_multiseat_license : null,
-    seats: product.is_multiseat_license ? 5 : null,
-    onIsMultiSeatLicenseChange: (value: boolean) => updateProduct({ is_multiseat_license: value }),
-    productId: id,
-  };
-
-  return (
-    <PostsProvider value={postsContext}>
-      <LicenseProvider value={licenseInfo}>
-        <EvaporateUploaderProvider value={evaporateUploader}>
-          <S3UploadConfigProvider value={s3UploadConfig}>
-            <Layout
-              headerActions={
-                product.variants.length > 0 ? (
-                  <>
-                    <hr className="relative left-1/2 my-2 w-screen max-w-none -translate-x-1/2 border-border lg:hidden" />
-                    <ComboBox<Variant>
-                      input={(props) => (
-                        <InputGroup {...props} className="cursor-pointer py-3" aria-label="Select a version">
-                          <span className="text-singleline flex-1">
-                            {selectedVariant && !product.has_same_rich_content_for_all_variants
-                              ? `Editing: ${selectedVariant.name || "Untitled"}`
-                              : "Editing: All versions"}
-                          </span>
-                          <Icon name="outline-cheveron-down" />
-                        </InputGroup>
-                      )}
-                      options={product.variants}
-                      option={(item, props, index) => (
-                        <>
-                          <div
-                            {...props}
-                            onClick={(e) => {
-                              props.onClick?.(e);
-                              setSelectedVariantId(item.id);
-                            }}
-                            aria-selected={item.id === selectedVariantId}
-                            inert={product.has_same_rich_content_for_all_variants}
-                          >
-                            <div className="flex-1">
-                              <h4>{item.name || "Untitled"}</h4>
-                              {item.id === selectedVariant?.id ? (
-                                <small>Editing</small>
-                              ) : product.has_same_rich_content_for_all_variants || item.rich_content.length ? (
-                                <small>
-                                  Last edited on{" "}
-                                  {formatDate(
-                                    (product.has_same_rich_content_for_all_variants
-                                      ? product.rich_content
-                                      : item.rich_content
-                                    ).reduce<Date | null>((acc, item) => {
-                                      const date = parseISO(item.updated_at);
-                                      return acc && acc > date ? acc : date;
-                                    }, null) ?? new Date(),
-                                  )}
-                                </small>
-                              ) : (
-                                <small className="text-muted">No content yet</small>
-                              )}
-                            </div>
-                            {item.id === selectedVariant?.id && (
-                              <Icon name="solid-check-circle" className="ml-auto text-success" />
-                            )}
-                          </div>
-                          {index === product.variants.length - 1 ? (
-                            <div className="flex cursor-pointer items-center px-4 py-2">
-                              <Label className="items-center">
-                                <Checkbox
-                                  checked={product.has_same_rich_content_for_all_variants}
-                                  onChange={() => {
-                                    if (!product.has_same_rich_content_for_all_variants && product.variants.length > 1)
-                                      return setConfirmingDiscardVariantContent(true);
-                                    setHasSameRichContent(!product.has_same_rich_content_for_all_variants);
-                                  }}
-                                />
-                                <small>Use the same content for all versions</small>
-                              </Label>
-                            </div>
-                          ) : null}
-                        </>
-                      )}
-                    />
-                  </>
-                ) : null
-              }
-            >
-              <ContentTabContent selectedVariantId={selectedVariantId} />
-            </Layout>
-            <Modal
-              open={confirmingDiscardVariantContent}
-              onClose={() => setConfirmingDiscardVariantContent(false)}
-              title="Discard content from other versions?"
-              footer={
-                <>
-                  <Button onClick={() => setConfirmingDiscardVariantContent(false)}>No, cancel</Button>
-                  <Button
-                    color="danger"
-                    onClick={() => {
-                      setHasSameRichContent(true);
-                      setConfirmingDiscardVariantContent(false);
-                    }}
-                  >
-                    Yes, proceed
-                  </Button>
-                </>
-              }
-            >
-              If you proceed, the content from all other versions of this product will be removed and replaced with the
-              content of "{titleWithFallback(selectedVariant?.name)}".
-              <strong>This action is irreversible.</strong>
-            </Modal>
-          </S3UploadConfigProvider>
-        </EvaporateUploaderProvider>
-      </LicenseProvider>
-    </PostsProvider>
   );
 };

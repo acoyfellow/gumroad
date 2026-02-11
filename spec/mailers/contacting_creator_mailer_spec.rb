@@ -1243,7 +1243,7 @@ describe ContactingCreatorMailer do
       expect(mail.subject).to eq "We were unable to stamp your PDF"
       expect(mail.body.encoded).to include "We were unable to stamp your PDF"
       expect(mail.body.encoded).to include product.name
-      expect(mail.body.encoded).to include edit_link_url(product)
+      expect(mail.body.encoded).to include edit_product_url(product)
     end
   end
 
@@ -1264,7 +1264,7 @@ describe ContactingCreatorMailer do
         expect(mail.body.encoded).to include product.link.name
         expect(mail.body.encoded).to include purchase.formatted_display_price
         expect(mail.body.encoded).to include product.long_url
-        expect(mail.body.encoded).to include edit_link_url(product)
+        expect(mail.body.encoded).to include edit_product_url(product)
       end
     end
 
@@ -1293,7 +1293,7 @@ describe ContactingCreatorMailer do
 
         product_without_refund_policy = charge.first_product_without_refund_policy
         expect(mail.body.encoded).to include "We noticed that #{product_without_refund_policy.name} currently doesn't have a refund policy."
-        expect(mail.body.encoded).to include edit_link_url(product_without_refund_policy)
+        expect(mail.body.encoded).to include edit_product_url(product_without_refund_policy)
       end
     end
   end

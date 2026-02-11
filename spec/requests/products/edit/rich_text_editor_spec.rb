@@ -18,7 +18,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
   include_context "with switching account to user as admin for seller"
 
   it "instantly preview changes to product description" do
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
 
     in_preview do
       expect(page).to have_text @product.description
@@ -32,7 +32,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
   end
 
   it "trims leading/trailing spaces for description" do
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
     set_rich_text_editor_input find("[aria-label='Description']"), to_text: "   New description line.   "
 
     in_preview do
@@ -43,7 +43,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
 
   it "removes data URLs from description on content update or save" do
     description = "<p>Text1</p><p>Text2<figure><img class='img-data-uri' src='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD'/></figure></p>"
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
     page.execute_script("$(\"[aria-label='Description']\").html(\"#{description}\");")
     sleep 1
     in_preview do
@@ -56,7 +56,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
   end
 
   it "shows loading spinner over an image while it is being uploaded" do
-    visit edit_link_path(@product)
+    visit edit_product_path(@product)
     rich_text_editor_input = find("[aria-label='Description']")
     attach_file file_fixture("smilie.png") do
       click_on "Insert image"
@@ -70,7 +70,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
   it "shows a warning when switching to other tabs while images or files are still uploading" do
     Feature.activate_user(:audio_previews, @product.user)
 
-    visit edit_link_path(@product)
+    visit edit_product_path(@product)
 
     rich_text_editor_input = find("[aria-label='Description']")
 
@@ -84,12 +84,12 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     # select_tab "Content"
     # expect(page).to have_alert(text: "Some images are still uploading, please wait...")
 
-    expect(page).to have_current_path(edit_link_path(@product))
+    expect(page).to have_current_path(edit_product_path(@product.unique_permalink))
     expect(page).to have_tab_button("Product", open: true)
     expect(rich_text_editor_input).to have_selector("img[src^='#{AWS_S3_ENDPOINT}/#{S3_BUCKET}']")
     select_tab "Content"
     expect(page).to_not have_alert(text: "Some images are still uploading, please wait...")
-    expect(page).to have_current_path(edit_link_path(@product) + "/content")
+    expect(page).to have_current_path(edit_product_content_path(@product.unique_permalink))
     expect(page).to have_tab_button("Content", open: true)
 
     # When files are uploading
@@ -102,13 +102,13 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     wait_for_file_embed_to_finish_uploading(name: "test")
     select_tab "Content"
     expect(page).to_not have_alert(text: "Some files are still uploading, please wait...")
-    expect(page).to have_current_path(edit_link_path(@product) + "/content")
+    expect(page).to have_current_path(edit_product_content_path(@product.unique_permalink))
     expect(page).to have_tab_button("Content", open: true)
   end
 
   it "ignores overlay links" do
     url = "#{@product.long_url}?wanted=true"
-    visit edit_link_path(@product)
+    visit edit_product_path(@product)
     select_disclosure "Insert" do
       click_on "Button"
     end
@@ -132,7 +132,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
   end
 
   it "supports adding external links" do
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
 
     rich_text_editor_input = find("[aria-label='Description']")
 
@@ -157,7 +157,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
   end
 
   it "supports adding an external link with label" do
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
 
     external_link = "https://gumroad.com/"
     rich_text_editor_input = find("[aria-label='Description']")
@@ -209,7 +209,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     expect(page).to have_selector("strong", text: "Not Gumroad")
     expect(page).to have_selector("em", text: "Not Gumroad")
 
-    visit edit_link_path(@product)
+    visit edit_product_path(@product)
     within find("[aria-label='Description']") do
       click_on "Not Gumroad"
       within_disclosure "Not Gumroad" do
@@ -243,7 +243,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
       ]
     )
     Feature.activate(:product_edit_react)
-    visit("#{edit_link_path(@product)}/content")
+    visit edit_product_content_path(@product)
     within find("[aria-label='Content editor']") do
       expect(page).to have_link("Gumroad", href: "https://gumroad.com")
       expect(page).to have_link("Google", href: "https://google.com")
@@ -289,7 +289,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
   it "does not open a new tab when an external link is clicked" do
     @product.update!(description: '<a href="https://gumroad.com" target="_blank">Gumroad</a>')
 
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
 
     within("[aria-label='Description']") do
       # Need to double click in order to ensure we have the editor input focused first
@@ -299,7 +299,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
   end
 
   it "validates links, fixing links with invalid protocols and adding https where necessary" do
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
 
     rich_text_editor_input = find("[aria-label='Description']")
 
@@ -358,7 +358,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
   end
 
   it "supports twitter embeds" do
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
     rich_text_editor_input = find("[aria-label='Description']")
     select_disclosure "Insert" do
       click_on "Twitter post"
@@ -375,7 +375,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
   end
 
   it "supports button embeds" do
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
     external_link = "https://gumroad.com/"
     rich_text_editor_input = find("[aria-label='Description']")
     select_disclosure "Insert" do
@@ -426,7 +426,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
   end
 
   it "stores editor history actions" do
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
 
     expect(page).to have_selector("[aria-label='Undo last change']")
     expect(page).to have_selector("[aria-label='Redo last undone change']")
@@ -451,7 +451,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
 
   it "fixes blocks containing blocks so TipTap doesn't discard them" do
     @product.update(description: "<h4><p>test</p><p><figure><img src=\"http://fake/\"><p class=\"figcaption\">Caption</p></figure></p><p>test 2</p></h4>")
-    visit("/products/#{@product.unique_permalink}/edit")
+    visit edit_product_path(@product)
     rich_text_editor_input = find("[aria-label='Description']")
     expect(rich_text_editor_input).to have_selector("p", text: "test")
     expect(rich_text_editor_input).to have_selector("img[src=\"http://fake/\"]")
@@ -465,7 +465,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
 
   describe "Dynamic product content editor" do
     it "does not show Insert video popover and external link tab within Insert link popover" do
-      visit edit_link_path(@product) + "/content"
+      visit edit_product_content_path(@product)
 
       expect(page).not_to have_button("Insert video")
 
@@ -477,7 +477,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     it "supports embedding tweets" do
       tweet_url = "https://x.com/gumroad/status/1743053631640006693"
       product = create(:product, user: seller)
-      visit edit_link_path(product) + "/content"
+      visit edit_product_content_path(product)
       rich_text_editor_input = find("[aria-label='Content editor']")
       select_disclosure "Insert" do
         click_on "Twitter post"
@@ -508,7 +508,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     end
 
     it "uploads and embeds public audio files" do
-      visit edit_link_path(@product)
+      visit edit_product_path(@product)
 
       # Validate that non-audio files are not allowed
       attach_file file_fixture("test.pdf") do
@@ -633,7 +633,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
 
   describe "More like this block" do
     let(:product) { create(:product, user: seller) }
-    before { visit edit_link_path(product) + "/content" }
+    before { visit edit_product_content_path(product) }
 
     it "allows inserting the More like this block with recommended products" do
       select_disclosure "Insert" do
@@ -719,7 +719,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     before { Feature.activate(:product_edit_react) }
 
     it "allows creating and modifying post-purchase custom fields" do
-      visit "#{edit_link_path(@product)}/content"
+      visit edit_product_content_path(@product)
 
       expect(page).to have_field("Title", with: "Long answer")
       expect(page).to have_field("Long answer", with: "", type: "textarea")
@@ -884,7 +884,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     end
 
     it "supports moving nodes with the arrow keys" do
-      visit edit_link_path(@product) + "/content"
+      visit edit_product_content_path(@product)
 
       rich_text_editor_input = find("[aria-label='Content editor']")
 
@@ -928,7 +928,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     end
 
     it "supports moving and deleting nodes with the popover" do
-      visit edit_link_path(@product) + "/content"
+      visit edit_product_content_path(@product)
 
       within find_file_group("Folder 1").hover do
         select_disclosure "Actions" do
@@ -981,7 +981,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
 
     describe "moving file embeds to folders" do
       it "does not show 'Move to folder' action for embeds other than file embeds" do
-        visit edit_link_path(@product) + "/content"
+        visit edit_product_content_path(@product)
 
         within find_embed(name: "First file").hover do
           select_disclosure "Actions" do
@@ -1010,7 +1010,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     end
 
     it "supports moving non-nested file embeds to existing folders" do
-      visit edit_link_path(@product) + "/content"
+      visit edit_product_content_path(@product)
 
       within find_embed(name: "First file").hover do
         select_disclosure "Actions" do
@@ -1080,7 +1080,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
                                ]
                              }
                            ])
-      visit edit_link_path(@product) + "/content"
+      visit edit_product_content_path(@product)
 
       toggle_file_group "Folder 1"
       within_file_group "Folder 1" do
@@ -1130,7 +1130,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     end
 
     it "supports moving non-nested file embeds to a new folder" do
-      visit edit_link_path(@product) + "/content"
+      visit edit_product_content_path(@product)
 
       within find_embed(name: "First file").hover do
         select_disclosure "Actions" do
@@ -1176,7 +1176,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     end
 
     it "supports moving file embeds from one folder to a new folder" do
-      visit edit_link_path(@product) + "/content"
+      visit edit_product_content_path(@product)
 
       toggle_file_group "Folder 1"
       within_file_group("Folder 1") do
@@ -1241,7 +1241,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     end
 
     it "does not allow moving the file embed to a new folder if it's the only file embed in the folder" do
-      visit edit_link_path(@product) + "/content"
+      visit edit_product_content_path(@product)
 
       toggle_file_group "Folder 1"
       within_file_group("Folder 1") do
@@ -1269,7 +1269,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     end
 
     it "does not allow moving the file embed to a folder if it's the only file embed in the only folder in the content" do
-      visit edit_link_path(@product) + "/content"
+      visit edit_product_content_path(@product)
 
       toggle_file_group "Folder 1"
       within_file_group("Folder 1") do
@@ -1319,7 +1319,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     end
 
     it "shows the last edited time for each version" do
-      visit edit_link_path(product) + "/content"
+      visit edit_product_content_path(product)
 
       find(:combo_box, "Select a version").click
       expect(page).to have_selector("[role='option']", text: "Version 1 Editing", normalize_ws: true)
@@ -1331,7 +1331,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     let(:commission) { create(:commission_product, user: seller) }
 
     it "shows the commission content editor with a non-editable Downloads page" do
-      visit "#{edit_link_path(commission)}/content"
+      visit edit_product_content_path(commission)
 
       downloads_tab = find("[role='tab']", text: "Downloads")
       downloads_tab.hover

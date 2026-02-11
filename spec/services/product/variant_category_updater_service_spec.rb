@@ -125,7 +125,6 @@ describe Product::VariantCategoryUpdaterService do
           options: [
             {
               id: @variant.external_id,
-              name: @variant.name,
               rich_content: [{ id: nil, title: "Page title", description: [@file1, @file2].map { { type: "fileEmbed", attrs: { id: _1.external_id, uid: SecureRandom.uuid } } } }],
             }
           ]
@@ -133,11 +132,13 @@ describe Product::VariantCategoryUpdaterService do
       end
 
       it "saves new files on versions" do
-        Product::VariantCategoryUpdaterService.new(
+        variant_category, variant_ids_with_updated_rich_content = Product::VariantCategoryUpdaterService.new(
           product: @product,
           category_params: @variant_category_params
         ).perform
 
+        expect(variant_category).to eq(@variant.variant_category.reload)
+        expect(variant_ids_with_updated_rich_content).to eq([@variant.external_id])
         expect(@variant.reload.product_files).to match_array [@file1, @file2]
       end
 
@@ -517,7 +518,7 @@ describe Product::VariantCategoryUpdaterService do
           old_content: @rich_content.description
         ).and_call_original
 
-        Product::VariantCategoryUpdaterService.new(
+        variant_category, variant_ids_with_updated_rich_content = Product::VariantCategoryUpdaterService.new(
           product: @product,
           category_params: {
             id: @variant_category.external_id,
@@ -537,6 +538,29 @@ describe Product::VariantCategoryUpdaterService do
             ]
           }
         ).perform
+
+        expect(variant_category).to eq(@variant_category.reload)
+        expect(variant_ids_with_updated_rich_content).to eq([@variant.external_id])
+      end
+
+      it "does not delete rich content when rich_content is not provided" do
+        variant_category, variant_ids_with_updated_rich_content = Product::VariantCategoryUpdaterService.new(
+          product: @product,
+          category_params: {
+            id: @variant_category.external_id,
+            title: @variant_category.title,
+            options: [
+              {
+                id: @variant.external_id,
+                name: @variant.name
+              }
+            ]
+          }
+        ).perform
+
+        expect(variant_category).to eq(@variant_category.reload)
+        expect(variant_ids_with_updated_rich_content).to eq([])
+        expect(@variant.reload.rich_contents.alive.first.description).to eq @rich_content.description
       end
     end
   end

@@ -7,7 +7,7 @@ import { Dropdown } from "$app/components/Dropdown";
 import { PriceInput } from "$app/components/PriceInput";
 import { DefaultDiscountCodeSelector } from "$app/components/ProductEdit/ProductTab/DefaultDiscountCodeSelector";
 import { InstallmentPlanEditor } from "$app/components/ProductEdit/ProductTab/InstallmentPlanEditor";
-import { ProductEditContext } from "$app/components/ProductEdit/state";
+import { OfferCode } from "$app/components/ProductEdit/state";
 import { Alert } from "$app/components/ui/Alert";
 import { Switch } from "$app/components/ui/Switch";
 
@@ -25,6 +25,9 @@ export const PriceEditor = ({
   onAllowInstallmentPlanChange,
   onNumberOfInstallmentsChange,
   currencyCodeSelector,
+  uniquePermalink,
+  defaultOfferCode,
+  onDefaultOfferCodeUpdate,
 }: {
   priceCents: number;
   suggestedPriceCents: number | null;
@@ -39,10 +42,15 @@ export const PriceEditor = ({
   onAllowInstallmentPlanChange: (allowed: boolean) => void;
   onNumberOfInstallmentsChange: (numberOfInstallments: number) => void;
   currencyCodeSelector?: { options: CurrencyCode[]; onChange: (currencyCode: CurrencyCode) => void };
+  uniquePermalink?: string;
+  defaultOfferCode?: OfferCode | null;
+  onDefaultOfferCodeUpdate?: (update: {
+    default_offer_code_id: string | null;
+    default_offer_code: OfferCode | null;
+  }) => void;
 }) => {
   const uid = React.useId();
   const isFreeProduct = priceCents === 0;
-  const productEditContext = React.useContext(ProductEditContext);
 
   return (
     <fieldset>
@@ -98,7 +106,13 @@ export const PriceEditor = ({
           onNumberOfInstallmentsChange={onNumberOfInstallmentsChange}
         />
       ) : null}
-      {productEditContext ? <DefaultDiscountCodeSelector /> : null}
+      {uniquePermalink && defaultOfferCode && onDefaultOfferCodeUpdate ? (
+        <DefaultDiscountCodeSelector
+          uniquePermalink={uniquePermalink}
+          defaultOfferCode={defaultOfferCode}
+          onUpdate={onDefaultOfferCodeUpdate}
+        />
+      ) : null}
     </fieldset>
   );
 };

@@ -6,25 +6,28 @@ import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Product, ProductDiscount } from "$app/components/Product";
 import { CoffeeProduct } from "$app/components/Product/CoffeeProduct";
 import { useProductUrl } from "$app/components/ProductEdit/Layout";
-import { RefundPolicyModalPreview } from "$app/components/ProductEdit/RefundPolicy";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import { RefundPolicy, RefundPolicyModalPreview } from "$app/components/ProductEdit/RefundPolicy";
+import { EditProductShare, EditProduct } from "$app/components/ProductEdit/state";
 import { Layout as ProfileLayout } from "$app/components/Profile/Layout";
 
-export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModal?: boolean }) => {
+export const ProductPreview = ({
+  product,
+  showRefundPolicyModal,
+  seller_refund_policy_enabled,
+  seller_refund_policy,
+  sales_count_for_inventory,
+  successful_sales_count,
+}: {
+  product: EditProductShare | EditProduct;
+  showRefundPolicyModal?: boolean;
+  seller_refund_policy_enabled: boolean;
+  seller_refund_policy: Pick<RefundPolicy, "title" | "fine_print">;
+  sales_count_for_inventory: number;
+  successful_sales_count: number;
+}) => {
   const currentSeller = useCurrentSeller();
-  const {
-    product,
-    id,
-    uniquePermalink,
-    currencyType,
-    salesCountForInventory,
-    successfulSalesCount,
-    ratings,
-    seller_refund_policy_enabled,
-    seller_refund_policy,
-  } = useProductEditContext();
 
-  const url = useProductUrl();
+  const url = useProductUrl(product);
 
   if (!currentSeller) return null;
 
@@ -42,7 +45,7 @@ export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModa
   }, [product.default_offer_code]);
 
   const serializedProduct: Product = {
-    id,
+    id: product.id,
     name: product.name,
     seller: {
       id: currentSeller.id,
@@ -54,21 +57,21 @@ export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModa
     covers: product.covers,
     main_cover_id: product.covers[0]?.id ?? null,
     quantity_remaining:
-      product.max_purchase_count !== null ? Math.max(product.max_purchase_count - salesCountForInventory, 0) : null,
-    currency_code: currencyType,
+      product.max_purchase_count !== null ? Math.max(product.max_purchase_count - sales_count_for_inventory, 0) : null,
+    currency_code: product.currency_type,
     long_url: url,
     duration_in_months: null,
     is_sales_limited: product.max_purchase_count !== null,
     price_cents: product.price_cents,
     pwyw: product.customizable_price ? { suggested_price_cents: product.suggested_price_cents } : null,
     installment_plan: product.installment_plan,
-    ratings: product.display_product_reviews ? ratings : null,
+    ratings: product.display_product_reviews ? product.ratings : null,
     is_legacy_subscription: false,
     is_tiered_membership: false,
     is_recurring_billing: product.native_type === "membership",
     is_physical: false,
     custom_view_content_button_text: null,
-    permalink: uniquePermalink,
+    permalink: product.unique_permalink,
     preorder: null,
     description_html: product.description,
     is_compliance_blocked: false,
@@ -78,7 +81,7 @@ export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModa
     is_quantity_enabled: product.quantity_enabled,
     is_multiseat_license: false,
     hide_sold_out_variants: product.hide_sold_out_variants,
-    sales_count: product.should_show_sales_count ? successfulSalesCount : null,
+    sales_count: product.should_show_sales_count ? successful_sales_count : null,
     custom_button_text_option: product.custom_button_text_option,
     summary: product.custom_summary,
     attributes: product.custom_attributes,

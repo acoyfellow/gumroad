@@ -503,7 +503,7 @@ describe("Email Creation Flow", :js, type: :system) do
     product = create(:product, :bundle, user: seller)
     create(:purchase, link: product)
 
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
 
     # Create a draft email from the "Share" tab of a bundle product
     select_tab "Share"

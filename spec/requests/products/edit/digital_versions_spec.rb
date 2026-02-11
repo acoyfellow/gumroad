@@ -24,7 +24,7 @@ describe("Product Edit Digital Versions", type: :system, js: true) do
     end
 
     it "allows to edit price of digital version option" do
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_path(product)
 
       within version_rows[0] do
         within version_option_rows[0] do
@@ -42,7 +42,7 @@ describe("Product Edit Digital Versions", type: :system, js: true) do
     end
 
     it "does not change variant category price when changing version option prices" do
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_path(product)
 
       within_section "Pricing", match: :first do
         expect(page).to have_field("Amount", with: "1")
@@ -71,7 +71,7 @@ describe("Product Edit Digital Versions", type: :system, js: true) do
     end
 
     it "allows to re-order options" do
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_path(product)
       page.scroll_to version_rows[0], align: :center
 
       click_on "Add version"
@@ -92,7 +92,7 @@ describe("Product Edit Digital Versions", type: :system, js: true) do
     end
 
     it "has a valid share URL" do
-      visit edit_link_path(product.unique_permalink)
+      visit edit_product_path(product)
 
       within version_rows[0] do
         within version_option_rows[0] do
@@ -113,7 +113,7 @@ describe("Product Edit Digital Versions", type: :system, js: true) do
       end
 
       it "deletes a variant option without purchases with a confirmation dialog" do
-        visit edit_link_path(product.unique_permalink)
+        visit edit_product_path(product)
 
         within version_rows[0] do
           within version_option_rows[0] do
@@ -149,7 +149,7 @@ describe("Product Edit Digital Versions", type: :system, js: true) do
 
       it "deletes a variant option with only test purchases" do
         create(:purchase, link: product, variant_attributes: [@variant_option], purchaser: seller, purchase_state: "test_successful")
-        visit edit_link_path(product.unique_permalink)
+        visit edit_product_path(product)
 
         within version_rows[0] do
           within version_option_rows[0] do
@@ -169,7 +169,7 @@ describe("Product Edit Digital Versions", type: :system, js: true) do
 
       it "deletes a variant option with non-test purchases" do
         create(:purchase, link: product, variant_attributes: [@variant_option], purchase_state: "successful")
-        visit edit_link_path(product.unique_permalink)
+        visit edit_product_path(product)
 
         within version_rows[0] do
           within version_option_rows[0] do
@@ -188,7 +188,7 @@ describe("Product Edit Digital Versions", type: :system, js: true) do
       end
 
       it "deletes all variant options of a variant category" do
-        visit edit_link_path(product.unique_permalink)
+        visit edit_product_path(product)
 
         within_section "Versions" do
           within version_option_rows[0] do
@@ -225,7 +225,7 @@ describe("Product Edit Digital Versions", type: :system, js: true) do
 
       it "deletes all variant options even if variant category title is not empty" do
         @variant_category.update!(title: "My Product Files Groupings")
-        visit edit_link_path(product.unique_permalink)
+        visit edit_product_path(product)
 
         within_section "Versions" do
           within version_option_rows[0] do

@@ -27,7 +27,7 @@ describe "Product Edit Covers", type: :system, js: true do
   include_context "with switching account to user as admin for seller"
 
   it "supports attaching covers" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     upload_image(["test.png"])
     wait_for_ajax
     sleep 1
@@ -43,7 +43,7 @@ describe "Product Edit Covers", type: :system, js: true do
   end
 
   it "instantly previews product cover changes" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
 
     upload_image(["test.png"])
 
@@ -55,14 +55,14 @@ describe "Product Edit Covers", type: :system, js: true do
   end
 
   it "does not allow uploading invalid images" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     upload_image(["disguised_html_script.png"])
     allow_any_instance_of(ActiveStorage::Blob).to receive(:purge).and_return(nil)
     expect(page).to have_alert(text: "Could not process your preview, please try again.")
   end
 
   it "allows uploading valid image after trying an invalid one" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     upload_image(["disguised_html_script.png"])
     allow_any_instance_of(ActiveStorage::Blob).to receive(:purge).and_return(nil)
     expect(page).to have_alert(text: "Could not process your preview, please try again.")
@@ -74,7 +74,7 @@ describe "Product Edit Covers", type: :system, js: true do
   end
 
   it "allows uploading video files" do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     upload_image(["ScreenRecording.mov"])
     wait_for_ajax
     within "[role=tablist][aria-label='Product covers']" do
@@ -83,7 +83,7 @@ describe "Product Edit Covers", type: :system, js: true do
   end
 
   it("allows multiple images to be uploaded simultaneously") do
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     upload_image(["test-small.jpg", "test.png"])
     wait_for_ajax
     within "[role=tablist][aria-label='Product covers']" do
@@ -93,7 +93,7 @@ describe "Product Edit Covers", type: :system, js: true do
 
   it("does not allow more than 8 images to be uploaded simultaneously") do
     allow_any_instance_of(ActiveStorage::Blob).to receive(:purge).and_return(nil)
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
     upload_image([
                    "test-small.jpg",
                    "test.png",
@@ -116,7 +116,7 @@ describe "Product Edit Covers", type: :system, js: true do
     it "allows attaching embeds from a supported provider" do
       vcr_turned_on do
         VCR.use_cassette("Product Edit Covers - External links - Supported provider") do
-          visit edit_link_path(product.unique_permalink)
+          visit edit_product_path(product)
 
           expect do
             within_section "Cover", section_element: "section" do
@@ -138,7 +138,7 @@ describe "Product Edit Covers", type: :system, js: true do
     it "does not allow attaching embeds from unsupported providers" do
       vcr_turned_on do
         VCR.use_cassette("Product Edit Covers - External links - Unsupported provider") do
-          visit edit_link_path(product.unique_permalink)
+          visit edit_product_path(product)
 
           expect do
             within_section "Cover", section_element: "section" do
@@ -160,7 +160,7 @@ describe "Product Edit Covers", type: :system, js: true do
     asset2 = create(:asset_preview, link: product)
     asset3 = create(:asset_preview, link: product)
 
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
 
     within "[role=tablist][aria-label='Product covers']" do
       preview_mini_node1 = all(:tab_button)[0]

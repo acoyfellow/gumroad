@@ -5,15 +5,21 @@ import { assertResponseError } from "$app/utils/request";
 
 import { ComboBox } from "$app/components/ComboBox";
 import { Icon } from "$app/components/Icons";
-import { OfferCode, useProductEditContext } from "$app/components/ProductEdit/state";
+import { OfferCode } from "$app/components/ProductEdit/state";
 import { showAlert } from "$app/components/server-components/Alert";
 import { ToggleSettingRow } from "$app/components/SettingRow";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 
-export const DefaultDiscountCodeSelector = () => {
-  const { uniquePermalink, product, updateProduct } = useProductEditContext();
-
-  const selectedDiscountCode = product.default_offer_code;
+export const DefaultDiscountCodeSelector = ({
+  uniquePermalink,
+  defaultOfferCode,
+  onUpdate,
+}: {
+  uniquePermalink: string;
+  defaultOfferCode: OfferCode | null;
+  onUpdate: (update: { default_offer_code_id: string | null; default_offer_code: OfferCode | null }) => void;
+}) => {
+  const selectedDiscountCode = defaultOfferCode;
 
   const getLabel = (code: OfferCode) => code.name || code.code;
 
@@ -29,10 +35,10 @@ export const DefaultDiscountCodeSelector = () => {
   }, []);
 
   React.useEffect(() => {
-    if (product.default_offer_code) {
+    if (defaultOfferCode) {
       setIsToggleOn(true);
     }
-  }, [product.default_offer_code]);
+  }, [defaultOfferCode]);
 
   const fetchOptions = React.useCallback(
     async (search: string) => {
@@ -59,7 +65,7 @@ export const DefaultDiscountCodeSelector = () => {
         setIsToggleOn(true);
         resetSearch();
       } else {
-        updateProduct({
+        onUpdate({
           default_offer_code_id: null,
           default_offer_code: null,
         });
@@ -67,7 +73,7 @@ export const DefaultDiscountCodeSelector = () => {
         resetSearch();
       }
     },
-    [resetSearch, updateProduct],
+    [resetSearch, onUpdate],
   );
 
   return (
@@ -114,11 +120,11 @@ export const DefaultDiscountCodeSelector = () => {
               option={(code, props) => (
                 <div
                   {...props}
-                  aria-selected={code.id === product.default_offer_code?.id}
+                  aria-selected={code.id === defaultOfferCode?.id}
                   onClick={(event) => {
                     props.onClick?.(event);
 
-                    updateProduct({
+                    onUpdate({
                       default_offer_code_id: code.id,
                       default_offer_code: code,
                     });

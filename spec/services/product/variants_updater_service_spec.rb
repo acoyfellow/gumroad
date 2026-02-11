@@ -44,7 +44,7 @@ describe Product::VariantsUpdaterService do
       end
 
       it "updates the variants and variant categories" do
-        Product::VariantsUpdaterService.new(
+        variant_ids_with_updated_rich_content = Product::VariantsUpdaterService.new(
           product: @product,
           variants_params: @variants_params
         ).perform
@@ -54,29 +54,64 @@ describe Product::VariantsUpdaterService do
         expect(new_category.variants.pluck(:name)).to match_array ["Red", "Blue"]
         expect(@size_category.reload.title).to eq "SIZE"
         expect(@large.reload.name).to eq "LARGE"
+        expect(variant_ids_with_updated_rich_content).to eq([])
       end
 
       context "missing category name" do
         it "sets the category title to nil" do
           @variants_params["0"].delete(:name)
 
-          Product::VariantsUpdaterService.new(
+          variant_ids_with_updated_rich_content = Product::VariantsUpdaterService.new(
             product: @product,
             variants_params: @variants_params
           ).perform
 
           expect(@size_category.reload.title).to be_nil
+          expect(variant_ids_with_updated_rich_content).to eq([])
+        end
+      end
+
+      context "when variant rich content changes" do
+        it "returns variant external ids with updated rich content" do
+          product = create(:product)
+          variant_category = create(:variant_category, link: product, title: "Size")
+          variant = create(:variant, variant_category:, name: "Small")
+          create(:rich_content, entity: variant, description: [{ "type" => "paragraph", "content" => [{ "type" => "text", "text" => "Original" }] }])
+
+          variants_params = {
+            "0" => {
+              name: variant_category.title,
+              id: variant_category.external_id,
+              options: {
+                "0" => {
+                  id: variant.external_id,
+                  name: variant.name,
+                  rich_content: [
+                    { id: nil, title: "Page", description: [{ "type" => "paragraph", "content" => [{ "type" => "text", "text" => "Updated" }] }] }
+                  ]
+                }
+              }
+            }
+          }
+
+          variant_ids_with_updated_rich_content = Product::VariantsUpdaterService.new(
+            product:,
+            variants_params:
+          ).perform
+
+          expect(variant_ids_with_updated_rich_content).to eq([variant.external_id])
         end
       end
 
       context "with empty categories" do
         it "deletes all categories" do
-          Product::VariantsUpdaterService.new(
+          variant_ids_with_updated_rich_content = Product::VariantsUpdaterService.new(
             product: @product,
             variants_params: {}
           ).perform
 
           expect(@product.reload.variant_categories_alive).to be_empty
+          expect(variant_ids_with_updated_rich_content).to eq([])
         end
       end
     end
@@ -109,11 +144,12 @@ describe Product::VariantsUpdaterService do
           }
         }
 
-        Product::VariantsUpdaterService.new(
+        variant_ids_with_updated_rich_content = Product::VariantsUpdaterService.new(
           product:,
           variants_params: variant_categories
         ).perform
 
+        expect(variant_ids_with_updated_rich_content).to eq([])
         tiers = tier_category.reload.variants.alive
         tier = tiers.find_by(name: "First Tier")
         expect(tiers.pluck(:name)).to match_array ["First Tier", "Second Tier"]
@@ -178,12 +214,13 @@ describe Product::VariantsUpdaterService do
       end
 
       it "updates new SKUs and deletes old ones" do
-        Product::VariantsUpdaterService.new(
+        variant_ids_with_updated_rich_content = Product::VariantsUpdaterService.new(
           product: @product,
           variants_params: @variants_params,
           skus_params: @skus_params
         ).perform
 
+        expect(variant_ids_with_updated_rich_content).to eq([])
         updated_skus = [@default_sku, @large_sku, @medium_sku, @small_sku].map(&:reload)
 
         expect(@product.reload.skus.alive).to match_array updated_skus
@@ -229,11 +266,12 @@ describe Product::VariantsUpdaterService do
       end
 
       it "marks a category deleted if not included in variant_category_params" do
-        Product::VariantsUpdaterService.new(
+        variant_ids_with_updated_rich_content = Product::VariantsUpdaterService.new(
           product: @product,
           variants_params: @variant_categories
         ).perform
 
+        expect(variant_ids_with_updated_rich_content).to eq([])
         expect(@color_category.reload).to be_alive
         expect(@size_category.reload).not_to be_alive
       end
@@ -242,11 +280,12 @@ describe Product::VariantsUpdaterService do
         small_variant = create(:variant, :with_product_file, variant_category: @size_category, name: "Small")
         create(:purchase, link: @product, variant_attributes: [small_variant])
 
-        Product::VariantsUpdaterService.new(
+        variant_ids_with_updated_rich_content = Product::VariantsUpdaterService.new(
           product: @product,
           variants_params: @variant_categories
         ).perform
 
+        expect(variant_ids_with_updated_rich_content).to eq([])
         expect(@color_category.reload).to be_alive
         expect(@size_category.reload).to be_alive
       end

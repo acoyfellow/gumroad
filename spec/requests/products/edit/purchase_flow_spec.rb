@@ -13,7 +13,7 @@ describe("ProductPurchaseFlowScenario", type: :system, js: true) do
 
   it "always shows the Require shipping information toggle for all product types" do
     product.update!(require_shipping: true)
-    visit edit_link_path(product.unique_permalink)
+    visit edit_product_path(product)
 
     expect(page).to have_field("Require shipping information")
     uncheck("Require shipping information")

@@ -20,14 +20,16 @@ class Product::VariantsUpdaterService
 
     existing_categories = variant_categories_alive.to_a
     keep_categories = []
+    variant_ids_with_updated_rich_content = []
 
     variants_params.each do |category|
       variant_category_updater = Product::VariantCategoryUpdaterService.new(
         product:,
         category_params: category
       )
-      variant_category = variant_category_updater.perform
+      variant_category, ids = variant_category_updater.perform
       keep_categories << variant_category if category[:id].present?
+      variant_ids_with_updated_rich_content.concat(ids)
     end
 
     categories_to_delete = existing_categories - keep_categories
@@ -41,6 +43,8 @@ class Product::VariantsUpdaterService
       product.errors.add(:base, e.message)
       raise e
     end
+
+    variant_ids_with_updated_rich_content
   end
 
   private
