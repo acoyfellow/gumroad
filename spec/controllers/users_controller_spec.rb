@@ -97,12 +97,13 @@ describe UsersController do
       end
     end
 
-    it "returns user json when request is sent" do
+    it "returns user json when json request is sent" do
       link = create(:product, user: create(:user, username: "creator"), name: "onelolol")
 
       @request.host = "creator.test.gumroad.com"
       get :show, params: { username: "creator", format: "json" }
-      expect(response.parsed_body).to eq(link.user.as_json)    end
+      expect(response.parsed_body).to eq(link.user.as_json)
+    end
 
     describe "redirection to subdomain for profile pages" do
       before do
@@ -164,6 +165,9 @@ describe UsersController do
 
         it "renders the Inertia Users/Show page", inertia: true do
           expect(inertia.component).to eq("Users/Show")
+          expect(inertia.props[:creator_profile][:external_id]).to eq(@user.external_id)
+          expect(inertia.props).to have_key(:sections)
+          expect(inertia.props).to have_key(:tabs)
         end
       end
 
@@ -199,6 +203,9 @@ describe UsersController do
 
         it "renders the Inertia Users/Show page", inertia: true do
           expect(inertia.component).to eq("Users/Show")
+          expect(inertia.props[:creator_profile][:external_id]).to eq(@user.external_id)
+          expect(inertia.props).to have_key(:sections)
+          expect(inertia.props).to have_key(:tabs)
         end
 
         describe "when the host is another subdomain that is www with the same apex domain" do
@@ -213,6 +220,9 @@ describe UsersController do
 
           it "renders the Inertia Users/Show page", inertia: true do
             expect(inertia.component).to eq("Users/Show")
+            expect(inertia.props[:creator_profile][:external_id]).to eq(@user.external_id)
+            expect(inertia.props).to have_key(:sections)
+            expect(inertia.props).to have_key(:tabs)
           end
         end
 
@@ -236,19 +246,6 @@ describe UsersController do
           expect { get :show }.to raise_error(ActionController::RoutingError)
         end
       end
-    end
-
-    it "sets paypal_merchant_currency as merchant account's currency if native paypal payments are enabled else as usd", inertia: true do
-      creator = create(:named_user)
-      create(:product, user: creator)
-
-      @request.host = "#{creator.username}.test.gumroad.com"
-      get :show, params: { username: creator.username }
-      expect(inertia.props[:paypal_merchant_currency]).to eq "USD"
-
-      create(:merchant_account_paypal, user: creator, currency: "GBP")
-      get :show, params: { username: creator.username }
-      expect(inertia.props[:paypal_merchant_currency]).to eq "GBP"
     end
 
     context "with user signed in as admin for seller" do

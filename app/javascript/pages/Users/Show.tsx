@@ -2,12 +2,10 @@ import { usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
-import { Profile } from "$app/components/Profile";
+import { Profile, type Props as ProfilePageProps } from "$app/components/Profile";
+import { type Props as EditPageProps } from "$app/components/Profile/EditPage";
 
-type Props = React.ComponentProps<typeof Profile> & {
-  card_data_handling_mode: string;
-  paypal_merchant_currency: string;
-};
+type Props = ProfilePageProps | EditPageProps;
 
 export default function UserShowPage() {
   const props = cast<Props>(usePage().props);

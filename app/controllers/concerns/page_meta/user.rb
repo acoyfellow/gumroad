@@ -9,6 +9,7 @@ module PageMeta::User
     def set_user_page_meta(user)
       set_meta_tag(property: "og:site_name", value: "Gumroad")
       set_meta_tag(property: "og:type", value: "website")
+      set_meta_tag(tag_name: "style", inner_content: @user.seller_profile.custom_styles.to_s, head_key: "custom_styles")
 
       if user.bio.present?
         title = "Subscribe to #{user.name_or_username} on Gumroad"

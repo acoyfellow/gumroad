@@ -26,7 +26,6 @@ class UsersController < ApplicationController
       format.html do
         set_user_page_meta(@user)
         set_favicon_meta_tags(@user)
-        set_meta_tag(tag_name: "style", inner_content: @user.seller_profile.custom_styles.to_s, head_key: "custom_styles")
         profile_props = ProfilePresenter.new(pundit_user:, seller: @user).profile_props(seller_custom_domain_url:, request:)
         render inertia: "Users/Show", props: profile_props.merge(
             card_data_handling_mode: CardDataHandlingMode.get_card_data_handling_mode(@user),
