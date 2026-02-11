@@ -416,7 +416,6 @@ describe("Discover", js: true, type: :system) do
 
     create(:thumbnail, product:)
     product.reload
-    expected_thumbnail_url = product.thumbnail.url
 
     allow(product).to receive(:recommendable?).and_return(true)
     allow(product).to receive(:reviews_count).and_return(1)
@@ -430,7 +429,7 @@ describe("Discover", js: true, type: :system) do
     expect_product_cards_in_order([product])
 
     within find_product_card(product) do
-      expect(find("figure")).to have_image(src: expected_thumbnail_url)
+      expect(find("figure")).to have_image(src: product.thumbnail.url)
     end
   end
 
