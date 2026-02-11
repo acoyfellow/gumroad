@@ -206,13 +206,11 @@ describe FollowersController, inertia: true do
         expect(inertia.props[:message]).to eq("Check your inbox to confirm your follow request.")
       end
 
-      it "renders Inertia page with error message on failure" do
+      it "redirects to seller profile with flash warning on failure" do
         post :from_embed_form, params: { email: "exampleexample.com", seller_id: seller.external_id }
-        expect(response).to be_successful
-        expect(inertia.component).to eq("Followers/FromEmbedForm")
-        expect(inertia.props[:success]).to be(false)
-        expect(inertia.props[:message]).to be_present
-        expect(inertia.props[:message]).to include("Email invalid")
+        expect(response).to redirect_to(seller.profile_url)
+        expect(flash[:warning]).to be_present
+        expect(flash[:warning]).to include("Email invalid")
       end
 
       context "when a user is already following the creator using the same email" do

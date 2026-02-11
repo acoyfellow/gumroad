@@ -65,10 +65,11 @@ class FollowersController < ApplicationController
     @follower = create_follower(params, source: Follower::From::EMBED_FORM)
 
     if @follower.nil? || @follower.errors.present?
+      message = @follower&.errors&.full_messages&.to_sentence || "Something went wrong. Please try to follow the creator again."
+      flash[:warning] = message
       user = User.find_by_external_id(params[:seller_id])
       e404 unless user.try(:username)
-      message = @follower&.errors&.full_messages&.to_sentence || "Something went wrong. Please try to follow the creator again."
-      return render inertia: "Followers/FromEmbedForm", props: { success: false, message: }
+      return redirect_to user.profile_url, allow_other_host: true
     end
 
     message = @follower.confirmed? ?
