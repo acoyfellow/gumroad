@@ -63,7 +63,6 @@ class FollowersController < ApplicationController
 
   def from_embed_form
     @follower = create_follower(params, source: Follower::From::EMBED_FORM)
-    @hide_layouts = true
 
     if @follower.nil? || @follower.errors.present?
       user = User.find_by_external_id(params[:seller_id])
