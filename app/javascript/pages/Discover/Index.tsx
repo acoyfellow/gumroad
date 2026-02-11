@@ -336,58 +336,53 @@ function DiscoverIndex() {
         setQuery={(query) => dispatch({ type: "set-params", params: { query, taxonomy: taxonomyPath } })}
       >
         {showBlackFridayHero ? (
-            <header className="relative flex flex-col items-center justify-center">
-              <div className="relative flex min-h-[72vh] w-full flex-col items-center justify-center bg-black">
+          <header className="relative flex flex-col items-center justify-center">
+            <div className="relative flex min-h-[72vh] w-full flex-col items-center justify-center bg-black">
+              <img
+                src={saleImage}
+                alt="Sale"
+                className="absolute top-1/2 left-40 hidden w-32 -translate-y-1/2 rotate-[-24deg] object-contain md:left-12 md:block md:w-40 lg:left-36 lg:w-48 xl:left-60 xl:w-60"
+                draggable={false}
+              />
+              <div className="relative">
+                <img src={blackFridayImage} alt="Black Friday" className="max-w-96 object-contain" draggable={false} />
                 <img
                   src={saleImage}
                   alt="Sale"
-                  className="absolute top-1/2 left-40 hidden w-32 -translate-y-1/2 rotate-[-24deg] object-contain md:left-12 md:block md:w-40 lg:left-36 lg:w-48 xl:left-60 xl:w-60"
+                  className="absolute right-0 bottom-0 w-27.5 rotate-[16deg] object-contain md:hidden"
                   draggable={false}
                 />
-                <div className="relative">
-                  <img
-                    src={blackFridayImage}
-                    alt="Black Friday"
-                    className="max-w-96 object-contain"
-                    draggable={false}
-                  />
-                  <img
-                    src={saleImage}
-                    alt="Sale"
-                    className="absolute right-0 bottom-0 w-27.5 rotate-[16deg] object-contain md:hidden"
-                    draggable={false}
-                  />
-                </div>
-                <img
-                  src={saleImage}
-                  alt="Sale"
-                  className="absolute top-1/2 right-40 hidden w-32 -translate-y-1/2 rotate-[24deg] object-contain md:right-12 md:block md:w-40 lg:right-36 lg:w-48 xl:right-60 xl:w-60"
-                  draggable={false}
-                />
-                <div className="font-regular mx-12 text-center text-xl text-white">
-                  Snag creator-made deals <br className="block sm:hidden" /> before they're gone.
-                </div>
-                {!isBlackFridayPage && (
-                  <div className="mt-8 text-base">
-                    <BlackFridayButton offerCode={props.black_friday_offer_code} taxonomy={taxonomyPath} />
-                  </div>
-                )}
               </div>
-              <div className="h-14 w-full overflow-hidden border-b border-black bg-yellow-400">
-                <div className="flex h-14 min-w-fit items-center gap-x-4 whitespace-nowrap hover:[animation-play-state:paused] motion-safe:animate-[marquee-scroll_80s_linear_infinite] motion-reduce:animate-none">
-                  {props.black_friday_stats ? (
-                    <>
-                      {(() => {
-                        const stats = props.black_friday_stats;
-                        return Array.from({ length: 5 }, (_, i) => (
-                          <BlackFridayBanner key={i} stats={stats} currencyCode={props.currency_code} />
-                        ));
-                      })()}
-                    </>
-                  ) : null}
-                </div>
+              <img
+                src={saleImage}
+                alt="Sale"
+                className="absolute top-1/2 right-40 hidden w-32 -translate-y-1/2 rotate-[24deg] object-contain md:right-12 md:block md:w-40 lg:right-36 lg:w-48 xl:right-60 xl:w-60"
+                draggable={false}
+              />
+              <div className="font-regular mx-12 text-center text-xl text-white">
+                Snag creator-made deals <br className="block sm:hidden" /> before they're gone.
               </div>
-            </header>
+              {!isBlackFridayPage && (
+                <div className="mt-8 text-base">
+                  <BlackFridayButton offerCode={props.black_friday_offer_code} taxonomy={taxonomyPath} />
+                </div>
+              )}
+            </div>
+            <div className="h-14 w-full overflow-hidden border-b border-black bg-yellow-400">
+              <div className="flex h-14 min-w-fit items-center gap-x-4 whitespace-nowrap hover:[animation-play-state:paused] motion-safe:animate-[marquee-scroll_80s_linear_infinite] motion-reduce:animate-none">
+                {props.black_friday_stats ? (
+                  <>
+                    {(() => {
+                      const stats = props.black_friday_stats;
+                      return Array.from({ length: 5 }, (_, i) => (
+                        <BlackFridayBanner key={i} stats={stats} currencyCode={props.currency_code} />
+                      ));
+                    })()}
+                  </>
+                ) : null}
+              </div>
+            </div>
+          </header>
         ) : null}
         <div className="grid gap-16! px-4 py-16 lg:ps-16 lg:pe-16">
           {showRecommendationSections ? (

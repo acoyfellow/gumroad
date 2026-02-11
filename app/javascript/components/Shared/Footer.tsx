@@ -1,5 +1,5 @@
-import * as React from "react";
 import { Link } from "@inertiajs/react";
+import * as React from "react";
 
 import logoG from "$assets/images/logo-g.svg";
 

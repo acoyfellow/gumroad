@@ -126,11 +126,6 @@ class DiscoverController < ApplicationController
     def prepare_discover_page(search_results:)
       set_meta_tag(tag_name: "base", target: "_parent") unless user_signed_in?
 
-      set_meta_tag(property: "og:title", content: "Gumroad")
-      set_meta_tag(property: "og:type", content: "website")
-      set_meta_tag(property: "og:site_name", content: "Gumroad")
-      set_meta_tag(tag_name: "link", rel: "canonical", href: Discover::CanonicalUrlPresenter.canonical_url(params), head_key: "canonical")
-
       title_parts = []
       if params[:query].present?
         title_parts << "Search results for \"#{params[:query]}\""
@@ -146,7 +141,14 @@ class DiscoverController < ApplicationController
         title_parts << labels.join(" » ")
       end
       title_parts << "Gumroad"
-      set_meta_tag(title: title_parts.join(" | "))
+      page_title = title_parts.join(" | ")
+      set_meta_tag(title: page_title)
+
+      set_meta_tag(property: "og:title", content: page_title)
+      set_meta_tag(property: "og:type", content: "website")
+      set_meta_tag(property: "og:site_name", content: "Gumroad")
+      set_meta_tag(tag_name: "link", rel: "canonical", href: Discover::CanonicalUrlPresenter.canonical_url(params), head_key: "canonical")
+      set_meta_tag(property: "og:url", content: Discover::CanonicalUrlPresenter.canonical_url(params))
 
       if !params[:taxonomy].present? && !params[:query].present? && params[:tags].present?
         presenter = Discover::TagPageMetaPresenter.new(params[:tags], search_results[:total])
