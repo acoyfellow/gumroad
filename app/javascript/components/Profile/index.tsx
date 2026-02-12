@@ -5,7 +5,7 @@ import GuidGenerator from "$app/utils/guid_generator";
 
 import AutoLink from "$app/components/AutoLink";
 import { EditProfile, Props as EditProps } from "$app/components/Profile/EditPage";
-import { FollowFormBlock } from "$app/components/Profile/FollowForm";
+import { FollowUserFormBlock } from "$app/components/Profile/FollowUserForm";
 import { Layout } from "$app/components/Profile/Layout";
 import { PageProps as SectionsProps, Section, SectionLayout } from "$app/components/Profile/Sections";
 import { Tabs as UITabs, Tab as UITab } from "$app/components/ui/Tabs";
@@ -85,7 +85,7 @@ const PublicProfile = (props: Props) => {
         sections.map((section) => <Section key={section.id} section={section} {...props} />)
       ) : (
         <SectionLayout className="grid flex-1">
-          <FollowFormBlock creatorProfile={props.creator_profile} />
+          <FollowUserFormBlock creatorProfile={props.creator_profile} />
         </SectionLayout>
       )}
     </>

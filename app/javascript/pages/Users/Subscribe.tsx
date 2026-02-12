@@ -4,7 +4,7 @@ import { cast } from "ts-safe-cast";
 
 import { CreatorProfile } from "$app/parsers/profile";
 
-import { FollowFormBlock } from "$app/components/Profile/FollowForm";
+import { FollowUserFormBlock } from "$app/components/Profile/FollowUserForm";
 import { Layout } from "$app/components/Profile/Layout";
 
 type SubscribePageProps = {
@@ -15,7 +15,7 @@ export default function UsersSubscribe() {
   const { creator_profile } = cast<SubscribePageProps>(usePage().props);
   return (
     <Layout hideFollowForm creatorProfile={creator_profile}>
-      <FollowFormBlock creatorProfile={creator_profile} className="px-4" />
+      <FollowUserFormBlock creatorProfile={creator_profile} className="px-4" />
     </Layout>
   );
 }

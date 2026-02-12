@@ -6,11 +6,10 @@ import { NavigationButton } from "$app/components/Button";
 import { CartNavigationButton } from "$app/components/Checkout/CartNavigationButton";
 import { useCartItemsCount } from "$app/components/Checkout/useCartItemsCount";
 import { Icon } from "$app/components/Icons";
+import { FollowForm } from "$app/components/Profile/FollowForm";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { PoweredByFooter } from "$app/components/PoweredByFooter";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
-
-const FollowForm = React.lazy(() => import("./FollowForm").then((m) => ({ default: m.FollowForm })));
 
 type LayoutProps = {
   creatorProfile: CreatorProfile;
@@ -60,9 +59,7 @@ export const Layout = ({ creatorProfile, hideFollowForm, children }: LayoutProps
           </div>
           {!hideFollowForm ? (
             <div className="flex basis-full items-center gap-3 border-b border-border px-4 py-8 lg:basis-auto lg:border-0 lg:p-0">
-              <React.Suspense fallback={null}>
-                <FollowForm creatorProfile={creatorProfile} />
-              </React.Suspense>
+              <FollowForm creatorProfile={creatorProfile} />
             </div>
           ) : null}
           {isDesktop ? headerButtons : null}
