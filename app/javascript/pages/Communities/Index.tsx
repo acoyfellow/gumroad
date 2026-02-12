@@ -330,6 +330,8 @@ function CommunitiesIndex() {
             return;
           }
           updateCommunityDraft(selectedCommunity.id, { content: "", isSending: false });
+            scrollTo({ target: "bottom" });
+            setShowScrollToBottomButton(false);
         },
         onError: () => {
           updateCommunityDraft(selectedCommunity.id, { isSending: false });
