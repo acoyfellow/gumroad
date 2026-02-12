@@ -1,7 +1,7 @@
 import cx from "classnames";
 import * as React from "react";
 
-import { followSeller } from "../../data/follow_seller";
+import { followSeller } from "$app/data/follow_seller";
 import { CreatorProfile } from "$app/parsers/profile";
 import { classNames } from "$app/utils/classNames";
 import { isValidEmail } from "$app/utils/email";
