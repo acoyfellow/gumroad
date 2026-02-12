@@ -45,7 +45,6 @@ export const Search = ({ query, setQuery }: { query?: string | undefined; setQue
     );
   };
 
-  // Track deleted searches locally for optimistic UI updates
   const [deletedSearches, setDeletedSearches] = React.useState<string[]>([]);
 
   const deleteRecentSearch = (searchQuery: string) => {
