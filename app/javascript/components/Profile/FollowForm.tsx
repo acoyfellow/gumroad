@@ -87,7 +87,9 @@ export const FollowFormBlock = ({
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-16">
       <h1>Subscribe to receive email updates from {creatorProfile.name}.</h1>
       <div className="max-w-lg">
-        <FollowForm creatorProfile={creatorProfile} buttonColor="primary" />
+        <React.Suspense fallback={null}>
+          <FollowForm creatorProfile={creatorProfile} buttonColor="primary" />
+        </React.Suspense>
       </div>
     </div>
   </div>

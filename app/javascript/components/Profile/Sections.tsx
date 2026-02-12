@@ -20,7 +20,9 @@ import { Product, Props as ProductProps } from "$app/components/Product";
 import { CardGrid, useSearchReducer } from "$app/components/Product/CardGrid";
 import { CoffeeProduct } from "$app/components/Product/CoffeeProduct";
 import { PriceSelection } from "$app/components/Product/ConfigurationSelector";
-import { FollowForm } from "$app/components/Profile/FollowForm";
+const FollowForm = React.lazy(() =>
+  import("$app/components/Profile/FollowForm").then((m) => ({ default: m.FollowForm })),
+);
 import { useRichTextEditor } from "$app/components/RichTextEditor";
 import { CardContent } from "$app/components/ui/Card";
 import { useUserAgentInfo } from "$app/components/UserAgent";
@@ -85,7 +87,9 @@ export const SubscribeView = ({
   buttonLabel: string;
 }) => (
   <div style={{ maxWidth: "500px" }}>
-    <FollowForm creatorProfile={creatorProfile} buttonLabel={buttonLabel} buttonColor="primary" />
+    <React.Suspense fallback={null}>
+      <FollowForm creatorProfile={creatorProfile} buttonLabel={buttonLabel} buttonColor="primary" />
+    </React.Suspense>
   </div>
 );
 
