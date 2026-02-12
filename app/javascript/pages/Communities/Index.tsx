@@ -218,7 +218,6 @@ function CommunitiesIndex() {
           { message_id: messageId },
           {
             preserveScroll: true,
-            preserveState: true,
             async: true,
             only: ["communities"],
             onSuccess: () => {
@@ -318,7 +317,6 @@ function CommunitiesIndex() {
       Routes.community_chat_messages_path(selectedCommunity.id),
       { community_chat_message: { content: selectedCommunityDraft.content } },
       {
-        preserveState: true,
         preserveScroll: true,
         only: [],
         onSuccess: (page) => {
@@ -468,7 +466,6 @@ function CommunitiesIndex() {
           Routes.community_chat_message_path(communityId, messageId),
           { community_chat_message: { content } },
           {
-            preserveState: true,
             preserveScroll: true,
             only: [],
             onSuccess: (page) => {
@@ -706,7 +703,6 @@ const NotificationsSettingsModal = ({
 
   const saveNotificationSettings = () => {
     form.put(Routes.community_notification_settings_path(community.id), {
-      preserveState: true,
       preserveScroll: true,
       onSuccess: () => {
         onClose();
