@@ -315,7 +315,12 @@ function CommunitiesIndex() {
 
     updateCommunityDraft(selectedCommunity.id, { isSending: true });
 
-    messageForm.setData("community_chat_message.content", selectedCommunityDraft.content);
+    messageForm.transform(() => ({
+      community_chat_message: {
+        content: selectedCommunityDraft.content,
+      },
+    }));
+
     messageForm.post(Routes.community_chat_messages_path(selectedCommunity.id), {
       preserveScroll: true,
       only: [],
