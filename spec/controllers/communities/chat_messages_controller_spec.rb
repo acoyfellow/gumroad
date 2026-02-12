@@ -154,6 +154,8 @@ describe Communities::ChatMessagesController do
         end.not_to change { CommunityChatMessage.count }
 
         expect(response).to redirect_to(community_path(seller.external_id, community.external_id))
+        expect(flash[:alert]).to include("Content can't be blank")
+        expect(flash[:alert]).to include("Content is too short (minimum is 1 character)")
       end
     end
   end
@@ -233,6 +235,8 @@ describe Communities::ChatMessagesController do
         end.not_to change { message.reload }
 
         expect(response).to redirect_to(community_path(seller.external_id, community.external_id))
+        expect(flash[:alert]).to include("Content can't be blank")
+        expect(flash[:alert]).to include("Content is too short (minimum is 1 character)")
       end
 
       it "does not allow updating other's message" do

@@ -305,6 +305,8 @@ function CommunitiesIndex() {
     }));
   }, []);
 
+  const messageForm = useForm({ community_chat_message: { content: "" } });
+
   const sendMessage = () => {
     if (!selectedCommunity) return;
     if (!selectedCommunityDraft) return;
@@ -313,30 +315,19 @@ function CommunitiesIndex() {
 
     updateCommunityDraft(selectedCommunity.id, { isSending: true });
 
-    router.post(
-      Routes.community_chat_messages_path(selectedCommunity.id),
-      { community_chat_message: { content: selectedCommunityDraft.content } },
-      {
-        preserveScroll: true,
-        only: [],
-        onSuccess: (page) => {
-          const errors = cast<{ errors?: Record<string, string> }>(page.props).errors;
-          if (errors && Object.keys(errors).length > 0) {
-            const errorMessage = Object.values(errors)[0];
-            showAlert(errorMessage || "Failed to send message.", "error");
-            updateCommunityDraft(selectedCommunity.id, { isSending: false });
-            return;
-          }
-          updateCommunityDraft(selectedCommunity.id, { content: "", isSending: false });
-            scrollTo({ target: "bottom" });
-            setShowScrollToBottomButton(false);
-        },
-        onError: () => {
-          updateCommunityDraft(selectedCommunity.id, { isSending: false });
-          showAlert("Failed to send message.", "error");
-        },
+    messageForm.setData("community_chat_message.content", selectedCommunityDraft.content);
+    messageForm.post(Routes.community_chat_messages_path(selectedCommunity.id), {
+      preserveScroll: true,
+      only: [],
+      onSuccess: () => {
+        updateCommunityDraft(selectedCommunity.id, { content: "", isSending: false });
+        scrollTo({ target: "bottom" });
+        setShowScrollToBottomButton(false);
       },
-    );
+      onError: () => {
+        updateCommunityDraft(selectedCommunity.id, { isSending: false });
+      },
+    });
   };
 
   const loggedInUser = assertDefined(useCurrentSeller());
@@ -468,18 +459,8 @@ function CommunitiesIndex() {
           {
             preserveScroll: true,
             only: [],
-            onSuccess: (page) => {
-              const errors = cast<{ errors?: Record<string, string> }>(page.props).errors;
-              if (errors && Object.keys(errors).length > 0) {
-                const errorMessage = Object.values(errors)[0];
-                showAlert(errorMessage || "Failed to update message.", "error");
-                reject(new Error(errorMessage));
-                return;
-              }
-              resolve();
-            },
+            onSuccess: () => resolve(),
             onError: () => {
-              showAlert("Failed to update message.", "error");
               reject(new Error("Failed to update message."));
             },
           },
@@ -668,6 +649,7 @@ function CommunitiesIndex() {
                   onSend={sendMessage}
                   ref={chatMessageInputRef}
                   onHeightChange={setChatMessageInputHeight}
+                  errors={messageForm.errors}
                 />
               </div>
             </div>
