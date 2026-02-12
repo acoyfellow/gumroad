@@ -38,15 +38,15 @@ describe Communities::LastReadChatMessagesController do
       end
 
       it "raises error when community is not found" do
-        expect {
+        expect do
           post :create, params: { community_id: "nonexistent", message_id: "message123" }
-        }.to raise_error(ActiveRecord::RecordNotFound)
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
 
       it "raises error when message is not found" do
-        expect {
+        expect do
           post :create, params: { community_id: community.external_id, message_id: "nonexistent" }
-        }.to raise_error(ActiveRecord::RecordNotFound)
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
 
       it "marks a message as read and redirects" do
