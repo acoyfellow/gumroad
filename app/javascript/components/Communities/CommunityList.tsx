@@ -1,10 +1,9 @@
+import { Link } from "@inertiajs/react";
 import cx from "classnames";
 import * as React from "react";
-import { Link } from "react-router-dom";
 
 import { Community } from "$app/data/communities";
-
-import { scrollTo } from "./CommunityView";
+import { scrollTo } from "$app/pages/Communities/Index";
 
 export const CommunityList = ({
   communities,
@@ -24,19 +23,24 @@ export const CommunityList = ({
       return (
         <Link
           key={community.id}
-          to={`/communities/${community.seller.id}/${community.id}`}
-          aria-selected={isCommunitySelected}
+          href={Routes.community_path(community.seller.id, community.id)}
+          preserveState
+          preserveScroll
           onClick={(e) => {
             if (isCommunitySelected) {
               e.preventDefault();
               scrollTo({ target: community.unread_count > 0 ? "unread-separator" : "bottom" });
             }
-            if (!isAboveBreakpoint) setSidebarOpen(false);
+
+            if (!isAboveBreakpoint) {
+              setSidebarOpen(false);
+            }
           }}
           className={cx("flex items-center gap-2 p-2 no-underline", {
             "bg-black text-white": isCommunitySelected,
             "hover:bg-black/5 hover:text-black dark:hover:bg-white/5 dark:hover:text-white": !isCommunitySelected,
           })}
+          aria-selected={isCommunitySelected ? "true" : "false"}
         >
           <figure className="shrink-0">
             <img

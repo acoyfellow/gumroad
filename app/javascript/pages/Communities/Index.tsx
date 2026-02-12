@@ -1,28 +1,22 @@
 import { Channel } from "@anycable/web";
+import { InfiniteScroll, router, useForm, usePage } from "@inertiajs/react";
 import cx from "classnames";
 import { debounce } from "lodash-es";
 import * as React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { is } from "ts-safe-cast";
+import { cast, is } from "ts-safe-cast";
 
 import cable from "$app/channels/consumer";
-import {
-  Community,
-  CommunityChatMessage,
-  createCommunityChatMessage,
-  getCommunityChatMessages,
-  Seller,
-  markCommunityChatMessagesAsRead,
-  updateCommunityChatMessage,
-  deleteCommunityChatMessage,
-  NotificationSettings,
-  updateCommunityNotificationSettings,
-} from "$app/data/communities";
+import { Community, CommunityChatMessage, Seller, NotificationSettings } from "$app/data/communities";
 import { assertDefined } from "$app/utils/assert";
-import { asyncVoid } from "$app/utils/promise";
-import { AbortError } from "$app/utils/request";
 
 import { Button, NavigationButton } from "$app/components/Button";
+import { ChatMessageInput } from "$app/components/Communities/ChatMessageInput";
+import { ChatMessageList } from "$app/components/Communities/ChatMessageList";
+import { CommunityList } from "$app/components/Communities/CommunityList";
+import { ScrollToBottomButton } from "$app/components/Communities/ScrollToBottomButton";
+import { DateSeparator } from "$app/components/Communities/Separator";
+import { useCommunities } from "$app/components/Communities/useCommunities";
+import { UserAvatar } from "$app/components/Communities/UserAvatar";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { Icon } from "$app/components/Icons";
 import { Modal } from "$app/components/Modal";
@@ -33,14 +27,6 @@ import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
 import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
 import { useRunOnce } from "$app/components/useRunOnce";
-
-import { ChatMessageInput } from "./ChatMessageInput";
-import { ChatMessageList } from "./ChatMessageList";
-import { CommunityList } from "./CommunityList";
-import { ScrollToBottomButton } from "./ScrollToBottomButton";
-import { DateSeparator } from "./Separator";
-import { useCommunities } from "./useCommunities";
-import { UserAvatar } from "./UserAvatar";
 
 import placeholderImage from "$assets/images/placeholders/community.png";
 
@@ -59,11 +45,7 @@ type OutgoingUserChannelMessage = { type: "latest_community_info"; community_id:
 
 export const CommunityViewContext = React.createContext<{
   markMessageAsRead: (message: CommunityChatMessage) => void;
-  updateMessage: (
-    messageId: string,
-    communityId: string,
-    message: string,
-  ) => Promise<{ message: CommunityChatMessage }>;
+  updateMessage: (messageId: string, communityId: string, message: string) => Promise<void>;
   deleteMessage: (messageId: string, communityId: string) => Promise<void>;
 }>({
   markMessageAsRead: () => {},
@@ -91,111 +73,187 @@ export const scrollTo = (
   el?.scrollIntoView({ behavior: "auto", block: position });
 };
 
-const getComparedTimestamp = (
-  prevTimestamp: string | null,
-  newTimestamp: string | null,
-  comparisonFn: (a: number, b: number) => number,
-): string | null => {
-  if (!prevTimestamp || !newTimestamp) {
-    return newTimestamp === null ? null : newTimestamp;
-  }
+interface PageProps {
+  messages?: CommunityChatMessage[];
+}
 
-  const timestampToISOString = new Map<number, string>();
-  const prevTime = new Date(prevTimestamp).getTime();
-  const newTime = new Date(newTimestamp).getTime();
+interface ScrollMeta {
+  previousPage: string | null;
+}
 
-  timestampToISOString.set(prevTime, prevTimestamp);
-  timestampToISOString.set(newTime, newTimestamp);
-
-  const resultTime = comparisonFn(prevTime, newTime);
-  return assertDefined(timestampToISOString.get(resultTime));
-};
-
-export const CommunityView = () => {
+function CommunitiesIndex() {
   const currentSeller = useCurrentSeller();
+
   const isAboveBreakpoint = useIsAboveBreakpoint("lg");
-  const navigate = useNavigate();
-  const location = useLocation();
   const {
     hasProducts,
     communities,
     notificationSettings,
     selectedCommunity,
     selectedCommunityDraft,
-    selectedCommunityChat,
-    setSelectedCommunityId,
-    setNotificationSettings,
     updateCommunity,
     updateCommunityDraft,
-    updateCommunityChat,
   } = useCommunities();
   const [switcherOpen, setSwitcherOpen] = React.useState(false);
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
-  const activeFetchMessageRequest = React.useRef<{ cancel: () => void } | null>(null);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+
   const chatContainerRef = React.useRef<HTMLDivElement>(null);
   const [scrollToMessage, setScrollToMessage] = React.useState<{
     id: string;
     position?: ScrollLogicalPosition;
   } | null>(null);
   const [stickyDate, setStickyDate] = React.useState<string | null>(null);
-  const activeMarkAsReadRequest = React.useRef<{ cancel: () => void } | null>(null);
   const chatMessageInputRef = React.useRef<HTMLTextAreaElement>(null);
   const [showScrollToBottomButton, setShowScrollToBottomButton] = React.useState(false);
   const communityChannelsRef = React.useRef<Record<string, Channel>>({});
   const userChannelRef = React.useRef<Channel | null>(null);
+  const selectedCommunityRef = React.useRef(selectedCommunity);
+  selectedCommunityRef.current = selectedCommunity;
   const [chatMessageInputHeight, setChatMessageInputHeight] = React.useState(0);
   const [showNotificationsSettings, setShowNotificationsSettings] = React.useState(false);
+  const [localMessages, setLocalMessages] = React.useState<Record<string, CommunityChatMessage[]>>({});
+  const [deletedMessageIds, setDeletedMessageIds] = React.useState<Set<string>>(new Set());
+
+  const pageProps = cast<PageProps>(usePage().props);
+  const pageMessages = pageProps.messages ?? [];
+  const localMsgs = localMessages[selectedCommunity?.id ?? ""] ?? [];
+
+  const allMessages = React.useMemo(() => {
+    const map = new Map<string, CommunityChatMessage>();
+    pageMessages.forEach((m) => {
+      if (!deletedMessageIds.has(m.id)) {
+        map.set(m.id, m);
+      }
+    });
+    localMsgs.forEach((m) => {
+      if (!deletedMessageIds.has(m.id)) {
+        const existing = map.get(m.id);
+        if (!existing || new Date(existing.updated_at) < new Date(m.updated_at)) {
+          map.set(m.id, m);
+        }
+      }
+    });
+    return [...map.values()].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  }, [pageMessages, localMsgs, deletedMessageIds]);
+
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- scrollProps is added by InfiniteScroll
+  const scrollMeta = (usePage() as { scrollProps?: { messages?: ScrollMeta } }).scrollProps?.messages;
+  const hasOlderMessages = scrollMeta ? scrollMeta.previousPage != null : true;
+
+  // Workaround: Inertia InfiniteScroll scroll restoration bug when prepending messages.
+  // MutationObserver adjusts scroll immediately; scrollTo intercept blocks stale framework offset.
+  React.useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    let prevScrollHeight = container.scrollHeight;
+    let prevScrollTop = container.scrollTop;
+
+    const onScroll = () => {
+      prevScrollTop = container.scrollTop;
+      prevScrollHeight = container.scrollHeight;
+    };
+    container.addEventListener("scroll", onScroll, { passive: true });
+
+    const mutationObserver = new MutationObserver(() => {
+      const newScrollHeight = container.scrollHeight;
+      const heightDiff = newScrollHeight - prevScrollHeight;
+
+      if (heightDiff > 0 && prevScrollTop < 200) {
+        container.scrollTop = prevScrollTop + heightDiff;
+      }
+
+      prevScrollHeight = newScrollHeight;
+      prevScrollTop = container.scrollTop;
+    });
+
+    mutationObserver.observe(container, { childList: true, subtree: true });
+
+    const originalScrollTo = container.scrollTo.bind(container);
+    /* eslint-disable @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access */
+    (container as any).scrollTo = function (...args: any[]) {
+      const current = container.scrollTop;
+      const opt = args[0] as ScrollToOptions | undefined;
+      const targetTop = typeof args[0] === "number" ? (args[1] as number) : opt?.top;
+      if (targetTop !== undefined && (targetTop < 0 || (current > 500 && targetTop < 100))) {
+        return;
+      }
+      return originalScrollTo(...(args as [ScrollToOptions]));
+    };
+    /* eslint-enable @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access */
+
+    return () => {
+      mutationObserver.disconnect();
+      container.removeEventListener("scroll", onScroll);
+      container.scrollTo = originalScrollTo;
+    };
+  }, [selectedCommunity?.id]);
+
+  const sendMessageToUserChannel = useDebouncedCallback((msg: OutgoingUserChannelMessage) => {
+    const userChannelState = userChannelRef.current?.state;
+    if (userChannelState === "connected" || userChannelState === "idle") {
+      userChannelRef.current?.send(msg).catch((e: unknown) => {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      });
+    }
+  }, 100);
 
   React.useEffect(() => {
     if (selectedCommunity) {
-      const searchParams = new URLSearchParams(location.search);
+      const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.has("notifications")) {
-        searchParams.delete("notifications");
-        const newSearch = searchParams.toString() ? `?${searchParams.toString()}` : "";
-        navigate(`${location.pathname}${newSearch}${location.hash}`, { replace: true });
+        router.reload({ only: [], replace: true });
         setShowNotificationsSettings(true);
       }
     }
-  }, [selectedCommunity, location, navigate]);
+  }, [selectedCommunity]);
 
   const debouncedMarkAsRead = React.useMemo(
     () =>
       debounce((communityId: string, messageId: string, messageCreatedAt: string) => {
         if (!communityId || !messageId) return;
-        activeMarkAsReadRequest.current?.cancel();
-        const request = markCommunityChatMessagesAsRead({ communityId, messageId });
-        activeMarkAsReadRequest.current = request;
-        request.response
-          .then((response) => {
-            updateCommunity(communityId, {
-              unread_count: response.unread_count,
-              last_read_community_chat_message_created_at: messageCreatedAt,
-            });
-          })
-          .catch((e: unknown) => {
-            if (!(e instanceof AbortError))
-              showAlert("Failed to mark the message as read. Please try again later.", "error");
-          });
+        router.post(
+          Routes.community_last_read_chat_message_path(communityId),
+          { message_id: messageId },
+          {
+            preserveScroll: true,
+            async: true,
+            only: ["communities"],
+            onSuccess: () => {
+              updateCommunity(communityId, {
+                last_read_community_chat_message_created_at: messageCreatedAt,
+              });
+              sendMessageToUserChannel({ type: "latest_community_info", community_id: communityId });
+            },
+          },
+        );
       }, 500),
-    [],
+    [updateCommunity, sendMessageToUserChannel],
+  );
+
+  React.useEffect(
+    () => () => {
+      debouncedMarkAsRead.cancel();
+    },
+    [debouncedMarkAsRead],
   );
 
   const markMessageAsRead = React.useCallback(
     (message: CommunityChatMessage) => {
       if (!selectedCommunity) return;
 
-      // Only mark as read if the message is newer than the last read message
       if (new Date(message.created_at) <= new Date(selectedCommunity.last_read_community_chat_message_created_at ?? 0))
         return;
 
       debouncedMarkAsRead(selectedCommunity.id, message.id, message.created_at);
     },
-    [selectedCommunity, debouncedMarkAsRead],
+    [selectedCommunity?.id, debouncedMarkAsRead],
   );
 
   React.useEffect(() => {
-    if (!selectedCommunityChat || !scrollToMessage) return;
-    const exists = selectedCommunityChat.messages.findIndex((message) => message.id === scrollToMessage.id) !== -1;
+    if (!scrollToMessage) return;
+    const exists = allMessages.findIndex((message) => message.id === scrollToMessage.id) !== -1;
     if (exists && chatContainerRef.current) {
       scrollTo({
         target: "message",
@@ -204,167 +262,52 @@ export const CommunityView = () => {
       });
       setScrollToMessage(null);
     }
-  }, [scrollToMessage, selectedCommunityChat]);
+  }, [scrollToMessage, allMessages]);
 
   React.useEffect(() => {
     if (!sidebarOpen) setSidebarOpen(true);
   }, [isAboveBreakpoint]);
 
-  const fetchMessages = async (
-    communityId: string,
-    { timestamp, fetchType }: { timestamp: string; fetchType: "older" | "newer" | "around" },
-    replace = false,
-  ) => {
-    activeFetchMessageRequest.current?.cancel();
-    if (selectedCommunityChat?.isLoading) return;
-    updateCommunityChat(communityId, { isLoading: true }, { messagesUpdateStrategy: "merge" });
-
-    try {
-      const request = getCommunityChatMessages({ communityId, timestamp, fetchType });
-      activeFetchMessageRequest.current = request;
-      const data = await request.response;
-
-      if (replace) {
-        updateCommunityChat(
-          communityId,
-          {
-            messages: data.messages,
-            nextOlderTimestamp: data.next_older_timestamp,
-            nextNewerTimestamp: data.next_newer_timestamp,
-            isLoading: false,
-          },
-          { messagesUpdateStrategy: "replace" },
-        );
-      } else {
-        updateCommunityChat(
-          communityId,
-          (prev) => {
-            let nextOlderTimestamp = prev.nextOlderTimestamp;
-            let nextNewerTimestamp = prev.nextNewerTimestamp;
-            if (fetchType === "older" || fetchType === "around") {
-              nextOlderTimestamp = getComparedTimestamp(nextOlderTimestamp, data.next_older_timestamp, Math.min);
-            }
-            if (fetchType === "newer" || fetchType === "around") {
-              nextNewerTimestamp = getComparedTimestamp(nextNewerTimestamp, data.next_newer_timestamp, Math.max);
-            }
-
-            return {
-              messages: data.messages,
-              nextOlderTimestamp,
-              nextNewerTimestamp,
-              isLoading: false,
-            };
-          },
-          { messagesUpdateStrategy: "merge" },
-        );
-      }
-
-      if (data.messages.length > 0 && (fetchType === "older" || fetchType === "newer")) {
-        if (selectedCommunityChat) {
-          const messages = (replace ? data.messages : selectedCommunityChat.messages).sort(
-            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-          );
-          let id;
-          let position: ScrollLogicalPosition = "nearest";
-          if (fetchType === "older") {
-            if (replace) {
-              id = messages[messages.length - 1]?.id;
-              position = "end";
-            } else {
-              id = messages[0]?.id;
-              position = "start";
-            }
-          } else {
-            id = messages[messages.length - 1]?.id;
-            position = "end";
-          }
-          setScrollToMessage(id ? { id, position } : null);
-        }
-      }
-
-      return data;
-    } catch (_error: unknown) {
-      updateCommunityChat(communityId, { isLoading: false }, { messagesUpdateStrategy: "merge" });
-    }
-  };
-
   const handleScroll = useDebouncedCallback(() => {
     if (!chatContainerRef.current || !selectedCommunity) return;
-
-    const container = chatContainerRef.current;
-    const { scrollTop, scrollHeight, clientHeight } = container;
-
-    if (!selectedCommunityChat) return;
-
-    // Check if we should show the scroll to bottom button
-    const scrollPosition = scrollTop + clientHeight;
-    const isNearBottom = scrollHeight - scrollPosition < 50;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
     setShowScrollToBottomButton(!isNearBottom);
-
-    // When scrolling near the top, load older messages
-    if (scrollTop < 100) {
-      if (selectedCommunityChat.nextOlderTimestamp && !selectedCommunityChat.isLoading) {
-        fetchMessages(selectedCommunity.id, {
-          timestamp: selectedCommunityChat.nextOlderTimestamp,
-          fetchType: "older",
-        }).catch((e: unknown) => {
-          if (!(e instanceof AbortError)) showAlert("Failed to load older messages. Please try again later.", "error");
-        });
-      }
-    }
-
-    // When scrolling near the bottom, load newer messages
-    if (scrollHeight - scrollTop - clientHeight < 100) {
-      if (selectedCommunityChat.nextNewerTimestamp && !selectedCommunityChat.isLoading) {
-        fetchMessages(selectedCommunity.id, {
-          timestamp: selectedCommunityChat.nextNewerTimestamp,
-          fetchType: "newer",
-        }).catch((e: unknown) => {
-          if (!(e instanceof AbortError)) showAlert("Failed to load newer messages. Please try again later.", "error");
-        });
-      }
-    }
   }, 100);
 
-  React.useEffect(() => {
-    const chatContainer = chatContainerRef.current;
-    if (chatContainer) {
-      chatContainer.addEventListener("scroll", handleScroll);
-      return () => {
-        chatContainer.removeEventListener("scroll", handleScroll);
-      };
-    }
-  }, [handleScroll]);
+  const insertOrUpdateMessage = React.useCallback((message: CommunityChatMessage, isUpdate = false) => {
+    setLocalMessages((prev) => {
+      const communityMsgs = [...(prev[message.community_id] ?? [])];
+      const idx = communityMsgs.findIndex((m) => m.id === message.id);
+      if (idx !== -1) {
+        communityMsgs[idx] = message;
+      } else {
+        communityMsgs.push(message);
+      }
+      return { ...prev, [message.community_id]: communityMsgs };
+    });
 
-  const insertOrUpdateMessage = (message: CommunityChatMessage, isUpdate = false) => {
-    updateCommunityChat(message.community_id, { messages: [message] }, { messagesUpdateStrategy: "merge" });
+    if (selectedCommunityRef.current?.id !== message.community_id || isUpdate) return;
 
-    if (selectedCommunity?.id !== message.community_id || isUpdate) return;
-
-    // Scroll to the message if user is near bottom
     if (chatContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-      const scrollPosition = scrollTop + clientHeight;
-      const isNearBottom = scrollHeight - scrollPosition < 200;
-
-      if (isNearBottom) {
+      if (scrollHeight - scrollTop - clientHeight < 200) {
         setScrollToMessage({ id: message.id, position: "start" });
       }
     }
-  };
+  }, []);
 
-  const removeMessage = (messageId: string, communityId: string) => {
-    updateCommunityChat(
-      communityId,
-      (prev) => ({
-        ...prev,
-        messages: prev.messages.filter((message) => message.id !== messageId),
-      }),
-      { messagesUpdateStrategy: "replace" },
-    );
-  };
+  const removeMessage = React.useCallback((messageId: string, communityId: string) => {
+    setDeletedMessageIds((prev) => new Set(prev).add(messageId));
+    setLocalMessages((prev) => ({
+      ...prev,
+      [communityId]: (prev[communityId] ?? []).filter((m) => m.id !== messageId),
+    }));
+  }, []);
 
-  const sendMessage = async () => {
+  const messageForm = useForm({ community_chat_message: { content: "" } });
+
+  const sendMessage = () => {
     if (!selectedCommunity) return;
     if (!selectedCommunityDraft) return;
     if (selectedCommunityDraft.isSending) return;
@@ -372,17 +315,24 @@ export const CommunityView = () => {
 
     updateCommunityDraft(selectedCommunity.id, { isSending: true });
 
-    const request = createCommunityChatMessage({
-      communityId: selectedCommunity.id,
-      content: selectedCommunityDraft.content,
+    messageForm.transform(() => ({
+      community_chat_message: {
+        content: selectedCommunityDraft.content,
+      },
+    }));
+
+    messageForm.post(Routes.community_chat_messages_path(selectedCommunity.id), {
+      preserveScroll: true,
+      only: [],
+      onSuccess: () => {
+        updateCommunityDraft(selectedCommunity.id, { content: "", isSending: false });
+        scrollTo({ target: "bottom" });
+        setShowScrollToBottomButton(false);
+      },
+      onError: () => {
+        updateCommunityDraft(selectedCommunity.id, { isSending: false });
+      },
     });
-    try {
-      const data = await request.response;
-      updateCommunityDraft(selectedCommunity.id, { content: "", isSending: false });
-      insertOrUpdateMessage(data.message);
-    } catch (_error: unknown) {
-      updateCommunityDraft(selectedCommunity.id, { isSending: false });
-    }
   };
 
   const loggedInUser = assertDefined(useCurrentSeller());
@@ -408,15 +358,16 @@ export const CommunityView = () => {
     return () => channel.disconnect();
   }, [cable, loggedInUser]);
 
-  const sendMessageToUserChannel = useDebouncedCallback((msg: OutgoingUserChannelMessage) => {
-    const userChannelState = userChannelRef.current?.state;
-    if (userChannelState === "connected" || userChannelState === "idle") {
-      userChannelRef.current?.send(msg).catch((e: unknown) => {
-        // eslint-disable-next-line no-console
-        console.error(e);
+  React.useEffect(
+    () => () => {
+      Object.values(communityChannelsRef.current).forEach((channel) => {
+        if (channel.state !== "disconnected" && channel.state !== "closed") {
+          channel.disconnect();
+        }
       });
-    }
-  }, 100);
+    },
+    [],
+  );
 
   React.useEffect(() => {
     communities.forEach((community) => {
@@ -430,69 +381,31 @@ export const CommunityView = () => {
         if (is<IncomingCommunityChannelMessage>(msg)) {
           if (msg.type === "create_chat_message") {
             if (msg.message.community_id === community.id) {
-              if (community.id === selectedCommunity?.id) {
-                insertOrUpdateMessage(msg.message);
-              } else {
-                // Reset the community chat to force a reload of the messages when switching to a non-selected community with unread messages
-                updateCommunityChat(
-                  community.id,
-                  { messages: [], nextOlderTimestamp: null, nextNewerTimestamp: null },
-                  { messagesUpdateStrategy: "replace" },
-                );
-              }
+              insertOrUpdateMessage(msg.message);
             }
-
             sendMessageToUserChannel({ type: "latest_community_info", community_id: community.id });
           } else if (msg.type === "update_chat_message") {
-            if (msg.message.community_id === community.id && community.id === selectedCommunity?.id) {
+            if (msg.message.community_id === community.id) {
               insertOrUpdateMessage(msg.message, true);
             }
           } else if (msg.message.community_id === community.id) {
-            if (community.id === selectedCommunity?.id) {
-              removeMessage(msg.message.id, community.id);
-            }
+            removeMessage(msg.message.id, community.id);
             sendMessageToUserChannel({ type: "latest_community_info", community_id: community.id });
           }
         }
       });
     });
-
-    return () => {
-      Object.values(communityChannelsRef.current).forEach((channel) => {
-        if (channel.state !== "disconnected" && channel.state !== "closed") {
-          channel.disconnect();
-        }
-      });
-    };
-  }, [cable, selectedCommunity]);
+  }, [cable, communities, insertOrUpdateMessage, removeMessage, sendMessageToUserChannel]);
 
   React.useEffect(() => {
-    if (selectedCommunity) {
-      const communityMessages = selectedCommunityChat?.messages || [];
-      const lastReadMessageCreatedAt = selectedCommunity.last_read_community_chat_message_created_at;
-      const shouldFetchMessages =
-        communityMessages.length === 0 ||
-        (communityMessages.length > 0 &&
-          lastReadMessageCreatedAt &&
-          communityMessages.findIndex((message) => message.created_at === lastReadMessageCreatedAt) === -1);
-      if (shouldFetchMessages) {
-        fetchMessages(selectedCommunity.id, {
-          fetchType: "around",
-          timestamp: lastReadMessageCreatedAt ?? new Date(0).toISOString(),
-        }).catch((e: unknown) => {
-          if (!(e instanceof AbortError)) showAlert("Failed to load messages. Please try again later.", "error");
-        });
-      }
-    }
-  }, [selectedCommunity]);
-
-  React.useEffect(() => chatMessageInputRef.current?.focus(), [selectedCommunity?.id]);
+    chatMessageInputRef.current?.focus();
+    setDeletedMessageIds(new Set());
+  }, [selectedCommunity?.id]);
 
   const switchSeller = (sellerId: string) => {
     const community = communities.find((community) => community.seller.id === sellerId);
     if (community) {
-      setSelectedCommunityId(community.id);
-      navigate(`/communities/${community.seller.id}/${community.id}`);
+      router.get(Routes.community_path(community.seller.id, community.id), {}, { preserveScroll: true });
       setSwitcherOpen(false);
     }
   };
@@ -517,7 +430,8 @@ export const CommunityView = () => {
 
     const community = communities.find((community) => community.id === communityId);
     if (!community) return;
-    window.location.replace(`/communities/${community.seller.id}/${community.id}`);
+
+    router.get(Routes.community_path(community.seller.id, community.id), {}, { replace: true });
   });
 
   const sellers = React.useMemo(() => {
@@ -541,32 +455,43 @@ export const CommunityView = () => {
     [communities, selectedCommunity],
   );
 
-  const updateMessage = async (messageId: string, communityId: string, content: string) => {
-    const response = await updateCommunityChatMessage({
-      communityId,
-      messageId,
-      content,
-    });
-    insertOrUpdateMessage(response.message, true);
-    return response;
-  };
+  const updateMessage = React.useCallback(
+    async (messageId: string, communityId: string, content: string) =>
+      new Promise<void>((resolve, reject) => {
+        router.put(
+          Routes.community_chat_message_path(communityId, messageId),
+          { community_chat_message: { content } },
+          {
+            preserveScroll: true,
+            only: [],
+            onSuccess: () => resolve(),
+            onError: () => {
+              reject(new Error("Failed to update message."));
+            },
+          },
+        );
+      }),
+    [],
+  );
 
-  const deleteMessage = async (messageId: string, communityId: string) => {
-    const response = await deleteCommunityChatMessage({ communityId, messageId });
-    removeMessage(messageId, communityId);
-    return response;
-  };
-
-  const saveNotificationsSettings = async (community: Community, settings: NotificationSettings) => {
-    const response = await updateCommunityNotificationSettings({
-      communityId: community.id,
-      settings,
-    });
-    setNotificationSettings((prev) => ({ ...prev, [community.seller.id]: response.settings }));
-    showAlert("Changes saved!", "success");
-    setShowNotificationsSettings(false);
-    return response;
-  };
+  const deleteMessage = React.useCallback(
+    async (messageId: string, communityId: string) =>
+      new Promise<void>((resolve, reject) => {
+        router.delete(Routes.community_chat_message_path(communityId, messageId), {
+          preserveState: true,
+          preserveScroll: true,
+          only: [],
+          onSuccess: () => {
+            resolve();
+          },
+          onError: () => {
+            showAlert("Failed to delete message.", "error");
+            reject(new Error("Failed to delete message."));
+          },
+        });
+      }),
+    [],
+  );
 
   const contextValue = React.useMemo(
     () => ({ markMessageAsRead, updateMessage, deleteMessage }),
@@ -574,15 +499,7 @@ export const CommunityView = () => {
   );
 
   const scrollToBottom = () => {
-    if (selectedCommunity && selectedCommunity.unread_count > 0) {
-      fetchMessages(selectedCommunity.id, { fetchType: "older", timestamp: new Date().toISOString() }, true).catch(
-        (e: unknown) => {
-          if (!(e instanceof AbortError)) showAlert("Failed to load messages. Please try again later.", "error");
-        },
-      );
-    } else {
-      scrollTo({ target: "bottom" });
-    }
+    scrollTo({ target: "bottom" });
     setShowScrollToBottomButton(false);
   };
 
@@ -654,7 +571,9 @@ export const CommunityView = () => {
                 </div>
 
                 <button
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={() => {
+                    setSidebarOpen(false);
+                  }}
                   className={cx("flex h-8 w-8 cursor-pointer justify-center all-unset", {
                     hidden: isAboveBreakpoint,
                   })}
@@ -680,7 +599,7 @@ export const CommunityView = () => {
               />
 
               <div className="flex flex-1 overflow-auto">
-                <div ref={chatContainerRef} className="relative flex-1 overflow-y-auto">
+                <div ref={chatContainerRef} className="relative flex-1 overflow-y-auto" onScroll={handleScroll}>
                   <div
                     className={cx("sticky top-0 z-20 flex justify-center transition-opacity duration-300", {
                       "opacity-100": stickyDate,
@@ -690,15 +609,34 @@ export const CommunityView = () => {
                     {stickyDate ? <DateSeparator date={stickyDate} showDividerLine={false} /> : null}
                   </div>
 
-                  {selectedCommunityChat ? (
+                  <InfiniteScroll
+                    key={selectedCommunity.id}
+                    data="messages"
+                    preserveUrl
+                    as="div"
+                    previous={({ loading }) =>
+                      loading ? (
+                        <div className="flex justify-center py-4">
+                          <div className="text-sm text-muted">Loading older messages...</div>
+                        </div>
+                      ) : null
+                    }
+                    next={({ loading }) =>
+                      loading ? (
+                        <div className="flex justify-center py-4">
+                          <div className="text-sm text-muted">Loading newer messages...</div>
+                        </div>
+                      ) : null
+                    }
+                  >
                     <ChatMessageList
-                      key={selectedCommunity.id}
                       community={selectedCommunity}
-                      data={selectedCommunityChat}
+                      messages={allMessages}
+                      hasOlderMessages={hasOlderMessages}
                       setStickyDate={setStickyDate}
                       unreadSeparatorVisibility={showScrollToBottomButton}
                     />
-                  ) : null}
+                  </InfiniteScroll>
                   {showScrollToBottomButton ? (
                     <ScrollToBottomButton
                       hasUnreadMessages={selectedCommunity.unread_count > 0}
@@ -713,9 +651,10 @@ export const CommunityView = () => {
                 <ChatMessageInput
                   draft={selectedCommunityDraft ?? null}
                   updateDraftMessage={(content) => updateCommunityDraft(selectedCommunity.id, { content })}
-                  onSend={asyncVoid(sendMessage)}
+                  onSend={sendMessage}
                   ref={chatMessageInputRef}
                   onHeightChange={setChatMessageInputHeight}
+                  errors={messageForm.errors}
                 />
               </div>
             </div>
@@ -725,28 +664,41 @@ export const CommunityView = () => {
       {showNotificationsSettings && selectedCommunity ? (
         <NotificationsSettingsModal
           communityName={selectedCommunity.seller.name}
+          community={selectedCommunity}
           settings={notificationSettings[selectedCommunity.seller.id] ?? { recap_frequency: null }}
           onClose={() => setShowNotificationsSettings(false)}
-          onSave={(settings) => saveNotificationsSettings(selectedCommunity, settings)}
         />
       ) : null}
     </CommunityViewContext.Provider>
   );
-};
+}
 
 const NotificationsSettingsModal = ({
   communityName,
+  community,
   settings,
   onClose,
-  onSave,
 }: {
   communityName: string;
+  community: Community;
   settings: NotificationSettings;
   onClose: () => void;
-  onSave: (settings: NotificationSettings) => Promise<{ settings: NotificationSettings }>;
 }) => {
-  const [isSaving, setIsSaving] = React.useState(false);
-  const [updatedSettings, setUpdatedSettings] = React.useState<NotificationSettings>(settings);
+  const form = useForm({
+    recap_frequency: settings.recap_frequency,
+  });
+
+  const saveNotificationSettings = () => {
+    form.put(Routes.community_notification_settings_path(community.id), {
+      preserveScroll: true,
+      onSuccess: () => {
+        onClose();
+      },
+      onError: () => {
+        showAlert("Failed to save changes. Please try again later.", "error");
+      },
+    });
+  };
 
   return (
     <Modal
@@ -756,23 +708,11 @@ const NotificationsSettingsModal = ({
       title="Notifications"
       footer={
         <>
-          <Button disabled={isSaving} onClick={onClose}>
+          <Button disabled={form.processing} onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            color="primary"
-            onClick={asyncVoid(async () => {
-              setIsSaving(true);
-              try {
-                await onSave(updatedSettings);
-              } catch (_error: unknown) {
-                showAlert("Failed to save changes. Please try again later.", "error");
-              } finally {
-                setIsSaving(false);
-              }
-            })}
-          >
-            {isSaving ? "Saving..." : "Save"}
+          <Button color="primary" onClick={saveNotificationSettings} disabled={form.processing}>
+            {form.processing ? "Saving..." : "Save"}
           </Button>
         </>
       }
@@ -780,14 +720,14 @@ const NotificationsSettingsModal = ({
       <p>Receive email recaps of what's happening in "{communityName}" community.</p>
       <ToggleSettingRow
         label="Community recap"
-        value={updatedSettings.recap_frequency !== null}
-        onChange={(newValue) => setUpdatedSettings({ ...updatedSettings, recap_frequency: newValue ? "weekly" : null })}
+        value={form.data.recap_frequency !== null}
+        onChange={(newValue) => form.setData("recap_frequency", newValue ? "weekly" : null)}
         dropdown={
           <div className="radio-buttons flex! flex-col!" role="radiogroup">
             <Button
               role="radio"
-              aria-checked={updatedSettings.recap_frequency === "daily"}
-              onClick={() => setUpdatedSettings({ ...updatedSettings, recap_frequency: "daily" })}
+              aria-checked={form.data.recap_frequency === "daily"}
+              onClick={() => form.setData("recap_frequency", "daily")}
             >
               <div>
                 <h4>Daily</h4>
@@ -796,8 +736,8 @@ const NotificationsSettingsModal = ({
             </Button>
             <Button
               role="radio"
-              aria-checked={updatedSettings.recap_frequency === "weekly"}
-              onClick={() => setUpdatedSettings({ ...updatedSettings, recap_frequency: "weekly" })}
+              aria-checked={form.data.recap_frequency === "weekly"}
+              onClick={() => form.setData("recap_frequency", "weekly")}
             >
               <div>
                 <h4>Weekly</h4>
@@ -827,7 +767,9 @@ const CommunityChatHeader = ({
     <button
       className={cx("shrink-0 cursor-pointer all-unset", { hidden: isAboveBreakpoint })}
       aria-label="Open sidebar"
-      onClick={() => setSidebarOpen(true)}
+      onClick={() => {
+        setSidebarOpen(true);
+      }}
     >
       <Icon name="outline-cheveron-left" className="text-sm" />
     </button>
@@ -838,10 +780,14 @@ const CommunityChatHeader = ({
 const GoBackHeader = () => {
   const handleGoBack = (e: React.MouseEvent) => {
     e.preventDefault();
-    const referrerUrl = new URL(document.referrer.trim() !== "" ? document.referrer : Routes.dashboard_url());
-    window.location.href = referrerUrl.pathname.startsWith("/communities")
-      ? Routes.dashboard_path()
-      : referrerUrl.toString();
+    const storedReferrer = sessionStorage.getItem("communities:referrer");
+    if (storedReferrer) {
+      sessionStorage.removeItem("communities:referrer");
+      const url = new URL(storedReferrer, window.location.origin);
+      router.get(url.pathname + url.search + url.hash);
+      return;
+    }
+    router.get(Routes.dashboard_path());
   };
 
   return (
@@ -881,3 +827,7 @@ const EmptyCommunitiesPlaceholder = ({ hasProducts }: { hasProducts: boolean }) 
     </section>
   </div>
 );
+
+CommunitiesIndex.loggedInUserLayout = true;
+
+export default CommunitiesIndex;
