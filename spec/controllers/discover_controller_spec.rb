@@ -46,8 +46,8 @@ describe DiscoverController, type: :controller, inertia: true do
       expect(inertia.props[:is_black_friday_page]).to eq(false)
       expect(inertia.props[:black_friday_offer_code]).to eq(SearchProducts::BLACK_FRIDAY_CODE)
       expect(inertia.props[:black_friday_stats]).to satisfy { |value| value.nil? || value.is_a?(Hash) }
-      expect(inertia.props[:recommended_products]).to be_an(Array)
-      expect(inertia.props[:recommended_wishlists]).to be_an(Array)
+      expect(inertia.props).not_to have_key(:recommended_products)
+      expect(inertia.props).not_to have_key(:recommended_wishlists)
     end
 
     it "sets black friday page props when offer code is provided" do
@@ -120,7 +120,7 @@ describe DiscoverController, type: :controller, inertia: true do
         expect(response).to be_successful
         props = response.parsed_body.fetch("props")
         expect(props["search_results"]).to be_present
-        expect(props["search_results"][:products]).to be_an(Array)
+        expect(props["search_results"]["products"]).to be_an(Array)
         expect(props).not_to have_key("recommended_products")
         expect(props).not_to have_key("recommended_wishlists")
       end

@@ -1,4 +1,4 @@
-import { Link, router, usePage } from "@inertiajs/react";
+import { Deferred, Link, router, usePage } from "@inertiajs/react";
 import { range } from "lodash-es";
 import * as React from "react";
 import { cast, is } from "ts-safe-cast";
@@ -13,11 +13,11 @@ import { discoverTitleGenerator, Taxonomy } from "$app/utils/discover";
 
 import { Layout } from "$app/components/Discover/Layout";
 import { RecommendedWishlists } from "$app/components/Discover/RecommendedWishlists";
+import { HomeFooter } from "$app/components/Home/Shared/Footer";
 import { Icon } from "$app/components/Icons";
 import { HorizontalCard } from "$app/components/Product/Card";
 import { CardGrid, useSearchReducer } from "$app/components/Product/CardGrid";
 import { RatingStars } from "$app/components/RatingStars";
-import { Footer } from "$app/components/Shared/Footer";
 import { CardContent } from "$app/components/ui/Card";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { useScrollableCarousel } from "$app/components/useScrollableCarousel";
@@ -101,6 +101,19 @@ const ProductsCarousel = ({ products, title }: { products: CardProduct[]; title:
     </section>
   );
 };
+
+const ProductsCarouselSkeleton = () => (
+  <section className="grid gap-4">
+    <header>
+      <h2>Featured products</h2>
+    </header>
+    <div className="override grid min-h-96 auto-cols-[min(20rem,60vw)] grid-flow-col gap-6 overflow-x-auto pb-1 [scrollbar-width:none] lg:auto-cols-[40rem] [&::-webkit-scrollbar]:hidden">
+      {Array.from({ length: 3 }, (_, index) => (
+        <div key={index} className="dummy" style={{ minHeight: "24rem" }} />
+      ))}
+    </div>
+  </section>
+);
 
 const BlackFridayBanner = ({
   stats,
@@ -311,7 +324,10 @@ function DiscoverIndex() {
     }
   })();
 
-  const showRecommendationSections = recommendedProducts.length > 0 && !state.params.query && !hasOfferCode;
+  const showRecommendationSections = !state.params.query && !hasOfferCode;
+  const recommendedWishlistsTitle = taxonomyPath
+    ? `Wishlists for ${props.taxonomies_for_nav.find((t) => t.slug === last(taxonomyPath.split("/")))?.label}`
+    : "Wishlists you might like";
 
   const handleTaxonomyChange = (newTaxonomyPath: string | undefined) => {
     const currentOfferCode = state.params.offer_code;
@@ -386,10 +402,14 @@ function DiscoverIndex() {
         ) : null}
         <div className="grid gap-16! px-4 py-16 lg:ps-16 lg:pe-16">
           {showRecommendationSections ? (
-            <ProductsCarousel
-              products={recommendedProducts}
-              title={isCuratedProducts ? "Recommended" : "Featured products"}
-            />
+            <Deferred data={["recommended_products"]} fallback={<ProductsCarouselSkeleton />}>
+              {recommendedProducts.length ? (
+                <ProductsCarousel
+                  products={recommendedProducts}
+                  title={isCuratedProducts ? "Recommended" : "Featured products"}
+                />
+              ) : null}
+            </Deferred>
           ) : null}
           <section ref={resultsRef} className="flex flex-col gap-4">
             <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--spacer-2)", flexWrap: "wrap" }}>
@@ -502,18 +522,16 @@ function DiscoverIndex() {
             />
           </section>
           {showRecommendationSections ? (
-            <RecommendedWishlists
-              wishlists={props.recommended_wishlists}
-              title={
-                taxonomyPath
-                  ? `Wishlists for ${props.taxonomies_for_nav.find((t) => t.slug === last(taxonomyPath.split("/")))?.label}`
-                  : "Wishlists you might like"
-              }
-            />
+            <Deferred
+              data={["recommended_wishlists"]}
+              fallback={<RecommendedWishlists wishlists={null} title={recommendedWishlistsTitle} />}
+            >
+              <RecommendedWishlists wishlists={props.recommended_wishlists ?? null} title={recommendedWishlistsTitle} />
+            </Deferred>
           ) : null}
         </div>
       </Layout>
-      <Footer />
+      <HomeFooter />
     </>
   );
 }

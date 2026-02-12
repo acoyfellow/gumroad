@@ -59,8 +59,8 @@ class DiscoverController < ApplicationController
       is_black_friday_page: params[:offer_code] == SearchProducts::BLACK_FRIDAY_CODE,
       black_friday_offer_code: SearchProducts::BLACK_FRIDAY_CODE,
       black_friday_stats: -> { black_friday_feature_active? ? BlackFridayStatsService.fetch_stats : nil },
-      recommended_products: -> { recommendations },
-      recommended_wishlists: -> { recommended_wishlists_data },
+      recommended_products: InertiaRails.defer { recommendations },
+      recommended_wishlists: InertiaRails.defer { recommended_wishlists_data },
     }
   end
 

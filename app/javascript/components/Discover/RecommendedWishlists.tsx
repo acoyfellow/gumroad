@@ -1,15 +1,20 @@
 import * as React from "react";
 
-import { CardWishlist, CardGrid, Card } from "$app/components/Wishlist/Card";
+import { CardWishlist, CardGrid, Card, DummyCardGrid } from "$app/components/Wishlist/Card";
 
-export const RecommendedWishlists = ({
-  title,
-  wishlists,
-}: {
-  title: string;
-  wishlists?: CardWishlist[] | undefined | null;
-}) => {
-  if (!wishlists?.length) return null;
+export const RecommendedWishlists = ({ title, wishlists }: { title: string; wishlists?: CardWishlist[] | null }) => {
+  if (wishlists === undefined || wishlists === null) {
+    return (
+      <section className="flex flex-col gap-4">
+        <header>
+          <h2>{title}</h2>
+        </header>
+        <DummyCardGrid count={2} />
+      </section>
+    );
+  }
+
+  if (!wishlists.length) return null;
 
   return (
     <section className="flex flex-col gap-4">
