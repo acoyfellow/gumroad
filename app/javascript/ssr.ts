@@ -4,7 +4,6 @@ import "whatwg-fetch";
 import ReactOnRails from "react-on-rails";
 
 import Alert from "$app/components/server-components/Alert";
-import CommunitiesPage from "$app/components/server-components/CommunitiesPage";
 import CustomersDownloadPopover from "$app/components/server-components/CustomersPage/DownloadPopover";
 import CustomersFilterPopover from "$app/components/server-components/CustomersPage/FilterPopover";
 import Discover from "$app/components/server-components/Discover";
@@ -21,7 +20,6 @@ ReactOnRails.register({
   Alert,
   SupportHeader,
   CodeSnippet,
-  CommunitiesPage,
   CustomersDownloadPopover,
   CustomersFilterPopover,
   Discover,
