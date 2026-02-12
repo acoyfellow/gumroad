@@ -14,11 +14,11 @@ import { discoverTitleGenerator, Taxonomy } from "$app/utils/discover";
 
 import { Layout } from "$app/components/Discover/Layout";
 import { RecommendedWishlists } from "$app/components/Discover/RecommendedWishlists";
+import { HomeFooter } from "$app/components/Home/Shared/Footer";
 import { Icon } from "$app/components/Icons";
 import { HorizontalCard } from "$app/components/Product/Card";
 import { CardGrid, useSearchReducer } from "$app/components/Product/CardGrid";
 import { RatingStars } from "$app/components/RatingStars";
-import { Footer } from "$app/components/Shared/Footer";
 import { CardContent } from "$app/components/ui/Card";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { useScrollableCarousel } from "$app/components/useScrollableCarousel";
@@ -491,7 +491,7 @@ function DiscoverIndex() {
           ) : null}
         </div>
       </Layout>
-      <Footer />
+      <HomeFooter />
     </>
   );
 }
