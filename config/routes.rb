@@ -155,7 +155,6 @@ Rails.application.routes.draw do
     post "/shipments/verify_shipping_address", to: "shipments#verify_shipping_address"
 
     # discover/autocomplete_search
-    get "/discover_search_autocomplete", to: "discover/search_autocomplete#search"
     delete "/discover_search_autocomplete", to: "discover/search_autocomplete#delete_search_suggestion"
 
     put "/links/:id/sections", to: "links#update_sections"
@@ -959,7 +958,6 @@ Rails.application.routes.draw do
     get "/blackfriday", to: redirect("/discover?offer_code=BLACKFRIDAY2025"), as: :blackfriday
     get "/discover", to: "discover#index"
     get "/discover/categories",          to: "discover#categories"
-    get "/discover_search_autocomplete", to: "discover/search_autocomplete#search"
 
     root to: "public#home"
 

@@ -12,6 +12,13 @@ class DiscoverController < ApplicationController
   before_action :set_affiliate_cookie, only: [:index]
 
   def index
+    if autocomplete_only_request?
+      create_discover_search!(query: params[:query], autocomplete: true) if params[:query].present?
+      return render inertia: "Discover/Index", props: {
+        autocomplete_results: autocomplete_results_data
+      }
+    end
+
     format_search_params!
 
     if params[:sort].blank? && curated_products.present?
@@ -177,5 +184,17 @@ class DiscoverController < ApplicationController
         layout: Product::Layout::DISCOVER,
         recommended_by: RecommendationType::GUMROAD_DISCOVER_WISHLIST_RECOMMENDATION,
       )
+    end
+
+    def autocomplete_only_request?
+      request.headers["X-Inertia-Partial-Data"] == "autocomplete_results"
+    end
+
+    def autocomplete_results_data
+      Discover::AutocompletePresenter.new(
+        query: params[:query],
+        user: logged_in_user,
+        browser_guid: cookies[:_gumroad_guid]
+      ).props
     end
 end

@@ -124,6 +124,91 @@ describe DiscoverController, type: :controller, inertia: true do
         expect(props).not_to have_key("recommended_products")
         expect(props).not_to have_key("recommended_wishlists")
       end
+
+      context "autocomplete_results partial reload" do
+        it "returns autocomplete results with empty query" do
+          request.headers["X-Inertia-Partial-Data"] = "autocomplete_results"
+
+          get :index, params: { query: "" }
+
+          expect(response).to be_successful
+          props = response.parsed_body.fetch("props")
+          expect(props["autocomplete_results"]).to include("products", "recent_searches")
+          expect(props["autocomplete_results"]["products"]).to be_an(Array)
+          expect(props["autocomplete_results"]["recent_searches"]).to be_an(Array)
+          expect(props).not_to have_key("search_results")
+          expect(props).not_to have_key("recommended_products")
+        end
+
+        it "returns autocomplete results with products matching query" do
+          user = create(:recommendable_user, name: "Sample User")
+          product = create(:product, :recommendable, name: "Sample Product", user:)
+          Link.import(refresh: true, force: true)
+
+          request.headers["X-Inertia-Partial-Data"] = "autocomplete_results"
+
+          get :index, params: { query: "prod" }
+
+          expect(response).to be_successful
+          props = response.parsed_body.fetch("props")
+          expect(props["autocomplete_results"]["products"][0]).to include(
+            "name" => "Sample Product",
+            "url" => product.long_url(recommended_by: "search", layout: "discover", autocomplete: true, query: "prod"),
+            "seller_name" => "Sample User",
+          )
+        end
+
+        it "stores the search query as autocomplete" do
+          cookies[:_gumroad_guid] = "custom_guid"
+          request.headers["X-Inertia-Partial-Data"] = "autocomplete_results"
+
+          expect do
+            get :index, params: { query: "prod" }
+          end.to change(DiscoverSearch, :count).by(1).and not_change(DiscoverSearchSuggestion, :count)
+
+          expect(DiscoverSearch.last!.attributes).to include(
+            "query" => "prod",
+            "user_id" => @buyer.id,
+            "ip_address" => "0.0.0.0",
+            "browser_guid" => "custom_guid",
+            "autocomplete" => true
+          )
+        end
+
+        it "does not store search query when query is blank" do
+          request.headers["X-Inertia-Partial-Data"] = "autocomplete_results"
+
+          expect do
+            get :index, params: { query: "" }
+          end.to not_change(DiscoverSearch, :count).and not_change(DiscoverSearchSuggestion, :count)
+        end
+
+        it "returns recent searches based on browser_guid" do
+          sign_out @buyer
+          cookies[:_gumroad_guid] = "custom_guid"
+          create(:discover_search_suggestion, discover_search: create(:discover_search, browser_guid: "custom_guid", query: "recent search"))
+
+          request.headers["X-Inertia-Partial-Data"] = "autocomplete_results"
+
+          get :index, params: { query: "" }
+
+          expect(response).to be_successful
+          props = response.parsed_body.fetch("props")
+          expect(props["autocomplete_results"]["recent_searches"]).to eq(["recent search"])
+        end
+
+        it "returns recent searches for logged in user" do
+          create(:discover_search_suggestion, discover_search: create(:discover_search, user: @buyer, query: "user search"))
+
+          request.headers["X-Inertia-Partial-Data"] = "autocomplete_results"
+
+          get :index, params: { query: "" }
+
+          expect(response).to be_successful
+          props = response.parsed_body.fetch("props")
+          expect(props["autocomplete_results"]["recent_searches"]).to eq(["user search"])
+        end
+      end
     end
 
     it "stores the search query" do
