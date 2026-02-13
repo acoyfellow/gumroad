@@ -47,14 +47,34 @@ class FollowersController < ApplicationController
   def create
     follower = create_follower(params)
 
-    return redirect_to custom_domain_subscribe_path, alert: "Sorry, something went wrong." if follower.nil?
-    return redirect_to custom_domain_subscribe_path, alert: follower.errors.full_messages.to_sentence if follower.errors.present?
+    respond_to do |format|
+      format.html do
+        return redirect_to custom_domain_subscribe_path, alert: "Sorry, something went wrong." if follower.nil?
+        return redirect_to custom_domain_subscribe_path, alert: follower.errors.full_messages.to_sentence if follower.errors.present?
 
-    message = follower.confirmed? ?
-      "You are now following #{follower.user.name_or_username}!" :
-      "Check your inbox to confirm your follow request."
+        message = follower.confirmed? ?
+          "You are now following #{follower.user.name_or_username}!" :
+          "Check your inbox to confirm your follow request."
 
-    redirect_to custom_domain_subscribe_path, notice: message, status: :see_other
+        redirect_to custom_domain_subscribe_path, notice: message, status: :see_other
+      end
+      format.json do
+        if follower.nil?
+          render json: { success: false, message: "Sorry, something went wrong." }, status: :unprocessable_entity
+          return
+        end
+        if follower.errors.present?
+          render json: { success: false, message: follower.errors.full_messages.to_sentence }, status: :unprocessable_entity
+          return
+        end
+
+        message = follower.confirmed? ?
+          "You are now following #{follower.user.name_or_username}!" :
+          "Check your inbox to confirm your follow request."
+
+        render json: { success: true, message: }
+      end
+    end
   end
 
   def new
