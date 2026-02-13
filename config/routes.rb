@@ -412,7 +412,6 @@ Rails.application.routes.draw do
       end
     end
 
-    get "/communities/*other", to: "communities#index" # route handled by react-router
 
     get "/a/:affiliate_id", to: "affiliate_redirect#set_cookie_and_redirect", as: :affiliate_redirect
     get "/a/:affiliate_id/:unique_permalink", to: "affiliate_redirect#set_cookie_and_redirect", as: :affiliate_product
@@ -789,11 +788,12 @@ Rails.application.routes.draw do
     resources :subscriptions, only: [] do
       member do
         get :manage
-        get :magic_link
-        post :send_magic_link
         post :unsubscribe_by_user
         post :unsubscribe_by_seller
         put :update, to: "purchases#update_subscription"
+      end
+      scope module: "subscriptions" do
+        resource :magic_link, only: %i[new create]
       end
     end
 
@@ -802,7 +802,14 @@ Rails.application.routes.draw do
     post "/posts/:id/send_for_purchase/:purchase_id", to: "posts#send_for_purchase", as: :send_for_purchase
 
     # communities
-    get "/communities(/:seller_id/:community_id)", to: "communities#index", as: :community
+    resources :communities, only: %i[index] do
+      scope module: "communities" do
+        resources :chat_messages, only: [:create, :update, :destroy]
+        resource :last_read_chat_message, only: [:create]
+        resource :notification_settings, only: [:update]
+      end
+    end
+    get "/communities/:seller_id/:community_id", to: "communities#show", as: :community
 
     # emails
     resources :emails, only: [:index, :new, :create, :edit, :update, :destroy] do
@@ -923,11 +930,6 @@ Rails.application.routes.draw do
           resource :receipt_preview, only: [:show]
         end
         resources :product_public_files, only: [:create]
-        resources :communities, only: [:index] do
-          resources :chat_messages, only: [:index, :create, :update, :destroy], controller: "communities/chat_messages", as: "chat_messages"
-          resource :last_read_chat_message, only: [:create], controller: "communities/last_read_chat_messages"
-          resource :notification_setting, only: [:update], controller: "communities/notification_settings", as: "notification_setting"
-        end
 
         resources :product_review_videos, only: [] do
           scope module: :product_review_videos do
