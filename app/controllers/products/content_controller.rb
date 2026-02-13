@@ -32,7 +32,11 @@ class Products::ContentController < Products::BaseController
       redirect_back fallback_location: edit_product_content_path(@product.unique_permalink), notice: "Changes saved!", status: :see_other
     end
   rescue ActiveRecord::RecordNotSaved, ActiveRecord::RecordInvalid, Link::LinkInvalid => e
-    error_message = @product.errors.full_messages.first || e.message
+    error_message = if @product.errors.details[:custom_fields].present?
+      "You must add titles to all of your inputs"
+    else
+      @product.errors.full_messages.first || e.message
+    end
     redirect_to edit_product_content_path(@product.unique_permalink), alert: error_message
   rescue StandardError => e
     Bugsnag.notify(e)
@@ -44,6 +48,7 @@ class Products::ContentController < Products::BaseController
       @product.assign_attributes(product_permitted_params.except(:files, :variants, :custom_domain, :rich_content))
       SaveFilesService.perform(@product, product_permitted_params, rich_content_params)
       update_rich_content
+      Product::SavePostPurchaseCustomFieldsService.new(@product).perform
       @product.save!
       @product.generate_product_files_archives!
     end
@@ -84,10 +89,10 @@ class Products::ContentController < Products::BaseController
       rich_content = product_permitted_params[:rich_content] || []
       rich_content_params = [*rich_content]
       product_permitted_params[:variants]&.each { rich_content_params.push(*_1[:rich_content]) }
-      rich_content_params.flat_map { _1[:description] = _1.dig(:description, :content) }
+      rich_content_params.flat_map { _1.dig(:description, :content) }
     end
 
     def product_permitted_params
-      params.require(:product).permit(policy(@product).content_tab_permitted_attributes)
+      @product_permitted_params ||= params.require(:product).permit(policy(@product).content_tab_permitted_attributes)
     end
 end

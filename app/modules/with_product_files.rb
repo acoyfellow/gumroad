@@ -31,8 +31,15 @@ module WithProductFiles
     existing_files_by_external_id = existing_files.index_by(&:external_id)
     should_check_pdf_stampability = false
 
+    # Extract file IDs from rich content to filter out deleted file embeds
+    file_ids_in_rich_content = extract_file_ids_from_rich_content(rich_content_params)
+
     files_params.each do |file_params|
       next unless file_params[:url].present?
+
+      # Skip files that are no longer in the rich content (they were deleted from the editor)
+      file_id = file_params[:external_id] || file_params[:id]
+      next if file_ids_in_rich_content.present? && !file_ids_in_rich_content.include?(file_id)
 
       begin
         external_id = file_params.delete(:external_id) || file_params.delete(:id)
@@ -254,6 +261,23 @@ module WithProductFiles
       dropbox_file.product_file = product_file
       dropbox_file.link = product_file.link
       dropbox_file.save!
+    end
+
+    def extract_file_ids_from_rich_content(nodes)
+      ids = Set.new
+      return ids if nodes.blank?
+
+      nodes.each do |node|
+        next unless node.is_a?(Hash) || node.is_a?(ActionController::Parameters)
+
+        if node[:type] == RichContent::FILE_EMBED_NODE_TYPE && node.dig(:attrs, :id).present?
+          ids << node.dig(:attrs, :id)
+        end
+
+        ids.merge(extract_file_ids_from_rich_content(node[:content])) if node[:content].present?
+      end
+
+      ids
     end
 
     def update_rich_content_file_id(rich_content, from, to)

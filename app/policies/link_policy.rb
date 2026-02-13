@@ -143,7 +143,20 @@ class LinkPolicy < ApplicationPolicy
       section_ids: [],
       installment_plan: [
         :number_of_installments,
-      ]
+      ],
+      cancellation_discount: [
+        :duration_in_billing_cycles,
+        discount: [:type, :cents, :percents]
+      ],
+      public_files: [
+        :id,
+        :name,
+        status: [:type]
+      ],
+      call_limitation_info: [
+        :minimum_notice_in_minutes,
+        :maximum_calls_per_day,
+      ],
     ]
   end
 

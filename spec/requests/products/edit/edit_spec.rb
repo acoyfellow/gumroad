@@ -63,6 +63,7 @@ describe("Product Edit Scenario", type: :system, js: true) do
       expect(CustomDomainVerificationService)
         .to receive(:new)
         .with(domain: invalid_domain)
+        .twice # once per visit
         .and_return(double(process: false))
 
       visit edit_product_product_path(product.unique_permalink)
@@ -286,7 +287,6 @@ describe("Product Edit Scenario", type: :system, js: true) do
     create(:purchase, :with_review, link: product)
 
     visit edit_product_content_path(product.unique_permalink)
-    select_tab "Content"
 
     set_rich_text_editor_input(find("[aria-label='Content editor']"), to_text: "Hi there!")
 
@@ -400,7 +400,6 @@ describe("Product Edit Scenario", type: :system, js: true) do
     expect(page).to have_checked_field("Automatically apply discount code")
 
     save_change
-
     expect(product.reload.default_offer_code).to eq(offer_code)
 
     visit edit_link_path(product.unique_permalink)

@@ -19,8 +19,7 @@ module ProductFileListHelpers
   end
 
   def find_embed(name:)
-    fname = page.first(".embed h4", text: name, exact_text: true, wait: 5)
-    fname.ancestor(".embed")
+    page.find(".embed", text: name, match: :first, wait: 5)
   end
 
   def wait_for_file_embed_to_finish_uploading(name:)

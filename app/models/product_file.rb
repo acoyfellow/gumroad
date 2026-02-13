@@ -120,6 +120,7 @@ class ProductFile < ApplicationRecord
       end,
       url:,
       isbn:,
+      is_external_link: external_link?,
       thumbnail: url_for_thumbnail.present? ? { url: url_for_thumbnail, signed_id: thumbnail.signed_id, status: { type: "saved" } } : nil,
       status: { type: "saved" },
     }

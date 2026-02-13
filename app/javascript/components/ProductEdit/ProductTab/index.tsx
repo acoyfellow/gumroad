@@ -287,7 +287,7 @@ export const ProductTab = () => {
                     eligibleForInstallmentPlans={product.eligible_for_installment_plans}
                     allowInstallmentPlan={product.allow_installment_plan}
                     numberOfInstallments={product.installment_plan?.number_of_installments ?? null}
-                    onAllowInstallmentPlanChange={(allowed) => updateProduct({ allow_installment_plan: allowed })}
+                    onAllowInstallmentPlanChange={(allowed) => updateProduct({ allow_installment_plan: allowed, installment_plan: allowed ? product.installment_plan : null })}
                     onNumberOfInstallmentsChange={(value) =>
                       updateProduct({
                         installment_plan: { ...product.installment_plan, number_of_installments: value },

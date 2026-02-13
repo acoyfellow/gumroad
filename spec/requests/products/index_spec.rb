@@ -46,7 +46,7 @@ describe "Products Page Scenario", type: :system, js: true do
           click_on product.name
         end
 
-        expect(page).to have_current_path(edit_link_path(product))
+        expect(page).to have_current_path(edit_product_product_path(product))
       end
     end
   end

@@ -34,9 +34,11 @@ class Products::BaseController < Sellers::BaseController
 
     def publish!
       error_message = nil
+      html_error_message = false
       begin
         if @product.user.email.blank?
           error_message = "<span>To publish a product, we need you to have an email. <a href=\"#{settings_main_url}\">Set an email</a> to continue.</span>".html_safe
+          html_error_message = true
         else
           @product.publish!
         end
@@ -48,7 +50,7 @@ class Products::BaseController < Sellers::BaseController
       end
 
       if error_message.present?
-        return redirect_back fallback_location: edit_product_product_path(@product.unique_permalink), alert: error_message # rubocop:disable Style/RedundantReturn
+        return redirect_back fallback_location: edit_product_product_path(@product.unique_permalink), flash: { alert: error_message, html: html_error_message } # rubocop:disable Style/RedundantReturn
       end
     end
 

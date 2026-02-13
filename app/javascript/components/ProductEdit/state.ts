@@ -272,6 +272,7 @@ export type FileEntry = {
   is_streamable: boolean;
   stream_only: boolean;
   is_transcoding_in_progress: boolean;
+  is_external_link: boolean;
   id: string; // id is either server ID or, in case of unsaved dropbox files, `drop_[external_id]`
   url: string | null;
   isbn?: string | null;

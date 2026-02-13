@@ -84,12 +84,12 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     # select_tab "Content"
     # expect(page).to have_alert(text: "Some images are still uploading, please wait...")
 
-    expect(page).to have_current_path(edit_link_path(@product))
+    expect(page).to have_current_path(edit_product_product_path(@product))
     expect(page).to have_tab_button("Product", open: true)
     expect(rich_text_editor_input).to have_selector("img[src^='#{AWS_S3_ENDPOINT}/#{S3_BUCKET}']")
     select_tab "Content"
     expect(page).to_not have_alert(text: "Some images are still uploading, please wait...")
-    expect(page).to have_current_path(edit_link_path(@product) + "/content")
+    expect(page).to have_current_path(edit_product_content_path(@product))
     expect(page).to have_tab_button("Content", open: true)
 
     # When files are uploading
@@ -102,7 +102,7 @@ describe("Product Edit Rich Text Editor", type: :system, js: true) do
     wait_for_file_embed_to_finish_uploading(name: "test")
     select_tab "Content"
     expect(page).to_not have_alert(text: "Some files are still uploading, please wait...")
-    expect(page).to have_current_path(edit_link_path(@product) + "/content")
+    expect(page).to have_current_path(edit_product_content_path(@product))
     expect(page).to have_tab_button("Content", open: true)
   end
 

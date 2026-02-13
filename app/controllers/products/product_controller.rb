@@ -4,7 +4,7 @@ class Products::ProductController < Products::BaseController
   def edit
     return redirect_to bundle_path(@product.external_id) if @product.is_bundle?
 
-    render inertia: "Products/Product/Edit", props: Products::ProductTabPresenter.new(product: @product, pundit_user:).props
+    render inertia: "Products/Product/Edit", props: Products::ProductTabPresenter.new(product: @product, pundit_user:, ai_generated: params[:ai_generated].present?).props
   end
 
   def update

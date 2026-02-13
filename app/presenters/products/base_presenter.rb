@@ -6,11 +6,12 @@ class Products::BasePresenter
   include CurrencyHelper
   include PreorderHelper
 
-  attr_reader :product, :pundit_user
+  attr_reader :product, :pundit_user, :ai_generated
 
-  def initialize(product:, pundit_user:)
+  def initialize(product:, pundit_user:, ai_generated: false)
     @product = product
     @pundit_user = pundit_user
+    @ai_generated = ai_generated
   end
 
   # Top-level props required by the shared layout (no product; each tab adds its own product).
@@ -20,7 +21,7 @@ class Products::BasePresenter
       unique_permalink: product.unique_permalink,
       seller: UserPresenter.new(user: product.user).author_byline_props,
       existing_files: existing_files_data,
-      ai_generated: false,
+      ai_generated:,
       currency_type: product.price_currency_type,
       taxonomies: Discover::TaxonomyPresenter.new.taxonomies_for_nav,
       earliest_membership_price_change_date: ::BaseVariant::MINIMUM_DAYS_TIL_EXISTING_MEMBERSHIP_PRICE_CHANGE.days.from_now.in_time_zone(product.user.timezone).iso8601,
@@ -98,7 +99,11 @@ class Products::BasePresenter
     end
 
     def files_data
-      product.product_files.alive.in_order.includes(:alive_subtitle_files).map(&:as_json)
+      product.product_files.alive.in_order.includes(:alive_subtitle_files).map do |file|
+        file.as_json.merge(
+          url: file.s3? ? download_product_files_path(product_id: product.external_id, product_file_ids: [file.external_id]) : file.url
+        )
+      end
     end
 
     def variants_data

@@ -7,7 +7,7 @@ export function useFlashMessage(flash?: AlertPayload | null): void {
   React.useEffect(() => {
     if (!flash?.message) return;
 
-    showAlert(flash.message, flash.status === "danger" ? "error" : flash.status);
+    showAlert(flash.message, flash.status === "danger" ? "error" : flash.status, { html: flash.html ?? false });
     router.replaceProp("flash", null);
   }, [flash]);
 }

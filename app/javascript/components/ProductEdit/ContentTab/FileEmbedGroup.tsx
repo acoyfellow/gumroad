@@ -28,6 +28,7 @@ type FileEntry = {
   stream_only: boolean;
   pdf_stamp_enabled: boolean;
   is_streamable: boolean;
+  is_external_link: boolean;
   file_size: number | null;
 };
 type FileGroupConfig = {
@@ -69,7 +70,7 @@ const FileEmbedGroupNodeView = ({
   const storage = extension.storage as FileEmbedGroupStorage;
   const isNew = node.attrs.uid === storage.lastCreatedUid;
   const { files, hasStreamable } = useFilesInGroup(node, config.filesById);
-  const downloadableFiles = files.filter((file) => !!file.url && !file.stream_only);
+  const downloadableFiles = files.filter((file) => !!file.url && !file.stream_only && !file.is_external_link);
 
   const folderTitle = titleWithFallback(node.attrs.name);
   const showDownloadButton =
