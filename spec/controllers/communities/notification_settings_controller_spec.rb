@@ -4,7 +4,7 @@ require "spec_helper"
 require "shared_examples/sellers_base_controller_concern"
 require "shared_examples/authorize_called"
 
-describe Api::Internal::Communities::NotificationSettingsController do
+describe Communities::NotificationSettingsController do
   let(:seller) { create(:user) }
   let(:product) { create(:product, user: seller, community_chat_enabled: true) }
   let(:pundit_user) { SellerContext.new(user: seller, seller:) }
@@ -32,11 +32,12 @@ describe Api::Internal::Communities::NotificationSettingsController do
       expect(flash[:alert]).to eq("Your current role as Admin cannot perform this action.")
     end
 
-    it "returns 404 when community is not found" do
-      put :update, params: { community_id: "nonexistent" }
+    it "raises error when community is not found" do
+      sign_in seller
 
-      expect(response).to have_http_status(:not_found)
-      expect(response.parsed_body).to eq({ "success" => false, "error" => "Not found" })
+      expect do
+        put :update, params: { community_id: "nonexistent" }
+      end.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     context "when seller is logged in" do
@@ -48,14 +49,12 @@ describe Api::Internal::Communities::NotificationSettingsController do
         expect do
           put :update, params: {
             community_id: community.external_id,
-            settings: { recap_frequency: "daily" }
+            recap_frequency: "daily"
           }
         end.to change { CommunityNotificationSetting.count }.by(1)
 
-        expect(response).to be_successful
-        expect(response.parsed_body["settings"]).to include(
-          "recap_frequency" => "daily"
-        )
+        expect(response).to redirect_to(community_path(seller.external_id, community.external_id))
+        expect(flash[:notice]).to eq("Changes saved!")
         notification_setting = CommunityNotificationSetting.last
         expect(notification_setting.seller).to eq(community.seller)
         expect(notification_setting.user).to eq(seller)
@@ -67,23 +66,22 @@ describe Api::Internal::Communities::NotificationSettingsController do
         expect do
           put :update, params: {
             community_id: community.external_id,
-            settings: { recap_frequency: "weekly" }
+            recap_frequency: "weekly"
           }
-        end.to_not change { CommunityNotificationSetting.count }
+        end.not_to change { CommunityNotificationSetting.count }
 
-        expect(response).to be_successful
-        expect(response.parsed_body["settings"]).to include(
-          "recap_frequency" => "weekly"
-        )
+        expect(response).to redirect_to(community_path(seller.external_id, community.external_id))
+        expect(flash[:notice]).to eq("Changes saved!")
         expect(settings.reload.recap_frequency).to eq("weekly")
       end
     end
 
     context "when buyer is logged in" do
       let(:buyer) { create(:user) }
-      let!(:purchase) { create(:purchase, purchaser: buyer, link: product) }
+      let!(:purchase) { create(:purchase, seller:, purchaser: buyer, link: product, price_cents: 0) }
 
       before do
+        Feature.activate_user(:communities, buyer)
         sign_in buyer
       end
 
@@ -91,14 +89,12 @@ describe Api::Internal::Communities::NotificationSettingsController do
         expect do
           put :update, params: {
             community_id: community.external_id,
-            settings: { recap_frequency: "daily" }
+            recap_frequency: "daily"
           }
         end.to change { CommunityNotificationSetting.count }.by(1)
 
-        expect(response).to be_successful
-        expect(response.parsed_body["settings"]).to include(
-          "recap_frequency" => "daily"
-        )
+        expect(response).to redirect_to(community_path(seller.external_id, community.external_id))
+        expect(flash[:notice]).to eq("Changes saved!")
         notification_setting = CommunityNotificationSetting.last
         expect(notification_setting.seller).to eq(community.seller)
         expect(notification_setting.user).to eq(buyer)
@@ -110,14 +106,12 @@ describe Api::Internal::Communities::NotificationSettingsController do
         expect do
           put :update, params: {
             community_id: community.external_id,
-            settings: { recap_frequency: "weekly" }
+            recap_frequency: "weekly"
           }
-        end.to_not change { CommunityNotificationSetting.count }
+        end.not_to change { CommunityNotificationSetting.count }
 
-        expect(response).to be_successful
-        expect(response.parsed_body["settings"]).to include(
-          "recap_frequency" => "weekly"
-        )
+        expect(response).to redirect_to(community_path(seller.external_id, community.external_id))
+        expect(flash[:notice]).to eq("Changes saved!")
         expect(settings.reload.recap_frequency).to eq("weekly")
       end
     end
