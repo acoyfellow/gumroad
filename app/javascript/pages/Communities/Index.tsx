@@ -205,7 +205,7 @@ function CommunitiesIndex() {
       if (searchParams.has("notifications")) {
         searchParams.delete("notifications");
         const newUrl = `${window.location.pathname}${searchParams.size ? `?${searchParams.toString()}` : ""}`;
-        window.history.replaceState({}, "", newUrl);
+        router.replace({ url: newUrl, preserveState: true });
         setShowNotificationsSettings(true);
       }
     }
