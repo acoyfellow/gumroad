@@ -63,6 +63,9 @@ import { Posts, PostsProvider } from "$app/components/TiptapExtensions/Posts";
 import { ShortAnswer } from "$app/components/TiptapExtensions/ShortAnswer";
 import { UpsellCard } from "$app/components/TiptapExtensions/UpsellCard";
 import { Card, CardContent } from "$app/components/ui/Card";
+import { Checkbox } from "$app/components/ui/Checkbox";
+import { InputGroup } from "$app/components/ui/InputGroup";
+import { Label } from "$app/components/ui/Label";
 import { Row, RowContent, Rows } from "$app/components/ui/Rows";
 import { Tab, Tabs } from "$app/components/ui/Tabs";
 import { Product, ProductOption, UpsellSelectModal } from "$app/components/UpsellSelectModal";
@@ -283,7 +286,9 @@ const ContentTabContent = ({
         node.remove();
       }
     });
-    updateProduct({ files: [...product.files.filter((f) => !newFiles.includes(f)), ...newFiles] });
+    if (newFiles.length > 0) {
+      updateProduct({ files: [...product.files.filter((f) => !newFiles.includes(f)), ...newFiles] });
+    }
     const description = generateJSON(
       new XMLSerializer().serializeToString(fragment),
       baseEditorOptions(contentEditorExtensions).extensions,
@@ -1012,15 +1017,18 @@ const ContentTabContent = ({
 export const ContentTab = ({
   selectedVariantId: parentSelectedVariantId,
   prepareDownload,
+  confirmingDiscardVariantContent,
+  setConfirmingDiscardVariantContent,
 }: {
   selectedVariantId?: string | null;
   prepareDownload: () => Promise<void>;
+  confirmingDiscardVariantContent: boolean;
+  setConfirmingDiscardVariantContent: (value: boolean) => void;
 }) => {
   const { id, awsKey, s3Url, seller, uniquePermalink } = useProductEditContext();
   const { product, updateProduct } = useProductFormContext();
   const [internalSelectedVariantId] = React.useState(product.variants[0]?.id ?? null);
   const selectedVariantId = parentSelectedVariantId !== undefined ? parentSelectedVariantId : internalSelectedVariantId;
-  const [confirmingDiscardVariantContent, setConfirmingDiscardVariantContent] = React.useState(false);
   const selectedVariant = product.variants.find((variant) => variant.id === selectedVariantId);
 
   const setHasSameRichContent = (value: boolean) => {
@@ -1136,12 +1144,13 @@ export const ContentTab = ({
 export const ContentTabHeaderActions = ({
   selectedVariantId,
   setSelectedVariantId,
+  setConfirmingDiscardVariantContent,
 }: {
   selectedVariantId: string | null;
   setSelectedVariantId: (id: string | null) => void;
+  setConfirmingDiscardVariantContent: (value: boolean) => void;
 }) => {
   const { product, updateProduct } = useProductFormContext();
-  const [confirmingDiscardVariantContent, setConfirmingDiscardVariantContent] = React.useState(false);
 
   const selectedVariant = product.variants.find((v) => v.id === selectedVariantId);
 
@@ -1149,20 +1158,19 @@ export const ContentTabHeaderActions = ({
     updateProduct({ has_same_rich_content_for_all_variants: value });
   };
 
-  return (
+  return product.variants.length > 0 ? (
     <>
       <hr className="relative left-1/2 my-2 w-screen max-w-none -translate-x-1/2 border-border lg:hidden" />
       <ComboBox<Variant>
-        multiple
         input={(props) => (
-          <div {...props} className="input h-full min-h-auto" aria-label="Select a version">
-            <span className="fake-input text-singleline">
+          <InputGroup {...props} className="cursor-pointer py-3" aria-label="Select a version">
+            <span className="text-singleline flex-1">
               {selectedVariant && !product.has_same_rich_content_for_all_variants
                 ? `Editing: ${selectedVariant.name || "Untitled"}`
                 : "Editing: All versions"}
             </span>
             <Icon name="outline-cheveron-down" />
-          </div>
+          </InputGroup>
         )}
         options={product.variants}
         option={(item, props, index) => (
@@ -1176,7 +1184,7 @@ export const ContentTabHeaderActions = ({
               aria-selected={item.id === selectedVariantId}
               inert={product.has_same_rich_content_for_all_variants}
             >
-              <div>
+              <div className="flex-1">
                 <h4>{item.name || "Untitled"}</h4>
                 {item.id === selectedVariant?.id ? (
                   <small>Editing</small>
@@ -1197,12 +1205,14 @@ export const ContentTabHeaderActions = ({
                   <small className="text-muted">No content yet</small>
                 )}
               </div>
+              {item.id === selectedVariant?.id && (
+                <Icon name="solid-check-circle" className="ml-auto text-success" />
+              )}
             </div>
             {index === product.variants.length - 1 ? (
-              <div className="option">
-                <label style={{ alignItems: "center" }}>
-                  <input
-                    type="checkbox"
+              <div className="flex cursor-pointer items-center px-4 py-2">
+                <Label className="items-center">
+                  <Checkbox
                     checked={product.has_same_rich_content_for_all_variants}
                     onChange={() => {
                       if (!product.has_same_rich_content_for_all_variants && product.variants.length > 1)
@@ -1211,35 +1221,12 @@ export const ContentTabHeaderActions = ({
                     }}
                   />
                   <small>Use the same content for all versions</small>
-                </label>
+                </Label>
               </div>
             ) : null}
-            <Modal
-              open={confirmingDiscardVariantContent}
-              onClose={() => setConfirmingDiscardVariantContent(false)}
-              title="Discard content from other versions?"
-              footer={
-                <>
-                  <Button onClick={() => setConfirmingDiscardVariantContent(false)}>No, cancel</Button>
-                  <Button
-                    color="danger"
-                    onClick={() => {
-                      setHasSameRichContent(true);
-                      setConfirmingDiscardVariantContent(false);
-                    }}
-                  >
-                    Yes, proceed
-                  </Button>
-                </>
-              }
-            >
-              If you proceed, the content from all other versions of this product will be removed and replaced with the
-              content of "{titleWithFallback(selectedVariant?.name)}".
-              <strong>This action is irreversible.</strong>
-            </Modal>
           </>
         )}
       />
     </>
-  );
+  ) : null
 };

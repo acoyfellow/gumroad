@@ -173,7 +173,9 @@ class LinkPolicy < ApplicationPolicy
       :display_product_reviews,
       :discover_fee_per_thousand,
       :custom_domain,
+      :taxonomy_id,
       tags: [],
+      section_ids: [],
     ]
   end
 

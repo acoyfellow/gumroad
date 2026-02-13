@@ -174,12 +174,18 @@ function ContentPage() {
       });
     });
 
+  const [confirmingDiscardVariantContent, setConfirmingDiscardVariantContent] = React.useState(false);
+
   return (
     <ProductFormContext.Provider value={formContextValue}>
       <Layout
         name={product.name}
         headerActions={
-          <ContentTabHeaderActions selectedVariantId={selectedVariantId} setSelectedVariantId={setSelectedVariantId} />
+          <ContentTabHeaderActions
+            selectedVariantId={selectedVariantId}
+            setSelectedVariantId={setSelectedVariantId}
+            setConfirmingDiscardVariantContent={setConfirmingDiscardVariantContent}
+          />
         }
         isSaving={form.processing}
         isPublishing={isPublishing}
@@ -193,7 +199,12 @@ function ContentPage() {
         onPreview={() => submitFormAndPreview()}
         onBeforeNavigate={saveBeforeNavigate}
       >
-        <ContentTab selectedVariantId={selectedVariantId} prepareDownload={prepareDownload} />
+        <ContentTab
+          selectedVariantId={selectedVariantId}
+          prepareDownload={prepareDownload}
+          confirmingDiscardVariantContent={confirmingDiscardVariantContent}
+          setConfirmingDiscardVariantContent={setConfirmingDiscardVariantContent}
+        />
       </Layout>
     </ProductFormContext.Provider>
   );

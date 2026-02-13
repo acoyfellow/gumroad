@@ -41,8 +41,9 @@ class Products::ShareController < Products::BaseController
     end
 
     def update_share_attributes
-      @product.assign_attributes(product_permitted_params.except(:tags))
+      @product.assign_attributes(product_permitted_params.except(:tags, :section_ids, :custom_domain))
       @product.save_tags!(product_permitted_params[:tags] || [])
+      @product.show_in_sections!(product_permitted_params[:section_ids] || [])
       update_custom_domain if product_permitted_params.key?(:custom_domain)
       @product.save!
     end

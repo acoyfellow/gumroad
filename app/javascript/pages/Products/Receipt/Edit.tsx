@@ -2,11 +2,16 @@ import { useForm } from "@inertiajs/react";
 import * as React from "react";
 
 import ProductEditLayout from "$app/layouts/ProductEditLayout";
+import { CurrencyCode } from "$app/utils/currency";
 
 import { Layout } from "$app/components/ProductEdit/Layout";
 import { ReceiptPreview } from "$app/components/ProductEdit/ReceiptPreview";
 import { ReceiptTab } from "$app/components/ProductEdit/ReceiptTab";
-import { useProductEditContext } from "$app/components/ProductEdit/state";
+import {
+  useProductEditContext,
+  ProductFormContext,
+  ContentUpdates,
+} from "$app/components/ProductEdit/state";
 
 type ReceiptFormData = {
   name: string;
@@ -16,8 +21,11 @@ type ReceiptFormData = {
 };
 
 function ReceiptPage() {
-  const { product, uniquePermalink } = useProductEditContext();
+  const { product, uniquePermalink, currencyType: initialCurrencyType } = useProductEditContext();
   const updateUrl = Routes.product_receipt_path(uniquePermalink);
+
+  const [currencyType, setCurrencyType] = React.useState<CurrencyCode>(initialCurrencyType);
+  const [contentUpdates, setContentUpdates] = React.useState<ContentUpdates>(null);
 
   const form = useForm<ReceiptFormData>({
     name: product.name,
@@ -25,6 +33,18 @@ function ReceiptPage() {
     custom_receipt_text: product.custom_receipt_text,
     custom_view_content_button_text: product.custom_view_content_button_text,
   });
+
+  const formContextValue = React.useMemo(
+    () => ({
+      product: product as any,
+      updateProduct: () => {},
+      currencyType,
+      setCurrencyType,
+      contentUpdates,
+      setContentUpdates,
+    }),
+    [product, currencyType, contentUpdates],
+  );
 
   const submitForm = (
     additionalData: Record<string, unknown> = {},
@@ -66,34 +86,36 @@ function ReceiptPage() {
   };
 
   return (
-    <Layout
-      name={product.name}
-      preview={
-        <ReceiptPreview
-          customReceiptText={form.data.custom_receipt_text}
+    <ProductFormContext.Provider value={formContextValue}>
+      <Layout
+        name={product.name}
+        preview={
+          <ReceiptPreview
+            customReceiptText={form.data.custom_receipt_text}
+            customViewContentButtonText={form.data.custom_view_content_button_text}
+          />
+        }
+        previewScaleFactor={1}
+        showBorder={false}
+        isSaving={form.processing}
+        isPublishing={isPublishing}
+        isUnpublishing={isUnpublishing}
+        isDirty={form.isDirty}
+        onSave={() => submitForm()}
+        onPublish={() => submitFormAndPublish()}
+        onUnpublish={() => submitFormAndUnpublish()}
+        onBeforeNavigate={saveBeforeNavigate}
+      >
+        <ReceiptTab
           customViewContentButtonText={form.data.custom_view_content_button_text}
+          customReceiptText={form.data.custom_receipt_text}
+          customViewContentButtonTextMaxLength={product.custom_view_content_button_text_max_length}
+          customReceiptTextMaxLength={product.custom_receipt_text_max_length}
+          onCustomViewContentButtonTextChange={(value) => form.setData("custom_view_content_button_text", value)}
+          onCustomReceiptTextChange={(value) => form.setData("custom_receipt_text", value)}
         />
-      }
-      previewScaleFactor={1}
-      showBorder={false}
-      isSaving={form.processing}
-      isPublishing={isPublishing}
-      isUnpublishing={isUnpublishing}
-      isDirty={form.isDirty}
-      onSave={() => submitForm()}
-      onPublish={() => submitFormAndPublish()}
-      onUnpublish={() => submitFormAndUnpublish()}
-      onBeforeNavigate={saveBeforeNavigate}
-    >
-      <ReceiptTab
-        customViewContentButtonText={form.data.custom_view_content_button_text}
-        customReceiptText={form.data.custom_receipt_text}
-        customViewContentButtonTextMaxLength={product.custom_view_content_button_text_max_length}
-        customReceiptTextMaxLength={product.custom_receipt_text_max_length}
-        onCustomViewContentButtonTextChange={(value) => form.setData("custom_view_content_button_text", value)}
-        onCustomReceiptTextChange={(value) => form.setData("custom_receipt_text", value)}
-      />
-    </Layout>
+      </Layout>
+    </ProductFormContext.Provider>
   );
 }
 

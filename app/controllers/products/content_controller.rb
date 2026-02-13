@@ -49,19 +49,31 @@ class Products::ContentController < Products::BaseController
     end
 
     def update_rich_content
-      rich_content = product_permitted_params[:rich_content] || []
-      existing_rich_contents = @product.alive_rich_contents.to_a
+      # Handle product-level rich content (shared content)
+      update_rich_content_for_entity(@product, product_permitted_params[:rich_content] || [])
+
+      # Handle variant-level rich content (per-variant content)
+      (product_permitted_params[:variants] || []).each do |variant_params|
+        variant = @product.alive_variants.find { |v| v.external_id == variant_params[:id] }
+        next unless variant
+
+        update_rich_content_for_entity(variant, variant_params[:rich_content] || [])
+      end
+    end
+
+    def update_rich_content_for_entity(entity, rich_content_params)
+      existing_rich_contents = entity.alive_rich_contents.to_a
       rich_contents_to_keep = []
 
-      rich_content.each.with_index do |product_rich_content, index|
-        rc = existing_rich_contents.find { |c| c.external_id === product_rich_content[:id] } || @product.alive_rich_contents.build
-        description = product_rich_content[:description].to_h[:content]
-        product_rich_content[:description] = SaveContentUpsellsService.new(
+      rich_content_params.each.with_index do |content_params, index|
+        rc = existing_rich_contents.find { |c| c.external_id == content_params[:id] } || entity.alive_rich_contents.build
+        description = extract_rich_content_description(content_params[:description])
+        processed_description = SaveContentUpsellsService.new(
           seller: @product.user,
           content: description,
           old_content: rc.description || []
         ).from_rich_content
-        rc.update!(title: product_rich_content[:title].presence, description: product_rich_content[:description].presence || [], position: index)
+        rc.update!(title: content_params[:title].presence, description: processed_description.presence || [], position: index)
         rich_contents_to_keep << rc
       end
 

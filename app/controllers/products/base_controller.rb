@@ -71,4 +71,11 @@ class Products::BaseController < Sellers::BaseController
     def authorize_product
       authorize @product
     end
+
+    # Extracts the content array from a TipTap description wrapper object
+    # TipTap sends: { type: "doc", content: [...nodes...] }
+    # Services expect: [...nodes...]
+    def extract_rich_content_description(description)
+      description.to_h[:content]
+    end
 end

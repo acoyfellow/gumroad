@@ -36,6 +36,7 @@ class Products::ProductController < Products::BaseController
     end
     redirect_to edit_product_product_path(@product.unique_permalink), alert: error_message
   rescue StandardError => e
+    Rails.logger.error "Error updating product TOTO: #{e.message} #{e.backtrace.join("\n")}"
     Bugsnag.notify(e)
     redirect_to edit_product_product_path(@product.unique_permalink), alert: "Something broke. We're looking into what happened. Sorry about this!"
   end
@@ -109,7 +110,7 @@ class Products::ProductController < Products::BaseController
 
     def update_variants
       variant_category = @product.variant_categories_alive.first
-      variants = product_permitted_params[:variants] || []
+      variants = curate_variants_rich_content(product_permitted_params[:variants] || [])
       if variants.any? || @product.is_tiered_membership?
         variant_category_params = variant_category.present? ?
           { id: variant_category.external_id, name: variant_category.title } :
@@ -124,6 +125,20 @@ class Products::ProductController < Products::BaseController
           product: @product,
           variants_params: [{ id: variant_category.external_id, options: nil }]
         ).perform
+      end
+    end
+
+    def curate_variants_rich_content(variants)
+      variants.map do |variant|
+        variant = variant.to_h.with_indifferent_access
+        if variant[:rich_content].present?
+          variant[:rich_content] = variant[:rich_content].map do |rich_content|
+            rich_content = rich_content.to_h.with_indifferent_access
+            rich_content[:description] = extract_rich_content_description(rich_content[:description])
+            rich_content
+          end
+        end
+        variant
       end
     end
 
