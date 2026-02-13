@@ -698,7 +698,6 @@ Rails.application.routes.draw do
       member do
         get :edit, to: "products/main#edit"
         patch :update, to: "products/main#update"
-        put :update, to: "products/main#update"
       end
 
       scope module: :products do
