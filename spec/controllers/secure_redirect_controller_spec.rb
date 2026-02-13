@@ -61,7 +61,7 @@ describe SecureRedirectController, type: :controller, inertia: true do
           encrypted_payload: encrypted_payload
         }, flash: { alert: "Test alert message" }
 
-        expect(inertia.props[:flash]).to eq({ message: "Test alert message", status: "danger" })
+        expect(inertia.props[:flash]).to eq({ message: "Test alert message", status: "danger", html: false })
       end
 
       it "does not include flash in props when not present" do

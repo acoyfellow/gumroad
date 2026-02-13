@@ -35,6 +35,7 @@ describe("Product Edit - Publishing Scenario", type: :system, js: true) do
 
     it "allows creator to copy product url" do
       select_tab "Share"
+      wait_for_ajax
       copy_button = find_button("Copy URL")
       copy_button.hover
       expect(copy_button).to have_tooltip(text: "Copy to Clipboard")
