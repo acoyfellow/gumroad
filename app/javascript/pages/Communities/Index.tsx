@@ -203,7 +203,9 @@ function CommunitiesIndex() {
     if (selectedCommunity) {
       const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.has("notifications")) {
-        router.reload({ except: ["messages"], replace: true });
+        searchParams.delete("notifications");
+        const newUrl = `${window.location.pathname}${searchParams.size ? `?${searchParams.toString()}` : ""}`;
+        window.history.replaceState({}, "", newUrl);
         setShowNotificationsSettings(true);
       }
     }
