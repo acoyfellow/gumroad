@@ -145,7 +145,7 @@ describe UrlRedirectPresenter do
         .and_return("#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachments/guid123/original/video.mp4?X-Amz-Signature=test")
 
       product = create(:product)
-      video1 = create(:streamable_video, link: product, position: 1)
+      create(:streamable_video, link: product, position: 1)
       video2 = create(:streamable_video, link: product, position: 2)
       url_redirect = create(:url_redirect, link: product, purchase: nil)
       user = create(:user)
