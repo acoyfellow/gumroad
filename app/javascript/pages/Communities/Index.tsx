@@ -203,7 +203,7 @@ function CommunitiesIndex() {
     if (selectedCommunity) {
       const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.has("notifications")) {
-        router.reload({ only: [], replace: true });
+        router.reload({ except: ["messages"], replace: true });
         setShowNotificationsSettings(true);
       }
     }
@@ -697,6 +697,7 @@ const NotificationsSettingsModal = ({
   const saveNotificationSettings = () => {
     form.put(Routes.community_notification_settings_path(community.id), {
       preserveScroll: true,
+      except: ["messages"],
       onSuccess: () => {
         onClose();
       },
