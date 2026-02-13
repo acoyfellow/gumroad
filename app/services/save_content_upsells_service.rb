@@ -32,7 +32,6 @@ class SaveContentUpsellsService
   def from_rich_content
     old_upsell_ids = old_content&.filter_map { |node| node["type"] == "upsellCard" ? node.dig("attrs", "id") : nil } || []
     new_upsell_nodes = content&.select { |node| node["type"] == "upsellCard" } || []
-    p "COUCOU #{new_upsell_nodes.inspect}"
     new_upsell_ids = new_upsell_nodes.map { |node| node.dig("attrs", "id") }.compact
 
     delete_removed_upsells!(old_upsell_ids - new_upsell_ids)

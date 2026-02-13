@@ -36,7 +36,6 @@ class Products::ProductController < Products::BaseController
     end
     redirect_to edit_product_product_path(@product.unique_permalink), alert: error_message
   rescue StandardError => e
-    Rails.logger.error "Error updating product TOTO: #{e.message} #{e.backtrace.join("\n")}"
     Bugsnag.notify(e)
     redirect_to edit_product_product_path(@product.unique_permalink), alert: "Something broke. We're looking into what happened. Sorry about this!"
   end
