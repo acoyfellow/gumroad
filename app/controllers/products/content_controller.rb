@@ -16,7 +16,7 @@ class Products::ContentController < Products::BaseController
       current_seller:,
     ).process(:content_tab).values_at(:product, :warning, :status, :success, :notify_customers_link_payload)
 
-    return redirect_to edit_product_content_path(product), inertia: inertia_errors(product, model_name: "product"), alert: inertia_alert(product), status: :found unless success
+    return redirect_to edit_product_content_path(product), inertia: inertia_errors(product, model_name: "product"), alert: inertia_alert(product) unless success
 
     notice = case status
              when :published then "Published!"

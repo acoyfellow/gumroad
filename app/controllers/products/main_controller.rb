@@ -15,7 +15,7 @@ class Products::MainController < Products::BaseController
       current_seller:,
     ).process(:product_tab, disallow_publish: true).values_at(:product, :warning, :status, :success)
 
-    return redirect_to edit_product_path(product), inertia: inertia_errors(product, model_name: "product"), alert: inertia_alert(product), status: :found unless success
+    return redirect_to edit_product_path(product), inertia: inertia_errors(product, model_name: "product"), alert: inertia_alert(product) unless success
 
     notice = case status
              when :published then "Published!"
@@ -24,9 +24,7 @@ class Products::MainController < Products::BaseController
     end
 
     default_path = (status == :saved && !product.alive? && product.native_type != Link::NATIVE_TYPE_COFFEE) ? edit_product_content_path(product) : edit_product_path(product)
-    redirect_path = permitted_next_url || default_path
-
-    redirect_to redirect_path, status: :see_other, **(warning.present? ? { warning: } : { notice: })
+    redirect_to permitted_next_url || default_path, status: :see_other, **(warning.present? ? { warning: } : { notice: })
   end
 
   private

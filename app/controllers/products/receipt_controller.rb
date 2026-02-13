@@ -16,7 +16,7 @@ class Products::ReceiptController < Products::BaseController
       current_seller:,
     ).process(:receipt_tab).values_at(:product, :warning, :status, :success)
 
-    return redirect_to edit_product_receipt_path(product), inertia: inertia_errors(product, model_name: "product"), alert: inertia_alert(product), status: :found unless success
+    return redirect_to edit_product_receipt_path(product), inertia: inertia_errors(product, model_name: "product"), alert: inertia_alert(product) unless success
 
     notice = case status
              when :published then "Published!"

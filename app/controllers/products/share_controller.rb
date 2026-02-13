@@ -17,7 +17,7 @@ class Products::ShareController < Products::BaseController
       current_seller:,
     ).process(:share_tab, disallow_publish: true).values_at(:product, :warning, :status, :success)
 
-    return redirect_to edit_product_share_path(product), inertia: inertia_errors(product, model_name: "product"), alert: inertia_alert(product), status: :found unless success
+    return redirect_to edit_product_share_path(product), inertia: inertia_errors(product, model_name: "product"), alert: inertia_alert(product) unless success
 
     notice = case status
              when :unpublished then "Unpublished!"
