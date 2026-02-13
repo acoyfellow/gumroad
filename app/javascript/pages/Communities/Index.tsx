@@ -220,6 +220,7 @@ function CommunitiesIndex() {
             preserveScroll: true,
             async: true,
             only: ["communities"],
+            showProgress: false,
             onSuccess: () => {
               updateCommunity(communityId, {
                 last_read_community_chat_message_created_at: messageCreatedAt,
@@ -325,6 +326,7 @@ function CommunitiesIndex() {
       preserveState: true,
       preserveScroll: true,
       except: ["messages"],
+      showProgress: false,
       onSuccess: () => {
         updateCommunityDraft(selectedCommunity.id, { content: "", isSending: false });
         scrollTo({ target: "bottom" });
@@ -466,6 +468,7 @@ function CommunitiesIndex() {
             preserveState: true,
             preserveScroll: true,
             except: ["messages"],
+            showProgress: false,
             onSuccess: () => resolve(),
             onError: () => {
               reject(new Error("Failed to update message."));
@@ -483,6 +486,7 @@ function CommunitiesIndex() {
           preserveState: true,
           preserveScroll: true,
           except: ["messages"],
+          showProgress: false,
           onSuccess: () => {
             removeMessage(messageId, communityId);
             resolve();
