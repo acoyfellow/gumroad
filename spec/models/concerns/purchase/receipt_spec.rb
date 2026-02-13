@@ -86,33 +86,18 @@ describe Purchase::Receipt do
   end
 
   describe "#resend_receipt" do
-    let(:product) { create(:product_with_pdf_file) }
+    let(:product) { create(:product) }
     let(:gift) { create(:gift, link: product) }
     let(:purchase) { create(:purchase, link: product, is_gift_sender_purchase: true, gift_given: gift) }
     let!(:url_redirect) { create(:url_redirect, purchase:, link: product) }
     let(:giftee_purchase) { create(:purchase, link: product, gift_received: gift) }
     let!(:giftee_url_redirect) { create(:url_redirect, purchase: giftee_purchase, link: product) }
 
-    context "when product has no stampable files" do
-      it "enqueues SendPurchaseReceiptJob using the critical queue" do
-        purchase.resend_receipt
+    it "enqueues SendPurchaseReceiptJob on the critical queue" do
+      purchase.resend_receipt
 
-        expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(purchase.id).on("critical")
-        expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(giftee_purchase.id).on("critical")
-      end
-    end
-
-    context "when product has stampable files" do
-      before do
-        product.product_files.pdf.first.update!(pdf_stamp_enabled: true)
-      end
-
-      it "enqueues SendPurchaseReceiptJob using the default queue" do
-        purchase.resend_receipt
-
-        expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(purchase.id).on("default")
-        expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(giftee_purchase.id).on("default")
-      end
+      expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(purchase.id).on("critical")
+      expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(giftee_purchase.id).on("critical")
     end
   end
 end

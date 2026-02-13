@@ -919,20 +919,6 @@ describe PurchasesController, :vcr do
           expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(@gifter_purchase.id).on("critical")
           expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(@giftee_purchase.id).on("critical")
         end
-
-        context "when the product has stampable PDFs" do
-          before do
-            allow_any_instance_of(Link).to receive(:has_stampable_pdfs?).and_return(true)
-          end
-
-          it "enqueues receipt jobs on default queue" do
-            post :resend_receipt, params: { id: ObfuscateIds.encrypt(@gifter_purchase.id) }
-            expect(response).to be_successful
-
-            expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(@gifter_purchase.id).on("default")
-            expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(@giftee_purchase.id).on("default")
-          end
-        end
       end
     end
 

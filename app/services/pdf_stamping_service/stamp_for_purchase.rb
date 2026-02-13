@@ -11,9 +11,12 @@ module PdfStampingService::StampForPurchase
     product_files_to_stamp = find_products_to_stamp(product, url_redirect)
 
     results = Set.new
+    total_start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     product_files_to_stamp.each do |product_file|
       results << process_product_file(url_redirect:, product_file:, watermark_text: purchase.email)
     end
+    elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - total_start
+    Rails.logger.info("[PdfStamping] Purchase #{purchase.id}: stamped #{product_files_to_stamp.size} file(s) in #{elapsed.round(2)}s")
 
     failed_results = results.reject(&:success?)
     if failed_results.none?
@@ -38,7 +41,7 @@ module PdfStampingService::StampForPurchase
 
     def process_product_file(url_redirect:, product_file:, watermark_text:)
       stamped_pdf_url = stamp_and_upload!(product_file:, watermark_text:)
-      url_redirect.stamped_pdfs.create!(product_file:, url: stamped_pdf_url)
+      url_redirect.stamped_pdfs.create!(product_file:, url: stamped_pdf_url) if stamped_pdf_url.present?
       OpenStruct.new(success?: true)
     rescue *PdfStampingService::ERRORS_TO_RESCUE => error
       OpenStruct.new(

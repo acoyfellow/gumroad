@@ -130,17 +130,6 @@ describe PublicController, type: :controller, inertia: true do
         expect(response.parsed_body["success"]).to be(true)
         expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(purchase.id).on("critical")
       end
-
-      context "when the product has stampable PDFs" do
-        before do
-          allow_any_instance_of(Link).to receive(:has_stampable_pdfs?).and_return(true)
-        end
-
-        it "enqueues job for sending the receipt on the default queue" do
-          get(:paypal_charge_data, params:)
-          expect(SendPurchaseReceiptJob).to have_enqueued_sidekiq_job(purchase.id).on("default")
-        end
-      end
     end
   end
 end

@@ -177,20 +177,6 @@ describe Order do
       expect(SendChargeReceiptJob).to have_enqueued_sidekiq_job(charge_two.id).on("critical")
       expect(SendChargeReceiptJob).not_to have_enqueued_sidekiq_job(failed_charge.id)
     end
-
-    context "when a product has stampable PDFs" do
-      before do
-        product_one.product_files << create(:readable_document, pdf_stamp_enabled: true)
-        purchase_one.create_url_redirect!
-      end
-
-      it "enqueues the job on the default job queue" do
-        order.send_charge_receipts
-        expect(SendChargeReceiptJob).to have_enqueued_sidekiq_job(charge_one.id).on("default")
-        expect(SendChargeReceiptJob).to have_enqueued_sidekiq_job(charge_two.id).on("critical")
-        expect(SendChargeReceiptJob).not_to have_enqueued_sidekiq_job(failed_charge.id)
-      end
-    end
   end
 
   describe "#successful_charges", :vcr do

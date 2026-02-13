@@ -18,6 +18,8 @@ module PdfStampingService::Stamp
   def perform!(product_file:, watermark_text:)
     product_file.download_original do |original_pdf|
       original_pdf_path = original_pdf.path
+      Rails.logger.info("[PdfStamping] Starting stamp for product_file=#{product_file.id} size=#{File.size(original_pdf_path)}")
+      stamp_start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       original_pdf_path_shellescaped = Shellwords.shellescape(original_pdf_path)
 
       watermark_pdf_path = create_watermark_pdf!(original_pdf_path:, watermark_text:)
@@ -32,6 +34,9 @@ module PdfStampingService::Stamp
         watermark_pdf_path_shellescaped,
         stamped_pdf_path_shellescaped
       )
+
+      elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - stamp_start
+      Rails.logger.info("[PdfStamping] Finished stamp for product_file=#{product_file.id} elapsed=#{elapsed.round(2)}s")
 
       stamped_pdf_path
     ensure

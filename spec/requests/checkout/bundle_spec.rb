@@ -36,8 +36,7 @@ describe "Checkout bundles", :js, type: :system do
     click_on "Pay"
     expect(page).to have_alert(text: "Your purchase was successful!")
 
-    expect(page).to_not have_link("Product")
-    expect(page).to have_section("Product")
+    expect(page).to have_link("Product")
     expect(page).to have_link("Versioned product - Untitled 1", href: Purchase.last.url_redirect.download_page_url)
     expect(page).to_not have_link("Bundle")
   end
@@ -199,8 +198,7 @@ describe "Checkout bundles", :js, type: :system do
         expect(purchase.is_test_purchase?).to eq(true)
       end
 
-      expect(page).to_not have_link("Product")
-      expect(page).to have_section("Product")
+      expect(page).to have_link("Product")
       expect(page).to have_link("Versioned product - Untitled 1", href: purchases.last.url_redirect.download_page_url)
     end
   end

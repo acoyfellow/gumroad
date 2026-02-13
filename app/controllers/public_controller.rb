@@ -43,7 +43,7 @@ class PublicController < ApplicationController
     if purchase.nil?
       render json: { success: false }
     else
-      SendPurchaseReceiptJob.set(queue: purchase.link.has_stampable_pdfs? ? "default" : "critical").perform_async(purchase.id)
+      SendPurchaseReceiptJob.set(queue: "critical").perform_async(purchase.id)
       render json: { success: true }
     end
   end

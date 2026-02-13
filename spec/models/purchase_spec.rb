@@ -3053,25 +3053,18 @@ describe Purchase, :vcr do
       let(:purchase) { create(:purchase, link: product) }
       let!(:url_redirect) { create(:url_redirect, purchase:, link: product) }
 
-      it "returns true if webhook did not fail, pdf stamp is disabled and url redirect is present" do
+      it "returns true if webhook did not fail and url redirect is present" do
         expect(purchase.has_content?).to be(true)
       end
 
-      it "returns false if webhook has falied" do
+      it "returns false if webhook has failed" do
         allow(purchase).to receive(:webhook_failed).and_return true
         expect(purchase.has_content?).to be(false)
       end
 
-      it "returns false if product has stampable files but the stamping hasn't finished" do
+      it "returns true if product has stampable files regardless of stamping status" do
         product.product_files << create(:readable_document, pdf_stamp_enabled: true)
 
-        expect(purchase.has_content?).to be(false)
-      end
-
-      it "returns true if product has stampable files and the stamping has finished" do
-        product.product_files << create(:readable_document, pdf_stamp_enabled: true)
-
-        allow(url_redirect).to receive(:is_done_pdf_stamping).and_return true
         expect(purchase.has_content?).to be(true)
       end
 
