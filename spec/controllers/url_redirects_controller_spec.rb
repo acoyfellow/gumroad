@@ -648,7 +648,7 @@ describe UrlRedirectsController do
           expect(response).to have_http_status(:ok)
           expect(response.body).to include("data-page=")
 
-          page_data_match = response.body.match(/data-page=\"([^\"]*)\"/)
+          page_data_match = response.body.match(/data-page="([^"]*)"/)
           expect(page_data_match).to be_present, "Expected Inertia.js data-page attribute"
 
           page_data = JSON.parse(CGI.unescapeHTML(page_data_match[1]))
