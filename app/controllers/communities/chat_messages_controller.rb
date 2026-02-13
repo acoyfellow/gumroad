@@ -1,14 +1,10 @@
 # frozen_string_literal: true
 
-class Api::Internal::Communities::ChatMessagesController < Api::Internal::BaseController
+class Communities::ChatMessagesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_community
   before_action :set_message, only: [:update, :destroy]
   after_action :verify_authorized
-
-  def index
-    render json: PaginatedCommunityChatMessagesPresenter.new(community: @community, timestamp: params[:timestamp], fetch_type: params[:fetch_type]).props
-  end
 
   def create
     message = @community.community_chat_messages.build(permitted_params)
@@ -17,9 +13,12 @@ class Api::Internal::Communities::ChatMessagesController < Api::Internal::BaseCo
     if message.save
       message_props = CommunityChatMessagePresenter.new(message:).props
       broadcast_message(message_props, CommunityChannel::CREATE_CHAT_MESSAGE_TYPE)
-      render json: { message: message_props }
+      redirect_to community_path(@community.seller.external_id, @community.external_id),
+                  status: :see_other
     else
-      render json: { error: message.errors.full_messages.first }, status: :unprocessable_entity
+      redirect_to community_path(@community.seller.external_id, @community.external_id),
+                  inertia: inertia_errors(message),
+                  alert: message.errors.full_messages.to_sentence
     end
   end
 
@@ -27,9 +26,12 @@ class Api::Internal::Communities::ChatMessagesController < Api::Internal::BaseCo
     if @message.update(permitted_params)
       message_props = CommunityChatMessagePresenter.new(message: @message).props
       broadcast_message(message_props, CommunityChannel::UPDATE_CHAT_MESSAGE_TYPE)
-      render json: { message: message_props }
+      redirect_to community_path(@community.seller.external_id, @community.external_id),
+                  status: :see_other
     else
-      render json: { error: @message.errors.full_messages.first }, status: :unprocessable_entity
+      redirect_to community_path(@community.seller.external_id, @community.external_id),
+                  inertia: inertia_errors(@message),
+                  alert: @message.errors.full_messages.to_sentence
     end
   end
 
@@ -37,21 +39,18 @@ class Api::Internal::Communities::ChatMessagesController < Api::Internal::BaseCo
     @message.mark_deleted!
     message_props = CommunityChatMessagePresenter.new(message: @message).props
     broadcast_message(message_props, CommunityChannel::DELETE_CHAT_MESSAGE_TYPE)
-    head :ok
+    redirect_to community_path(@community.seller.external_id, @community.external_id),
+                status: :see_other
   end
 
   private
     def set_community
-      @community = Community.find_by_external_id(params[:community_id])
-      return e404_json unless @community
-
+      @community = Community.find_by_external_id!(params[:community_id])
       authorize @community, :show?
     end
 
     def set_message
-      @message = @community.community_chat_messages.find_by_external_id(params[:id])
-      return e404_json unless @message
-
+      @message = @community.community_chat_messages.find_by_external_id!(params[:id])
       authorize @message
     end
 
