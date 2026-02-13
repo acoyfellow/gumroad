@@ -321,7 +321,7 @@ function CommunitiesIndex() {
         content: selectedCommunityDraft.content,
       },
     }));
-    
+
     scrollTo({ target: "bottom" });
     setShowScrollToBottomButton(false);
 
