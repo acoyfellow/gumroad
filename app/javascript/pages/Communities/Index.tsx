@@ -218,9 +218,9 @@ function CommunitiesIndex() {
           { message_id: messageId },
           {
             preserveScroll: true,
+            preserveUrl: true,
             async: true,
             only: ["communities"],
-            showProgress: false,
             onSuccess: () => {
               updateCommunity(communityId, {
                 last_read_community_chat_message_created_at: messageCreatedAt,
@@ -326,7 +326,6 @@ function CommunitiesIndex() {
     setShowScrollToBottomButton(false);
 
     messageForm.post(Routes.community_chat_messages_path(selectedCommunity.id), {
-      preserveState: true,
       preserveScroll: true,
       except: ["messages"],
       showProgress: false,
@@ -466,7 +465,6 @@ function CommunitiesIndex() {
           Routes.community_chat_message_path(communityId, messageId),
           { community_chat_message: { content } },
           {
-            preserveState: true,
             preserveScroll: true,
             except: ["messages"],
             showProgress: false,
