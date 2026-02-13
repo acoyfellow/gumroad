@@ -321,6 +321,9 @@ function CommunitiesIndex() {
         content: selectedCommunityDraft.content,
       },
     }));
+    
+    scrollTo({ target: "bottom" });
+    setShowScrollToBottomButton(false);
 
     messageForm.post(Routes.community_chat_messages_path(selectedCommunity.id), {
       preserveState: true,
@@ -329,8 +332,6 @@ function CommunitiesIndex() {
       showProgress: false,
       onSuccess: () => {
         updateCommunityDraft(selectedCommunity.id, { content: "", isSending: false });
-        scrollTo({ target: "bottom" });
-        setShowScrollToBottomButton(false);
       },
       onError: () => {
         updateCommunityDraft(selectedCommunity.id, { isSending: false });
