@@ -438,6 +438,7 @@ describe "Product creation", type: :system, js: true do
             expect(page).to have_field("Amount", with: "29.99")
           end
           select_tab "Content"
+          wait_for_ajax
           expect(page).to have_text("Chapter 1: Introduction to Ruby on Rails")
           expect(page).to have_text("Chapter 2: Setting Up Your Development Environment")
           expect(page).to have_text("Chapter 3: Building Your First Rails Application")

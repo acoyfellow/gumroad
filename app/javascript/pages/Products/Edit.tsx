@@ -128,8 +128,10 @@ const EditProductPage = () => {
       onSuccess: (data) => {
         options?.onSuccess?.();
         options?.onFinish?.();
-        form.setData("product", cast<EditProduct>(data.props.product));
-        form.setDefaults();
+        if (data.url === Routes.edit_product_path(form.data.product.unique_permalink)) {
+          form.setData("product", cast<EditProduct>(data.props.product));
+          form.setDefaults();
+        }
       },
       ...(options?.onFinish && { onError: options.onFinish }),
     });

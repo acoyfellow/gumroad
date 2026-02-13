@@ -261,9 +261,11 @@ const EditProductContentPage = () => {
       onSuccess: (data) => {
         options?.onSuccess?.();
         options?.onFinish?.();
-        form.setData("product", cast<EditProductContent>(data.props.product));
-        form.setDefaults();
-        setSyncRichContentIdsFromServer((count) => count + 1);
+        if (data.url === Routes.edit_product_content_path(product.unique_permalink)) {
+          form.setData("product", cast<EditProductContent>(data.props.product));
+          form.setDefaults();
+          setSyncRichContentIdsFromServer((count) => count + 1);
+        }
       },
       ...(options?.onFinish && { onError: options.onFinish }),
     });
