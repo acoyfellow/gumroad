@@ -322,8 +322,9 @@ function CommunitiesIndex() {
     }));
 
     messageForm.post(Routes.community_chat_messages_path(selectedCommunity.id), {
+      preserveState: true,
       preserveScroll: true,
-      only: [],
+      except: ["messages"],
       onSuccess: () => {
         updateCommunityDraft(selectedCommunity.id, { content: "", isSending: false });
         scrollTo({ target: "bottom" });
@@ -462,8 +463,9 @@ function CommunitiesIndex() {
           Routes.community_chat_message_path(communityId, messageId),
           { community_chat_message: { content } },
           {
+            preserveState: true,
             preserveScroll: true,
-            only: [],
+            except: ["messages"],
             onSuccess: () => resolve(),
             onError: () => {
               reject(new Error("Failed to update message."));
@@ -480,8 +482,9 @@ function CommunitiesIndex() {
         router.delete(Routes.community_chat_message_path(communityId, messageId), {
           preserveState: true,
           preserveScroll: true,
-          only: [],
+          except: ["messages"],
           onSuccess: () => {
+            removeMessage(messageId, communityId);
             resolve();
           },
           onError: () => {
@@ -490,7 +493,7 @@ function CommunitiesIndex() {
           },
         });
       }),
-    [],
+    [removeMessage],
   );
 
   const contextValue = React.useMemo(
