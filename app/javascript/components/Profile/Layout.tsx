@@ -6,9 +6,9 @@ import { NavigationButton } from "$app/components/Button";
 import { CartNavigationButton } from "$app/components/Checkout/CartNavigationButton";
 import { useCartItemsCount } from "$app/components/Checkout/useCartItemsCount";
 import { Icon } from "$app/components/Icons";
-import { FollowForm } from "$app/components/Profile/FollowForm";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { PoweredByFooter } from "$app/components/PoweredByFooter";
+import { FollowForm } from "$app/components/Profile/FollowForm";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
 
 type LayoutProps = {
