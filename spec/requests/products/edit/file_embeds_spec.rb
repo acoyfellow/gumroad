@@ -238,7 +238,7 @@ describe("File embeds in product content editor", type: :system, js: true) do
     product = create(:product, user: seller)
     product.product_files << create(:product_file, url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}/attachment/jimbo.pdf")
     create(:rich_content, entity: product, description: [{ "type" => "fileEmbed", "attrs" => { "id" => product.product_files.first.external_id, "uid" => SecureRandom.uuid } }])
-    visit edit_link_path(product.unique_permalink) + "/content"
+    visit edit_product_content_path(product.unique_permalink)
     expect(product.product_files.first.name_displayable).to eq "jimbo"
     rename_file_embed from: "jimbo", to: "jimmy"
     within find_embed(name: "jimmy") do

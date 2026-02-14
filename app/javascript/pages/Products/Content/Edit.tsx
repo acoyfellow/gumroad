@@ -38,7 +38,7 @@ function ContentPage() {
   const { product: initialProduct, uniquePermalink, currencyType: initialCurrencyType, successfulSalesCount } =
     useProductEditContext();
   const url = useProductUrl();
-  const updateUrl = Routes.product_content_path(uniquePermalink);
+  const updateUrl = Routes.edit_product_content_path(uniquePermalink);
 
   const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(null);
   const [currencyType, setCurrencyType] = React.useState<CurrencyCode>(initialCurrencyType);

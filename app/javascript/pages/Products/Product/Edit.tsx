@@ -65,7 +65,7 @@ function ProductPage() {
     options?: { onStart?: () => void; onSuccess?: () => void; onFinish?: () => void },
   ) => {
     if (form.processing) return;
-    form.transform((data) => ({ product: { ...data, price_currency_type: currencyType }, ...additionalData }));
+    form.transform((data) => ({ product: { ...data, covers: data.covers.map(({ id }) => id), price_currency_type: currencyType }, ...additionalData }));
     form.patch(updateUrl, { preserveScroll: true, ...options });
   };
 

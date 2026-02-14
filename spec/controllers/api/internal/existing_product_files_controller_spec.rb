@@ -24,7 +24,26 @@ describe Api::Internal::ExistingProductFilesController do
     let(:product) { create(:product_with_pdf_file, user: seller) }
     let(:product_files) do
       product_file = product.product_files.first
-      [{ attached_product_name: product.name,  extension: "PDF", file_name: "Display Name", display_name: "Display Name", description: "Description", file_size: 50, id: product_file.external_id, is_pdf: true, pdf_stamp_enabled: false, is_streamable: false, stream_only: false, is_transcoding_in_progress: false, isbn: nil, pagelength: 3, duration: nil, subtitle_files: [], url: product_file.url, thumbnail: nil, status: { type: "saved" } }]
+      [{
+        attached_product_name: product.name,
+        extension: "PDF",
+        file_name: "Display Name",
+        display_name: "Display Name",
+        description: "Description",
+        file_size: 50,
+        id: product_file.external_id,
+        is_pdf: true,
+        pdf_stamp_enabled: false,
+        is_streamable: false,
+        stream_only: false,
+        is_transcoding_in_progress: false,
+        isbn: nil,
+        is_external_link: false,
+        pagelength: 3,
+        duration: nil,
+        subtitle_files: [],
+        url: product_file.url, thumbnail: nil, status: { type: "saved" },
+        signed_url: product_file.signed_download_url_for_s3_key_and_filename(product_file.s3_key, product_file.s3_filename, is_video: true) }]
     end
 
     it "returns existing files for the product" do

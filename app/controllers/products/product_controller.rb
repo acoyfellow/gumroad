@@ -25,6 +25,8 @@ class Products::ProductController < Products::BaseController
       redirect_to params[:redirect_to], notice: "Changes saved!", status: :see_other
     elsif was_published
       redirect_back fallback_location: edit_product_product_path(@product.unique_permalink), notice: "Changes saved!", status: :see_other
+    elsif @product.native_type == ::Link::NATIVE_TYPE_COFFEE
+      redirect_to edit_product_product_path(@product.unique_permalink), notice: "Changes saved!", status: :see_other
     else
       redirect_to edit_product_content_path(@product.unique_permalink), notice: "Changes saved!", status: :see_other
     end
