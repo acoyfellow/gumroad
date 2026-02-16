@@ -139,11 +139,7 @@ export type Product = {
   };
   covers: AssetPreview[];
   availabilities: Availability[];
-  section_ids: string[];
-  taxonomy_id: string | null;
-  tags: string[];
   display_product_reviews: boolean;
-  is_adult: boolean;
   discover_fee_per_thousand: number;
   shipping_destinations: ShippingDestination[];
   custom_domain: string;
@@ -229,14 +225,14 @@ export type EditProductBase = {
   | "is_published"
 >;
 
-export type EditProductShare = EditProductBase &
-  Pick<
+export type EditProductShare = EditProductBase & {
+  section_ids: string[];
+  taxonomy_id: string | null;
+  tags: string[];
+  is_adult: boolean;
+} & Pick<
     Product,
-    | "section_ids"
-    | "taxonomy_id"
-    | "tags"
     | "display_product_reviews"
-    | "is_adult"
     | "collaborating_user"
     | "covers"
     | "max_purchase_count"

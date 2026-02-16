@@ -312,11 +312,7 @@ describe ProductPresenter do
         hide_sold_out_variants: false,
         is_epublication: false,
         product_refund_policy_enabled: false,
-        section_ids: [profile_section.external_id],
-        taxonomy_id: "1",
-        tags: ["hi"],
         display_product_reviews: true,
-        is_adult: true,
         discover_fee_per_thousand: 300,
         refund_policy: {
           allowed_refund_periods_in_days: [
@@ -517,11 +513,7 @@ describe ProductPresenter do
           ],
           availabilities: [],
           shipping_destinations: [],
-          section_ids: [],
-          taxonomy_id: nil,
-          tags: [],
           display_product_reviews: true,
-          is_adult: false,
           discover_fee_per_thousand: 100,
           custom_domain: "",
           free_trial_enabled: true,
@@ -648,11 +640,7 @@ describe ProductPresenter do
           hide_sold_out_variants: false,
           is_epublication: false,
           product_refund_policy_enabled: false,
-          section_ids: [],
-          taxonomy_id: nil,
-          tags: [],
           display_product_reviews: true,
-          is_adult: false,
           discover_fee_per_thousand: 100,
           refund_policy: {
             allowed_refund_periods_in_days: [

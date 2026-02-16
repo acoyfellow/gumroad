@@ -128,11 +128,7 @@ class ProductPresenter
           multiple_items_rate_cents: shipping_destination.multiple_items_rate_cents,
         }
       end,
-      section_ids:,
-      taxonomy_id: product.taxonomy_id&.to_s,
-      tags: product.tags.pluck(:name),
       display_product_reviews: product.display_product_reviews,
-      is_adult: product.is_adult,
       discover_fee_per_thousand: product.discover_fee_per_thousand,
       custom_domain: product.custom_domain&.domain || "",
       free_trial_enabled: product.free_trial_enabled,

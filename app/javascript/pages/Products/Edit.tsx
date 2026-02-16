@@ -1,4 +1,4 @@
-import { router, useForm, usePage } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import { DirectUpload } from "@rails/activestorage";
 import * as React from "react";
 import { cast, is } from "ts-safe-cast";
@@ -211,10 +211,7 @@ const EditProductPage = () => {
                   id={`${uid}-name`}
                   type="text"
                   value={form.data.product.name}
-                  onChange={(evt) => {
-                    form.setData("product.name", evt.target.value);
-                    router.replaceProp("product.name", evt.target.value);
-                  }}
+                  onChange={(evt) => form.setData("product.name", evt.target.value)}
                 />
               </fieldset>
               {isCoffee ? (
