@@ -28,7 +28,7 @@ describe Products::MainController, inertia: true do
       get :edit, params: { id: product.unique_permalink }
 
       expect(response).to be_successful
-      presenter = controller.send(:edit_product_main_presenter)
+      presenter = controller.send(:product_presenter)
       expect(presenter.product).to eq(product)
       expect(presenter.pundit_user).to eq(controller.pundit_user)
       expect(inertia.props[:title]).to eq(product.name)

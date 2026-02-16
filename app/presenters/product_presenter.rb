@@ -93,7 +93,7 @@ class ProductPresenter
         .includes(:alive_subtitle_files).map { _1.as_json(existing_product_file: true) }
   end
 
-  def edit_product
+  def edit_product_props
     collaborator = product.collaborator_for_display
     cancellation_discount = product.cancellation_discount_offer_code
     edit_product_base.merge(
@@ -169,7 +169,7 @@ class ProductPresenter
     )
   end
 
-  def edit_product_metadata
+  def edit_product_metadata_props
     edit_product_base_metadata.merge(
       {
         allowed_refund_periods_in_days:,
@@ -197,7 +197,7 @@ class ProductPresenter
     )
   end
 
-  def edit_product_content
+  def edit_content_props
     edit_product_base.merge(
       {
         rich_content: product.rich_content_json,
@@ -217,7 +217,7 @@ class ProductPresenter
     )
   end
 
-  def edit_product_content_metadata
+  def edit_content_metadata_props
     {
       aws_key: AWS_ACCESS_KEY,
       s3_url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}",
@@ -226,7 +226,7 @@ class ProductPresenter
     }
   end
 
-  def edit_product_receipt
+  def edit_receipt_props
     edit_product_base.merge(
       {
         custom_receipt_text: product.custom_receipt_text,
@@ -235,14 +235,14 @@ class ProductPresenter
     )
   end
 
-  def edit_product_receipt_metadata
+  def edit_receipt_metadata_props
     {
       custom_receipt_text_max_length: Product::Validations::MAX_CUSTOM_RECEIPT_TEXT_LENGTH,
       custom_view_content_button_text_max_length: Product::Validations::MAX_VIEW_CONTENT_BUTTON_TEXT_LENGTH,
     }
   end
 
-  def edit_product_share
+  def edit_share_props
     collaborator = product.collaborator_for_display
     edit_product_base.merge(
       section_ids:,
@@ -276,7 +276,7 @@ class ProductPresenter
     )
   end
 
-  def edit_product_share_metadata
+  def edit_share_metadata_props
     edit_product_base_metadata.merge(
       {
         taxonomies: Discover::TaxonomyPresenter.new.taxonomies_for_nav,

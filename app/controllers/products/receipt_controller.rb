@@ -3,8 +3,8 @@
 class Products::ReceiptController < Products::BaseController
   def edit
     render inertia: "Products/Receipt/Edit", props: {
-      product: -> { edit_product_receipt_presenter.edit_product_receipt },
-      page_metadata: -> { edit_product_receipt_presenter.edit_product_receipt_metadata },
+      product: -> { product_presenter.edit_receipt_props },
+      page_metadata: -> { product_presenter.edit_receipt_metadata_props },
       receipt_preview_html: -> { ReceiptPreviewRendererService.new(product: @product, custom_receipt_text: params[:custom_receipt_text], custom_view_content_button_text: params[:custom_view_content_button_text], use_defaults: request.headers["HTTP_X_INERTIA_PARTIAL_COMPONENT"].blank? || request.headers["HTTP_X_INERTIA_PARTIAL_COMPONENT"] != "Products/Receipt/Edit").perform },
     }
   end
@@ -29,7 +29,7 @@ class Products::ReceiptController < Products::BaseController
   end
 
   private
-    def edit_product_receipt_presenter
-      @_edit_product_receipt_presenter ||= ProductPresenter.new(product: @product, pundit_user:)
+    def product_presenter
+      @_product_presenter ||= ProductPresenter.new(product: @product, pundit_user:)
     end
 end

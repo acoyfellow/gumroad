@@ -5,8 +5,8 @@ class Products::ShareController < Products::BaseController
 
   def edit
     render inertia: "Products/Share/Edit", props: {
-      product: -> { edit_product_share_presenter.edit_product_share },
-      page_metadata: -> { edit_product_share_presenter.edit_product_share_metadata },
+      product: -> { product_presenter.edit_share_props },
+      page_metadata: -> { product_presenter.edit_share_metadata_props },
     }
   end
 
@@ -31,8 +31,8 @@ class Products::ShareController < Products::BaseController
   end
 
   private
-    def edit_product_share_presenter
-      @_edit_product_share_presenter ||= ProductPresenter.new(product: @product, pundit_user:)
+    def product_presenter
+      @_product_presenter ||= ProductPresenter.new(product: @product, pundit_user:)
     end
 
     def redirect_if_unpublished

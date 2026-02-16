@@ -3,8 +3,8 @@
 class Products::MainController < Products::BaseController
   def edit
     render inertia: "Products/Edit", props: {
-      product: -> { edit_product_main_presenter.edit_product },
-      page_metadata: edit_product_main_presenter.edit_product_metadata,
+      product: -> { product_presenter.edit_product_props },
+      page_metadata: -> { product_presenter.edit_product_metadata_props },
     }
   end
 
@@ -28,7 +28,7 @@ class Products::MainController < Products::BaseController
   end
 
   private
-    def edit_product_main_presenter
-      @_edit_product_main_presenter ||= ProductPresenter.new(product: @product, pundit_user:, ai_generated: params[:ai_generated] == "true")
+    def product_presenter
+      @_product_presenter ||= ProductPresenter.new(product: @product, pundit_user:, ai_generated: params[:ai_generated] == "true")
     end
 end

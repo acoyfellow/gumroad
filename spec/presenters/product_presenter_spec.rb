@@ -284,11 +284,11 @@ describe ProductPresenter do
     end
   end
 
-  describe "#edit_product" do
+  describe "#edit_product_props" do
     include_context "product presenter edit setup"
 
     it "returns the product props for the product edit page" do
-      expect(presenter.edit_product).to eq(
+      expect(presenter.edit_product_props).to eq(
         name: "Product",
         description: "I am a product!",
         custom_permalink: "custom",
@@ -400,8 +400,8 @@ describe ProductPresenter do
         product.update!(default_offer_code: offer_code)
       end
 
-      it "includes default offer code data in edit_product" do
-        product_data = presenter.edit_product
+      it "includes default offer code data in edit_product_props" do
+        product_data = presenter.edit_product_props
         expect(product_data[:default_offer_code_id]).to eq(offer_code.external_id)
         expect(product_data[:default_offer_code]).to eq(
           id: offer_code.external_id,
@@ -450,7 +450,7 @@ describe ProductPresenter do
       end
 
       it "returns the properties for the product edit page" do
-        expect(presenter.edit_product).to eq(
+        expect(presenter.edit_product_props).to eq(
           name: "Membership",
           description: "Join now",
           custom_permalink: nil,
@@ -573,7 +573,7 @@ describe ProductPresenter do
       end
 
       it "returns properties for the product edit page" do
-        product_props = presenter.edit_product
+        product_props = presenter.edit_product_props
         expect(product_props[:can_enable_quantity]).to eq(false)
         expect(product_props[:variants]).to eq(
           [
@@ -610,7 +610,7 @@ describe ProductPresenter do
       end
 
       it "returns availabilities" do
-        expect(presenter.edit_product[:availabilities]).to eq(
+        expect(presenter.edit_product_props[:availabilities]).to eq(
           [
             {
               id: availability.external_id,
@@ -627,7 +627,7 @@ describe ProductPresenter do
       let(:presenter) { described_class.new(product: new_product, request:) }
 
       it "returns the properties for the product edit page" do
-        expect(presenter.edit_product).to eq(
+        expect(presenter.edit_product_props).to eq(
           name: "Product",
           description: "Boring",
           custom_permalink: nil,
@@ -718,7 +718,7 @@ describe ProductPresenter do
       end
 
       it "includes public files" do
-        props = described_class.new(product:, request:).edit_product
+        props = described_class.new(product:, request:).edit_product_props
         expect(props[:public_files].sole).to eq(PublicFilePresenter.new(public_file: public_file1).props)
         expect(props[:audio_previews_enabled]).to be(true)
       end
@@ -732,7 +732,7 @@ describe ProductPresenter do
       end
 
       it "includes community chat enabled" do
-        expect(described_class.new(product:, request:).edit_product[:community_chat_enabled]).to be(true)
+        expect(described_class.new(product:, request:).edit_product_props[:community_chat_enabled]).to be(true)
       end
 
       context "when the community is disabled" do
@@ -741,17 +741,17 @@ describe ProductPresenter do
         end
 
         it "includes community chat disabled" do
-          expect(described_class.new(product:, request:).edit_product[:community_chat_enabled]).to be(false)
+          expect(described_class.new(product:, request:).edit_product_props[:community_chat_enabled]).to be(false)
         end
       end
     end
   end
 
-  describe "#edit_product_metadata" do
+  describe "#edit_product_metadata_props" do
     include_context "product presenter edit setup"
 
     it "returns the page metadata for the product edit page" do
-      metadata = presenter.edit_product_metadata
+      metadata = presenter.edit_product_metadata_props
       expect(metadata).to include(
         seller_refund_policy_enabled: true,
         seller_refund_policy: { title: "30-day money back guarantee", fine_print: nil },
@@ -788,7 +788,7 @@ describe ProductPresenter do
       end
 
       it "returns the page metadata for the product edit page" do
-        expect(presenter.edit_product_metadata[:refund_policies]).to be_an(Array)
+        expect(presenter.edit_product_metadata_props[:refund_policies]).to be_an(Array)
       end
     end
 
@@ -830,9 +830,9 @@ describe ProductPresenter do
       end
 
       it "returns the page metadata for the product edit page" do
-        expect(presenter.edit_product_metadata[:profile_sections]).to eq([])
-        expect(presenter.edit_product_metadata[:refund_policies]).to eq([])
-        expect(presenter.edit_product_metadata[:cancellation_discounts_enabled]).to be(true)
+        expect(presenter.edit_product_metadata_props[:profile_sections]).to eq([])
+        expect(presenter.edit_product_metadata_props[:refund_policies]).to eq([])
+        expect(presenter.edit_product_metadata_props[:cancellation_discounts_enabled]).to be(true)
       end
     end
 
@@ -849,7 +849,7 @@ describe ProductPresenter do
       end
 
       it "returns the page metadata for the product edit page" do
-        expect(presenter.edit_product_metadata[:sales_count_for_inventory]).to eq(0)
+        expect(presenter.edit_product_metadata_props[:sales_count_for_inventory]).to eq(0)
       end
     end
 
@@ -858,9 +858,9 @@ describe ProductPresenter do
       let(:presenter) { described_class.new(product: new_product, request:) }
 
       it "returns the page metadata for the product edit page" do
-        expect(presenter.edit_product_metadata[:profile_sections]).to be_an(Array)
-        expect(presenter.edit_product_metadata[:refund_policies]).to be_an(Array)
-        expect(presenter.edit_product_metadata[:successful_sales_count]).to eq(0)
+        expect(presenter.edit_product_metadata_props[:profile_sections]).to be_an(Array)
+        expect(presenter.edit_product_metadata_props[:refund_policies]).to be_an(Array)
+        expect(presenter.edit_product_metadata_props[:successful_sales_count]).to eq(0)
       end
     end
 
@@ -875,7 +875,7 @@ describe ProductPresenter do
       end
 
       it "returns the page metadata for the product edit page" do
-        expect(presenter.edit_product_metadata[:google_calendar_enabled]).to be(false)
+        expect(presenter.edit_product_metadata_props[:google_calendar_enabled]).to be(false)
       end
     end
 
@@ -887,7 +887,7 @@ describe ProductPresenter do
       end
 
       it "returns the page metadata for the product edit page" do
-        expect(presenter.edit_product_metadata[:seller_refund_policy_enabled]).to be(true)
+        expect(presenter.edit_product_metadata_props[:seller_refund_policy_enabled]).to be(true)
       end
 
       context "when the community is disabled" do
@@ -896,17 +896,17 @@ describe ProductPresenter do
         end
 
         it "returns the page metadata for the product edit page" do
-          expect(presenter.edit_product_metadata[:seller_refund_policy_enabled]).to be(true)
+          expect(presenter.edit_product_metadata_props[:seller_refund_policy_enabled]).to be(true)
         end
       end
     end
   end
 
-  describe "#edit_product_content" do
+  describe "#edit_content_props" do
     include_context "product presenter edit setup"
 
     it "returns the exact edit product content hash" do
-      expect(presenter.edit_product_content).to eq({
+      expect(presenter.edit_content_props).to eq({
                                                      currency_type: "usd",
                                                      custom_permalink: "custom",
                                                      customizable_price: true,
@@ -942,12 +942,12 @@ describe ProductPresenter do
     end
   end
 
-  describe "#edit_product_content_metadata" do
+  describe "#edit_content_metadata_props" do
     let(:product) { create(:product) }
     let(:presenter) { described_class.new(product:, request: nil) }
 
     it "returns the exact edit product content metadata hash" do
-      expect(presenter.edit_product_content_metadata).to eq({
+      expect(presenter.edit_content_metadata_props).to eq({
                                                               aws_key: AWS_ACCESS_KEY,
                                                               s3_url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}",
                                                               seller: UserPresenter.new(user: product.user).author_byline_props,
@@ -956,11 +956,11 @@ describe ProductPresenter do
     end
   end
 
-  describe "#edit_product_receipt" do
+  describe "#edit_receipt_props" do
     include_context "product presenter edit setup"
 
     it "returns the exact edit product receipt hash" do
-      expect(presenter.edit_product_receipt).to eq({
+      expect(presenter.edit_receipt_props).to eq({
                                                      currency_type: "usd",
                                                      custom_permalink: "custom",
                                                      customizable_price: true,
@@ -979,23 +979,23 @@ describe ProductPresenter do
     end
   end
 
-  describe "#edit_product_receipt_metadata" do
+  describe "#edit_receipt_metadata_props" do
     let(:product) { create(:product) }
     let(:presenter) { described_class.new(product:, request: nil) }
 
     it "returns the exact edit product receipt metadata hash" do
-      expect(presenter.edit_product_receipt_metadata).to eq(
+      expect(presenter.edit_receipt_metadata_props).to eq(
         custom_receipt_text_max_length: Product::Validations::MAX_CUSTOM_RECEIPT_TEXT_LENGTH,
         custom_view_content_button_text_max_length: Product::Validations::MAX_VIEW_CONTENT_BUTTON_TEXT_LENGTH,
       )
     end
   end
 
-  describe "#edit_product_share" do
+  describe "#edit_share_props" do
     include_context "product presenter edit setup"
 
     it "returns the exact edit product share hash" do
-      expect(presenter.edit_product_share).to eq({
+      expect(presenter.edit_share_props).to eq({
                                                    name: "Product",
                                                    description: "I am a product!",
                                                    custom_permalink: "custom",
@@ -1061,11 +1061,11 @@ describe ProductPresenter do
     end
   end
 
-  describe "#edit_product_share_metadata" do
+  describe "#edit_share_metadata_props" do
     include_context "product presenter edit setup"
 
     it "returns the exact edit product share metadata hash" do
-      expect(presenter.edit_product_share_metadata).to eq({
+      expect(presenter.edit_share_metadata_props).to eq({
                                                             seller_refund_policy_enabled: true,
                                                             seller_refund_policy: { title: "30-day money back guarantee", fine_print: nil },
                                                             profile_sections: [

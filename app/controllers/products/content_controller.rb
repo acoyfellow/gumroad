@@ -3,9 +3,9 @@
 class Products::ContentController < Products::BaseController
   def edit
     render inertia: "Products/Content/Edit", props: {
-      product: -> { edit_product_content_presenter.edit_product_content },
-      existing_files: -> { edit_product_content_presenter.existing_files },
-      page_metadata: -> { edit_product_content_presenter.edit_product_content_metadata },
+      existing_files: -> { product_presenter.existing_files },
+      product: -> { product_presenter.edit_content_props },
+      page_metadata: -> { product_presenter.edit_content_metadata_props },
     }
   end
 
@@ -30,7 +30,7 @@ class Products::ContentController < Products::BaseController
   end
 
   private
-    def edit_product_content_presenter
-      @_edit_product_content_presenter ||= ProductPresenter.new(product: @product, pundit_user:)
+    def product_presenter
+      @_product_presenter ||= ProductPresenter.new(product: @product, pundit_user:)
     end
 end
