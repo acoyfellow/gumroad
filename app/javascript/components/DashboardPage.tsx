@@ -257,7 +257,7 @@ const ProductsTable = ({ sales }: TableProps) => {
         {items.map(({ id, name, thumbnail, today, last_7, last_30, sales, visits, revenue }) => (
           <TableRow key={id}>
             <ProductIconCell
-              productEditUrl
+              useInertiaLink
               href={Routes.edit_product_url({ id }, { host: appDomain })}
               thumbnail={thumbnail}
             />

@@ -5,17 +5,17 @@ import { Icon } from "$app/components/Icons";
 import { TableCell } from "$app/components/ui/Table";
 
 export const ProductIconCell = ({
-  productEditUrl = false,
+  useInertiaLink = false,
   href,
   thumbnail,
   placeholder = <Icon name="card-image-fill" />,
 }: {
-  productEditUrl?: boolean;
+  useInertiaLink?: boolean;
   href: string;
   thumbnail: string | null;
   placeholder?: React.ReactNode;
 }) => {
-  const NavigationComponent = productEditUrl ? Link : "a";
+  const NavigationComponent = useInertiaLink ? Link : "a";
 
   return (
     <TableCell hideLabel className="relative text-center text-xl lg:w-20 lg:min-w-20 lg:border-r lg:border-border">

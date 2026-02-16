@@ -68,7 +68,7 @@ export const CollabsMembershipsTable = (props: { entries: Membership[]; paginati
           {memberships.map((membership) => (
             <TableRow key={membership.id}>
               <ProductIconCell
-                productEditUrl={membership.can_edit}
+                useInertiaLink={membership.can_edit}
                 href={membership.can_edit ? membership.edit_url : membership.url}
                 thumbnail={membership.thumbnail?.url ?? null}
               />

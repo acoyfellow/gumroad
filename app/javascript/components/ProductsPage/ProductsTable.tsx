@@ -111,7 +111,7 @@ export const ProductsPageProductsTable = (props: {
           {products.map((product) => (
             <TableRow key={product.id}>
               <ProductIconCell
-                productEditUrl={product.can_edit}
+                useInertiaLink={product.can_edit}
                 href={product.can_edit ? product.edit_url : product.url}
                 thumbnail={product.thumbnail?.url ?? null}
               />
