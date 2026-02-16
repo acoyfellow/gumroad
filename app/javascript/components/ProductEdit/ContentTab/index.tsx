@@ -7,6 +7,7 @@ import * as React from "react";
 import { ReactSortable } from "react-sortablejs";
 
 import { fetchDropboxFiles, ResponseDropboxFile, uploadDropboxFile } from "$app/data/dropbox_upload";
+import { useDropbox } from "$app/hooks/useDropbox";
 import { ProductNativeType } from "$app/parsers/product";
 import { escapeRegExp } from "$app/utils";
 import { assertDefined } from "$app/utils/assert";
@@ -26,7 +27,9 @@ import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { Modal } from "$app/components/Modal";
 import { Popover, PopoverContent, PopoverTrigger } from "$app/components/Popover";
+import { FileEmbed, FileEmbedConfig, getDownloadUrl } from "$app/components/ProductEdit/ContentTab/FileEmbed";
 import { FileEmbedGroup } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
+import { Page, PageTab, titleWithFallback } from "$app/components/ProductEdit/ContentTab/PageTab";
 import { EditProductContentVariant, ExistingFileEntry, FileEntry } from "$app/components/ProductEdit/state";
 import { ReviewForm } from "$app/components/ReviewForm";
 import {
@@ -57,13 +60,9 @@ import { Card, CardContent } from "$app/components/ui/Card";
 import { Row, RowContent, Rows } from "$app/components/ui/Rows";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { Product, ProductOption, UpsellSelectModal } from "$app/components/UpsellSelectModal";
-import { useDropboxDropins } from "$app/components/useDropboxDropins";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
 import { useLatest } from "$app/components/useRefToLatest";
 import { WithTooltip } from "$app/components/WithTooltip";
-
-import { FileEmbed, FileEmbedConfig, getDownloadUrl } from "./FileEmbed";
-import { Page, PageTab, titleWithFallback } from "./PageTab";
 
 declare global {
   interface Window {
@@ -128,7 +127,7 @@ export const ContentTabContent = ({
   };
   dropboxPickerAppKey: string;
 }) => {
-  useDropboxDropins(dropboxPickerAppKey);
+  useDropbox(dropboxPickerAppKey);
 
   const filesByIdRef = useLatest(
     React.useMemo(
