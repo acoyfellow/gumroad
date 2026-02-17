@@ -84,6 +84,10 @@ class Variant < BaseVariant
     recurrence_price_values
   end
 
+  def update_product_files_from_rich_content
+    self.product_files = ProductFile.find(alive_rich_contents.flat_map(&:embedded_product_file_ids_in_order).uniq)
+  end
+
   private
     def set_position
       return if self.position_in_category.present?

@@ -63,6 +63,7 @@ class Products::ContentController < Products::BaseController
         next unless variant
 
         update_rich_content_for_entity(variant, variant_params[:rich_content] || [])
+        variant.update_product_files_from_rich_content
       end
     end
 

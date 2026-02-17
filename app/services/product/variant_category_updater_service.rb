@@ -66,7 +66,7 @@ class Product::VariantCategoryUpdaterService
                                               subscription_price_change_message: option[:subscription_price_change_message])
           save_integrations(variant, option)
           save_rich_content(variant, option)
-          variant.product_files = ProductFile.find(variant.alive_rich_contents.flat_map { _1.embedded_product_file_ids_in_order }.uniq)
+          variant.update_product_files_from_rich_content
           save_recurring_prices!(variant, option) if is_tiered_membership && has_variant_recurrences?
         rescue ActiveRecord::RecordInvalid, Link::LinkInvalid, ArgumentError => e
           error_message = variant.present? ? variant.errors.full_messages.to_sentence : e.message
