@@ -129,5 +129,23 @@ RSpec.describe Product::SaveCancellationDiscountService do
         end
       end
     end
+
+    context "when price after discount is below currency minimum" do
+      let(:cancellation_discount_params) do
+        { discount: { type: "fixed", cents: 50 }, duration_in_billing_cycles: nil }
+      end
+
+      it "adds the offer code error to product and re-raises RecordInvalid on update" do
+        service.perform
+        expect(product.cancellation_discount_offer_code).to be_present
+
+        invalid_params = { discount: { type: "fixed", cents: 250 }, duration_in_billing_cycles: nil }
+        expect do
+          described_class.new(product, invalid_params).perform
+        end.to raise_error(ActiveRecord::RecordInvalid)
+
+        expect(product.errors.full_messages.first).to eq("The price after discount for all of your products must be either $0 or at least $0.99.")
+      end
+    end
   end
 end

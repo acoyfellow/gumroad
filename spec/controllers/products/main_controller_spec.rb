@@ -534,6 +534,17 @@ describe Products::MainController, inertia: true do
             expect(Product::SaveCancellationDiscountService).to receive(:new).and_call_original
             patch :update, params: @recurring_params.deep_merge(product: { cancellation_discount: cancellation_discount_params }), as: :json
           end
+
+          it "redirects with offer code validation error when price after discount is below minimum" do
+            @product = create(:membership_product_with_preset_tiered_pricing, user: seller)
+            @recurring_params = { id: @product.unique_permalink, product: {} }
+
+            patch :update, params: @recurring_params.deep_merge(product: { cancellation_discount: { discount: { type: "fixed", cents: "250" }, duration_in_billing_cycles: nil } }), as: :json
+
+            expect(response).to have_http_status(:found)
+            expect(response).to redirect_to(edit_product_path(@product))
+            expect(flash[:alert]).to eq("The price after discount for all of your products must be either $0 or at least $0.99.")
+          end
         end
       end
 

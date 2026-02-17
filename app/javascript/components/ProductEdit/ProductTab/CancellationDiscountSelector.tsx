@@ -48,7 +48,7 @@ export const CancellationDiscountSelector = ({
           : { type: "percent", percents: discount.value },
       duration_in_billing_cycles: durationInBillingCycles,
     });
-  }, [isEnabled, discount, durationInBillingCycles, onChange]);
+  }, [isEnabled, discount, durationInBillingCycles]);
 
   return (
     <ToggleSettingRow

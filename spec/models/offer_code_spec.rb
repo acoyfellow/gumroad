@@ -97,6 +97,14 @@ describe OfferCode do
     end
   end
 
+  describe "cancellation discount validations" do
+    it "is invalid when product is not a tiered membership" do
+      expect do
+        create(:offer_code, products: [@product], amount_cents: 100, currency_type: "usd", is_cancellation_discount: true, user: @product.user)
+      end.to raise_error(ActiveRecord::RecordInvalid, "Validation failed: Cancellation discounts can only be added to memberships")
+    end
+  end
+
   describe "#price_validation" do
     describe "percentage offer codes" do
       it "is valid if the price after discount is above the minimum purchase price" do

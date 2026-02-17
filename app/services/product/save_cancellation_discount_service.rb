@@ -30,11 +30,16 @@ class Product::SaveCancellationDiscountService
       offer_code_params[:amount_cents] = nil
     end
 
-    cancellation_offer_code = product.cancellation_discount_offer_code
-    if cancellation_offer_code.present?
-      cancellation_offer_code.update!(offer_code_params)
-    else
-      OfferCode.create!(offer_code_params)
+    begin
+      cancellation_offer_code = product.cancellation_discount_offer_code
+      if cancellation_offer_code.present?
+        cancellation_offer_code.update!(offer_code_params)
+      else
+        OfferCode.create!(offer_code_params)
+      end
+    rescue ActiveRecord::RecordInvalid => e
+      product.errors.add(:base, e.record.errors.full_messages.first)
+      raise e
     end
   end
 end
