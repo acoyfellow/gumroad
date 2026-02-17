@@ -11,7 +11,8 @@ class ProductDuplicatesController < Sellers::BaseController
     end
 
     DuplicateProductWorker.perform_async(@product.id)
-    @product.update!(is_duplicating: true)
+    @product.is_duplicating = true
+    @product.save!(validate: false)
 
     render json: { success: true }
   end
@@ -27,7 +28,8 @@ class ProductDuplicatesController < Sellers::BaseController
 
     unless duplicated_product
       # Product is not duplicating and we can't find it in redis
-      render(json: { success: false, status: ProductDuplicatorService::DUPLICATION_FAILED }) && return
+      error_message = ProductDuplicatorService.new(@product.id).recently_failed_error_message
+      render(json: { success: false, status: ProductDuplicatorService::DUPLICATION_FAILED, error_message: }) && return
     end
 
     is_membership = duplicated_product.is_recurring_billing?

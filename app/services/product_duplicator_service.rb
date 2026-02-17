@@ -34,7 +34,7 @@ class ProductDuplicatorService
       duplicated_product.is_collab = false
       mark_duplicate_product_as_draft
       duplicated_product.is_duplicating = false
-      duplicated_product.save!
+      duplicated_product.save!(validate: false)
 
       duplicate_prices
       duplicate_asset_previews
@@ -57,12 +57,20 @@ class ProductDuplicatorService
 
     set_recently_duplicated_product
 
-    duplicated_product
+    duplicated_product.reload
   end
 
   def recently_duplicated_product
     duplicated_product_id = REDIS_STORAGE_NS.get(product.id)
     Link.where(id: duplicated_product_id).first
+  end
+
+  def store_duplication_error(message)
+    REDIS_STORAGE_NS.setex("error:#{product.id}", TIMEOUT_FOR_DUPLICATE_PRODUCT_CACHE, message)
+  end
+
+  def recently_failed_error_message
+    REDIS_STORAGE_NS.get("error:#{product.id}")
   end
 
   private
