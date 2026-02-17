@@ -194,8 +194,9 @@ const FileEmbedGroupNodeView = ({
                         </Button>
                       ) : isTuple(downloadableFiles, 1) ? (
                         <NavigationButton
-                          href={downloadableFiles[0].url ?? undefined}
-                          download={downloadableFiles[0].display_name}
+                          href={Routes.download_product_files_path(config.productId, {
+                            product_file_ids: [downloadableFiles[0].id],
+                          })}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
