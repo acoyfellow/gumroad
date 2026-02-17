@@ -354,13 +354,13 @@ describe CustomersController, :vcr, type: :controller, inertia: true do
           expect(inertia.props[:missed_posts]).to all(include(:id, :name, :url, :published_at))
           expect(inertia.props[:missed_posts].length).to eq(6)
           expect(inertia.props[:missed_posts].map { _1.values_at(:id, :name) }).to eq([
-                                                                                           [workflow_post_product_a.external_id, workflow_post_product_a.name],
-                                                                                           [regular_post_product_a.external_id, regular_post_product_a.name],
-                                                                                           [seller_post_with_bought_products_filter_product_a_and_c.external_id, seller_post_with_bought_products_filter_product_a_and_c.name],
-                                                                                           [seller_workflow_post_to_all_customers.external_id, seller_workflow_post_to_all_customers.name],
-                                                                                           [seller_post_to_all_customers.external_id, seller_post_to_all_customers.name],
-                                                                                           [audience_post.external_id, audience_post.name]
-                                                                                         ])
+                                                                                        [workflow_post_product_a.external_id, workflow_post_product_a.name],
+                                                                                        [regular_post_product_a.external_id, regular_post_product_a.name],
+                                                                                        [seller_post_with_bought_products_filter_product_a_and_c.external_id, seller_post_with_bought_products_filter_product_a_and_c.name],
+                                                                                        [seller_workflow_post_to_all_customers.external_id, seller_workflow_post_to_all_customers.name],
+                                                                                        [seller_post_to_all_customers.external_id, seller_post_to_all_customers.name],
+                                                                                        [audience_post.external_id, audience_post.name]
+                                                                                      ])
           expect(inertia.props[:missed_posts]).not_to include(hash_including(type: "receipt"))
 
           expect(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id: workflow_post_product_a.workflow.external_id).and_call_original
@@ -377,12 +377,12 @@ describe CustomersController, :vcr, type: :controller, inertia: true do
             get :index, params: { purchase_id: bundle_purchase.external_id }
 
             expect(inertia.props[:missed_posts].map { _1[:id] }).to eq([
-                                                                            bundle_workflow_post.external_id,
-                                                                            bundle_post.external_id,
-                                                                            seller_workflow_post_to_all_customers.external_id,
-                                                                            seller_post_to_all_customers.external_id,
-                                                                            audience_post.external_id
-                                                                          ])
+                                                                         bundle_workflow_post.external_id,
+                                                                         bundle_post.external_id,
+                                                                         seller_workflow_post_to_all_customers.external_id,
+                                                                         seller_post_to_all_customers.external_id,
+                                                                         audience_post.external_id
+                                                                       ])
 
             expect(Installment).to receive(:missed_for_purchase).with(bundle_purchase, workflow_id: bundle_workflow.external_id).and_call_original
             get :index, params: { purchase_id: bundle_purchase.external_id, workflow_id: bundle_workflow.external_id }
@@ -396,16 +396,16 @@ describe CustomersController, :vcr, type: :controller, inertia: true do
             get :index, params: { purchase_id: bundle_purchase_product_a.external_id }
 
             expect(inertia.props[:missed_posts].map { _1[:id] }).to eq([
-                                                                            workflow_post_product_a_variant.external_id,
-                                                                            workflow_post_product_a.external_id,
-                                                                            regular_post_product_a_variant.external_id,
-                                                                            regular_post_product_a.external_id,
-                                                                            seller_post_with_bought_variants_filter_product_a_and_c_variant.external_id,
-                                                                            seller_post_with_bought_products_filter_product_a_and_c.external_id,
-                                                                            seller_workflow_post_to_all_customers.external_id,
-                                                                            seller_post_to_all_customers.external_id,
-                                                                            audience_post.external_id
-                                                                          ])
+                                                                         workflow_post_product_a_variant.external_id,
+                                                                         workflow_post_product_a.external_id,
+                                                                         regular_post_product_a_variant.external_id,
+                                                                         regular_post_product_a.external_id,
+                                                                         seller_post_with_bought_variants_filter_product_a_and_c_variant.external_id,
+                                                                         seller_post_with_bought_products_filter_product_a_and_c.external_id,
+                                                                         seller_workflow_post_to_all_customers.external_id,
+                                                                         seller_post_to_all_customers.external_id,
+                                                                         audience_post.external_id
+                                                                       ])
 
             expect(Installment).to receive(:missed_for_purchase).with(bundle_purchase_product_a, workflow_id: workflow_post_product_a.workflow.external_id).and_call_original
             get :index, params: { purchase_id: bundle_purchase_product_a.external_id, workflow_id: workflow_post_product_a.workflow.external_id }
