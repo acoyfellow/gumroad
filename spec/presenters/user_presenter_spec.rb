@@ -84,7 +84,8 @@ describe UserPresenter do
         id: seller.external_id,
         name: seller.name,
         avatar_url: seller.avatar_url,
-        profile_url: seller.profile_url(recommended_by: nil)
+        profile_url: seller.profile_url(recommended_by: nil),
+        verified: false,
       )
     end
 

@@ -38,6 +38,7 @@ export const Card = ({
           name={product.seller.name}
           profileUrl={product.seller.profile_url}
           avatarUrl={product.seller.avatar_url ?? undefined}
+          verified={product.seller.verified}
         />
       ) : null}
       {product.ratings?.count ? <Rating ratings={product.ratings} /> : null}
