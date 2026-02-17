@@ -551,6 +551,7 @@ const CustomersPage = ({
                           hour: "numeric",
                           minute: "numeric",
                           hour12: true,
+                          timeZone: currentSeller.timeZone.name,
                         })}
                       </TableCell>
                       <TableCell>
@@ -722,6 +723,7 @@ const CustomerDrawer = ({
   product_purchases,
 }: CustomerDrawerProps) => {
   const userAgentInfo = useUserAgentInfo();
+  const currentSeller = useCurrentSeller();
 
   const [loadingId, setLoadingId] = React.useState<string | null>(null);
   const [selectedWorkflowId, setSelectedWorkflowId] = React.useState<string>("");
@@ -854,6 +856,7 @@ const CustomerDrawer = ({
       day: "numeric",
       month: "short",
       year: date.getFullYear() !== year ? "numeric" : undefined,
+      timeZone: currentSeller?.timeZone.name,
     });
 
   return (
@@ -2491,6 +2494,7 @@ const ChargeRow = ({
 }) => {
   const [isRefunding, setIsRefunding] = React.useState(false);
   const userAgentInfo = useUserAgentInfo();
+  const currentSeller = useCurrentSeller();
 
   return (
     <section className={className}>
@@ -2502,6 +2506,7 @@ const ChargeRow = ({
               year: "numeric",
               month: "numeric",
               day: "numeric",
+              timeZone: currentSeller?.timeZone.name,
             })}
           </h5>
 
