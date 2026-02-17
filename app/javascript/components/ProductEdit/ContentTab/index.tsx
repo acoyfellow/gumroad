@@ -27,8 +27,13 @@ import { Icon } from "$app/components/Icons";
 import { LoadingSpinner } from "$app/components/LoadingSpinner";
 import { Modal } from "$app/components/Modal";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "$app/components/Popover";
-import { FileEmbed, FileEmbedConfig, getDownloadUrl } from "$app/components/ProductEdit/ContentTab/FileEmbed";
-import { FileEmbedGroup } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
+import {
+  FileEmbed,
+  FileEmbedConfig,
+  FileEmbedConfigProvider,
+  getDownloadUrl,
+} from "$app/components/ProductEdit/ContentTab/FileEmbed";
+import { FileEmbedGroup, FileEmbedGroupConfigProvider } from "$app/components/ProductEdit/ContentTab/FileEmbedGroup";
 import { Page, PageTab, titleWithFallback } from "$app/components/ProductEdit/ContentTab/PageTab";
 import { EditProductContentVariant, ExistingFileEntry, FileEntry } from "$app/components/ProductEdit/state";
 import { ReviewForm } from "$app/components/ReviewForm";
@@ -61,7 +66,7 @@ import { Row, RowContent, Rows } from "$app/components/ui/Rows";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 import { Product, ProductOption, UpsellSelectModal } from "$app/components/UpsellSelectModal";
 import { useIsAboveBreakpoint } from "$app/components/useIsAboveBreakpoint";
-import { useLatest } from "$app/components/useRefToLatest";
+import { useRefToLatest } from "$app/components/useRefToLatest";
 import { WithTooltip } from "$app/components/WithTooltip";
 
 declare global {
@@ -173,11 +178,9 @@ export const ContentTabContent = ({
 }) => {
   useDropbox(dropboxPickerAppKey);
 
-  const filesByIdRef = useLatest(
-    React.useMemo(
-      () => new Map(files.map((file) => [file.id, { ...file, url: getDownloadUrl(productId, file) }])),
-      [files, productId],
-    ),
+  const filesById = React.useMemo(
+    () => new Map(files.map((file) => [file.id, { ...file, url: getDownloadUrl(productId, file) }])),
+    [files, productId],
   );
 
   const uid = React.useId();
@@ -188,7 +191,7 @@ export const ContentTabContent = ({
     ? null
     : variants.find((variant) => variant.id === selectedVariantId);
   const pages: (Page & { chosen?: boolean })[] = selectedVariant ? selectedVariant.rich_content : richContent;
-  const pagesRef = useLatest(pages);
+  const pagesRef = useRefToLatest(pages);
   const updatePages = (pages: Page[]) => {
     if (selectedVariant) {
       const variantIndex = variants.findIndex((v) => v.id === selectedVariantId);
@@ -334,27 +337,23 @@ export const ContentTabContent = ({
     },
     [onUpdateFiles],
   );
-  const fileEmbedGroupConfig = useLatest({
-    productId,
-    variantId: selectedVariantId,
-    prepareDownload,
-    get filesById() {
-      return filesByIdRef.current;
-    },
-  });
-
-  const fileEmbedConfig = useLatest<FileEmbedConfig>({
-    get filesById() {
-      return filesByIdRef.current;
-    },
-    id: productId,
-    onUpdateFile: updateFile,
-    removeFile: (fileId) => onUpdateFiles((prev) => prev.filter((f) => f.id !== fileId)),
-  });
-  const uploadFilesRef = useLatest(uploadFiles);
+  const fileEmbedGroupConfig = React.useMemo(
+    () => ({ productId, variantId: selectedVariantId, prepareDownload, filesById }),
+    [productId, selectedVariantId, prepareDownload, filesById],
+  );
+  const fileEmbedConfig = React.useMemo<FileEmbedConfig>(
+    () => ({
+      filesById,
+      id: productId,
+      onUpdateFile: updateFile,
+      removeFile: (fileId) => onUpdateFiles((prev) => prev.filter((f) => f.id !== fileId)),
+    }),
+    [filesById, productId, updateFile, onUpdateFiles],
+  );
+  const uploadFilesRef = useRefToLatest(uploadFiles);
   const contentEditorExtensions = extensions(productId, [
-    FileEmbedGroup.configure({ getConfig: () => fileEmbedGroupConfig.current }),
-    FileEmbed.configure({ getConfig: () => fileEmbedConfig.current }),
+    FileEmbedGroup.configure({ getConfig: () => fileEmbedGroupConfig }),
+    FileEmbed.configure({ getConfig: () => fileEmbedConfig }),
   ]);
   const editor = useRichTextEditor({
     ariaLabel: "Content editor",
@@ -363,7 +362,7 @@ export const ContentTabContent = ({
     extensions: contentEditorExtensions,
     onInputNonImageFiles: (files) => uploadFilesRef.current(files),
   });
-  const updateContentRef = useLatest(() => {
+  const updateContentRef = useRefToLatest(() => {
     if (!editor) return;
 
     // Correctly set the IDs of the file embeds copied from another product
@@ -991,34 +990,38 @@ export const ContentTabContent = ({
           }
         >
           <div className="relative h-full flex-1">
-            {editor?.isEmpty ? (
-              <div className="pointer-events-none absolute inset-0 flex items-start">
-                <p className="flex flex-wrap items-center gap-1 text-muted">
-                  <span>Enter the content you want to sell.</span>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button small className="pointer-events-auto">
-                        Upload your files
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent sideOffset={4} className="pointer-events-auto border-0 p-0 shadow-none">
-                      <FileUploadMenu
-                        existingFiles={existingFiles}
-                        onEmbedMedia={() => setShowEmbedModal(true)}
-                        onUploadFile={uploadFileInput}
-                        onSelectExistingFiles={() => {
-                          setSelectingExistingFiles({ selected: [], query: "", isLoading: true });
-                          void fetchLatestExistingFiles();
-                        }}
-                        onUploadFromDropbox={uploadFromDropbox}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <span>or start typing.</span>
-                </p>
-              </div>
-            ) : null}
-            <EditorContent className="rich-text grid h-full flex-1" editor={editor} data-gumroad-ignore />
+            <FileEmbedConfigProvider value={fileEmbedConfig}>
+              <FileEmbedGroupConfigProvider value={fileEmbedGroupConfig}>
+                {editor?.isEmpty ? (
+                  <div className="pointer-events-none absolute inset-0 flex items-start">
+                    <p className="flex flex-wrap items-center gap-1 text-muted">
+                      <span>Enter the content you want to sell.</span>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button small className="pointer-events-auto">
+                            Upload your files
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent sideOffset={4} className="pointer-events-auto border-0 p-0 shadow-none">
+                          <FileUploadMenu
+                            existingFiles={existingFiles}
+                            onEmbedMedia={() => setShowEmbedModal(true)}
+                            onUploadFile={uploadFileInput}
+                            onSelectExistingFiles={() => {
+                              setSelectingExistingFiles({ selected: [], query: "", isLoading: true });
+                              void fetchLatestExistingFiles();
+                            }}
+                            onUploadFromDropbox={uploadFromDropbox}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <span>or start typing.</span>
+                    </p>
+                  </div>
+                ) : null}
+                <EditorContent className="rich-text grid h-full flex-1" editor={editor} data-gumroad-ignore />
+              </FileEmbedGroupConfigProvider>
+            </FileEmbedConfigProvider>
           </div>
         </PageListLayout>
       </div>

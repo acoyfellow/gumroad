@@ -53,13 +53,13 @@ export const getDraggedFileEmbed = (editor: Editor) => {
 };
 
 const FileEmbedNodeView = ({
-  node,
+  config,
   editor,
   getPos,
+  node,
   updateAttributes,
-  config,
 }: NodeViewProps & { config: FileEmbedConfig }) => {
-  const { id, onUpdateFile, filesById, removeFile } = config;
+  const { id, onUpdateFile, filesById, removeFile } = React.useContext(FileEmbedConfigContext) ?? config;
   const uid = React.useId();
   const ref = React.useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = React.useState(false);
@@ -708,6 +708,19 @@ export type FileEmbedConfig = {
   removeFile: (fileId: string) => void;
 };
 
+const defaultFileEmbedConfig: FileEmbedConfig = {
+  filesById: new Map(),
+  id: "",
+  onUpdateFile: () => {},
+  removeFile: () => {},
+};
+
+export const FileEmbedConfigContext = React.createContext<FileEmbedConfig | null>(null);
+
+export const FileEmbedConfigProvider = ({ value, children }: { value: FileEmbedConfig; children: React.ReactNode }) => (
+  <FileEmbedConfigContext.Provider value={value}>{children}</FileEmbedConfigContext.Provider>
+);
+
 export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }>({
   name: "fileEmbed",
   group: "block",
@@ -726,12 +739,7 @@ export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }
         ...props,
         // The fallback config is used to for creating a lightweight editor
         // used for transforming form data before submission in Products/Content/Edit .
-        config: this.options.getConfig?.() ?? {
-          filesById: new Map(),
-          id: "",
-          onUpdateFile: () => {},
-          removeFile: () => {},
-        },
+        config: this.options.getConfig?.() ?? defaultFileEmbedConfig,
       }),
     );
   },

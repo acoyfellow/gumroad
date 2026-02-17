@@ -30,13 +30,30 @@ type FileEntry = {
   is_streamable: boolean;
   file_size: number | null;
 };
-type FileGroupConfig = {
+export type FileGroupConfig = {
   productId: string;
   variantId: string | null;
   prepareDownload: () => Promise<void>;
   filesById: Map<string, FileEntry>;
 };
 type FileEmbedGroupStorage = { lastCreatedUid: string | null };
+
+const defaultFileGroupConfig: FileGroupConfig = {
+  productId: "",
+  variantId: null,
+  prepareDownload: async () => {},
+  filesById: new Map(),
+};
+
+export const FileEmbedGroupConfigContext = React.createContext<FileGroupConfig | null>(null);
+
+export const FileEmbedGroupConfigProvider = ({
+  value,
+  children,
+}: {
+  value: FileGroupConfig;
+  children: React.ReactNode;
+}) => <FileEmbedGroupConfigContext.Provider value={value}>{children}</FileEmbedGroupConfigContext.Provider>;
 
 export const titleWithFallback = (title: unknown) => (title ? String(title).trim() : "") || "Untitled";
 
@@ -58,10 +75,12 @@ const FileEmbedGroupNodeView = ({
   editor,
   node,
   updateAttributes,
-  config,
+  config: configFromProps,
   extension,
   selected,
 }: NodeViewProps & { config: FileGroupConfig }) => {
+  const configFromContext = React.useContext(FileEmbedGroupConfigContext);
+  const config = configFromContext ?? configFromProps;
   const [expanded, setExpanded] = React.useState(false);
   const [downloading, setDownloading] = React.useState(false);
   const [editing, setEditing] = React.useState(false);
@@ -246,7 +265,7 @@ const FileEmbedGroupNodeView = ({
   );
 };
 
-export const FileEmbedGroup = TiptapNode.create<{ getConfig: () => FileGroupConfig }, FileEmbedGroupStorage>({
+export const FileEmbedGroup = TiptapNode.create<{ getConfig?: () => FileGroupConfig }, FileEmbedGroupStorage>({
   name: "fileEmbedGroup",
   content: "fileEmbed+",
   group: "block",
@@ -270,7 +289,7 @@ export const FileEmbedGroup = TiptapNode.create<{ getConfig: () => FileGroupConf
     const renderer = ReactNodeViewRenderer((props: NodeViewProps) =>
       FileEmbedGroupNodeView({
         ...props,
-        config: this.options.getConfig(),
+        config: this.options.getConfig?.() ?? defaultFileGroupConfig,
       }),
     );
     return (props) => {
