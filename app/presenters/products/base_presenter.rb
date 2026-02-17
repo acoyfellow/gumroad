@@ -99,11 +99,7 @@ class Products::BasePresenter
     end
 
     def files_data
-      product.product_files.alive.in_order.includes(:alive_subtitle_files).map do |file|
-        file.as_json.merge(
-          url: file.s3? ? download_product_files_path(product_id: product.external_id, product_file_ids: [file.external_id]) : file.url
-        )
-      end
+      product.product_files.alive.in_order.includes(:alive_subtitle_files).map(&:as_json)
     end
 
     def variants_data
