@@ -708,13 +708,6 @@ export type FileEmbedConfig = {
   removeFile: (fileId: string) => void;
 };
 
-const defaultFileEmbedConfig: FileEmbedConfig = {
-  filesById: new Map(),
-  id: "",
-  onUpdateFile: () => {},
-  removeFile: () => {},
-};
-
 export const FileEmbedConfigContext = React.createContext<FileEmbedConfig | null>(null);
 
 export const FileEmbedConfigProvider = ({ value, children }: { value: FileEmbedConfig; children: React.ReactNode }) => (
@@ -739,7 +732,12 @@ export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }
         ...props,
         // The fallback config is used to for creating a lightweight editor
         // used for transforming form data before submission in Products/Content/Edit .
-        config: this.options.getConfig?.() ?? defaultFileEmbedConfig,
+        config: this.options.getConfig?.() ?? {
+          filesById: new Map(),
+          id: "",
+          onUpdateFile: () => {},
+          removeFile: () => {},
+        },
       }),
     );
   },

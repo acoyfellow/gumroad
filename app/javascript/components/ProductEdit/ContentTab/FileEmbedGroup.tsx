@@ -38,14 +38,7 @@ export type FileGroupConfig = {
 };
 type FileEmbedGroupStorage = { lastCreatedUid: string | null };
 
-const defaultFileGroupConfig: FileGroupConfig = {
-  productId: "",
-  variantId: null,
-  prepareDownload: async () => {},
-  filesById: new Map(),
-};
-
-export const FileEmbedGroupConfigContext = React.createContext<FileGroupConfig | null>(null);
+const FileEmbedGroupConfigContext = React.createContext<FileGroupConfig | null>(null);
 
 export const FileEmbedGroupConfigProvider = ({
   value,
@@ -289,7 +282,12 @@ export const FileEmbedGroup = TiptapNode.create<{ getConfig?: () => FileGroupCon
     const renderer = ReactNodeViewRenderer((props: NodeViewProps) =>
       FileEmbedGroupNodeView({
         ...props,
-        config: this.options.getConfig?.() ?? defaultFileGroupConfig,
+        config: this.options.getConfig?.() ?? {
+          productId: "",
+          variantId: null,
+          prepareDownload: () => Promise.resolve(),
+          filesById: new Map(),
+        },
       }),
     );
     return (props) => {
