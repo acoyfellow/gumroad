@@ -16,7 +16,7 @@ import { SubtitleFile } from "$app/components/SubtitleList/Row";
 import { Alert } from "$app/components/ui/Alert";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
-import { useDropbox } from "$app/components/useDropbox";
+import { useDropbox } from "$app/hooks/useDropbox";
 
 import { FileEntry, PublicFileWithStatus, useProductEditContext, useProductFormContext } from "./state";
 import { getContrastColor, hexToRgb } from "$app/utils/color";
