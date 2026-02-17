@@ -43,7 +43,7 @@ describe Api::Internal::ExistingProductFilesController do
         duration: nil,
         subtitle_files: [],
         url: product_file.url, thumbnail: nil, status: { type: "saved" },
-        signed_url: product_file.signed_download_url_for_s3_key_and_filename(product_file.s3_key, product_file.s3_filename, is_video: true) }]
+      }]
     end
 
     it "returns existing files for the product" do
