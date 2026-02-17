@@ -1212,7 +1212,21 @@ export const ContentTabHeaderActions = ({
   const selectedVariant = product.variants.find((v) => v.id === selectedVariantId);
 
   const setHasSameRichContent = (value: boolean) => {
-    updateProduct({ has_same_rich_content_for_all_variants: value });
+    if (value) {
+      updateProduct((product) => {
+        product.has_same_rich_content_for_all_variants = true;
+        if (!product.rich_content.length) product.rich_content = selectedVariant?.rich_content ?? [];
+        for (const variant of product.variants) variant.rich_content = [];
+      });
+    } else {
+      updateProduct((product) => {
+        product.has_same_rich_content_for_all_variants = false;
+        if (product.rich_content.length > 0) {
+          for (const variant of product.variants) variant.rich_content = product.rich_content;
+          product.rich_content = [];
+        }
+      });
+    }
   };
 
   return product.variants.length > 0 ? (
