@@ -278,12 +278,12 @@ function DiscoverIndex() {
           parseUrlParams(window.location.href, props.curated_product_ids, defaultSortOrder).offer_code;
 
       if (shouldFetchRecommendations) {
-        router.get(url.toString(), {}, {
+        router.visit(url.toString(), {
           preserveState: true,
           preserveScroll: true,
         });
       } else {
-        router.get(url.toString(), {}, {
+        router.visit(url.toString(), {
           preserveState: true,
           preserveScroll: true,
           only: ["search_results"],
@@ -324,7 +324,7 @@ function DiscoverIndex() {
     }
   })();
 
-  const showRecommendationSections = (!state.params.query && !hasOfferCode) || !!state.params.taxonomy;
+  const showRecommendationSections = !state.params.query && !hasOfferCode;
   const recommendedWishlistsTitle = taxonomyPath
     ? `Wishlists for ${props.taxonomies_for_nav.find((t) => t.slug === last(taxonomyPath.split("/")))?.label}`
     : "Wishlists you might like";
@@ -337,14 +337,6 @@ function DiscoverIndex() {
         taxonomy: newTaxonomyPath,
         curated_product_ids: newTaxonomyPath ? [] : props.curated_product_ids.slice(recommendedProductsCount),
         offer_code: newTaxonomyPath && currentOfferCode ? currentOfferCode : undefined,
-        // Clear filters when changing taxonomy, but preserve query
-        query: state.params.query,
-        min_price: undefined,
-        max_price: undefined,
-        rating: undefined,
-        tags: undefined,
-        filetypes: undefined,
-        sort: undefined,
       }),
     });
   };
@@ -423,9 +415,9 @@ function DiscoverIndex() {
             <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--spacer-2)", flexWrap: "wrap" }}>
               <h2>
                 {state.params.query || hasOfferCode
-                  ? !state.params.taxonomy && state.results?.products.length
+                  ? state.results?.products.length
                     ? `Showing 1-${state.results.products.length} of ${state.results.total} products`
-                    : sortTitles[is<keyof typeof sortTitles>(state.params.sort) ? state.params.sort : "trending"]
+                    : null
                   : sortTitles[is<keyof typeof sortTitles>(state.params.sort) ? state.params.sort : "trending"]}
               </h2>
               {state.params.query || hasOfferCode ? null : (
