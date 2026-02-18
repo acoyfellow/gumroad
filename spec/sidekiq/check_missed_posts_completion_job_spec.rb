@@ -78,23 +78,20 @@ describe CheckMissedPostsCompletionJob do
       end
 
       it "clears the Redis key and does not reschedule" do
-        retry_count = described_class::BACKOFF_STRATEGY.length - 1
-
         expect(CustomersService).to receive(:clear_missed_posts_job_key).with(purchase.external_id, nil)
         expect(described_class).not_to receive(:perform_in)
 
-        described_class.new.perform(purchase.external_id, nil, retry_count)
+        described_class.new.perform(purchase.external_id, nil, described_class::BACKOFF_STRATEGY.length)
       end
 
       it "clears the Redis key with workflow_id when workflow_id is provided" do
         workflow_id = "workflow_final"
-        retry_count = described_class::BACKOFF_STRATEGY.length - 1
         allow(Installment).to receive(:missed_for_purchase).with(purchase, workflow_id:).and_return([double])
 
         expect(CustomersService).to receive(:clear_missed_posts_job_key).with(purchase.external_id, workflow_id)
         expect(described_class).not_to receive(:perform_in)
 
-        described_class.new.perform(purchase.external_id, workflow_id, retry_count)
+        described_class.new.perform(purchase.external_id, workflow_id, described_class::BACKOFF_STRATEGY.length)
       end
     end
   end

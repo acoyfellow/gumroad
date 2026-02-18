@@ -523,7 +523,7 @@ describe "Sales page", type: :system, js: true do
             within_section "Post 10" do
               expect(page).to have_link("Post 10", href: post.full_url)
               expect(page).to have_text("Originally sent on #{post.published_at.in_time_zone(seller.timezone).strftime("%b %-d")}")
-              click_on "Send"
+              click_on "Resend"
               expect(page).to have_button("Resending...", disabled: true)
             end
           end
