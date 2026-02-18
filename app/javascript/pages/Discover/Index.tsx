@@ -278,12 +278,12 @@ function DiscoverIndex() {
           parseUrlParams(window.location.href, props.curated_product_ids, defaultSortOrder).offer_code;
 
       if (shouldFetchRecommendations) {
-        router.visit(url.toString(), {
+        router.get(url.toString(), {}, {
           preserveState: true,
           preserveScroll: true,
         });
       } else {
-        router.visit(url.toString(), {
+        router.get(url.toString(), {}, {
           preserveState: true,
           preserveScroll: true,
           only: ["search_results"],

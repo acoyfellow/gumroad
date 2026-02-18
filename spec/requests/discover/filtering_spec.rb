@@ -248,12 +248,10 @@ describe("Discover - Filtering scenarios", js: true, type: :system) do
     select_disclosure "Price" do
       fill_in "Maximum price", with: "3"
     end
-    wait_for_ajax
     expect_product_cards_in_order([@product, @similar_product_2, @similar_product_1, @similar_product_5])
 
     find("[role=menuitem]", text: "Audio").hover
     click_on "All Audio"
-    wait_for_ajax
     expect(page).to have_selector("[aria-label='Breadcrumbs']", text: "Audio")
     within_section "Featured products", section_element: :section do
       expect_product_cards_in_order([@product, @similar_product_3, @similar_product_2, @similar_product_4, @similar_product_1])
@@ -262,27 +260,23 @@ describe("Discover - Filtering scenarios", js: true, type: :system) do
     select_disclosure "Price" do
       fill_in "Maximum price", with: "2"
     end
-    wait_for_ajax
     within_section "On the market" do
       expect_product_cards_in_order([@product, @similar_product_1])
     end
 
     page.go_back
-    wait_for_ajax
     select_disclosure "Price" do
       expect(page).to have_field "Maximum price", with: ""
     end
     expect(page).to have_selector("[aria-label='Breadcrumbs']", text: "Audio")
 
     page.go_back
-    wait_for_ajax
     select_disclosure "Price" do
       expect(page).to have_field "Maximum price", with: "3"
     end
     expect_product_cards_in_order([@product, @similar_product_2, @similar_product_1, @similar_product_5])
 
     page.go_back
-    wait_for_ajax
     select_disclosure "Price" do
       expect(page).to have_field "Maximum price", with: ""
     end
