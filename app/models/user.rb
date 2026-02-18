@@ -1073,9 +1073,7 @@ class User < ApplicationRecord
     end
 
     def move_purchases_to_new_email
-      if unconfirmed_email.blank? && purchases.exists?
-        UpdatePurchaseEmailToMatchAccountWorker.perform_in(10.seconds, id)
-      end
+      UpdatePurchaseEmailToMatchAccountWorker.perform_in(10.seconds, id) if unconfirmed_email.blank? && purchases.exists?
     end
 
     def update_alive_cart_email
