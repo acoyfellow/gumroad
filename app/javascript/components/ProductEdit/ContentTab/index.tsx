@@ -297,7 +297,19 @@ const ContentTabContent = ({
     prepareDownload,
     filesById,
   });
-  const fileEmbedConfig = useRefToLatest<FileEmbedConfig>({ filesById });
+  const onPasteFiles = React.useCallback(
+    (newFiles: FileEntry[]) => {
+      updateProduct((draft) => {
+        const existingIds = new Set(draft.files.map((f) => f.id));
+        const filesToAdd = newFiles.filter((f) => !existingIds.has(f.id));
+        if (filesToAdd.length > 0) {
+          draft.files = [...draft.files, ...filesToAdd];
+        }
+      });
+    },
+    [updateProduct],
+  );
+  const fileEmbedConfig = useRefToLatest<FileEmbedConfig>({ filesById, existingFiles, onPasteFiles });
   const uploadFilesRef = useRefToLatest(uploadFiles);
   const contentEditorExtensions = extensions(id, [
     FileEmbedGroup.configure({ getConfig: () => fileEmbedGroupConfig.current }),

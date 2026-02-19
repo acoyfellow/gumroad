@@ -714,7 +714,11 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
   );
 };
 
-export type FileEmbedConfig = { filesById: Map<string, FileEntry> };
+export type FileEmbedConfig = {
+  filesById: Map<string, FileEntry>;
+  existingFiles?: FileEntry[];
+  onPasteFiles?: (files: FileEntry[]) => void;
+};
 
 export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }>({
   name: "fileEmbed",
@@ -733,14 +737,16 @@ export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }
   },
 
   addProseMirrorPlugins() {
-    const config = this.options.getConfig?.();
-    if (!config) return [];
+    const getConfig = this.options.getConfig;
+    if (!getConfig) return [];
     const editor = this.editor;
 
     return [
       new Plugin({
         props: {
           transformCopied(slice) {
+            const config = getConfig();
+            if (!config) return slice;
             const fragment = DOMSerializer.fromSchema(editor.schema).serializeFragment(slice.content);
             fragment.querySelectorAll("file-embed").forEach((node) => {
               const id = node.getAttribute("id");
@@ -749,6 +755,35 @@ export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }
                 if (file?.url) node.setAttribute("url", file.url);
               }
             });
+            const parsed = ProseMirrorDOMParser.fromSchema(editor.schema).parseSlice(fragment);
+            return new Slice(parsed.content, slice.openStart, slice.openEnd);
+          },
+          transformPasted(slice) {
+            const config = getConfig();
+            if (!config?.existingFiles) return slice;
+
+            const fragment = DOMSerializer.fromSchema(editor.schema).serializeFragment(slice.content);
+            let hasUrlNodes = false;
+            const newFiles: FileEntry[] = [];
+
+            fragment.querySelectorAll("file-embed[url]").forEach((node) => {
+              hasUrlNodes = true;
+              const file = config.existingFiles?.find(
+                (f) => f.id === node.getAttribute("id") || f.url === node.getAttribute("url"),
+              );
+              if (file) {
+                node.setAttribute("id", file.id);
+                node.removeAttribute("url");
+                newFiles.push(file);
+              } else {
+                node.remove();
+              }
+            });
+
+            if (!hasUrlNodes) return slice;
+
+            if (newFiles.length > 0) config.onPasteFiles?.(newFiles);
+
             const parsed = ProseMirrorDOMParser.fromSchema(editor.schema).parseSlice(fragment);
             return new Slice(parsed.content, slice.openStart, slice.openEnd);
           },
