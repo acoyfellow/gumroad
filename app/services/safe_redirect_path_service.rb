@@ -24,7 +24,7 @@ class SafeRedirectPathService
     end
 
     def subdomain_host?
-      url.host =~ /.*\.#{Regexp.escape(ROOT_DOMAIN)}\z/o
+      url.host =~ /.*\.#{Regexp.escape(ROOT_DOMAIN)}\z/ # rubocop:disable Performance/RegexpMatch
     end
 
     def same_host?
