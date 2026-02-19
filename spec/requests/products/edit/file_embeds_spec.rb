@@ -549,13 +549,14 @@ describe("File embeds in product content editor", type: :system, js: true) do
     create(:rich_content, entity: product1, description: product1_description)
     product2 = create(:product, user: seller)
 
-    visit edit_link_path(product1)
+    visit edit_product_product_path(product1)
     select_tab "Content"
     editor = find("[aria-label='Content editor']")
+    sleep 10
     rich_text_editor_select_all editor
     editor.native.send_keys(ctrl_key, "c")
 
-    visit edit_link_path(product2)
+    visit edit_product_product_path(product2)
     select_tab "Content"
     editor = find("[aria-label='Content editor']")
     rich_text_editor_select_all editor
