@@ -49,6 +49,7 @@ export const ProductPreview = ({ showRefundPolicyModal }: { showRefundPolicyModa
       name: currentSeller.name ?? "",
       avatar_url: currentSeller.avatarUrl,
       profile_url: Routes.root_url({ host: currentSeller.subdomain }),
+      verified: false,
     },
     collaborating_user: product.collaborating_user,
     covers: product.covers,
