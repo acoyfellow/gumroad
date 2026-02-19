@@ -21,8 +21,8 @@ class Products::ProductController < Products::BaseController
 
     check_offer_codes_validity
 
-    if params[:redirect_to].present?
-      redirect_to params[:redirect_to], notice: "Changes saved!", status: :see_other
+    if permitted_redirect_path
+      redirect_to permitted_redirect_path, notice: "Changes saved!", status: :see_other
     elsif was_published
       redirect_back fallback_location: edit_product_product_path(@product.unique_permalink), notice: "Changes saved!", status: :see_other
     elsif @product.native_type == ::Link::NATIVE_TYPE_COFFEE
@@ -66,6 +66,7 @@ class Products::ProductController < Products::BaseController
         :refund_policy,
         :product_refund_policy_enabled
       ))
+      @product.skus_enabled = false
 
       if @product.native_type === ::Link::NATIVE_TYPE_COFFEE && product_permitted_params[:variants].present?
         @product.suggested_price_cents = product_permitted_params[:variants].map { _1[:price_difference_cents] }.max
@@ -106,7 +107,9 @@ class Products::ProductController < Products::BaseController
       toggle_community_chat!(product_permitted_params[:community_chat_enabled])
       update_refund_policy
       update_custom_domain
+      update_removed_file_attributes
       @product.save!
+      @product.generate_product_files_archives!
     end
 
     def update_variants
@@ -212,14 +215,23 @@ class Products::ProductController < Products::BaseController
       new_domain = product_permitted_params[:custom_domain]&.strip.presence
 
       if new_domain.present?
-        if @product.custom_domain.present?
-          @product.custom_domain.update!(domain: new_domain) if @product.custom_domain.domain != new_domain
-        else
-          @product.create_custom_domain!(domain: new_domain)
+        custom_domain = @product.custom_domain || @product.build_custom_domain
+        if custom_domain.domain != new_domain
+          custom_domain.domain = new_domain
+          custom_domain.verify(allow_incrementing_failed_verification_attempts_count: false)
+          custom_domain.save!
         end
       elsif @product.custom_domain.present?
         @product.custom_domain.mark_deleted!
       end
+    end
+
+    def update_removed_file_attributes
+      return unless product_permitted_params[:file_attributes].present?
+      current = @product.file_info_for_product_page.keys.map(&:to_s)
+      updated = (product_permitted_params[:file_attributes] || []).map { _1[:name].to_s }
+      removed = current - updated
+      @product.add_removed_file_info_attributes(removed) if removed.any?
     end
 
     def product_permitted_params

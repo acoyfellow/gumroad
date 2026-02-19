@@ -196,6 +196,7 @@ class ProductFile < ApplicationRecord
       found = files.extract! { _1[:url] == file.url }.first
       if found
         file.language = found[:language]
+        file.size = found[:size]
       else
         file.mark_deleted
       end

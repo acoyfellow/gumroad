@@ -66,7 +66,14 @@ function ProductPage() {
   ) => {
     if (form.processing) return;
     form.transform((data) => ({ product: { ...data, covers: data.covers.map(({ id }) => id), price_currency_type: currencyType }, ...additionalData }));
-    form.patch(updateUrl, { preserveScroll: true, ...options });
+    form.patch(updateUrl, {
+      preserveScroll: true,
+      ...options,
+      onSuccess: () => {
+        form.setDefaults();
+        options?.onSuccess?.();
+      },
+    });
   };
 
   const [isPublishing, setIsPublishing] = React.useState(false);

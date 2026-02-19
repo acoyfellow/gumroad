@@ -2,7 +2,13 @@
 
 class Products::ContentTabPresenter < Products::BasePresenter
   def props
-    layout_props.merge(product: product_props)
+    layout_props.merge(
+      existing_files: existing_files_data,
+      aws_key: AWS_ACCESS_KEY,
+      s3_url: "#{AWS_S3_ENDPOINT}/#{S3_BUCKET}",
+      dropbox_app_key: DROPBOX_PICKER_API_KEY,
+      product: product_props,
+    )
   end
 
   private

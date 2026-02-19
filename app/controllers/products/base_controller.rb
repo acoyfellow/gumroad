@@ -60,6 +60,10 @@ class Products::BaseController < Sellers::BaseController
       redirect_to redirect_location, notice: "Unpublished!", status: :see_other
     end
 
+    def permitted_redirect_path
+      safe_redirect_path(params[:redirect_to]) if params[:redirect_to].present?
+    end
+
   private
     def set_product_edit_title
       set_meta_tag(title: @product.name)

@@ -2,7 +2,12 @@
 
 class Products::ShareTabPresenter < Products::BasePresenter
   def props
-    layout_props.merge(product: product_props)
+    layout_props.merge(
+      profile_sections: product.user.seller_profile_products_sections.map { { id: _1.external_id, header: _1.header || "", product_names: _1.product_names, default: _1.add_new_products } },
+      taxonomies: Discover::TaxonomyPresenter.new.taxonomies_for_nav,
+      ratings: product.rating_stats,
+      product: product_props,
+    )
   end
 
   private

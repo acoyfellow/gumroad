@@ -30,8 +30,8 @@ class Products::ReceiptController < Products::BaseController
     check_offer_codes_validity
     if should_publish
       redirect_to edit_product_share_path(@product.unique_permalink), notice: "Published!", status: :see_other
-    elsif params[:redirect_to].present?
-      redirect_to params[:redirect_to], notice: "Changes saved!", status: :see_other
+    elsif permitted_redirect_path
+      redirect_to permitted_redirect_path, notice: "Changes saved!", status: :see_other
     else
       redirect_to edit_product_receipt_path(@product.unique_permalink), notice: "Changes saved!", status: :see_other
     end

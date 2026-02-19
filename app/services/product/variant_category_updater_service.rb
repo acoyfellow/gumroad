@@ -27,6 +27,15 @@ class Product::VariantCategoryUpdaterService
     product_files
   ].freeze
 
+  IGNORE_UNSET_ATTRIBUTES = %i[
+    name
+    duration_in_minutes
+    price_difference_cents
+    max_purchase_count
+    position_in_category
+    customizable_price
+  ].freeze
+
   def initialize(product:, category_params:)
     @product = product
     @category_params = category_params
@@ -89,7 +98,8 @@ class Product::VariantCategoryUpdaterService
       return Variant.create!(params.slice(*ALLOWED_ATTRIBUTES)) if external_id.blank? || !Variant.external_id?(external_id)
 
       variant = product.variants.find_by_external_id!(external_id)
-      variant.assign_attributes(params.slice(*ALLOWED_ATTRIBUTES))
+      filtered_params = params.slice(*ALLOWED_ATTRIBUTES).reject { |k, v| v.nil? && IGNORE_UNSET_ATTRIBUTES.include?(k) }
+      variant.assign_attributes(filtered_params)
 
       if variant.apply_price_changes_to_existing_memberships_changed? && !variant.apply_price_changes_to_existing_memberships?
         variant.subscription_plan_changes.for_product_price_change.alive.each(&:mark_deleted)
@@ -134,6 +144,7 @@ class Product::VariantCategoryUpdaterService
     end
 
     def save_rich_content(variant, option)
+      return unless option.key?(:rich_content)
       variant_rich_contents = option[:rich_content].is_a?(Array) ? option[:rich_content] : JSON.parse(option[:rich_content].presence || "[]", symbolize_names: true) || []
       rich_contents_to_keep = []
       existing_rich_contents = variant.alive_rich_contents.to_a

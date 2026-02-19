@@ -2,7 +2,11 @@
 
 class Products::ProductTabPresenter < Products::BasePresenter
   def props
-    layout_props.merge(product: product_props)
+    layout_props.merge(
+      taxonomies: Discover::TaxonomyPresenter.new.taxonomies_for_nav,
+      ratings: product.rating_stats,
+      product: product_props,
+    )
   end
 
   private

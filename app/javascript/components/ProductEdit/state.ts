@@ -186,7 +186,7 @@ export type ProductEditContextType = {
   customDomainVerificationStatus: { success: boolean; message: string } | null;
   salesCountForInventory: number;
   successfulSalesCount: number;
-  ratings: RatingsWithPercentages;
+  ratings: RatingsWithPercentages | null;
   seller: Seller;
   existingFiles: ExistingFileEntry[];
   setExistingFiles: React.Dispatch<React.SetStateAction<ExistingFileEntry[]>>;
@@ -194,7 +194,7 @@ export type ProductEditContextType = {
   s3Url: string;
   availableCountries: ShippingCountry[];
   googleClientId: string;
-  dropboxAppKey: string;
+  dropboxAppKey: string | null;
   googleCalendarEnabled: boolean;
   seller_refund_policy_enabled: boolean;
   seller_refund_policy: Pick<RefundPolicy, "title" | "fine_print">;

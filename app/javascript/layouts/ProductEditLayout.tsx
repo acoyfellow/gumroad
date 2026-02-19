@@ -34,20 +34,20 @@ export type EditProps = {
   is_tiered_membership: boolean;
   is_listed_on_discover: boolean;
   is_physical: boolean;
-  profile_sections: ProfileSection[];
-  taxonomies: Taxonomy[];
+  profile_sections?: ProfileSection[];
+  taxonomies?: Taxonomy[];
   earliest_membership_price_change_date: string;
   custom_domain_verification_status: { success: boolean; message: string } | null;
   sales_count_for_inventory: number;
   successful_sales_count: number;
-  ratings: RatingsWithPercentages;
+  ratings?: RatingsWithPercentages;
   seller: Seller;
-  existing_files: ExistingFileEntry[];
-  aws_key: string;
-  s3_url: string;
+  existing_files?: ExistingFileEntry[];
+  aws_key?: string;
+  s3_url?: string;
   available_countries: ShippingCountry[];
   google_client_id: string;
-  dropbox_app_key: string;
+  dropbox_app_key?: string;
   google_calendar_enabled: boolean;
   seller_refund_policy_enabled: boolean;
   seller_refund_policy: Pick<RefundPolicy, "title" | "fine_print">;
@@ -65,7 +65,7 @@ export default function ProductEditLayout({ children }: { children: React.ReactN
     unique_permalink: uniquePermalink,
     currency_type: currencyType,
     ai_generated: aiGenerated,
-    existing_files: initialExistingFiles,
+    existing_files: initialExistingFiles = [],
   } = props;
 
   const [existingFiles, setExistingFiles] = React.useState<ExistingFileEntry[]>(initialExistingFiles);
@@ -81,21 +81,21 @@ export default function ProductEditLayout({ children }: { children: React.ReactN
       currencyType,
       isListedOnDiscover: props.is_listed_on_discover,
       isPhysical: props.is_physical,
-      profileSections: props.profile_sections,
-      taxonomies: props.taxonomies,
+      profileSections: props.profile_sections ?? [],
+      taxonomies: props.taxonomies ?? [],
       earliestMembershipPriceChangeDate: new Date(props.earliest_membership_price_change_date),
       customDomainVerificationStatus: props.custom_domain_verification_status,
       salesCountForInventory: props.sales_count_for_inventory,
       successfulSalesCount: props.successful_sales_count,
-      ratings: props.ratings,
+      ratings: props.ratings ?? null,
       seller: props.seller,
       existingFiles,
       setExistingFiles,
-      awsKey: props.aws_key,
-      s3Url: props.s3_url,
+      awsKey: props.aws_key ?? "",
+      s3Url: props.s3_url ?? "",
       availableCountries: props.available_countries,
       googleClientId: props.google_client_id,
-      dropboxAppKey: props.dropbox_app_key,
+      dropboxAppKey: props.dropbox_app_key ?? null,
       googleCalendarEnabled: props.google_calendar_enabled,
       seller_refund_policy_enabled: props.seller_refund_policy_enabled,
       seller_refund_policy: props.seller_refund_policy,

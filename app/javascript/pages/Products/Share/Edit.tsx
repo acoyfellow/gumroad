@@ -62,7 +62,14 @@ function SharePage() {
   ) => {
     if (form.processing) return;
     form.transform((data) => ({ product: data, ...additionalData }));
-    form.patch(updateUrl, { preserveScroll: true, ...options });
+    form.patch(updateUrl, {
+      preserveScroll: true,
+      ...options,
+      onSuccess: () => {
+        form.setDefaults();
+        options?.onSuccess?.();
+      },
+    });
   };
 
   const [isPublishing, setIsPublishing] = React.useState(false);

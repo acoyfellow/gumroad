@@ -121,6 +121,7 @@ function ContentPage() {
         // Update the last saved product ref
         lastSavedProductRef.current = structuredClone(productBeforeSave);
 
+        form.setDefaults();
         options?.onSuccess?.();
       },
     });

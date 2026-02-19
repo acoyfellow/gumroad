@@ -12,7 +12,7 @@ RSpec.describe Products::BasePresenter do
     it "returns top-level props without product" do
       props = presenter.layout_props
 
-      expect(props).to include(:id, :unique_permalink, :seller, :currency_type, :taxonomies, :thumbnail)
+      expect(props).to include(:id, :unique_permalink, :seller, :currency_type, :thumbnail)
       expect(props).not_to have_key(:product)
     end
   end

@@ -26,8 +26,8 @@ class Products::ContentController < Products::BaseController
 
     if should_publish
       redirect_to edit_product_share_path(@product.unique_permalink), notice: "Published!", status: :see_other
-    elsif params[:redirect_to].present?
-      redirect_to params[:redirect_to], notice: "Changes saved!", status: :see_other
+    elsif permitted_redirect_path
+      redirect_to permitted_redirect_path, notice: "Changes saved!", status: :see_other
     else
       redirect_back fallback_location: edit_product_content_path(@product.unique_permalink), notice: "Changes saved!", status: :see_other
     end
@@ -50,6 +50,9 @@ class Products::ContentController < Products::BaseController
       update_rich_content
       Product::SavePostPurchaseCustomFieldsService.new(@product).perform
       @product.save!
+      @product.is_licensed = @product.has_embedded_license_key?
+      @product.is_multiseat_license = false unless @product.is_licensed
+      @product.save! if @product.changed?
       @product.generate_product_files_archives!
     end
 

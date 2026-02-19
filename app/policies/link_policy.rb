@@ -165,7 +165,7 @@ class LinkPolicy < ApplicationPolicy
       :has_same_rich_content_for_all_variants,
       rich_content:,
       files: [:id, :display_name, :description, :folder_id, :size, :position, :url, :isbn,
-              :extension, :stream_only, :pdf_stamp_enabled, :modified, subtitle_files: [:url, :language], thumbnail: [:signed_id]],
+              :extension, :stream_only, :pdf_stamp_enabled, :modified, subtitle_files: [:url, :language, :size], thumbnail: [:signed_id]],
       variants: [
         :id,
         rich_content:,
@@ -184,7 +184,6 @@ class LinkPolicy < ApplicationPolicy
     shared_tab_permitted_attributes + [
       :is_adult,
       :display_product_reviews,
-      :discover_fee_per_thousand,
       :custom_domain,
       :taxonomy_id,
       tags: [],
