@@ -40,8 +40,6 @@ import { Placeholder } from "$app/components/ui/Placeholder";
 import { Row, RowActions, RowContent, RowDetails } from "$app/components/ui/Rows";
 import { WithTooltip } from "$app/components/WithTooltip";
 
-import { type ProductFormState } from "$app/components/ProductEdit/state";
-
 export const getDownloadUrl = (productId: string, file: FileEntry) =>
   file.extension === "URL" || file.status.type === "removed"
     ? null
