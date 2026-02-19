@@ -48,17 +48,6 @@ class Products::ShareController < Products::BaseController
       @product.save!
     end
 
-    def update_custom_domain
-      if product_permitted_params[:custom_domain].present?
-        custom_domain = @product.custom_domain || @product.build_custom_domain
-        custom_domain.domain = product_permitted_params[:custom_domain]
-        custom_domain.verify(allow_incrementing_failed_verification_attempts_count: false)
-        custom_domain.save!
-      elsif product_permitted_params[:custom_domain] == "" && @product.custom_domain.present?
-        @product.custom_domain.mark_deleted!
-      end
-    end
-
     def product_permitted_params
       params.fetch(:product, {}).permit(policy(@product).share_tab_permitted_attributes)
     end

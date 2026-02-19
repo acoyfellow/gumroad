@@ -64,6 +64,21 @@ class Products::BaseController < Sellers::BaseController
       safe_redirect_path(params[:redirect_to]) if params[:redirect_to].present?
     end
 
+    def update_custom_domain
+      new_domain = product_permitted_params[:custom_domain]&.strip.presence
+
+      if new_domain.present?
+        custom_domain = @product.custom_domain || @product.build_custom_domain
+        if custom_domain.domain != new_domain
+          custom_domain.domain = new_domain
+          custom_domain.verify(allow_incrementing_failed_verification_attempts_count: false)
+          custom_domain.save!
+        end
+      elsif @product.custom_domain.present?
+        @product.custom_domain.mark_deleted!
+      end
+    end
+
   private
     def set_product_edit_title
       set_meta_tag(title: @product.name)

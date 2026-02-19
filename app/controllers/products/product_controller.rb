@@ -211,21 +211,6 @@ class Products::ProductController < Products::BaseController
       end
     end
 
-    def update_custom_domain
-      new_domain = product_permitted_params[:custom_domain]&.strip.presence
-
-      if new_domain.present?
-        custom_domain = @product.custom_domain || @product.build_custom_domain
-        if custom_domain.domain != new_domain
-          custom_domain.domain = new_domain
-          custom_domain.verify(allow_incrementing_failed_verification_attempts_count: false)
-          custom_domain.save!
-        end
-      elsif @product.custom_domain.present?
-        @product.custom_domain.mark_deleted!
-      end
-    end
-
     def update_removed_file_attributes
       return unless product_permitted_params[:file_attributes].present?
       current = @product.file_info_for_product_page.keys.map(&:to_s)
