@@ -10,16 +10,22 @@ class Products::ShareController < Products::BaseController
   def update
     authorize @product
 
+    should_unpublish = params[:unpublish].present? && @product.published?
+
+    if should_unpublish
+      ActiveRecord::Base.transaction do
+        update_share_attributes
+      end
+      return unpublish_and_redirect_to(edit_product_content_path(@product.unique_permalink))
+    end
+
     ActiveRecord::Base.transaction do
       update_share_attributes
-      unpublish_and_redirect_to(edit_product_content_path(@product.unique_permalink)) if params[:unpublish].present? && @product.published?
     end
 
     check_offer_codes_validity
 
-    if params[:unpublish].present?
-      redirect_to edit_product_content_path(@product.unique_permalink), notice: "Unpublished!", status: :see_other
-    elsif permitted_redirect_path
+    if permitted_redirect_path
       redirect_to permitted_redirect_path, notice: "Changes saved!", status: :see_other
     else
       redirect_back fallback_location: edit_product_share_path(@product.unique_permalink), notice: "Changes saved!", status: :see_other
