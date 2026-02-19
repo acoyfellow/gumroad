@@ -91,6 +91,7 @@ export const HorizontalCard = ({ product, big, eager }: { product: CardProduct; 
             name={product.seller.name}
             profileUrl={product.seller.profile_url}
             avatarUrl={product.seller.avatar_url ?? undefined}
+            verified={product.seller.verified}
           />
         ) : null}
       </ProductCardHeader>
