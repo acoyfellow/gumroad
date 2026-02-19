@@ -63,7 +63,7 @@ describe("Product Edit Scenario", type: :system, js: true) do
       expect(CustomDomainVerificationService)
         .to receive(:new)
         .with(domain: invalid_domain)
-        .twice # once per visit
+        .thrice
         .and_return(double(process: false))
 
       visit edit_product_product_path(product.unique_permalink)
