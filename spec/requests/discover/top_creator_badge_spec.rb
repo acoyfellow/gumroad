@@ -39,7 +39,9 @@ describe("Top creator badge on Discover and Product pages", js: true, type: :sys
     end
 
     # Click through to the product page
-    top_card.find("a.stretched-link").click
+    within(top_card) do
+      click_on top_creator_product.name
+    end
     wait_for_ajax
 
     # Top creator badge visible on the product page
