@@ -533,31 +533,42 @@ describe("File embeds in product content editor", type: :system, js: true) do
     file2 = create(:product_file, display_name: "File 2")
     file3 = create(:product_file, display_name: "File 3")
     folder_uid = SecureRandom.uuid
+    file1_uid = SecureRandom.uuid
+    file2_uid = SecureRandom.uuid
+    file3_uid = SecureRandom.uuid
     product1_description = [
       { "type" => "paragraph", "content" => [{ "type" => "text", "text" => "Paragraph 1" }] },
       { "type" => "fileEmbedGroup",
         "attrs" => { "name" => "My folder", "uid" => folder_uid },
         "content" => [
-          { "type" => "fileEmbed", "attrs" => { "id" => file1.external_id, "uid" => SecureRandom.uuid, "collapsed" => false } },
-          { "type" => "fileEmbed", "attrs" => { "id" => file2.external_id, "uid" => SecureRandom.uuid, "collapsed" => false } },
+          { "type" => "fileEmbed", "attrs" => { "id" => file1.external_id, "uid" => file1_uid, "collapsed" => false } },
+          { "type" => "fileEmbed", "attrs" => { "id" => file2.external_id, "uid" => file2_uid, "collapsed" => false } },
         ] },
       { "type" => "paragraph", "content" => [{ "type" => "text", "text" => "Paragraph 2" }] },
-      { "type" => "fileEmbed", "attrs" => { "id" => file3.external_id, "uid" => SecureRandom.uuid, "collapsed" => false } }
+      { "type" => "fileEmbed", "attrs" => { "id" => file3.external_id, "uid" => file3_uid, "collapsed" => false } }
     ]
     product1 = create(:product, user: seller)
     product1.product_files = [file1, file2, file3]
     create(:rich_content, entity: product1, description: product1_description)
     product2 = create(:product, user: seller)
 
-    visit edit_product_content_path(product1)
-    editor = find("[aria-label='Content editor']")
-    rich_text_editor_select_all editor
-    editor.native.send_keys(ctrl_key, "c")
+    # Build clipboard HTML simulating what ProseMirror's transformCopied + clipboard serialization produces.
+    # The url attribute on file-embed nodes is what transformCopied adds so that updateContentRef can
+    # identify and remap files when pasting into another product's editor.
+    download_url = ->(file) { download_product_files_path(product1.unique_permalink, product_file_ids: [file.external_id]) }
+    clipboard_html = <<~HTML
+      <p data-pm-slice="0 0 []">Paragraph 1</p>
+      <file-embed-group uid="#{folder_uid}" name="My folder">
+        <file-embed id="#{file1.external_id}" uid="#{file1_uid}" url="#{download_url.(file1)}" collapsed="false"></file-embed>
+        <file-embed id="#{file2.external_id}" uid="#{file2_uid}" url="#{download_url.(file2)}" collapsed="false"></file-embed>
+      </file-embed-group>
+      <p>Paragraph 2</p>
+      <file-embed id="#{file3.external_id}" uid="#{file3_uid}" url="#{download_url.(file3)}" collapsed="false"></file-embed>
+    HTML
 
     visit edit_product_content_path(product2)
     editor = find("[aria-label='Content editor']")
-    rich_text_editor_select_all editor
-    editor.native.send_keys(ctrl_key, "v")
+    paste_html_into_editor(editor, clipboard_html)
     sleep 0.5 # Wait for the editor to update the content
 
     expect(page).to have_text("Paragraph 1")
