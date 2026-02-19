@@ -24,7 +24,7 @@ class SafeRedirectPathService
     end
 
     def subdomain_host?
-      url.host =~ /.*\.#{Regexp.escape(domain)}\z/
+      url.host =~ /.*\.#{Regexp.escape(ROOT_DOMAIN)}\z/
     end
 
     def same_host?
@@ -33,9 +33,5 @@ class SafeRedirectPathService
 
     def url
       @_url ||= URI.parse(Addressable::URI.escape(CGI.unescape(path).split("#").first))
-    end
-
-    def domain
-      ROOT_DOMAIN
     end
 end
