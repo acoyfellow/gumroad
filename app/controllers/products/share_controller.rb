@@ -12,7 +12,7 @@ class Products::ShareController < Products::BaseController
 
     ActiveRecord::Base.transaction do
       update_share_attributes
-      @product.unpublish! if params[:unpublish].present? && @product.published?
+      unpublish_and_redirect_to(edit_product_content_path(@product.unique_permalink)) if params[:unpublish].present? && @product.published?
     end
 
     check_offer_codes_validity

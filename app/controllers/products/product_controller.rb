@@ -68,7 +68,7 @@ class Products::ProductController < Products::BaseController
       ))
       @product.skus_enabled = false
 
-      if @product.native_type === ::Link::NATIVE_TYPE_COFFEE && product_permitted_params[:variants].present?
+      if @product.native_type == ::Link::NATIVE_TYPE_COFFEE && product_permitted_params[:variants].present?
         @product.suggested_price_cents = product_permitted_params[:variants].map { _1[:price_difference_cents] }.max
       end
 

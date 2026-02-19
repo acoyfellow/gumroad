@@ -358,7 +358,6 @@ class LinksController < ApplicationController
   def release_preorder
     authorize @product
 
-
     preorder_link = @product.preorder_link
     preorder_link.is_being_manually_released_by_the_seller = true
     released_successfully = preorder_link.release!

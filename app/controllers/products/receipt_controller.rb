@@ -39,7 +39,7 @@ class Products::ReceiptController < Products::BaseController
 
   private
     def update_receipt_attributes
-      @product.assign_attributes(product_permitted_params.except(:custom_domain))
+      @product.assign_attributes(product_permitted_params)
       @product.save!
     end
 

@@ -22,7 +22,7 @@ module InertiaRendering
     def inertia_flash_props
       return if (flash_message = flash[:alert] || flash[:warning] || flash[:notice]).blank?
       flash_props = { message: flash_message, status: flash[:alert] ? "danger" : flash[:warning] ? "warning" : "success" }
-      flash_props[:html] = flash[:html].present? if flash[:html].present?
+      flash_props[:html] = flash[:html].present? unless flash[:html].nil?
       flash_props
     end
 
