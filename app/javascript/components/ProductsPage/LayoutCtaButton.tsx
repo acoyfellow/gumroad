@@ -11,15 +11,19 @@ type Props = {
 };
 
 type PageProps = {
+  has_products: boolean;
   can_create_product: boolean;
 };
 
 export const LayoutCtaButton = ({ query, setQuery }: Props) => {
-  const { can_create_product: canCreateProduct } = cast<PageProps>(usePage().props);
+  const {
+    can_create_product: canCreateProduct,
+    has_products: hasProducts
+  } = cast<PageProps>(usePage().props);
 
   return (
     <>
-      <Search value={query} onSearch={setQuery} placeholder="Search products" />
+      {hasProducts ? <Search value={query} onSearch={setQuery} placeholder="Search products" /> : null}
       <NavigationButtonInertia href={Routes.new_product_path()} disabled={!canCreateProduct} color="accent">
         New product
       </NavigationButtonInertia>

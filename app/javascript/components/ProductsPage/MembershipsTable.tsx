@@ -44,7 +44,7 @@ export const ProductsPageMembershipsTable = (props: {
         memberships_sort_direction: newSort?.direction,
         memberships_page: undefined,
       },
-      only: ["memberships_data"],
+      only: ["memberships_data", "has_products"],
       onBefore: () => setSort(newSort),
       onStart: () => setIsLoading(true),
       onFinish: () => setIsLoading(false),
@@ -61,7 +61,7 @@ export const ProductsPageMembershipsTable = (props: {
         memberships_sort_direction: sort?.direction,
         query: props.query || undefined,
       },
-      only: ["memberships_data"],
+      only: ["memberships_data", "has_products"],
       onStart: () => setIsLoading(true),
       onFinish: () => {
         setIsLoading(false);

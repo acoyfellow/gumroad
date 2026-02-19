@@ -41,6 +41,7 @@ class LinksController < ApplicationController
 
     render inertia: "Products/Index", props: {
       query: products_page_presenter.query,
+      has_products: -> { products_page_presenter.page_props[:has_products] },
       archived_products_count: -> { products_page_presenter.page_props[:archived_products_count] },
       can_create_product: -> { products_page_presenter.page_props[:can_create_product] },
       products_data: InertiaRails.defer(group: "data") do

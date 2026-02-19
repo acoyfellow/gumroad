@@ -4,6 +4,7 @@ import { PaginationProps } from "$app/components/Pagination";
 import { Sort } from "$app/components/useSortingTableDriver";
 
 export type ProductsPageProps = {
+  has_products: boolean;
   products_data: {
     products: Product[];
     pagination: PaginationProps;

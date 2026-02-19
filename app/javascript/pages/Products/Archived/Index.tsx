@@ -1,16 +1,15 @@
-import { Deferred, router, usePage } from "@inertiajs/react";
+import { Deferred, usePage } from "@inertiajs/react";
 import React from "react";
 
 import { ProductsLayout } from "$app/components/ProductsLayout";
 import ProductsPage from "$app/components/ProductsPage";
+import { useProductsSearch } from "$app/components/ProductsPage/useProductsSearch";
 import { ProductsContentLoading } from "$app/components/ProductsPage/ContentLoading";
 import { LayoutCtaButton } from "$app/components/ProductsPage/LayoutCtaButton";
 import { type ProductsPageProps } from "$app/components/ProductsPage/ProductsPageProps";
-import { useDebouncedCallback } from "$app/components/useDebouncedCallback";
-import { useOnChange } from "$app/components/useOnChange";
 
 const ProductsContent = ({ query }: { query: string }) => {
-  const { memberships_data, products_data } = usePage<ProductsPageProps>().props;
+  const { memberships_data, products_data, } = usePage<ProductsPageProps>().props;
   const { memberships, pagination: membershipsPagination, sort: membershipsSort } = memberships_data;
   const { products, pagination: productsPagination, sort: productsSort } = products_data;
 
@@ -31,19 +30,7 @@ const ProductsContent = ({ query }: { query: string }) => {
 };
 
 const ArchivedProductsIndexPage = () => {
-  const { query: initialQuery } = usePage<ProductsPageProps>().props;
-  const [query, setQuery] = React.useState(initialQuery ?? "");
-
-  const reloadProducts = useDebouncedCallback(() => {
-    router.reload({
-      data: { query },
-      only: ["products_data", "memberships_data"],
-    });
-  }, 300);
-
-  useOnChange(() => {
-    reloadProducts();
-  }, [query]);
+  const { query, setQuery } = useProductsSearch();
 
   return (
     <ProductsLayout
