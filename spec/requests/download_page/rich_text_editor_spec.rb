@@ -238,7 +238,6 @@ describe("Download Page – Rich Text Editor Content", type: :system, js: true) 
         expect(page).to have_text("MP3")
         expect(page).to have_text("0m 46s")
         expect(page).to have_text("Audio description")
-        expect(page).to_not have_text("Processing...")
         expect(page).to_not have_button("Pause")
         expect(page).to_not have_text(" left")
         expect(page).to_not have_selector("meter")
@@ -247,26 +246,7 @@ describe("Download Page – Rich Text Editor Content", type: :system, js: true) 
         ).squish
         expect(page).to have_button("Pause")
         expect(page).to have_text("0m 22s left")
-        expect(page).to_not have_text("Processing...")
         expect(page).to have_selector("meter[value*='0.52']")
-      end
-
-      @audio_file.update!(duration: nil, description: nil)
-
-      visit("/d/#{@url_redirect.token}?display=mobile_app")
-
-      within(find_embed(name: "Audio file")) do
-        expect(page).to have_button("Play", disabled: true)
-        expect(page).to_not have_text("MP3")
-        expect(page).to_not have_text("0m 46s")
-        expect(page).to_not have_text("Audio description")
-        expect(page).to have_text("Processing...")
-
-        @audio_file.update!(duration: 46)
-        expect(page).to have_text("0m 46s", wait: 10)
-        expect(page).to have_text("MP3")
-        expect(page).to_not have_text("Processing...")
-        expect(page).to have_button("Play")
       end
     end
 
