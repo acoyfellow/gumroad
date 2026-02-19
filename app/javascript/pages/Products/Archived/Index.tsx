@@ -3,13 +3,13 @@ import React from "react";
 
 import { ProductsLayout } from "$app/components/ProductsLayout";
 import ProductsPage from "$app/components/ProductsPage";
-import { useProductsSearch } from "$app/components/ProductsPage/useProductsSearch";
 import { ProductsContentLoading } from "$app/components/ProductsPage/ContentLoading";
 import { LayoutCtaButton } from "$app/components/ProductsPage/LayoutCtaButton";
 import { type ProductsPageProps } from "$app/components/ProductsPage/ProductsPageProps";
+import { useProductsSearch } from "$app/components/ProductsPage/useProductsSearch";
 
 const ProductsContent = ({ query }: { query: string }) => {
-  const { memberships_data, products_data, } = usePage<ProductsPageProps>().props;
+  const { memberships_data, products_data } = usePage<ProductsPageProps>().props;
   const { memberships, pagination: membershipsPagination, sort: membershipsSort } = memberships_data;
   const { products, pagination: productsPagination, sort: productsSort } = products_data;
 

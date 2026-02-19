@@ -10,6 +10,7 @@ import { ReceiptTab } from "$app/components/ProductEdit/ReceiptTab";
 import {
   useProductEditContext,
   ProductFormContext,
+  ProductFormState,
   ContentUpdates,
 } from "$app/components/ProductEdit/state";
 
@@ -21,22 +22,30 @@ type ReceiptFormData = {
 };
 
 function ReceiptPage() {
-  const { product, uniquePermalink, currencyType: initialCurrencyType } = useProductEditContext();
+  const { product: initialProduct, uniquePermalink, currencyType: initialCurrencyType } = useProductEditContext();
   const updateUrl = Routes.product_receipt_path(uniquePermalink);
 
   const [currencyType, setCurrencyType] = React.useState<CurrencyCode>(initialCurrencyType);
   const [contentUpdates, setContentUpdates] = React.useState<ContentUpdates>(null);
 
   const form = useForm<ReceiptFormData>({
-    name: product.name,
-    custom_permalink: product.custom_permalink,
-    custom_receipt_text: product.custom_receipt_text,
-    custom_view_content_button_text: product.custom_view_content_button_text,
+    name: initialProduct.name,
+    custom_permalink: initialProduct.custom_permalink,
+    custom_receipt_text: initialProduct.custom_receipt_text,
+    custom_view_content_button_text: initialProduct.custom_view_content_button_text,
   });
+
+  const product: ProductFormState = React.useMemo(
+    () => ({
+      ...initialProduct,
+      ...form.data,
+    }),
+    [initialProduct, form.data],
+  );
 
   const formContextValue = React.useMemo(
     () => ({
-      product: product as any,
+      product,
       updateProduct: () => {},
       currencyType,
       setCurrencyType,

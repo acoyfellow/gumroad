@@ -24,7 +24,7 @@ class SafeRedirectPathService
     end
 
     def subdomain_host?
-      url.host =~ /.*\.#{Regexp.escape(ROOT_DOMAIN)}\z/
+      url.host =~ /.*\.#{Regexp.escape(ROOT_DOMAIN)}\z/o
     end
 
     def same_host?

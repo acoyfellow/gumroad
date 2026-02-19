@@ -29,11 +29,11 @@ RSpec.describe Products::ProductTabPresenter do
 
         expect(props[:product][:default_offer_code_id]).to eq(offer_code.external_id)
         expect(props[:product][:default_offer_code]).to eq({
-          id: offer_code.external_id,
-          code: offer_code.code,
-          name: "",
-          discount: offer_code.discount,
-        })
+                                                             id: offer_code.external_id,
+                                                             code: offer_code.code,
+                                                             name: "",
+                                                             discount: offer_code.discount,
+                                                           })
       end
     end
 

@@ -4,10 +4,10 @@ import React from "react";
 import { NavigationButtonInertia } from "$app/components/NavigationButton";
 import { ProductsLayout } from "$app/components/ProductsLayout";
 import ProductsPage from "$app/components/ProductsPage";
-import { useProductsSearch } from "$app/components/ProductsPage/useProductsSearch";
 import { ProductsContentLoading } from "$app/components/ProductsPage/ContentLoading";
 import { LayoutCtaButton } from "$app/components/ProductsPage/LayoutCtaButton";
 import { type ProductsPageProps } from "$app/components/ProductsPage/ProductsPageProps";
+import { useProductsSearch } from "$app/components/ProductsPage/useProductsSearch";
 import { Placeholder, PlaceholderImage } from "$app/components/ui/Placeholder";
 
 import placeholder from "$assets/images/product_nudge.svg";
@@ -67,8 +67,7 @@ const ProductsContent = ({
 };
 
 const ProductsIndexPage = () => {
-  const { archived_products_count: archivedProductsCount } =
-    usePage<ProductsIndexPageProps>().props;
+  const { archived_products_count: archivedProductsCount } = usePage<ProductsIndexPageProps>().props;
   const [enableArchiveTab, setEnableArchiveTab] = React.useState(archivedProductsCount > 0);
 
   const { query, setQuery } = useProductsSearch();

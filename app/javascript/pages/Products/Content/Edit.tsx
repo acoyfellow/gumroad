@@ -35,8 +35,12 @@ const findUpdatedContent = (product: ProductFormState, lastSavedProduct: Product
 };
 
 function ContentPage() {
-  const { product: initialProduct, uniquePermalink, currencyType: initialCurrencyType, successfulSalesCount } =
-    useProductEditContext();
+  const {
+    product: initialProduct,
+    uniquePermalink,
+    currencyType: initialCurrencyType,
+    successfulSalesCount,
+  } = useProductEditContext();
   const url = useProductUrl();
   const updateUrl = Routes.product_content_path(uniquePermalink);
 

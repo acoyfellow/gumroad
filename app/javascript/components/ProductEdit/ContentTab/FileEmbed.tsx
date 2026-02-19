@@ -745,7 +745,6 @@ export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }
         props: {
           transformCopied(slice) {
             const config = getConfig();
-            if (!config) return slice;
             const fragment = DOMSerializer.fromSchema(editor.schema).serializeFragment(slice.content);
             fragment.querySelectorAll("file-embed").forEach((node) => {
               const id = node.getAttribute("id");
@@ -759,15 +758,15 @@ export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }
           },
           transformPasted(slice) {
             const config = getConfig();
-            if (!config?.existingFiles) return slice;
+            if (!config.existingFiles) return slice;
 
             const fragment = DOMSerializer.fromSchema(editor.schema).serializeFragment(slice.content);
-            let hasUrlNodes = false;
-            const newFiles: FileEntry[] = [];
+            const urlNodes = Array.from(fragment.querySelectorAll("file-embed[url]"));
+            if (urlNodes.length === 0) return slice;
 
-            fragment.querySelectorAll("file-embed[url]").forEach((node) => {
-              hasUrlNodes = true;
-              const file = config.existingFiles?.find(
+            const newFiles: FileEntry[] = [];
+            for (const node of urlNodes) {
+              const file = config.existingFiles.find(
                 (f) => f.id === node.getAttribute("id") || f.url === node.getAttribute("url"),
               );
               if (file) {
@@ -777,9 +776,7 @@ export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }
               } else {
                 node.remove();
               }
-            });
-
-            if (!hasUrlNodes) return slice;
+            }
 
             if (newFiles.length > 0) config.onPasteFiles?.(newFiles);
 

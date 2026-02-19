@@ -16,10 +16,7 @@ type PageProps = {
 };
 
 export const LayoutCtaButton = ({ query, setQuery }: Props) => {
-  const {
-    can_create_product: canCreateProduct,
-    has_products: hasProducts
-  } = cast<PageProps>(usePage().props);
+  const { can_create_product: canCreateProduct, has_products: hasProducts } = cast<PageProps>(usePage().props);
 
   return (
     <>

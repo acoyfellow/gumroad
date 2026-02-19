@@ -1288,9 +1288,7 @@ export const ContentTabHeaderActions = ({
                   <small className="text-muted">No content yet</small>
                 )}
               </div>
-              {item.id === selectedVariant?.id && (
-                <Icon name="solid-check-circle" className="ml-auto text-success" />
-              )}
+              {item.id === selectedVariant?.id && <Icon name="solid-check-circle" className="ml-auto text-success" />}
             </div>
             {index === product.variants.length - 1 ? (
               <div className="flex cursor-pointer items-center px-4 py-2">
@@ -1311,5 +1309,5 @@ export const ContentTabHeaderActions = ({
         )}
       />
     </>
-  ) : null
+  ) : null;
 };
