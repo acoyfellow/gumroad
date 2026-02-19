@@ -552,7 +552,6 @@ describe("File embeds in product content editor", type: :system, js: true) do
     visit edit_product_product_path(product1)
     select_tab "Content"
     editor = find("[aria-label='Content editor']")
-    sleep 10
     rich_text_editor_select_all editor
     editor.native.send_keys(ctrl_key, "c")
 
