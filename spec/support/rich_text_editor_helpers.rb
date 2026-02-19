@@ -44,6 +44,23 @@ module RichTextEditorHelpers
     end
   end
 
+  def paste_html_into_editor(editor, html)
+    editor.click
+    page.execute_script(<<~JS, html)
+      const html = arguments[0];
+      const editor = document.querySelector('[aria-label="Content editor"]');
+      const clipboardData = new DataTransfer();
+      clipboardData.setData('text/html', html);
+      clipboardData.setData('text/plain', '');
+      const pasteEvent = new ClipboardEvent('paste', {
+        clipboardData: clipboardData,
+        bubbles: true,
+        cancelable: true
+      });
+      editor.dispatchEvent(pasteEvent);
+    JS
+  end
+
   def ctrl_key
     page.driver.browser.capabilities.platform_name.include?("mac") ? :command : :control
   end

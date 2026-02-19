@@ -1,6 +1,6 @@
 import { DirectUpload } from "@rails/activestorage";
 import { Editor, findChildren, Node as TiptapNode } from "@tiptap/core";
-import { DOMSerializer, DOMParser as ProseMirrorDOMParser } from "@tiptap/pm/model";
+import { DOMSerializer, DOMParser as ProseMirrorDOMParser, Slice } from "@tiptap/pm/model";
 import { NodeSelection, Plugin } from "@tiptap/pm/state";
 import { NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import cx from "classnames";
@@ -732,8 +732,8 @@ export const FileEmbed = TiptapNode.create<{ getConfig?: () => FileEmbedConfig }
                 if (file?.url) node.setAttribute("url", file.url);
               }
             });
-
-            return ProseMirrorDOMParser.fromSchema(editor.schema).parseSlice(fragment);
+            const parsed = ProseMirrorDOMParser.fromSchema(editor.schema).parseSlice(fragment);
+            return new Slice(parsed.content, slice.openStart, slice.openEnd);
           },
         },
       }),
