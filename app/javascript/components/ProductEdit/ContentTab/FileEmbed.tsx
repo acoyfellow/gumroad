@@ -40,6 +40,8 @@ import { Placeholder } from "$app/components/ui/Placeholder";
 import { Row, RowActions, RowContent, RowDetails } from "$app/components/ui/Rows";
 import { WithTooltip } from "$app/components/WithTooltip";
 
+import { type ProductFormState } from "$app/components/ProductEdit/state";
+
 export const getDownloadUrl = (productId: string, file: FileEntry) =>
   file.extension === "URL" || file.status.type === "removed"
     ? null
@@ -264,30 +266,29 @@ const FileEmbedNodeView = ({ node, editor, getPos, updateAttributes }: NodeViewP
 
       updateFile({ subtitle_files: [...file.subtitle_files, subtitleEntry] });
 
+      type UploadProgress = { percent: number; bitrate: number };
+
+      const updateProductFile = (progress: UploadProgress | undefined = undefined) => {
+        updateProduct((draft) => {
+          const fileEntry = draft.files.find((f) => f.id === file.id);
+          const subtitle = fileEntry?.subtitle_files.find((s) => s.url === subtitleUrl);
+          if (subtitle) {
+            subtitle.status = {
+              type: "unsaved",
+              uploadStatus: progress ? { type: "uploading", progress } : { type: "uploaded" },
+            };
+          }
+        });
+      };
+
       const subtitleUrl = subtitleEntry.url;
       const status = uploader.scheduleUpload({
         cancellationKey: `subtitles_for_${file.id}__${subtitleEntry.url}`,
         name: s3key,
         file: subtitleFile,
         mimeType,
-        onComplete: () => {
-          updateProduct((draft) => {
-            const fileEntry = draft.files.find((f) => f.id === file.id);
-            const subtitle = fileEntry?.subtitle_files.find((s) => s.url === subtitleUrl);
-            if (subtitle) {
-              subtitle.status = { type: "unsaved", uploadStatus: { type: "uploaded" } };
-            }
-          });
-        },
-        onProgress: (progress) => {
-          updateProduct((draft) => {
-            const fileEntry = draft.files.find((f) => f.id === file.id);
-            const subtitle = fileEntry?.subtitle_files.find((s) => s.url === subtitleUrl);
-            if (subtitle) {
-              subtitle.status = { type: "unsaved", uploadStatus: { type: "uploading", progress } };
-            }
-          });
-        },
+        onComplete: () => updateProductFile(),
+        onProgress: (progress) => updateProductFile(progress),
       });
 
       if (typeof status === "string") {
