@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class SafeRedirectPathService
-  SUBDOMAIN_REGEXP = /.*\.#{Regexp.escape(ROOT_DOMAIN)}\z/
-
   def initialize(path, request, allow_subdomain_host: true)
     @path = path
     @allow_subdomain_host = allow_subdomain_host
@@ -28,11 +26,15 @@ class SafeRedirectPathService
     end
 
     def subdomain_host?
-      url.host =~ SUBDOMAIN_REGEXP
+      url.host =~ /.*\.#{Regexp.escape(root_domain)}\z/
     end
 
     def same_host?
       url.host == request.host
+    end
+
+    def root_domain
+      ROOT_DOMAIN
     end
 
     def url
