@@ -89,6 +89,13 @@ describe UserPresenter do
       )
     end
 
+    context "when the seller is verified" do
+      before { seller.update!(verified: true) }
+
+      it "sets verified to true" do
+        expect(presenter.author_byline_props[:verified]).to eq(true)
+      end
+    end
     context "when given a custom domain" do
       it "uses the custom domain for the profile url" do
         expect(presenter.author_byline_props(custom_domain_url: "https://example.com")[:profile_url]).to eq("https://example.com")
