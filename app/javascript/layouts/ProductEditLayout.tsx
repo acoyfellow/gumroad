@@ -69,6 +69,9 @@ export default function ProductEditLayout({ children }: { children: React.ReactN
   } = props;
 
   const [existingFiles, setExistingFiles] = React.useState<ExistingFileEntry[]>(initialExistingFiles);
+  React.useEffect(() => {
+    if (initialExistingFiles.length > 0) setExistingFiles(initialExistingFiles);
+  }, [initialExistingFiles]);
   const [imagesUploading, setImagesUploading] = React.useState<Set<File>>(new Set());
 
   const contextValue = React.useMemo(
