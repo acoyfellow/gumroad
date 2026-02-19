@@ -336,7 +336,7 @@ export const Product = ({
       name={product.seller.name}
       profileUrl={product.seller.profile_url}
       avatarUrl={product.seller.avatar_url}
-      verified={product.seller.verified}
+      topCreator={product.seller.verified}
     />
   ) : null;
 
