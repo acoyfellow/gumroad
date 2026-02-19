@@ -28,7 +28,10 @@ class DashboardProductsPagePresenter
 
   def page_props
     @page_props ||= if archived?
-      { can_create_product: Pundit.policy!(@pundit_user, Link).create? }
+      {
+        has_products: seller.products.archived.exists?,
+        can_create_product: Pundit.policy!(@pundit_user, Link).create?
+      }
     else
       {
         has_products: seller.products.visible.not_archived.exists?,
