@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class SafeRedirectPathService
+  SUBDOMAIN_REGEXP = /.*\.#{Regexp.escape(ROOT_DOMAIN)}\z/
+
   def initialize(path, request, allow_subdomain_host: true)
     @path = path
     @allow_subdomain_host = allow_subdomain_host
@@ -15,6 +17,8 @@ class SafeRedirectPathService
     end
   end
 
+
+
   private
     attr_reader :path, :request, :allow_subdomain_host
 
@@ -24,7 +28,7 @@ class SafeRedirectPathService
     end
 
     def subdomain_host?
-      url.host =~ /.*\.#{Regexp.escape(ROOT_DOMAIN)}\z/ # rubocop:disable Performance/RegexpMatch
+      url.host =~ SUBDOMAIN_REGEXP
     end
 
     def same_host?

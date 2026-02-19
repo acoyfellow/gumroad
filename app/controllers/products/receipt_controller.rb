@@ -14,20 +14,15 @@ class Products::ReceiptController < Products::BaseController
 
     should_publish = params[:publish].present? && !@product.published?
 
-    begin
-      ActiveRecord::Base.transaction do
-        update_receipt_attributes
-        publish! if should_publish
-      end
-    rescue ActiveRecord::RecordNotSaved, ActiveRecord::RecordInvalid, Link::LinkInvalid => e
-      error_message = @product.errors.full_messages.first || e.message
-      return redirect_to edit_product_receipt_path(@product.unique_permalink), alert: error_message
-    rescue StandardError => e
-      Bugsnag.notify(e)
-      return redirect_to edit_product_receipt_path(@product.unique_permalink), alert: "Something broke. We're looking into what happened. Sorry about this!"
+    ActiveRecord::Base.transaction do
+      update_receipt_attributes
+      publish! if should_publish
     end
 
+    return if performed?
+
     check_offer_codes_validity
+
     if should_publish
       redirect_to edit_product_share_path(@product.unique_permalink), notice: "Published!", status: :see_other
     elsif permitted_redirect_path
@@ -35,6 +30,12 @@ class Products::ReceiptController < Products::BaseController
     else
       redirect_to edit_product_receipt_path(@product.unique_permalink), notice: "Changes saved!", status: :see_other
     end
+  rescue ActiveRecord::RecordNotSaved, ActiveRecord::RecordInvalid, Link::LinkInvalid => e
+    error_message = @product.errors.full_messages.first || e.message
+    redirect_to edit_product_receipt_path(@product.unique_permalink), alert: error_message
+  rescue StandardError => e
+    Bugsnag.notify(e)
+    redirect_to edit_product_receipt_path(@product.unique_permalink), alert: "Something broke. We're looking into what happened. Sorry about this!"
   end
 
   private

@@ -8,6 +8,7 @@ class Products::ProductController < Products::BaseController
   end
 
   def update
+    should_publish = params[:publish].present? && !@product.published?
     should_unpublish = params[:unpublish].present? && @product.published?
     was_published = @product.published?
 
@@ -17,11 +18,16 @@ class Products::ProductController < Products::BaseController
 
     ActiveRecord::Base.transaction do
       update_product_attributes
+      publish! if should_publish
     end
+
+    return if performed?
 
     check_offer_codes_validity
 
-    if permitted_redirect_path
+    if should_publish
+      redirect_to edit_product_share_path(@product.unique_permalink), notice: "Published!", status: :see_other
+    elsif permitted_redirect_path
       redirect_to permitted_redirect_path, notice: "Changes saved!", status: :see_other
     elsif was_published
       redirect_back fallback_location: edit_product_product_path(@product.unique_permalink), notice: "Changes saved!", status: :see_other
