@@ -2,7 +2,6 @@ FROM ruby:3.4.3-slim AS base
 
 ENV RAILS_ENV=production
 ENV RACK_ENV=production
-ENV NODE_ENV=production
 ENV BUNDLE_PATH=/usr/local/bundle
 ENV APP_DIR=/app
 
@@ -77,6 +76,7 @@ RUN SECRET_KEY_BASE=dummy \
   OBFUSCATE_IDS_CIPHER_KEY=dummy \
   OBFUSCATE_IDS_NUMERIC_CIPHER_KEY=1234 \
   STRONGBOX_GENERAL_PASSWORD=1234 \
+  NODE_ENV=production \
   CUSTOM_DOMAIN=gumroad-production.up.railway.app \
   SHAKAPACKER_ASSET_HOST=/ \
   STRIPE_PUBLISHABLE_KEY=pk_test_dummy \
