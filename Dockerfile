@@ -2,6 +2,7 @@ FROM ruby:3.4.3-slim AS base
 
 ENV RAILS_ENV=production
 ENV RACK_ENV=production
+ENV NODE_ENV=production
 ENV BUNDLE_PATH=/usr/local/bundle
 ENV APP_DIR=/app
 
