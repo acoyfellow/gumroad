@@ -114,6 +114,43 @@ class CustomersController < Sellers::BaseController
     render json: CustomerPresenter.new(purchase:).missed_posts
   end
 
+  SEND_POST_RATE_LIMIT = 8.hours
+
+  def send_all_missed_posts
+    unless current_seller.eligible_to_send_emails?
+      return render json: { message: "You are not eligible to resend emails." }, status: :unauthorized
+    end
+
+    purchase = current_seller.sales.find_by_external_id!(params[:purchase_id])
+    missed_posts = Installment.missed_for_purchase(purchase).order(published_at: :desc)
+
+    sent_ids = []
+
+    missed_posts.each do |post|
+      authorize post, :send_for_purchase?
+
+      cache_key = "post_email:#{post.id}:#{purchase.id}"
+      Rails.cache.fetch(cache_key, expires_in: SEND_POST_RATE_LIMIT) do
+        CreatorContactingCustomersEmailInfo.where(purchase:, installment: post).destroy_all
+        PostEmailApi.process(
+          post:,
+          recipients: [
+            {
+              email: purchase.email,
+              purchase:,
+              url_redirect: purchase.url_redirect,
+              subscription: purchase.subscription,
+            }.compact_blank
+          ])
+        true
+      end
+
+      sent_ids << post.external_id
+    end
+
+    render json: { sent_ids: }
+  end
+
   def product_purchases
     purchase = current_seller.sales.find_by_external_id!(params[:purchase_id]) if params[:purchase_id].present?
 
