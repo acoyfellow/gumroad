@@ -18,7 +18,7 @@ class DashboardController < Sellers::BaseController
       render inertia: "Dashboard/Index",
              props: { creator_home: presenter.creator_home_props }
     end
-  rescue Elasticsearch::Transport::Transport::Errors::NotFound, Faraday::Error => e
+  rescue StandardError => e
     Rails.logger.warn("Dashboard ES error, rendering with empty data: #{e.message}")
     render inertia: "Dashboard/Index", props: {
       creator_home: {
