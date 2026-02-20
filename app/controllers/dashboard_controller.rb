@@ -18,6 +18,16 @@ class DashboardController < Sellers::BaseController
       render inertia: "Dashboard/Index",
              props: { creator_home: presenter.creator_home_props }
     end
+  rescue Elasticsearch::Transport::Transport::Errors::NotFound, Faraday::Error => e
+    Rails.logger.warn("Dashboard ES error, rendering with empty data: #{e.message}")
+    render inertia: "Dashboard/Index", props: {
+      creator_home: {
+        name: "", has_sale: false,
+        getting_started_stats: {}, balances: { balance: "$0", last_seven_days_sales_total: "$0", last_28_days_sales_total: "$0", total: "$0" },
+        sales: [], activity_items: [], stripe_verification_message: nil,
+        tax_forms: {}, show_1099_download_notice: false, tax_center_enabled: false,
+      }
+    }
   end
 
   def customers_count
