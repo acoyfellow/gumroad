@@ -27,7 +27,12 @@ class CreatorHomePresenter
     }
 
     today = Time.now.in_time_zone(seller.timezone).to_date
-    analytics = CreatorAnalytics::CachingProxy.new(seller).data_for_dates(today - 30, today)
+    analytics = begin
+      CreatorAnalytics::CachingProxy.new(seller).data_for_dates(today - 30, today)
+    rescue Elasticsearch::Transport::Transport::Errors::NotFound, Faraday::Error => e
+      Rails.logger.warn("Elasticsearch index missing, returning empty analytics: #{e.message}")
+      { by_date: { sales: {}, views: {}, totals: {} } }
+    end
     top_sales_data = analytics[:by_date][:sales]
       .sort_by { |_, sales| -sales&.sum }.take(BALANCE_ITEMS_LIMIT)
 
@@ -143,12 +148,16 @@ class CreatorHomePresenter
     #   }
     # }
     def followers_activity_items
-      results = ConfirmedFollowerEvent.search(
-        query: { bool: { filter: [{ term: { followed_user_id: seller.id } }] } },
-        sort: [{ timestamp: { order: :desc } }],
-        size: ACTIVITY_ITEMS_LIMIT,
-        _source: [:name, :email, :timestamp, :follower_user_id],
-      ).map { |result| result["_source"] }
+      results = begin
+        ConfirmedFollowerEvent.search(
+          query: { bool: { filter: [{ term: { followed_user_id: seller.id } }] } },
+          sort: [{ timestamp: { order: :desc } }],
+          size: ACTIVITY_ITEMS_LIMIT,
+          _source: [:name, :email, :timestamp, :follower_user_id],
+        ).map { |result| result["_source"] }
+      rescue Elasticsearch::Transport::Transport::Errors::NotFound, Faraday::Error
+        []
+      end
 
       # Collect followers' users in one DB query
       followers_user_ids = results.map { |result| result["follower_user_id"] }.compact.uniq
