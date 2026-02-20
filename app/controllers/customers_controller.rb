@@ -132,16 +132,20 @@ class CustomersController < Sellers::BaseController
       cache_key = "post_email:#{post.id}:#{purchase.id}"
       Rails.cache.fetch(cache_key, expires_in: SEND_POST_RATE_LIMIT) do
         CreatorContactingCustomersEmailInfo.where(purchase:, installment: post).destroy_all
-        PostEmailApi.process(
-          post:,
-          recipients: [
-            {
-              email: purchase.email,
-              purchase:,
-              url_redirect: purchase.url_redirect,
-              subscription: purchase.subscription,
-            }.compact_blank
-          ])
+        begin
+          PostEmailApi.process(
+            post:,
+            recipients: [
+              {
+                email: purchase.email,
+                purchase:,
+                url_redirect: purchase.url_redirect,
+                subscription: purchase.subscription,
+              }.compact_blank
+            ])
+        rescue => e
+          Rails.logger.warn("Failed to send post #{post.id} to purchase #{purchase.id}: #{e.message}")
+        end
         true
       end
 
