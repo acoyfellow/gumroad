@@ -5,7 +5,15 @@
 # Use tld_length 3 in staging to support subdomains like username.staging.gumroad.com
 tld_length = Rails.env.staging? ? 3 : 2
 expire_after = Rails.env.test? ? 10.years : 1.month
-domain = :all
+
+# railway.app is on the Public Suffix List, so browsers reject domain=.railway.app cookies.
+# Use the specific hostname instead of :all when deployed on Railway.
+if DOMAIN&.include?("railway.app")
+  domain = DOMAIN
+  tld_length = DOMAIN.split(".").count - 1
+else
+  domain = :all
+end
 
 base_cookie_name = "_gumroad_app_session"
 session_cookie_name =

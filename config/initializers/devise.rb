@@ -166,7 +166,9 @@ Devise.setup do |config|
 
   # Options to be passed to the created cookie. For instance, you can set
   # secure: true in order to force SSL only cookies.
-  # config.rememberable_options = {}
+  if DOMAIN&.include?("railway.app")
+    config.rememberable_options = { domain: DOMAIN }
+  end
 
   # ==> Configuration for :validatable
   # Range for password length.
