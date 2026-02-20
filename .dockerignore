@@ -3,6 +3,7 @@
 .git
 vendor/cache/
 vendor/bundle/
+node_modules/
 tmp/
 log/
 ci_scripts/
@@ -10,3 +11,6 @@ ci_scripts/
 docker/tmp/
 .env
 .env.*.local
+screenshots/
+*.md
+!README.md
