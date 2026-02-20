@@ -567,6 +567,27 @@ describe "Sales page", type: :system, js: true do
         expect(page).to have_alert(text: "You are not eligible to resend this email.")
         expect(EmailInfo.last.installment).to be_nil
       end
+
+      it "allows sending all missed posts at once" do
+        allow_any_instance_of(User).to receive(:sales_cents_total).and_return(Installment::MINIMUM_SALES_CENTS_VALUE)
+        stripe_connect_account = create(:merchant_account_stripe_connect, user: seller)
+        create(:purchase, seller:, link: product1, merchant_account: stripe_connect_account)
+
+        visit customers_path
+        find(:table_row, { "Name" => "Customer 1" }).click
+        within_modal "Product 1" do
+          within_section "Send missed posts", section_element: :section do
+            click_on "Send all"
+            expect(page).to have_button("Sending all...", disabled: true)
+          end
+        end
+        expect(page).to have_alert(text: /\d+ missed posts? sent/)
+        within_modal "Product 1" do
+          within_section "Send missed posts", section_element: :section do
+            expect(page).to have_button("All sent", disabled: true)
+          end
+        end
+      end
     end
 
     describe "receipts" do
