@@ -37,6 +37,7 @@ import {
   resendPing,
   resendPost,
   resendReceipt,
+  sendAllMissedPosts,
   revokeAccess,
   undoRevokeAccess,
   updateCallUrl,
@@ -688,6 +689,7 @@ const CustomerDrawer = ({
   const [emails, setEmails] = React.useState<CustomerEmail[] | null>(null);
   const [shownEmails, setShownEmails] = React.useState(PAGE_SIZE);
   const sentEmailIds = React.useRef<Set<string>>(new Set());
+  const [isSendingAll, setIsSendingAll] = React.useState(false);
   useRunOnce(() => {
     getMissedPosts(customer.id, customer.email).then(setMissedPosts, (e: unknown) => {
       assertResponseError(e);
@@ -710,6 +712,21 @@ const CustomerDrawer = ({
       showAlert(e.message, "error");
     }
     setLoadingId(null);
+  };
+
+  const onSendAll = async () => {
+    setIsSendingAll(true);
+    try {
+      const { sent_ids } = await sendAllMissedPosts(customer.id);
+      for (const id of sent_ids) {
+        sentEmailIds.current.add(id);
+      }
+      showAlert(`${String(sent_ids.length)} missed post${sent_ids.length === 1 ? "" : "s"} sent`, "success");
+    } catch (e) {
+      assertResponseError(e);
+      showAlert(e.message, "error");
+    }
+    setIsSendingAll(false);
   };
 
   const [productPurchases, setProductPurchases] = React.useState<Customer[]>([]);
@@ -1230,6 +1247,19 @@ const CustomerDrawer = ({
             <CardContent asChild>
               <header>
                 <h3 className="grow">Send missed posts</h3>
+                {missedPosts && missedPosts.length > 1 ? (
+                  <Button
+                    color="primary"
+                    disabled={!!loadingId || isSendingAll || missedPosts.every((post) => sentEmailIds.current.has(post.id))}
+                    onClick={() => void onSendAll()}
+                  >
+                    {missedPosts.every((post) => sentEmailIds.current.has(post.id))
+                      ? "All sent"
+                      : isSendingAll
+                        ? "Sending all..."
+                        : "Send all"}
+                  </Button>
+                ) : null}
               </header>
             </CardContent>
             {missedPosts ? (
@@ -1247,7 +1277,7 @@ const CustomerDrawer = ({
                       </div>
                       <Button
                         color="primary"
-                        disabled={!!loadingId || sentEmailIds.current.has(post.id)}
+                        disabled={!!loadingId || isSendingAll || sentEmailIds.current.has(post.id)}
                         onClick={() => void onSend(post.id, "post")}
                       >
                         {sentEmailIds.current.has(post.id) ? "Sent" : loadingId === post.id ? "Sending...." : "Send"}

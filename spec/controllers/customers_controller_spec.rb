@@ -418,6 +418,53 @@ describe CustomersController, :vcr, type: :controller, inertia: true do
     end
   end
 
+  describe "POST send_all_missed_posts" do
+    before do
+      @product = create(:product, user: seller)
+      @post1 = create(:installment, link: @product, published_at: Time.current)
+      @post2 = create(:installment, link: @product, published_at: Time.current)
+      @post3 = create(:installment, link: @product, published_at: Time.current)
+      @purchase = create(:purchase, link: @product, seller:)
+      create(:creator_contacting_customers_email_info_delivered, installment: @post1, purchase: @purchase)
+      allow_any_instance_of(User).to receive(:eligible_to_send_emails?).and_return(true)
+    end
+
+    it "sends all missed posts and returns sent ids" do
+      expect(PostEmailApi).to receive(:process).twice
+
+      post :send_all_missed_posts, params: { purchase_id: @purchase.external_id }
+      expect(response).to be_successful
+      body = response.parsed_body
+      expect(body["sent_ids"].length).to eq(2)
+      expect(body["sent_ids"]).to include(@post2.external_id, @post3.external_id)
+    end
+
+    it "respects the 8-hour rate limit cache" do
+      Rails.cache.write("post_email:#{@post2.id}:#{@purchase.id}", true, expires_in: 8.hours)
+
+      expect(PostEmailApi).to receive(:process).once
+
+      post :send_all_missed_posts, params: { purchase_id: @purchase.external_id }
+      expect(response).to be_successful
+      body = response.parsed_body
+      expect(body["sent_ids"].length).to eq(2)
+    end
+
+    it "returns unauthorized if seller is not eligible to send emails" do
+      allow_any_instance_of(User).to receive(:eligible_to_send_emails?).and_return(false)
+
+      post :send_all_missed_posts, params: { purchase_id: @purchase.external_id }
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body["message"]).to eq("You are not eligible to resend emails.")
+    end
+
+    it "returns 404 if purchase not found" do
+      expect do
+        post :send_all_missed_posts, params: { purchase_id: "nonexistent" }
+      end.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
   describe "GET product_purchases" do
     let(:purchase) { create(:purchase, link: create(:product, :bundle, user: seller), seller:) }
 
