@@ -4,7 +4,7 @@ class CustomersController < Sellers::BaseController
   include CurrencyHelper
 
   skip_before_action :check_suspended
-  before_action :authorize
+  before_action :authorize_customers
   before_action :set_on_page_type
 
   CUSTOMERS_PER_PAGE = 20
@@ -226,7 +226,7 @@ class CustomersController < Sellers::BaseController
       @on_customers_page = true
     end
 
-    def authorize
-      super([:audience, Purchase], :index?)
+    def authorize_customers
+      authorize([:audience, Purchase], :index?)
     end
 end
