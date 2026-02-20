@@ -463,6 +463,15 @@ describe CustomersController, :vcr, type: :controller, inertia: true do
         post :send_all_missed_posts, params: { purchase_id: "nonexistent" }
       end.to raise_error(ActiveRecord::RecordNotFound)
     end
+
+    it "returns forbidden if user is not authorized to send posts" do
+      accountant = create(:user)
+      create(:team_membership, user: accountant, seller:, role: TeamMembership::ROLE_ACCOUNTANT)
+      sign_in accountant
+
+      post :send_all_missed_posts, params: { purchase_id: @purchase.external_id }
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "GET product_purchases" do
