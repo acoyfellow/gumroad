@@ -127,6 +127,8 @@ class CustomersController < Sellers::BaseController
     sent_ids = []
 
     missed_posts.each do |post|
+      authorize post, :send_for_purchase?
+
       cache_key = "post_email:#{post.id}:#{purchase.id}"
       Rails.cache.fetch(cache_key, expires_in: SEND_POST_RATE_LIMIT) do
         CreatorContactingCustomersEmailInfo.where(purchase:, installment: post).destroy_all
