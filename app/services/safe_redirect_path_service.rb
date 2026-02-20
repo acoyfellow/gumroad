@@ -15,8 +15,6 @@ class SafeRedirectPathService
     end
   end
 
-
-
   private
     attr_reader :path, :request, :allow_subdomain_host
 
