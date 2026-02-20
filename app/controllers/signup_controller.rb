@@ -114,7 +114,7 @@ class SignupController < Devise::RegistrationsController
     def verify_captcha_and_handle_existing_users
       if params[:user] && params[:user][:buyer_signup].blank?
         site_key = GlobalConfig.get("RECAPTCHA_SIGNUP_SITE_KEY")
-        if !(Rails.env.development? && site_key.blank?) && !valid_recaptcha_response?(site_key: site_key)
+        if site_key.present? && !valid_recaptcha_response?(site_key: site_key)
           respond_to do |format|
             format.html { redirect_with_signup_error("Sorry, we could not verify the CAPTCHA. Please try again.") }
             format.json { render json: { success: false, error_message: "Sorry, we could not verify the CAPTCHA. Please try again." } }
