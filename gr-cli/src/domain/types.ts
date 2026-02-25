@@ -140,3 +140,58 @@ export interface LicenseVerificationResponse {
   uses?: number;
   purchase?: Sale;
 }
+
+/**
+ * Offer model from Gumroad API
+ */
+export interface Offer {
+  id: string;
+  product_id: string;
+  name: string;
+  amount_off?: number;
+  percent_off?: number;
+  created_at: string;
+  max_uses?: number;
+  uses?: number;
+  starts_at?: string;
+  ends_at?: string;
+  unlimited?: boolean;
+  universal?: boolean;
+}
+
+/**
+ * Webhook model from Gumroad API
+ */
+export interface Webhook {
+  id: string;
+  url: string;
+  active: boolean;
+  events: string[];
+  created_at: string;
+}
+
+/**
+ * Offer API Response wrappers
+ */
+export interface OffersResponse {
+  success: boolean;
+  offers: Offer[];
+}
+
+export interface OfferResponse {
+  success: boolean;
+  offer: Offer;
+}
+
+/**
+ * Webhook API Response wrappers
+ */
+export interface WebhooksResponse {
+  success: boolean;
+  webhooks: Webhook[];
+}
+
+export interface WebhookResponse {
+  success: boolean;
+  webhook: Webhook;
+}
