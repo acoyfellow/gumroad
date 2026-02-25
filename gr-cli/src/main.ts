@@ -80,9 +80,9 @@ function makeRequest(
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
-        ...(options?.body ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
+        ...(options?.body ? { "Content-Type": "application/json" } : {}),
       },
-      ...(options?.body ? { body: new URLSearchParams(options.body) } : {}),
+      ...(options?.body ? { body: JSON.stringify(options.body) } : {}),
     };
 
     const controller = new AbortController();

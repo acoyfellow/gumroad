@@ -29,7 +29,11 @@ console.log("Claude: Let me check your Gumroad account...");
 const userInfo = claudeCodeQuery("user");
 console.log(userInfo);
 
-// Example: Developer asks "Verify this license: ABC123"
+// Example: Developer asks "Verify this license for product PROD123: ABC123"
+const productId = process.argv[2] || "PROD123-DEMO";
+const licenseKey = process.argv[3] || "ABC123-DEMO-KEY";
+console.log(`\nClaude: Verifying license ${licenseKey} for product ${productId}...`);
+const licenseInfo = claudeCodeQuery(`licenses verify --product-id ${productId} --key ${licenseKey}`);
 const licenseKey = process.argv[2] || "ABC123-DEMO-KEY";
 console.log(`\nClaude: Verifying license ${licenseKey}...`);
 const licenseInfo = claudeCodeQuery(`licenses verify ${licenseKey}`);
