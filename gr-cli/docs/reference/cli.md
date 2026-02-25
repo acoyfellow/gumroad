@@ -48,7 +48,7 @@ gr subscribers get <id> Get subscriber by ID
 
 ```
 gr licenses verify <key>    Verify license key
-gr licenses list            List all licenses
+
 ```
 
 ## Environment

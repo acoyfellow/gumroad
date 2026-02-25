@@ -2,25 +2,72 @@
 
 An AI-native command-line interface for Gumroad, inspired by `gh` (GitHub CLI).
 
-**Note on Permissions:** This CLI uses Personal Access Tokens (PAT) which support read operations (user, products, sales, subscribers, licenses) and license verification. Creating/updating products requires OAuth app permissions and is not available with PAT.
+## Why Effect-TS Architecture
 
-An AI-native command-line interface for Gumroad, inspired by `gh` (GitHub CLI).
+This CLI is built with Effect-TS to be truly "AI-native" - meaning the code structure makes it easier for AI agents like Claude Code to understand, use, and reason about.
 
-## Why This Matters for AI Agents
+### Traditional vs Effect-TS
 
-- **Typed API**: Types auto-generated from OpenAPI spec - changes caught early
-- **Effect-TS ready**: Typed errors, explicit dependencies - perfect for AI reasoning
-- **JSON output**: AI agents consume easily
-- **gh ergonomics**: Familiar CLI patterns (`gr auth`, `gr products list`)
+**Traditional TypeScript (what most CLIs use):**
 
-## Tech Stack Justification
+```typescript
+async function getUser() {
+  const data = await apiRequest("/user");
+  // What errors can happen? Not visible in the type.
+  // What does it need? Hidden dependencies.
+}
+```
 
-| Component      | Choice                 | Rationale                                              |
-| -------------- | ---------------------- | ------------------------------------------------------ |
-| Language       | TypeScript             | Same as modern tooling, AI-friendly, great IDE support |
-| Types          | OpenAPI auto-generated | Single source of truth, catches API changes            |
-| Runtime        | Node.js                | Cross-platform, npm distribution                       |
-| Error handling | Typed errors           | AI agents can reason about failures                    |
+**Effect-TS (this implementation):**
+
+```typescript
+const getUser = (): Effect.Effect<
+  User,                                   // Success: returns User
+  ConfigError | ApiError | NetworkError,  // Errors: must handle these
+  never                                   // Dependencies: none needed
+>
+```
+
+**Benefits for AI agents:**
+
+1. **Self-documenting types**: The type signature tells Claude exactly what a function returns, what can fail, and what it needs
+2. **Explicit error handling**: No surprise runtime errors - all failure modes are typed
+3. **Composable operations**: Chain commands naturally with `Effect.gen`
+4. **Testable by design**: Layer-based dependency injection makes mocking trivial
+
+### Error Handling Comparison
+
+| Aspect       | Traditional                   | Effect-TS                                   |
+| ------------ | ----------------------------- | ------------------------------------------- |
+| Errors       | `throw new Error()` - untyped | `Effect.fail(new ConfigError(...))` - typed |
+| Handling     | `try/catch` blocks everywhere | `.pipe(Effect.catchAll(handler))`           |
+| Visibility   | Runtime only                  | Compile-time visible                        |
+| AI reasoning | Must guess what can fail      | Types show exactly what to handle           |
+
+### Dependency Injection
+
+**Traditional:** Hidden dependencies inside functions
+
+```typescript
+async function apiRequest(path: string) {
+  const token = await getToken(); // Where does this come from?
+  // ...
+}
+```
+
+**Effect-TS:** Explicit dependencies via Context
+
+```typescript
+function makeRequest(path: string) {
+  return Effect.gen(function* () {
+    const auth = yield* AuthService; // Explicitly required
+    const token = yield* auth.getToken();
+    // ...
+  });
+}
+```
+
+**Benefit:** Dependencies are visible in types, making it easy for AI to understand what a function needs and how to provide it.
 
 ## Installation
 
@@ -48,26 +95,28 @@ Get your token at: https://app.gumroad.com/api
 # Check auth status
 gr auth status
 
-# Get current user
+# Authentication commands
+gr auth login <token>
+gr auth logout
+
+# User info
 gr user
 
-# List products
+# Products
 gr products list
-gr products get <id>
+gr products get --id <product-id>
 
-# List sales
+# Sales
 gr sales list
-gr sales get <id>
-# Verify license
-gr licenses verify <key>
-```
-# List subscribers
-gr subscribers list
-gr subscribers get <id>
+gr sales list --product-id <id>
+gr sales get --id <sale-id>
 
-# Verify license
-gr licenses verify <key>
-gr licenses list
+# Subscribers
+gr subscribers list --product-id <id>
+
+# Licenses
+gr licenses verify --product-id <id> --key <license-key>
+gr licenses verify --product-id <id> --key <license-key>
 ```
 
 ## Development
@@ -79,9 +128,49 @@ npm run build:types  # Regenerate types from OpenAPI
 npm test             # Run tests
 ```
 
+## Architecture
+
+```
+src/
+├── main.ts           # CLI entry point and command routing
+├── domain/
+│   ├── types.ts      # Domain models (User, Product, Sale, etc.)
+│   └── errors.ts     # Typed error classes
+└── services/
+    ├── Auth.ts       # Auth service with Effect Context
+    ├── GumroadApi.ts # API client service
+    └── services.test.ts  # Tests
+```
+
+## Testing
+
+The CLI uses Effect-TS's Layer pattern for dependency injection, making tests clean and deterministic:
+
+```typescript
+const TestAuthLayer = Layer.succeed(
+  AuthService,
+  AuthService.of({
+    getToken: () => Effect.succeed("test-token"),
+    // ... mock implementations
+  }),
+);
+
+const program = Effect.gen(function* () {
+  const auth = yield* AuthService;
+  const token = yield* auth.getToken();
+  expect(token).toBe("test-token");
+}).pipe(Effect.provide(TestAuthLayer));
+
+await Effect.runPromise(program);
+```
+
+## Notes on Permissions
+
+This CLI uses Personal Access Tokens (PAT) which support read operations (user, products, sales, subscribers, licenses) and license verification. Creating/updating products requires OAuth app permissions and is not available with PAT.
+
 ## API
 
-The CLI uses the [Gumroad API v2](https://app.gumroad.com/api). Types are auto-generated from the OpenAPI spec in `openapi.json`.
+The CLI uses the [Gumroad API v2](https://app.gumroad.com/api). Types are generated from the OpenAPI spec in `openapi.json`.
 
 ## License
 
