@@ -102,6 +102,14 @@ Commands:
   licenses verify <product-id> <key> Verify a license key
   licenses enable <key> Enable/reactivate a license
   licenses disable <key> Disable/deactivate a license
+  offers list <product-id>          List offers for a product
+  offers get <product-id> <offer-id>  Get offer by ID
+  offers create <product-id> <name> [amount-off] [percent-off] Create an offer
+  offers delete <product-id> <offer-id> Delete an offer
+  webhooks list          List webhooks
+  webhooks get <id>      Get webhook by ID
+  webhooks create <url> <resource> Create a webhook
+  webhooks delete <id>   Delete a webhook
 
 Note: Creating products requires OAuth app permissions. Use web UI to create,
 then use this CLI to publish, check sales, and manage licenses.
@@ -261,9 +269,91 @@ Examples:
       process.exit(1)
     }
     await apiRequest<void>("/licenses/disable", "PUT", { license_key: key })
-    console.log(`License ${key} disabled`)
+  },
+
+  "offers:list": async (args: string[]): Promise<void> => {
+    const productId = args[0]
+    if (!productId) {
+      console.error("Error: Product ID required. Usage: gr offers list <product-id>")
+      process.exit(1)
+    }
+    const data = await apiRequest<{ offers: any[] }>(`/products/${productId}/offers`)
+    console.log(JSON.stringify(data.offers, null, 2))
+  },
+
+  "offers:get": async (args: string[]): Promise<void> => {
+    const productId = args[0]
+    const offerId = args[1]
+    if (!productId || !offerId) {
+      console.error("Error: Product ID and offer ID required. Usage: gr offers get <product-id> <offer-id>")
+      process.exit(1)
+    }
+    const data = await apiRequest<{ offer: any }>(`/products/${productId}/offers/${offerId}`)
+    console.log(JSON.stringify(data.offer, null, 2))
+  },
+
+  "offers:create": async (args: string[]): Promise<void> => {
+    const productId = args[0]
+    const name = args[1]
+    if (!productId || !name) {
+      console.error("Error: Product ID and name required. Usage: gr offers create <product-id> <name> [amount-off] [percent-off]")
+      process.exit(1)
+    }
+    const body: Record<string, unknown> = { name }
+    if (args[2]) body["amount_off"] = parseInt(args[2])
+    if (args[3]) body["percent_off"] = parseInt(args[3])
+    const data = await apiRequest<{ offer: any }>(`/products/${productId}/offers`, "POST", body)
+    console.log(JSON.stringify(data.offer, null, 2))
+  },
+
+  "offers:delete": async (args: string[]): Promise<void> => {
+    const productId = args[0]
+    const offerId = args[1]
+    if (!productId || !offerId) {
+      console.error("Error: Product ID and offer ID required. Usage: gr offers delete <product-id> <offer-id>")
+      process.exit(1)
+    }
+    await apiRequest<void>(`/products/${productId}/offers/${offerId}`, "DELETE")
+    console.log(`Offer ${offerId} deleted`)
+  },
+
+  "webhooks:list": async (): Promise<void> => {
+    const data = await apiRequest<{ webhooks: any[] }>("/webhooks")
+    console.log(JSON.stringify(data.webhooks, null, 2))
+  },
+
+  "webhooks:get": async (args: string[]): Promise<void> => {
+    const id = args[0]
+    if (!id) {
+      console.error("Error: Webhook ID required. Usage: gr webhooks get <id>")
+      process.exit(1)
+    }
+    const data = await apiRequest<{ webhook: any }>(`/webhooks/${id}`)
+    console.log(JSON.stringify(data.webhook, null, 2))
+  },
+
+  "webhooks:create": async (args: string[]): Promise<void> => {
+    const url = args[0]
+    const resource = args[1]
+    if (!url || !resource) {
+      console.error("Error: URL and resource required. Usage: gr webhooks create <url> <resource>")
+      process.exit(1)
+    }
+    const data = await apiRequest<{ webhook: any }>("/webhooks", "POST", { url, resource })
+    console.log(JSON.stringify(data.webhook, null, 2))
+  },
+
+  "webhooks:delete": async (args: string[]): Promise<void> => {
+    const id = args[0]
+    if (!id) {
+      console.error("Error: Webhook ID required. Usage: gr webhooks delete <id>")
+      process.exit(1)
+    }
+    await apiRequest<void>(`/webhooks/${id}`, "DELETE")
+    console.log(`Webhook ${id} deleted`)
   },
 }
+
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2)
