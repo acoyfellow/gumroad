@@ -1255,11 +1255,13 @@ const CustomerDrawer = ({
                     }
                     onClick={() => void onSendAll()}
                   >
-                    {missedPosts.every((post) => sentEmailIds.current.has(post.id))
-                      ? "All sent"
-                      : isSendingAll
-                        ? "Sending all..."
-                        : "Send all"}
+                    {(() => {
+                      const allSent = missedPosts.every((post) => sentEmailIds.current.has(post.id));
+                      const count = missedPosts.length;
+                      if (allSent) return `All sent (${count})`;
+                      if (isSendingAll) return `Sending all...`;
+                      return `Send all (${count})`;
+                    })()}
                   </Button>
                 ) : null}
               </header>
