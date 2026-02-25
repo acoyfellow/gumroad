@@ -242,7 +242,7 @@ Examples:
       process.exit(1)
     }
     const data = await apiRequest<{ success: boolean; purchase?: Sale; uses?: number }>("/licenses/verify", "POST", {
-      product_id: productId,
+      product_permalink: productId,
       license_key: key,
     })
     console.log(JSON.stringify({ 
