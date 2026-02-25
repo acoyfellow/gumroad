@@ -9,7 +9,7 @@ An AI-native command-line interface for Gumroad, inspired by `gh` (GitHub CLI).
 ## Why This Matters for AI Agents
 
 - **Typed API**: Types auto-generated from OpenAPI spec - changes caught early
-- **Effect-TS ready**: Typed errors, explicit dependencies - perfect for AI reasoning
+- **Type-safe**: Full TypeScript coverage with auto-generated API types
 - **JSON output**: AI agents consume easily
 - **gh ergonomics**: Familiar CLI patterns (`gr auth`, `gr products list`)
 
@@ -20,7 +20,7 @@ An AI-native command-line interface for Gumroad, inspired by `gh` (GitHub CLI).
 | Language       | TypeScript             | Same as modern tooling, AI-friendly, great IDE support |
 | Types          | OpenAPI auto-generated | Single source of truth, catches API changes            |
 | Runtime        | Node.js                | Cross-platform, npm distribution                       |
-| Error handling | Typed errors           | AI agents can reason about failures                    |
+| Error handling | try/catch with clear messages | Easy to debug, human-readable errors              |
 
 ## Installation
 
