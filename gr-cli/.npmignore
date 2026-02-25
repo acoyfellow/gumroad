@@ -1,0 +1,10 @@
+# Dependencies (use npm install)
+node_modules/
+
+# Development
+*.log
+.DS_Store
+
+# Test
+*.test.ts
+vitest.config.*
